@@ -267,17 +267,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* My PIN */}
-        <View style={styles.pinCard}>
-          <View>
-            <Text style={styles.pinCardLabel}>MEU PIN DE CONTRATAÇÃO</Text>
-            <Text style={styles.pinCardCode}>{MY_PROFILE.pinCode}</Text>
-          </View>
-          <Pressable style={styles.copyBtn} onPress={() => Alert.alert("PIN copiado!", MY_PROFILE.pinCode)}>
-            <Feather name="copy" size={14} color={Colors.accent} />
-          </Pressable>
-        </View>
-
         {/* Skills */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>

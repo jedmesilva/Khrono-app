@@ -62,10 +62,6 @@ export default function HomeScreen() {
           <Text style={styles.logo}>
             K<Text style={{ color: Colors.accent }}>r</Text>ono
           </Text>
-          <View style={styles.pinBadge}>
-            <Text style={styles.pinLabel}>PIN</Text>
-            <Text style={styles.pinCode}>1257</Text>
-          </View>
         </View>
 
         {/* Summary bar */}
