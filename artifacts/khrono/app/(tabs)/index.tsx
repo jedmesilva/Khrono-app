@@ -1,9 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 import {
   Alert,
-  Animated,
   Platform,
   Pressable,
   ScrollView,
@@ -14,7 +13,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ContractCard } from "@/components/ContractCard";
-import { HireSheet } from "@/components/HireSheet";
 import { HistoryCard } from "@/components/HistoryCard";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
@@ -22,8 +20,6 @@ import { useContracts } from "@/context/ContractsContext";
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { activeContracts, history, endContract } = useContracts();
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const fabScale = useRef(new Animated.Value(1)).current;
   const isWeb = Platform.OS === "web";
 
   const totalAccruing = activeContracts
@@ -47,15 +43,6 @@ export default function HomeScreen() {
     },
     [endContract]
   );
-
-  const handleFabPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.sequence([
-      Animated.timing(fabScale, { toValue: 0.92, duration: 80, useNativeDriver: true }),
-      Animated.timing(fabScale, { toValue: 1, duration: 120, useNativeDriver: true }),
-    ]).start();
-    setSheetOpen(true);
-  };
 
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
@@ -116,7 +103,7 @@ export default function HomeScreen() {
             <Feather name="clock" size={36} color={Colors.textDim} />
             <Text style={styles.emptyText}>nenhum contrato ativo</Text>
             <Text style={styles.emptySubtext}>
-              Toque no botão abaixo para iniciar uma contratação
+              Toque no botão central para iniciar uma contratação
             </Text>
           </View>
         )}
@@ -140,22 +127,6 @@ export default function HomeScreen() {
 
         <View style={{ height: isWeb ? 34 + 84 + 20 : 100 }} />
       </ScrollView>
-
-      {/* FAB */}
-      <View
-        style={[
-          styles.fabContainer,
-          { bottom: isWeb ? insets.bottom + 84 + 16 : insets.bottom + 80 },
-        ]}
-      >
-        <Animated.View style={{ transform: [{ scale: fabScale }] }}>
-          <Pressable style={styles.fab} onPress={handleFabPress}>
-            <Feather name="zap" size={22} color="#fff" />
-          </Pressable>
-        </Animated.View>
-      </View>
-
-      <HireSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </View>
   );
 }
@@ -284,22 +255,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: 220,
     lineHeight: 18,
-  },
-  fabContainer: {
-    position: "absolute",
-    right: 20,
-  },
-  fab: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: Colors.accent,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: Colors.accent,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 8,
   },
 });
