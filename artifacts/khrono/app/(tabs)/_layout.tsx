@@ -1,5 +1,5 @@
 import { BlurView } from "expo-blur";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SymbolView } from "expo-symbols";
 import * as Haptics from "expo-haptics";
 import { Tabs } from "expo-router";
@@ -27,7 +27,7 @@ function CenterTabButton() {
       style={styles.centerTabButton}
     >
       <View style={styles.centerTabButtonInner}>
-        <Feather name="zap" size={22} color="#fff" />
+        <MaterialCommunityIcons name="handshake-outline" size={24} color="#fff" />
       </View>
     </Pressable>
   );
@@ -109,9 +109,9 @@ function TabLayoutInner() {
             title: "Carteira",
             tabBarIcon: ({ color }) =>
               isIOS ? (
-                <SymbolView name="creditcard" tintColor={color} size={22} />
+                <SymbolView name="wallet.pass" tintColor={color} size={22} />
               ) : (
-                <Feather name="credit-card" size={22} color={color} />
+                <MaterialCommunityIcons name="wallet-outline" size={22} color={color} />
               ),
           }}
         />
