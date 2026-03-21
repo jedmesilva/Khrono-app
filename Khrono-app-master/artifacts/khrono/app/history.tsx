@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HistoryCard } from "@/components/HistoryCard";
+import { StatsBar } from "@/components/StatsBar";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
 
@@ -52,26 +53,14 @@ export default function HistoryScreen() {
 
       {/* Stats */}
       {history.length > 0 && (
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>PAGO</Text>
-            <Text style={[styles.statValue, { color: Colors.accent }]}>
-              R${totalPaid.toFixed(2)}
-            </Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={[styles.statItem, { alignItems: "center" }]}>
-            <Text style={styles.statLabel}>CONTRATOS</Text>
-            <Text style={styles.statValue}>{history.length}</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={[styles.statItem, { alignItems: "flex-end" }]}>
-            <Text style={styles.statLabel}>RECEBIDO</Text>
-            <Text style={[styles.statValue, { color: Colors.accentGreen }]}>
-              R${totalReceived.toFixed(2)}
-            </Text>
-          </View>
-        </View>
+        <StatsBar
+          style={styles.statsRow}
+          items={[
+            { label: "PAGO", value: `R$${totalPaid.toFixed(2)}`, color: Colors.accent },
+            { label: "CONTRATOS", value: history.length, align: "center" },
+            { label: "RECEBIDO", value: `R$${totalReceived.toFixed(2)}`, color: Colors.accentGreen, align: "flex-end" },
+          ]}
+        />
       )}
 
       {/* Filters */}
@@ -147,36 +136,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   statsRow: {
-    flexDirection: "row",
-    alignItems: "center",
     marginHorizontal: 20,
     marginBottom: 20,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 16,
-    padding: 16,
-  },
-  statItem: {
-    flex: 1,
-  },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: "#1a1a1a",
-    marginHorizontal: 12,
-  },
-  statLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 8,
-    color: "#444",
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 16,
-    color: "#fff",
   },
   filters: {
     flexDirection: "row",

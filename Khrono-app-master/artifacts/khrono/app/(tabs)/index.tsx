@@ -17,6 +17,7 @@ import { ContractCard } from "@/components/ContractCard";
 import { HistoryCard } from "@/components/HistoryCard";
 import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
+import { StatsBar } from "@/components/StatsBar";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
 
@@ -112,26 +113,14 @@ export default function HomeScreen() {
 
         {/* Summary bar */}
         {activeContracts.length > 0 && (
-          <View style={styles.summaryBar}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>ATIVOS</Text>
-              <Text style={styles.summaryValue}>{activeContracts.length}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={[styles.summaryItem, { alignItems: "center" }]}>
-              <Text style={styles.summaryLabel}>A PAGAR</Text>
-              <Text style={[styles.summaryValue, { color: Colors.accent }]}>
-                R${totalPagar.toFixed(2)}
-              </Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={[styles.summaryItem, { alignItems: "flex-end" }]}>
-              <Text style={styles.summaryLabel}>A RECEBER</Text>
-              <Text style={[styles.summaryValue, { color: Colors.accentGreen }]}>
-                R${totalReceber.toFixed(2)}
-              </Text>
-            </View>
-          </View>
+          <StatsBar
+            style={styles.summaryBar}
+            items={[
+              { label: "ATIVOS", value: activeContracts.length },
+              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: Colors.accent, align: "center" },
+              { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: Colors.accentGreen, align: "flex-end" },
+            ]}
+          />
         )}
 
         {/* Active contracts */}
@@ -266,37 +255,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   summaryBar: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 16,
-    padding: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 24,
-  },
-  summaryItem: {
-    flex: 1,
-  },
-  summaryLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#555",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 17,
-    color: "#fff",
-  },
-  summaryDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: "#1a1a1a",
-    marginHorizontal: 10,
   },
   section: {
     marginBottom: 28,
