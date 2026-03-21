@@ -94,3 +94,32 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+
+### `artifacts/khrono` (`@workspace/khrono`)
+
+Expo React Native mobile app (Khrono) — cross-platform service marketplace. Runs via `pnpm --filter @workspace/khrono run dev` (port 22861). The app connects users with service providers via contract-based sessions.
+
+**Design system:** dark background `#060606`, accent orange `#ff6b35`, accent green `#00e5a0`, fonts Sora + DM Mono.
+
+**Key screens & components:**
+- `app/(tabs)/index.tsx` — Home: live active contract cards with timers
+- `app/(tabs)/hire.tsx` — Hire tab placeholder
+- `app/contract-confirm.tsx` — Full contract confirmation flow (3 stages: confirmacao → aguardando → ativo)
+- `app/contract-detail/[id].tsx` — Contract detail view
+- `app/history.tsx` — Contract history
+- `components/HireSheet.tsx` — Bottom sheet modal with 4 connection methods (PIN, QR, NFC, Link)
+
+**Contract flow:**
+1. User opens HireSheet (central orange handshake button)
+2. Selects connection method → enters PIN (mock PINs: 1234, 5678, 9012, 4321, 1257)
+3. Provider found → navigates to `contract-confirm` screen
+4. `confirmacao` stage: select skill, tools, schedule (now/later), contract type (open/fixed), duration
+5. `aguardando` stage: spinner animation, simulate provider accept/reject
+6. `ativo` stage: live timer (stopwatch or countdown), accumulated cost, end button
+
+**Contexts:**
+- `ContractsContext` — manages active contracts + history, AsyncStorage persistence, `startContract` returns contract ID
+- `HireSheetContext` — controls HireSheet open/close state
+- `ConfirmationContext` — passes `ProviderData` (skills, tools, nota, distancia, valorBase) from HireSheet to contract-confirm screen
+
+**Mock provider PINs:** 1234 = Carlos Mendes (Pintor), 5678 = Juliana Rocha (Personal Trainer), 9012 = Pedro Alves (Eletricista), 4321 = Isabela Martins (Cuidadora), 1257 = Jedme Silva (Montador).

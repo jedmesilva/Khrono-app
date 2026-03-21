@@ -7,6 +7,12 @@ import React, {
   useState,
 } from "react";
 
+export type ContractTool = {
+  id: number;
+  nome: string;
+  tipo: string;
+};
+
 export type Contract = {
   id: string;
   role: "hired" | "hiring";
@@ -17,9 +23,14 @@ export type Contract = {
     initials: string;
     skill: string;
     pinCode?: string;
+    nota?: number;
+    avaliacoes?: number;
+    distancia?: number;
   };
   ratePerHour: number;
   startedAt: number;
+  scheduledFor?: number;
+  tools?: ContractTool[];
   status: "active" | "ended";
   endedAt?: number;
   totalAmount?: number;
@@ -28,7 +39,7 @@ export type Contract = {
 type ContractsContextType = {
   activeContracts: Contract[];
   history: Contract[];
-  startContract: (contract: Omit<Contract, "id" | "status" | "startedAt">) => void;
+  startContract: (contract: Omit<Contract, "id" | "status" | "startedAt">) => string;
   endContract: (id: string) => void;
 };
 
@@ -111,9 +122,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         if (parsed.active?.length > 0) setActiveContracts(parsed.active);
         if (parsed.history?.length > 0) setHistory(parsed.history);
       }
-    } catch (e) {
-      // use defaults
-    }
+    } catch (e) {}
   };
 
   const saveData = useCallback(
@@ -129,10 +138,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const startContract = useCallback(
-    (contract: Omit<Contract, "id" | "status" | "startedAt">) => {
+    (contract: Omit<Contract, "id" | "status" | "startedAt">): string => {
+      const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
       const newContract: Contract = {
         ...contract,
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+        id,
         status: "active",
         startedAt: Date.now(),
       };
@@ -141,6 +151,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         saveData(updated, history);
         return updated;
       });
+      return id;
     },
     [history, saveData]
   );
@@ -152,13 +163,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         if (!contract) return prev;
         const endedAt = Date.now();
         const duration = (endedAt - contract.startedAt) / 1000 / 3600;
-        const totalAmount = parseFloat((duration * contract.ratePerHour).toFixed(2));
-        const ended: Contract = {
-          ...contract,
-          status: "ended",
-          endedAt,
-          totalAmount,
-        };
+        const totalAmount =
+          contract.tipo === "timer" && contract.duracaoTotal
+            ? parseFloat(((contract.duracaoTotal / 1000 / 3600) * contract.ratePerHour).toFixed(2))
+            : parseFloat((duration * contract.ratePerHour).toFixed(2));
+        const ended: Contract = { ...contract, status: "ended", endedAt, totalAmount };
         const updatedActive = prev.filter((c) => c.id !== id);
         setHistory((h) => {
           const updatedHistory = [ended, ...h];
@@ -172,9 +181,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ContractsContext.Provider
-      value={{ activeContracts, history, startContract, endContract }}
-    >
+    <ContractsContext.Provider value={{ activeContracts, history, startContract, endContract }}>
       {children}
     </ContractsContext.Provider>
   );

@@ -17,6 +17,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ContractsProvider } from "@/context/ContractsContext";
+import { ConfirmationProvider } from "@/context/ConfirmationContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +33,10 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="contract-detail/[id]"
+        options={{ headerShown: false, presentation: "card" }}
+      />
+      <Stack.Screen
+        name="contract-confirm"
         options={{ headerShown: false, presentation: "card" }}
       />
     </Stack>
@@ -61,7 +66,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <ContractsProvider>
-              <RootLayoutNav />
+              <ConfirmationProvider>
+                <RootLayoutNav />
+              </ConfirmationProvider>
             </ContractsProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

@@ -1,5 +1,6 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -17,14 +18,82 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
-import { useContracts } from "@/context/ContractsContext";
+import { useConfirmation, ProviderData } from "@/context/ConfirmationContext";
 
-const MOCK_USERS: Record<string, { name: string; initials: string; skill: string; ratePerHour: number }> = {
-  "1234": { name: "Carlos Mendes", initials: "CM", skill: "Pintor Residencial", ratePerHour: 45 },
-  "5678": { name: "Juliana Rocha", initials: "JR", skill: "Personal Trainer", ratePerHour: 80 },
-  "9012": { name: "Pedro Alves", initials: "PA", skill: "Eletricista", ratePerHour: 60 },
-  "4321": { name: "Isabela Martins", initials: "IM", skill: "Cuidadora de Idosos", ratePerHour: 40 },
-  "1257": { name: "Jedme Silva", initials: "JS", skill: "Montador de Móveis", ratePerHour: 50 },
+const MOCK_PROVIDERS: Record<string, ProviderData> = {
+  "1234": {
+    name: "Carlos Mendes",
+    initials: "CM",
+    nota: 4.8,
+    avaliacoes: 42,
+    distancia: 0.8,
+    valorBase: 45,
+    skills: [
+      { id: 1, nome: "Pintor Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8 },
+      { id: 2, nome: "Gesseiro", multiplicador: 0.9, avaliacoes: 8, nota: 4.5 },
+    ],
+    tools: [
+      { id: 1, nome: "Kit de Tintas Profissional", tipo: "Equipamento", disponivel: true },
+    ],
+  },
+  "5678": {
+    name: "Juliana Rocha",
+    initials: "JR",
+    nota: 5.0,
+    avaliacoes: 128,
+    distancia: 2.1,
+    valorBase: 80,
+    skills: [
+      { id: 1, nome: "Personal Trainer", multiplicador: 1.0, avaliacoes: 128, nota: 5.0 },
+      { id: 2, nome: "Nutricionista", multiplicador: 1.2, avaliacoes: 34, nota: 4.9 },
+    ],
+    tools: [
+      { id: 1, nome: "Kit Musculação Portátil", tipo: "Equipamento", disponivel: true },
+    ],
+  },
+  "9012": {
+    name: "Pedro Alves",
+    initials: "PA",
+    nota: 4.7,
+    avaliacoes: 31,
+    distancia: 3.4,
+    valorBase: 60,
+    skills: [
+      { id: 1, nome: "Eletricista", multiplicador: 1.0, avaliacoes: 31, nota: 4.7 },
+    ],
+    tools: [
+      { id: 1, nome: "Multímetro Digital", tipo: "Equipamento", disponivel: true },
+      { id: 2, nome: "Kit de Ferramentas", tipo: "Equipamento", disponivel: true },
+    ],
+  },
+  "4321": {
+    name: "Isabela Martins",
+    initials: "IM",
+    nota: 4.9,
+    avaliacoes: 77,
+    distancia: 0.5,
+    valorBase: 40,
+    skills: [
+      { id: 1, nome: "Cuidadora de Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9 },
+      { id: 2, nome: "Enfermeira Auxiliar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8 },
+    ],
+    tools: [],
+  },
+  "1257": {
+    name: "Jedme Silva",
+    initials: "JS",
+    nota: 4.6,
+    avaliacoes: 19,
+    distancia: 1.8,
+    valorBase: 50,
+    skills: [
+      { id: 1, nome: "Montador de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6 },
+    ],
+    tools: [
+      { id: 1, nome: "Furadeira Profissional", tipo: "Equipamento", disponivel: true },
+      { id: 2, nome: "Kit Allen + Chaves", tipo: "Equipamento", disponivel: true },
+    ],
+  },
 };
 
 type HireMethod = "PINCODE" | "QRCODE" | "NFC" | "LINK";
@@ -34,10 +103,9 @@ const KEYPAD = ["1","2","3","4","5","6","7","8","9","","0","del"];
 
 // ─── PINCODE ────────────────────────────────────────────────────────────────
 
-function PincodeContent({ onSuccess }: { onSuccess: () => void }) {
-  const { startContract } = useContracts();
+function PincodeContent({ onFoundProvider }: { onFoundProvider: (p: ProviderData) => void }) {
   const [pin, setPin] = useState("");
-  const [found, setFound] = useState<typeof MOCK_USERS[string] | null>(null);
+  const [found, setFound] = useState<ProviderData | null>(null);
 
   const handleKey = (d: string) => {
     if (d === "del") { setPin(p => p.slice(0, -1)); return; }
@@ -48,47 +116,42 @@ function PincodeContent({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const handleConnect = () => {
-    const user = MOCK_USERS[pin];
-    if (user) {
+    const provider = MOCK_PROVIDERS[pin];
+    if (provider) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setFound(user);
+      setFound(provider);
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("PIN não encontrado", "Verifique o código e tente novamente.");
     }
   };
 
-  const handleConfirm = () => {
+  const handleContinue = () => {
     if (!found) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    startContract({
-      role: "hiring",
-      person: { name: found.name, initials: found.initials, skill: found.skill },
-      ratePerHour: found.ratePerHour,
-    });
-    onSuccess();
+    onFoundProvider(found);
   };
 
   if (found) {
     return (
       <View>
-        <Text style={sub.title}>Confirmar contrato</Text>
+        <Text style={sub.title}>Prestador encontrado</Text>
         <View style={sub.userCard}>
           <View style={sub.userAvatar}>
             <Text style={sub.userAvatarText}>{found.initials}</Text>
           </View>
           <Text style={sub.userName}>{found.name}</Text>
-          <Text style={sub.userSkill}>{found.skill}</Text>
+          <Text style={sub.userSkill}>{found.skills[0]?.nome}</Text>
           <View style={sub.rateBadge}>
-            <Text style={sub.rateText}>R${found.ratePerHour}/h</Text>
+            <Text style={sub.rateText}>R${found.valorBase}/h</Text>
           </View>
         </View>
         <Text style={sub.confirmDesc}>
-          Ao confirmar, o cronômetro inicia imediatamente e o valor é calculado por tempo corrido.
+          Confirme o prestador para definir os detalhes do contrato.
         </Text>
-        <Pressable style={sub.primaryBtn} onPress={handleConfirm}>
-          <Feather name="zap" size={16} color="#fff" />
-          <Text style={sub.primaryBtnText}>Iniciar contrato</Text>
+        <Pressable style={sub.primaryBtn} onPress={handleContinue}>
+          <Feather name="arrow-right" size={16} color="#fff" />
+          <Text style={sub.primaryBtnText}>Configurar contrato</Text>
         </Pressable>
         <Pressable style={sub.ghostBtn} onPress={() => setFound(null)}>
           <Text style={sub.ghostBtnText}>Voltar</Text>
@@ -278,7 +341,15 @@ function LinkContent() {
 
 // ─── SUB SHEET ──────────────────────────────────────────────────────────────
 
-function SubSheet({ tipo, onClose, onSuccess }: { tipo: HireMethod; onClose: () => void; onSuccess: () => void }) {
+function SubSheet({
+  tipo,
+  onClose,
+  onFoundProvider,
+}: {
+  tipo: HireMethod;
+  onClose: () => void;
+  onFoundProvider: (p: ProviderData) => void;
+}) {
   const insets = useSafeAreaInsets();
   const isIOS = Platform.OS === "ios";
 
@@ -307,7 +378,7 @@ function SubSheet({ tipo, onClose, onSuccess }: { tipo: HireMethod; onClose: () 
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {tipo === "PINCODE" && <PincodeContent onSuccess={onSuccess} />}
+            {tipo === "PINCODE" && <PincodeContent onFoundProvider={onFoundProvider} />}
             {tipo === "QRCODE"  && <QrcodeContent />}
             {tipo === "NFC"     && <NfcContent />}
             {tipo === "LINK"    && <LinkContent />}
@@ -323,12 +394,20 @@ function SubSheet({ tipo, onClose, onSuccess }: { tipo: HireMethod; onClose: () 
 
 export function HireSheet({ open, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { setPendingProvider } = useConfirmation();
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [disponivel, setDisponivel] = useState(false);
 
   const handleClose = () => {
     setSubMode(null);
     onClose();
+  };
+
+  const handleFoundProvider = (provider: ProviderData) => {
+    setPendingProvider(provider);
+    handleClose();
+    router.push("/contract-confirm");
   };
 
   const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
@@ -450,7 +529,7 @@ export function HireSheet({ open, onClose }: Props) {
         <SubSheet
           tipo={subMode}
           onClose={() => setSubMode(null)}
-          onSuccess={handleClose}
+          onFoundProvider={handleFoundProvider}
         />
       )}
     </Modal>
@@ -650,60 +729,152 @@ const styles = StyleSheet.create({
   },
   availDesc: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#555",
-    lineHeight: 14,
+    fontSize: 11,
+    color: "#444",
+    lineHeight: 15,
   },
 });
+
+// ─── SUB STYLES ─────────────────────────────────────────────────────────────
 
 const sub = StyleSheet.create({
   title: {
     fontFamily: "Sora_700Bold",
-    fontSize: 17,
+    fontSize: 18,
     color: "#fff",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   desc: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 11,
+    fontSize: 12,
     color: "#555",
-    lineHeight: 17,
     marginBottom: 28,
+    lineHeight: 18,
   },
-
-  // Pincode
+  userCard: {
+    backgroundColor: "#0d0d0d",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  userAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.accentGreen + "20",
+    borderWidth: 2,
+    borderColor: Colors.accentGreen + "40",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  userAvatarText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 20,
+    color: Colors.accentGreen,
+    fontWeight: "700",
+  },
+  userName: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 17,
+    color: "#fff",
+    marginBottom: 4,
+  },
+  userSkill: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 12,
+    color: "#555",
+    marginBottom: 12,
+  },
+  rateBadge: {
+    backgroundColor: Colors.accent + "15",
+    borderWidth: 1,
+    borderColor: Colors.accent + "30",
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 14,
+  },
+  rateText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 14,
+    color: Colors.accent,
+    fontWeight: "700",
+  },
+  confirmDesc: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 12,
+    color: "#444",
+    textAlign: "center",
+    lineHeight: 18,
+    marginBottom: 20,
+  },
+  primaryBtn: {
+    backgroundColor: Colors.accent,
+    borderRadius: 14,
+    padding: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 10,
+  },
+  primaryBtnDisabled: {
+    opacity: 0.35,
+  },
+  primaryBtnText: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 15,
+    color: "#fff",
+  },
+  ghostBtn: {
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    borderRadius: 14,
+    padding: 14,
+    alignItems: "center",
+  },
+  ghostBtnText: {
+    fontFamily: "Sora_400Regular",
+    fontSize: 13,
+    color: "#555",
+  },
   pinRow: {
     flexDirection: "row",
+    gap: 10,
     justifyContent: "center",
-    gap: 12,
-    marginBottom: 32,
+    marginBottom: 28,
   },
   pinDigit: {
-    width: 36,
+    width: 40,
     height: 48,
-    borderBottomWidth: 2,
-    borderBottomColor: "#2a2a2a",
+    borderRadius: 10,
+    backgroundColor: "#0d0d0d",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
     alignItems: "center",
     justifyContent: "center",
   },
   pinDigitFilled: {
-    borderBottomColor: Colors.accent,
+    borderColor: Colors.accent + "60",
+    backgroundColor: Colors.accent + "10",
   },
   pinDigitText: {
+    color: Colors.accent,
+    fontSize: 20,
     fontFamily: "DMMono_500Medium",
-    fontSize: 24,
-    color: "#fff",
   },
   keypadGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 20,
-    justifyContent: "space-between",
-    rowGap: 10,
+    gap: 10,
+    marginBottom: 24,
   },
   keypadBtn: {
-    width: "31%",
-    aspectRatio: 1.7,
+    width: "30%",
+    aspectRatio: 1.6,
     backgroundColor: "#0d0d0d",
     borderWidth: 1,
     borderColor: "#1e1e1e",
@@ -716,83 +887,22 @@ const sub = StyleSheet.create({
     borderColor: "transparent",
   },
   keypadBtnPressed: {
-    backgroundColor: Colors.accent + "18",
-    borderColor: Colors.accent + "40",
+    backgroundColor: Colors.accent + "15",
+    borderColor: Colors.accent + "30",
   },
   keypadBtnText: {
     fontFamily: "DMMono_500Medium",
-    fontSize: 22,
+    fontSize: 20,
     color: "#fff",
   },
-
-  // Confirm
-  userCard: {
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 20,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 20,
-  },
-  userAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.accent + "18",
-    borderWidth: 2,
-    borderColor: Colors.accent + "40",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  userAvatarText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 18,
-    color: Colors.accent,
-  },
-  userName: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 18,
-    color: "#fff",
-  },
-  userSkill: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#555",
-  },
-  rateBadge: {
-    backgroundColor: Colors.accent + "12",
-    borderWidth: 1,
-    borderColor: Colors.accent + "28",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginTop: 8,
-  },
-  rateText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 15,
-    color: Colors.accent,
-  },
-  confirmDesc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    lineHeight: 17,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
-  // QR viewfinder
   viewfinder: {
     width: "100%",
     aspectRatio: 1,
-    backgroundColor: "#090909",
     borderRadius: 20,
-    marginBottom: 16,
+    backgroundColor: "#0a0a0a",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    marginBottom: 20,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -802,76 +912,68 @@ const sub = StyleSheet.create({
     position: "absolute",
     width: 28,
     height: 28,
-    borderRadius: 2,
+    borderColor: Colors.accent,
   },
   scanLine: {
     position: "absolute",
-    left: "8%",
-    right: "8%",
+    left: "10%",
+    right: "10%",
     height: 2,
-    backgroundColor: Colors.accent,
-    opacity: 0.85,
+    backgroundColor: Colors.accent + "80",
+    borderRadius: 1,
   },
   viewfinderLabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#282828",
-    letterSpacing: 0.5,
+    color: "#333",
+    textAlign: "center",
   },
-
-  // NFC
   nfcWrap: {
+    width: 180,
+    height: 180,
+    alignSelf: "center",
     alignItems: "center",
     justifyContent: "center",
-    height: 200,
-    marginVertical: 8,
+    marginBottom: 24,
+    position: "relative",
   },
   nfcIcon: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    backgroundColor: Colors.accent + "18",
-    borderWidth: 2,
-    borderColor: Colors.accent + "40",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.accent + "15",
+    borderWidth: 1,
+    borderColor: Colors.accent + "30",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
   },
   statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    gap: 8,
+    justifyContent: "center",
     marginBottom: 20,
   },
   statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.accentGreen,
-    flexShrink: 0,
+    backgroundColor: Colors.accent,
   },
   statusText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 12,
-    color: "#555",
+    color: "#444",
   },
-
-  // Link
   linkRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#0d0d0d",
     borderWidth: 1,
-    borderColor: "#1a1a1a",
+    borderColor: "#1e1e1e",
     borderRadius: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 14,
     marginBottom: 20,
   },
@@ -880,39 +982,5 @@ const sub = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 13,
     color: "#fff",
-  },
-
-  // Shared buttons
-  primaryBtn: {
-    backgroundColor: Colors.accent,
-    borderRadius: 14,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  primaryBtnDisabled: {
-    backgroundColor: "#1a1a1a",
-  },
-  primaryBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-    color: "#fff",
-  },
-  ghostBtn: {
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  ghostBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#555",
   },
 });
