@@ -1,12 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import Colors from "@/constants/colors";
 import { Contract } from "@/context/ContractsContext";
 
 type Props = {
   contract: Contract;
+  onPress?: () => void;
 };
 
 function formatDuration(startedAt: number, endedAt?: number) {
@@ -19,12 +20,12 @@ function formatDuration(startedAt: number, endedAt?: number) {
   return `${m}min`;
 }
 
-export function HistoryCard({ contract }: Props) {
+export function HistoryCard({ contract, onPress }: Props) {
   const isHiring = contract.role === "hiring";
   const accentColor = isHiring ? Colors.accent : Colors.accentGreen;
 
   return (
-    <View style={styles.card}>
+    <Pressable onPress={onPress} style={styles.card}>
       <View style={[styles.avatar, { backgroundColor: "#161616" }]}>
         <Text style={styles.avatarText}>{contract.person.initials}</Text>
       </View>
@@ -40,7 +41,7 @@ export function HistoryCard({ contract }: Props) {
           {isHiring ? "pago" : "recebido"}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

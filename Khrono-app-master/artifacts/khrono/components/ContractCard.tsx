@@ -15,6 +15,7 @@ import { Contract } from "@/context/ContractsContext";
 type Props = {
   contract: Contract;
   onStop: (id: string) => void;
+  onPress?: () => void;
 };
 
 function formatElapsed(ms: number) {
@@ -49,7 +50,7 @@ function PulseIndicator({ color }: { color: string }) {
   );
 }
 
-export function ContractCard({ contract, onStop }: Props) {
+export function ContractCard({ contract, onStop, onPress }: Props) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -84,7 +85,8 @@ export function ContractCard({ contract, onStop }: Props) {
   const displayColor = quaseAcabando ? alertColor : accentColor;
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
       style={[
         styles.card,
         {
@@ -201,7 +203,7 @@ export function ContractCard({ contract, onStop }: Props) {
           </Text>
         </Pressable>
       </Animated.View>
-    </View>
+    </Pressable>
   );
 }
 

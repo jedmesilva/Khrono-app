@@ -140,7 +140,12 @@ export default function HomeScreen() {
             <Text style={styles.sectionLabel}>EM ANDAMENTO</Text>
             <View style={styles.contractList}>
               {activeContracts.map((c) => (
-                <ContractCard key={c.id} contract={c} onStop={handleStop} />
+                <ContractCard
+                  key={c.id}
+                  contract={c}
+                  onStop={handleStop}
+                  onPress={() => router.push(`/contract-detail/${c.id}` as any)}
+                />
               ))}
             </View>
           </View>
@@ -168,7 +173,11 @@ export default function HomeScreen() {
             </View>
             <View style={styles.historyList}>
               {history.slice(0, 3).map((h) => (
-                <HistoryCard key={h.id} contract={h} />
+                <HistoryCard
+                  key={h.id}
+                  contract={h}
+                  onPress={() => router.push(`/contract-detail/${h.id}` as any)}
+                />
               ))}
             </View>
           </View>
