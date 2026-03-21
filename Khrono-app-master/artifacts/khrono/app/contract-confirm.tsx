@@ -172,7 +172,6 @@ export default function ContractConfirmScreen() {
       tools: selectedTools,
     });
     setActiveContractId(id);
-    setPendingProvider(null);
     router.replace(`/contract-detail/${id}` as any);
   };
 
