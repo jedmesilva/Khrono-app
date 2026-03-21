@@ -116,11 +116,20 @@ export default function ContractDetailScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-          <Feather name="arrow-left" size={20} color={Colors.accent} />
+      <View style={[styles.header, { justifyContent: "space-between" }]}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+            <Feather name="arrow-left" size={20} color={Colors.accent} />
+          </Pressable>
+          <Text style={styles.headerTitle}>K<Text style={{ color: Colors.accent }}>r</Text>ono</Text>
+        </View>
+        <Pressable
+          onPress={() => router.replace("/(tabs)" as any)}
+          style={styles.homeBtn}
+          hitSlop={12}
+        >
+          <Feather name="home" size={18} color="#444" />
         </Pressable>
-        <Text style={styles.headerTitle}>K<Text style={{ color: Colors.accent }}>r</Text>ono</Text>
       </View>
 
       <ScrollView
@@ -431,6 +440,9 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   backBtn: {
+    padding: 4,
+  },
+  homeBtn: {
     padding: 4,
   },
   headerTitle: {

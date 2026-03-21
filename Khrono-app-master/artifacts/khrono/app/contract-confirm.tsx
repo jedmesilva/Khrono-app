@@ -172,8 +172,8 @@ export default function ContractConfirmScreen() {
       tools: selectedTools,
     });
     setActiveContractId(id);
-    setSegundos(0);
-    setEtapa("ativo");
+    setPendingProvider(null);
+    router.replace(`/contract-detail/${id}` as any);
   };
 
   const encerrar = () => {
