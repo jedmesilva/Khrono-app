@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,14 +10,16 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
 import { HistoryCard } from "@/components/HistoryCard";
+import { PixWithdrawModal } from "@/components/PixWithdrawModal";
+import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const { history } = useContracts();
+  const [pixModalVisible, setPixModalVisible] = useState(false);
 
   const totalReceived = history
     .filter((h) => h.role === "hired")
@@ -53,8 +56,21 @@ export default function WalletScreen() {
         {/* Balance card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>SALDO DISPONÍVEL</Text>
-          <Text style={styles.balanceAmount}>R$ 0,00</Text>
-          <Text style={styles.balanceSub}>Integração de pagamento em breve</Text>
+          <Text style={styles.balanceAmount}>
+            R$ {totalReceived.toFixed(2).replace(".", ",")}
+          </Text>
+
+          {/* Pix withdraw button */}
+          <Pressable
+            style={styles.pixBtn}
+            onPress={() => setPixModalVisible(true)}
+          >
+            <View style={styles.pixIconWrap}>
+              <Feather name="zap" size={14} color={Colors.accentGreen} />
+            </View>
+            <Text style={styles.pixBtnText}>Sacar via Pix</Text>
+            <Feather name="chevron-right" size={14} color={Colors.accentGreen + "80"} />
+          </Pressable>
         </View>
 
         {/* Stats */}
@@ -95,6 +111,12 @@ export default function WalletScreen() {
           </View>
         )}
       </ScrollView>
+
+      <PixWithdrawModal
+        visible={pixModalVisible}
+        balance={totalReceived}
+        onClose={() => setPixModalVisible(false)}
+      />
     </View>
   );
 }
@@ -130,6 +152,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: "center",
     marginBottom: 16,
+    gap: 8,
   },
   balanceLabel: {
     fontFamily: "DMMono_400Regular",
@@ -137,7 +160,6 @@ const styles = StyleSheet.create({
     color: "#888",
     letterSpacing: 2,
     textTransform: "uppercase",
-    marginBottom: 8,
   },
   balanceAmount: {
     fontFamily: "DMMono_500Medium",
@@ -146,11 +168,30 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 8,
   },
-  balanceSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    letterSpacing: 0.3,
+  pixBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: Colors.accentGreen + "12",
+    borderWidth: 1,
+    borderColor: Colors.accentGreen + "30",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  pixIconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: Colors.accentGreen + "20",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pixBtnText: {
+    flex: 1,
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: Colors.accentGreen,
   },
   statsRow: {
     flexDirection: "row",
