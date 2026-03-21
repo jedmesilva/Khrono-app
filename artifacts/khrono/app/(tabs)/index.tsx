@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   Platform,
@@ -15,14 +15,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ContractCard } from "@/components/ContractCard";
 import { HistoryCard } from "@/components/HistoryCard";
+import { MenuSheet } from "@/components/MenuSheet";
+import { NotificationsSheet } from "@/components/NotificationsSheet";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
+
+const UNREAD_COUNT = 2;
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { activeContracts, history, endContract } = useContracts();
   const isWeb = Platform.OS === "web";
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const totalAccruing = activeContracts
     .filter((c) => c.role === "hiring")
@@ -64,6 +70,35 @@ export default function HomeScreen() {
           <Text style={styles.logo}>
             K<Text style={{ color: Colors.accent }}>r</Text>ono
           </Text>
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync();
+                setNotifOpen(true);
+                setMenuOpen(false);
+              }}
+              style={styles.headerBtn}
+              hitSlop={8}
+            >
+              <Feather name="bell" size={20} color="#555" />
+              {UNREAD_COUNT > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{UNREAD_COUNT}</Text>
+                </View>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync();
+                setMenuOpen(true);
+                setNotifOpen(false);
+              }}
+              style={styles.headerBtn}
+              hitSlop={8}
+            >
+              <Feather name="menu" size={20} color="#555" />
+            </Pressable>
+          </View>
         </View>
 
         {/* Summary bar */}
@@ -125,6 +160,9 @@ export default function HomeScreen() {
 
         <View style={{ height: isWeb ? 34 + 84 + 20 : 100 }} />
       </ScrollView>
+
+      <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
+      <MenuSheet visible={menuOpen} onClose={() => setMenuOpen(false)} />
     </View>
   );
 }
@@ -150,6 +188,34 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#fff",
     letterSpacing: -0.5,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  headerBtn: {
+    padding: 8,
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: Colors.accent,
+    borderWidth: 2,
+    borderColor: Colors.background,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 8,
+    color: "#fff",
+    fontWeight: "700",
   },
   pinBadge: {
     flexDirection: "row",
