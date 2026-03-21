@@ -116,8 +116,8 @@ export default function HomeScreen() {
           <StatsBar
             style={styles.summaryBar}
             items={[
-              { label: "ATIVOS", value: activeContracts.length },
-              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: Colors.accent, align: "center" },
+              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: Colors.accent },
+              { label: "ATIVOS", value: activeContracts.length, align: "center" },
               { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: Colors.accentGreen, align: "flex-end" },
             ]}
           />
