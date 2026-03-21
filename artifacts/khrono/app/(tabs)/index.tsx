@@ -1,5 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import {
   Alert,
@@ -19,6 +20,7 @@ import { useContracts } from "@/context/ContractsContext";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { activeContracts, history, endContract } = useContracts();
   const isWeb = Platform.OS === "web";
 
@@ -109,7 +111,7 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionLabel}>ENCERRADOS</Text>
-              <Pressable>
+              <Pressable onPress={() => router.push("/history")}>
                 <Text style={styles.sectionLink}>Ver tudo</Text>
               </Pressable>
             </View>
