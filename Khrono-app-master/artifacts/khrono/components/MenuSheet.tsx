@@ -1,8 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   Modal,
   Pressable,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
 
 type MenuItem = {
@@ -30,6 +30,7 @@ type Props = {
 
 export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const [logoutDialog, setLogoutDialog] = useState(false);
 
   const menuItems: MenuItem[] = [
     {
@@ -78,94 +79,108 @@ export function MenuSheet({ visible, onClose }: Props) {
       danger: true,
       onPress: () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        onClose();
-        setTimeout(() => {
-          Alert.alert("Sair da conta?", "Você precisará fazer login novamente.", [
-            { text: "Cancelar", style: "cancel" },
-            { text: "Sair", style: "destructive", onPress: () => {} },
-          ]);
-        }, 300);
+        setLogoutDialog(true);
       },
     },
   ];
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
+    <>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent
+        onRequestClose={onClose}
+      >
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={styles.overlay} />
+        </TouchableWithoutFeedback>
 
-      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.handle} />
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+          <View style={styles.handle} />
 
-        {/* User info row */}
-        <View style={styles.userRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>EU</Text>
+          {/* User info row */}
+          <View style={styles.userRow}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>EU</Text>
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>Minha conta</Text>
+              <Text style={styles.userSub}>ID #K-00142</Text>
+            </View>
+            <View style={styles.verifiedBadge}>
+              <Feather name="check" size={10} color={Colors.accentGreen} />
+              <Text style={styles.verifiedText}>verificado</Text>
+            </View>
           </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>Minha conta</Text>
-            <Text style={styles.userSub}>ID #K-00142</Text>
-          </View>
-          <View style={styles.verifiedBadge}>
-            <Feather name="check" size={10} color={Colors.accentGreen} />
-            <Text style={styles.verifiedText}>verificado</Text>
-          </View>
-        </View>
 
-        <View style={styles.divider} />
+          <View style={styles.divider} />
 
-        {/* Menu items */}
-        <View style={styles.itemsContainer}>
-          {menuItems.map((item, i) => (
-            <Pressable
-              key={item.id}
-              style={({ pressed }) => [
-                styles.menuItem,
-                pressed && styles.menuItemPressed,
-              ]}
-              onPress={item.onPress}
-            >
-              <View
-                style={[
-                  styles.menuIconWrap,
-                  item.danger && { backgroundColor: "#ff3b3015" },
+          {/* Menu items */}
+          <View style={styles.itemsContainer}>
+            {menuItems.map((item) => (
+              <Pressable
+                key={item.id}
+                style={({ pressed }) => [
+                  styles.menuItem,
+                  pressed && styles.menuItemPressed,
                 ]}
+                onPress={item.onPress}
               >
-                <Feather
-                  name={item.icon}
-                  size={16}
-                  color={item.danger ? "#ff3b30" : "#555"}
-                />
-              </View>
-              <View style={styles.menuTextWrap}>
-                <Text
+                <View
                   style={[
-                    styles.menuLabel,
-                    item.danger && { color: "#ff3b30" },
+                    styles.menuIconWrap,
+                    item.danger && { backgroundColor: "#ff3b3015" },
                   ]}
                 >
-                  {item.label}
-                </Text>
-                {item.sublabel && (
-                  <Text style={styles.menuSublabel}>{item.sublabel}</Text>
+                  <Feather
+                    name={item.icon}
+                    size={16}
+                    color={item.danger ? "#ff3b30" : "#555"}
+                  />
+                </View>
+                <View style={styles.menuTextWrap}>
+                  <Text
+                    style={[
+                      styles.menuLabel,
+                      item.danger && { color: "#ff3b30" },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  {item.sublabel && (
+                    <Text style={styles.menuSublabel}>{item.sublabel}</Text>
+                  )}
+                </View>
+                {!item.danger && (
+                  <Feather name="chevron-right" size={14} color="#2a2a2a" />
                 )}
-              </View>
-              {!item.danger && (
-                <Feather name="chevron-right" size={14} color="#2a2a2a" />
-              )}
-            </Pressable>
-          ))}
-        </View>
+              </Pressable>
+            ))}
+          </View>
 
-        <Text style={styles.version}>Khrono v1.0.0</Text>
-      </View>
-    </Modal>
+          <Text style={styles.version}>Khrono v1.0.0</Text>
+        </View>
+      </Modal>
+
+      <AppDialog
+        visible={logoutDialog}
+        title="Sair da conta?"
+        message="Você precisará fazer login novamente."
+        buttons={[
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Sair",
+            style: "destructive",
+            onPress: () => {
+              setLogoutDialog(false);
+              onClose();
+            },
+          },
+        ]}
+        onDismiss={() => setLogoutDialog(false)}
+      />
+    </>
   );
 }
 

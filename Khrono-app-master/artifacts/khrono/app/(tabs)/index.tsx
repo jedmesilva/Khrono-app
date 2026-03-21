@@ -3,7 +3,6 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { ContractCard } from "@/components/ContractCard";
 import { HistoryCard } from "@/components/HistoryCard";
 import { MenuSheet } from "@/components/MenuSheet";
@@ -20,6 +20,8 @@ import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
+
+type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
 const UNREAD_COUNT = 2;
 
@@ -30,6 +32,7 @@ export default function HomeScreen() {
   const isWeb = Platform.OS === "web";
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dialog, setDialog] = useState<DialogState>(null);
 
   const now = Date.now();
 
@@ -50,14 +53,14 @@ export default function HomeScreen() {
   const handleStop = useCallback(
     (id: string) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      Alert.alert("Encerrar contrato?", "O valor será calculado e registrado no histórico.", [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Encerrar",
-          style: "destructive",
-          onPress: () => endContract(id),
-        },
-      ]);
+      setDialog({
+        title: "Encerrar contrato?",
+        message: "O valor será calculado e registrado no histórico.",
+        buttons: [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Encerrar", style: "destructive", onPress: () => endContract(id) },
+        ],
+      });
     },
     [endContract]
   );
@@ -177,6 +180,13 @@ export default function HomeScreen() {
 
       <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
       <MenuSheet visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AppDialog
+        visible={!!dialog}
+        title={dialog?.title ?? ""}
+        message={dialog?.message}
+        buttons={dialog?.buttons}
+        onDismiss={() => setDialog(null)}
+      />
     </View>
   );
 }

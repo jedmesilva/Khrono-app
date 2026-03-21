@@ -1,7 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -11,7 +10,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
+
+type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
 const MY_PROFILE = {
   name: "Jedme Silva",
@@ -184,6 +186,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [dialog, setDialog] = useState<DialogState>(null);
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
   const avgRating =
@@ -278,7 +281,7 @@ export default function ProfileScreen() {
               </View>
               <Pressable
                 style={styles.addBtn}
-                onPress={() => Alert.alert("Em breve", "Adicionar skills em breve.")}
+                onPress={() => setDialog({ title: "Em breve", message: "Adicionar skills em breve." })}
               >
                 <Feather name="plus" size={11} color="#555" />
                 <Text style={styles.addBtnText}>adicionar</Text>
@@ -338,7 +341,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Tools</Text>
             <Pressable
               style={styles.addBtn}
-              onPress={() => Alert.alert("Em breve", "Adicionar tools em breve.")}
+              onPress={() => setDialog({ title: "Em breve", message: "Adicionar tools em breve." })}
             >
               <Feather name="plus" size={11} color="#555" />
               <Text style={styles.addBtnText}>adicionar</Text>
@@ -391,6 +394,13 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
+      <AppDialog
+        visible={!!dialog}
+        title={dialog?.title ?? ""}
+        message={dialog?.message}
+        buttons={dialog?.buttons}
+        onDismiss={() => setDialog(null)}
+      />
     </View>
   );
 }

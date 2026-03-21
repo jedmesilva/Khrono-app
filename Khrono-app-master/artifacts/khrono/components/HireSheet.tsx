@@ -3,7 +3,6 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   KeyboardAvoidingView,
   Modal,
@@ -17,8 +16,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
 import { useConfirmation, ProviderData } from "@/context/ConfirmationContext";
+
+type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
 const MOCK_PROVIDERS: Record<string, ProviderData> = {
   "1234": {
@@ -103,7 +105,7 @@ const KEYPAD = ["1","2","3","4","5","6","7","8","9","","0","del"];
 
 // ─── PINCODE ────────────────────────────────────────────────────────────────
 
-function PincodeContent({ onFoundProvider }: { onFoundProvider: (p: ProviderData) => void }) {
+function PincodeContent({ onFoundProvider, onShowDialog }: { onFoundProvider: (p: ProviderData) => void; onShowDialog: (d: DialogState) => void }) {
   const [pin, setPin] = useState("");
   const [found, setFound] = useState<ProviderData | null>(null);
 
@@ -122,7 +124,7 @@ function PincodeContent({ onFoundProvider }: { onFoundProvider: (p: ProviderData
       setFound(provider);
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("PIN não encontrado", "Verifique o código e tente novamente.");
+      onShowDialog({ title: "PIN não encontrado", message: "Verifique o código e tente novamente." });
     }
   };
 
@@ -206,7 +208,7 @@ function PincodeContent({ onFoundProvider }: { onFoundProvider: (p: ProviderData
 
 // ─── QRCODE ─────────────────────────────────────────────────────────────────
 
-function QrcodeContent() {
+function QrcodeContent({ onShowDialog }: { onShowDialog: (d: DialogState) => void }) {
   const scanLine = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -240,7 +242,7 @@ function QrcodeContent() {
         <Text style={sub.viewfinderLabel}>câmera indisponível em preview</Text>
       </View>
 
-      <Pressable style={sub.ghostBtn} onPress={() => Alert.alert("Dica", "Use o PINCODE para conectar manualmente.")}>
+      <Pressable style={sub.ghostBtn} onPress={() => onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar manualmente." })}>
         <Text style={sub.ghostBtnText}>Inserir código manualmente</Text>
       </Pressable>
     </View>
@@ -302,7 +304,7 @@ function NfcContent() {
 
 // ─── LINK ───────────────────────────────────────────────────────────────────
 
-function LinkContent() {
+function LinkContent({ onShowDialog }: { onShowDialog: (d: DialogState) => void }) {
   const [link, setLink] = useState("");
 
   return (
@@ -331,7 +333,7 @@ function LinkContent() {
       <Pressable
         style={[sub.primaryBtn, link.length === 0 && sub.primaryBtnDisabled]}
         disabled={link.length === 0}
-        onPress={() => Alert.alert("Em breve", "Conexão via link estará disponível em breve.")}
+        onPress={() => onShowDialog({ title: "Em breve", message: "Conexão via link estará disponível em breve." })}
       >
         <Text style={sub.primaryBtnText}>Conectar</Text>
       </Pressable>
@@ -345,10 +347,12 @@ function SubSheet({
   tipo,
   onClose,
   onFoundProvider,
+  onShowDialog,
 }: {
   tipo: HireMethod;
   onClose: () => void;
   onFoundProvider: (p: ProviderData) => void;
+  onShowDialog: (d: DialogState) => void;
 }) {
   const insets = useSafeAreaInsets();
   const isIOS = Platform.OS === "ios";
@@ -378,10 +382,10 @@ function SubSheet({
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {tipo === "PINCODE" && <PincodeContent onFoundProvider={onFoundProvider} />}
-            {tipo === "QRCODE"  && <QrcodeContent />}
+            {tipo === "PINCODE" && <PincodeContent onFoundProvider={onFoundProvider} onShowDialog={onShowDialog} />}
+            {tipo === "QRCODE"  && <QrcodeContent onShowDialog={onShowDialog} />}
             {tipo === "NFC"     && <NfcContent />}
-            {tipo === "LINK"    && <LinkContent />}
+            {tipo === "LINK"    && <LinkContent onShowDialog={onShowDialog} />}
             <View style={{ height: 8 }} />
           </ScrollView>
         </View>
@@ -398,6 +402,7 @@ export function HireSheet({ open, onClose }: Props) {
   const { setPendingProvider } = useConfirmation();
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [disponivel, setDisponivel] = useState(false);
+  const [dialog, setDialog] = useState<DialogState>(null);
 
   const handleClose = () => {
     setSubMode(null);
@@ -425,6 +430,7 @@ export function HireSheet({ open, onClose }: Props) {
   ];
 
   return (
+  <>
     <Modal visible={open} transparent animationType="slide" onRequestClose={handleClose}>
       <View style={styles.modalWrap}>
         <Pressable style={StyleSheet.absoluteFillObject} onPress={handleClose} />
@@ -438,7 +444,7 @@ export function HireSheet({ open, onClose }: Props) {
             {/* AI card */}
             <Pressable
               style={styles.aiCard}
-              onPress={() => Alert.alert("IA em breve", "A busca inteligente estará disponível em breve.")}
+              onPress={() => setDialog({ title: "IA em breve", message: "A busca inteligente estará disponível em breve." })}
             >
               <View style={styles.aiIconWrap}>
                 <Feather name="zap" size={20} color={Colors.accent} />
@@ -501,9 +507,9 @@ export function HireSheet({ open, onClose }: Props) {
                   onPress={() => {
                     if (!disponivel) return;
                     if (opt.pin) {
-                      Alert.alert("Seu PIN", `Informe o código  ${opt.pin}  para quem deseja te contratar.`);
+                      setDialog({ title: "Seu PIN", message: `Informe o código  ${opt.pin}  para quem deseja te contratar.` });
                     } else {
-                      Alert.alert("Em breve", "Esta funcionalidade estará disponível em breve.");
+                      setDialog({ title: "Em breve", message: "Esta funcionalidade estará disponível em breve." });
                     }
                   }}
                 >
@@ -530,9 +536,19 @@ export function HireSheet({ open, onClose }: Props) {
           tipo={subMode}
           onClose={() => setSubMode(null)}
           onFoundProvider={handleFoundProvider}
+          onShowDialog={setDialog}
         />
       )}
     </Modal>
+
+    <AppDialog
+      visible={!!dialog}
+      title={dialog?.title ?? ""}
+      message={dialog?.message}
+      buttons={dialog?.buttons}
+      onDismiss={() => setDialog(null)}
+    />
+  </>
   );
 }
 
