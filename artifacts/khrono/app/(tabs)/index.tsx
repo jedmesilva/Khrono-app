@@ -30,10 +30,19 @@ export default function HomeScreen() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const totalAccruing = activeContracts
+  const now = Date.now();
+
+  const totalPagar = activeContracts
     .filter((c) => c.role === "hiring")
     .reduce((sum, c) => {
-      const hours = (Date.now() - c.startedAt) / 1000 / 3600;
+      const hours = (now - c.startedAt) / 1000 / 3600;
+      return sum + hours * c.ratePerHour;
+    }, 0);
+
+  const totalReceber = activeContracts
+    .filter((c) => c.role === "hired")
+    .reduce((sum, c) => {
+      const hours = (now - c.startedAt) / 1000 / 3600;
       return sum + hours * c.ratePerHour;
     }, 0);
 
@@ -109,10 +118,17 @@ export default function HomeScreen() {
               <Text style={styles.summaryValue}>{activeContracts.length}</Text>
             </View>
             <View style={styles.summaryDivider} />
-            <View style={[styles.summaryItem, { alignItems: "flex-end" }]}>
-              <Text style={styles.summaryLabel}>ACUMULADO</Text>
+            <View style={[styles.summaryItem, { alignItems: "center" }]}>
+              <Text style={styles.summaryLabel}>A PAGAR</Text>
               <Text style={[styles.summaryValue, { color: Colors.accent }]}>
-                R${totalAccruing.toFixed(2)}
+                R${totalPagar.toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={[styles.summaryItem, { alignItems: "flex-end" }]}>
+              <Text style={styles.summaryLabel}>A RECEBER</Text>
+              <Text style={[styles.summaryValue, { color: Colors.accentGreen }]}>
+                R${totalReceber.toFixed(2)}
               </Text>
             </View>
           </View>
@@ -264,14 +280,14 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontFamily: "DMMono_500Medium",
-    fontSize: 20,
+    fontSize: 17,
     color: "#fff",
   },
   summaryDivider: {
     width: 1,
     height: 30,
     backgroundColor: "#1a1a1a",
-    marginHorizontal: 16,
+    marginHorizontal: 10,
   },
   section: {
     marginBottom: 28,
