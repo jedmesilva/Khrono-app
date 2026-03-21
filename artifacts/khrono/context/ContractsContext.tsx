@@ -10,6 +10,8 @@ import React, {
 export type Contract = {
   id: string;
   role: "hired" | "hiring";
+  tipo: "cronometro" | "timer";
+  duracaoTotal?: number;
   person: {
     name: string;
     initials: string;
@@ -38,6 +40,7 @@ const INITIAL_ACTIVE: Contract[] = [
   {
     id: "1",
     role: "hiring",
+    tipo: "cronometro",
     person: { name: "Felipe Andrade", initials: "FA", skill: "Montador de Móveis" },
     ratePerHour: 60,
     startedAt: Date.now() - 1000 * 60 * 47,
@@ -46,6 +49,8 @@ const INITIAL_ACTIVE: Contract[] = [
   {
     id: "2",
     role: "hired",
+    tipo: "timer",
+    duracaoTotal: 1000 * 60 * 60,
     person: { name: "Bruno Souza", initials: "BS", skill: "Consultoria de Redes Sociais" },
     ratePerHour: 50,
     startedAt: Date.now() - 1000 * 60 * 23,
@@ -57,6 +62,7 @@ const INITIAL_HISTORY: Contract[] = [
   {
     id: "h1",
     role: "hiring",
+    tipo: "cronometro",
     person: { name: "Rafael Lima", initials: "RL", skill: "Eletricista" },
     ratePerHour: 60,
     startedAt: Date.now() - 1000 * 60 * 60 * 3,
@@ -67,6 +73,8 @@ const INITIAL_HISTORY: Contract[] = [
   {
     id: "h2",
     role: "hired",
+    tipo: "timer",
+    duracaoTotal: 1000 * 60 * 90,
     person: { name: "Ana Pereira", initials: "AP", skill: "Cuidadora de Crianças" },
     ratePerHour: 50,
     startedAt: Date.now() - 1000 * 60 * 60 * 4,
@@ -77,6 +85,7 @@ const INITIAL_HISTORY: Contract[] = [
   {
     id: "h3",
     role: "hiring",
+    tipo: "cronometro",
     person: { name: "Mariana Costa", initials: "MC", skill: "Encanadora" },
     ratePerHour: 80,
     startedAt: Date.now() - 1000 * 60 * 60 * 24,

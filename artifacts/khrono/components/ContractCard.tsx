@@ -9,8 +9,6 @@ import {
   View,
 } from "react-native";
 
-const useNativeDriverSupported = Platform.OS !== "web";
-
 import Colors from "@/constants/colors";
 import { Contract } from "@/context/ContractsContext";
 
@@ -20,7 +18,7 @@ type Props = {
 };
 
 function formatElapsed(ms: number) {
-  const totalSecs = Math.floor(ms / 1000);
+  const totalSecs = Math.floor(Math.abs(ms) / 1000);
   const h = Math.floor(totalSecs / 3600);
   const m = Math.floor((totalSecs % 3600) / 60);
   const s = totalSecs % 60;
@@ -47,9 +45,7 @@ function PulseIndicator({ color }: { color: string }) {
   const opacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
 
   return (
-    <Animated.View
-      style={[styles.pulse, { backgroundColor: color, opacity }]}
-    />
+    <Animated.View style={[styles.pulse, { backgroundColor: color, opacity }]} />
   );
 }
 
@@ -62,8 +58,19 @@ export function ContractCard({ contract, onStop }: Props) {
   }, []);
 
   const isHiring = contract.role === "hiring";
+  const isTimer = contract.tipo === "timer";
   const accentColor = isHiring ? Colors.accent : Colors.accentGreen;
   const elapsed = now - contract.startedAt;
+
+  const restante = isTimer && contract.duracaoTotal
+    ? Math.max(0, contract.duracaoTotal - elapsed)
+    : null;
+  const progresso = isTimer && contract.duracaoTotal
+    ? Math.min(1, elapsed / contract.duracaoTotal)
+    : null;
+  const quaseAcabando = isTimer && restante !== null && restante < 1000 * 60 * 10;
+  const alertColor = "#ff4444";
+
   const stopScale = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
@@ -73,6 +80,8 @@ export function ContractCard({ contract, onStop }: Props) {
     ]).start();
     onStop(contract.id);
   };
+
+  const displayColor = quaseAcabando ? alertColor : accentColor;
 
   return (
     <View
@@ -84,20 +93,27 @@ export function ContractCard({ contract, onStop }: Props) {
         },
       ]}
     >
-      {/* Role badge */}
-      <View
-        style={[
-          styles.roleBadge,
-          {
-            backgroundColor: accentColor + "12",
-            borderColor: accentColor + "30",
-          },
-        ]}
-      >
-        <PulseIndicator color={accentColor} />
-        <Text style={[styles.roleText, { color: accentColor }]}>
-          {isHiring ? "VOCÊ CONTRATOU" : "VOCÊ FOI CONTRATADO"}
-        </Text>
+      {/* Badges row: role + tipo */}
+      <View style={styles.badgeRow}>
+        <View
+          style={[
+            styles.roleBadge,
+            {
+              backgroundColor: accentColor + "12",
+              borderColor: accentColor + "30",
+            },
+          ]}
+        >
+          <PulseIndicator color={displayColor} />
+          <Text style={[styles.roleText, { color: accentColor }]}>
+            {isHiring ? "VOCÊ CONTRATOU" : "VOCÊ FOI CONTRATADO"}
+          </Text>
+        </View>
+        <View style={styles.tipoBadge}>
+          <Text style={styles.tipoText}>
+            {isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
+          </Text>
+        </View>
       </View>
 
       {/* Person */}
@@ -118,19 +134,52 @@ export function ContractCard({ contract, onStop }: Props) {
         </View>
       </View>
 
-      {/* Timer row */}
-      <View style={styles.timerRow}>
+      {/* Timer mode: progress bar + countdown */}
+      {isTimer && contract.duracaoTotal ? (
         <View>
-          <Text style={styles.metaLabel}>TEMPO</Text>
-          <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
+          {/* Progress bar */}
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${(progresso ?? 0) * 100}%` as any,
+                  backgroundColor: quaseAcabando ? alertColor : accentColor,
+                },
+              ]}
+            />
+          </View>
+
+          <View style={styles.timerRow}>
+            <View>
+              <Text style={styles.metaLabel}>RESTANTE</Text>
+              <Text style={[styles.timerText, { color: quaseAcabando ? alertColor : "#fff" }]}>
+                {formatElapsed(restante ?? 0)}
+              </Text>
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={styles.metaLabel}>VALOR TOTAL</Text>
+              <Text style={[styles.valueText, { color: displayColor }]}>
+                R${formatValue(contract.duracaoTotal, contract.ratePerHour)}
+              </Text>
+            </View>
+          </View>
         </View>
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.metaLabel}>VALOR</Text>
-          <Text style={[styles.valueText, { color: accentColor }]}>
-            R${formatValue(elapsed, contract.ratePerHour)}
-          </Text>
+      ) : (
+        /* Cronometro mode: elapsed + accumulated */
+        <View style={styles.timerRow}>
+          <View>
+            <Text style={styles.metaLabel}>TEMPO</Text>
+            <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.metaLabel}>ACUMULADO</Text>
+            <Text style={[styles.valueText, { color: accentColor }]}>
+              R${formatValue(elapsed, contract.ratePerHour)}
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Rate */}
       <View style={styles.rateRow}>
@@ -142,12 +191,14 @@ export function ContractCard({ contract, onStop }: Props) {
         <Pressable
           style={[
             styles.stopBtn,
-            { borderColor: accentColor + "40" },
+            { borderColor: (quaseAcabando ? alertColor : accentColor) + "40" },
           ]}
           onPress={handlePress}
         >
-          <Feather name="square" size={12} color={accentColor} />
-          <Text style={[styles.stopText, { color: accentColor }]}>ENCERRAR</Text>
+          <Feather name="square" size={12} color={quaseAcabando ? alertColor : accentColor} />
+          <Text style={[styles.stopText, { color: quaseAcabando ? alertColor : accentColor }]}>
+            ENCERRAR
+          </Text>
         </Pressable>
       </Animated.View>
     </View>
@@ -159,7 +210,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     padding: 18,
-    gap: 0,
+  },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 14,
+    flexWrap: "wrap",
   },
   roleBadge: {
     flexDirection: "row",
@@ -169,8 +226,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    alignSelf: "flex-start",
-    marginBottom: 14,
+  },
+  tipoBadge: {
+    borderWidth: 1,
+    borderColor: "#ffffff10",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: "#ffffff05",
   },
   pulse: {
     width: 6,
@@ -181,6 +244,12 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
     letterSpacing: 1,
+  },
+  tipoText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 9,
+    letterSpacing: 1,
+    color: "#555",
   },
   personRow: {
     flexDirection: "row",
@@ -214,6 +283,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#666",
     marginTop: 2,
+  },
+  progressTrack: {
+    height: 4,
+    backgroundColor: "#1a1a1a",
+    borderRadius: 4,
+    overflow: "hidden",
+    marginBottom: 14,
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 4,
   },
   timerRow: {
     flexDirection: "row",
