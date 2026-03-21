@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { CardsProvider } from "@/context/CardsContext";
 import { ContractsProvider } from "@/context/ContractsContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 
@@ -66,9 +67,11 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <ContractsProvider>
-              <ConfirmationProvider>
-                <RootLayoutNav />
-              </ConfirmationProvider>
+              <CardsProvider>
+                <ConfirmationProvider>
+                  <RootLayoutNav />
+                </ConfirmationProvider>
+              </CardsProvider>
             </ContractsProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
