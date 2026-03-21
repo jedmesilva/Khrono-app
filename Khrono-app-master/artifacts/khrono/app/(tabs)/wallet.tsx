@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddCardModal } from "@/components/AddCardModal";
+import { AppDialog } from "@/components/AppDialog";
 import { HistoryCard } from "@/components/HistoryCard";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
@@ -49,6 +50,7 @@ export default function WalletScreen() {
   const [depositModalVisible, setDepositModalVisible] = useState(false);
   const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
   const [addCardModalVisible, setAddCardModalVisible] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<"todos" | "recebido" | "pago">("todos");
 
   const totalReceived = history
@@ -210,7 +212,7 @@ export default function WalletScreen() {
                   </Pressable>
                 )}
                 <Pressable
-                  onPress={() => removeCard(card.id)}
+                  onPress={() => setCardToDelete(card.id)}
                   hitSlop={10}
                   style={styles.removeBtn}
                 >
@@ -288,6 +290,22 @@ export default function WalletScreen() {
       <AddCardModal
         visible={addCardModalVisible}
         onClose={() => setAddCardModalVisible(false)}
+      />
+      <AppDialog
+        visible={cardToDelete !== null}
+        title="Remover cartão"
+        message="Tem certeza que deseja remover este cartão da sua carteira?"
+        onDismiss={() => setCardToDelete(null)}
+        buttons={[
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Remover",
+            style: "destructive",
+            onPress: () => {
+              if (cardToDelete) removeCard(cardToDelete);
+            },
+          },
+        ]}
       />
     </View>
   );
