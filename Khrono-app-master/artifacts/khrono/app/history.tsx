@@ -104,7 +104,12 @@ export default function HistoryScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <HistoryCard contract={item} />}
+          renderItem={({ item }) => (
+            <HistoryCard
+              contract={item}
+              onPress={() => router.push(`/contract-detail/${item.id}` as any)}
+            />
+          )}
           contentContainerStyle={[
             styles.list,
             { paddingBottom: isWeb ? 34 + 84 + 20 : 100 },
