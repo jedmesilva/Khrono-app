@@ -28,6 +28,7 @@ outputType = "webview"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd Khrono-app-master && PORT=22861 pnpm --filter @workspace/khrono run dev"
+waitForPort = 22861
 
 [[ports]]
 localPort = 22861
