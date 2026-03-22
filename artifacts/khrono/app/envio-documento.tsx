@@ -1,6 +1,5 @@
 import { Feather } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
-import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -71,24 +70,7 @@ export default function EnvioDocumentoScreen() {
 
   const config = DOC_CONFIG[selectedType];
 
-  async function pickFromGallery() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      quality: 0.9,
-    });
-
-    if (!result.canceled) {
-      const newFiles: DocFile[] = result.assets.map((a) => ({
-        uri: a.uri,
-        name: a.fileName ?? `imagem_${Date.now()}.jpg`,
-        mimeType: a.mimeType ?? "image/jpeg",
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
-    }
-  }
-
-  async function pickDocument() {
+  async function pickFile() {
     const result = await DocumentPicker.getDocumentAsync({
       type: ["image/*", "application/pdf"],
       multiple: true,
@@ -203,31 +185,16 @@ export default function EnvioDocumentoScreen() {
         {/* Adicionar arquivos */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>ADICIONAR ARQUIVOS</Text>
-          <View style={styles.addBtns}>
-            <Pressable style={styles.addBtn} onPress={pickFromGallery}>
-              <View style={styles.addBtnIcon}>
-                <Feather name="image" size={18} color="#666" />
-              </View>
-              <View style={styles.addBtnTexts}>
-                <Text style={styles.addBtnLabel}>Galeria</Text>
-                <Text style={styles.addBtnSub}>Fotos do dispositivo</Text>
-              </View>
-              <Feather name="chevron-right" size={16} color="#2a2a2a" />
-            </Pressable>
-
-            <View style={styles.addBtnDivider} />
-
-            <Pressable style={styles.addBtn} onPress={pickDocument}>
-              <View style={styles.addBtnIcon}>
-                <Feather name="paperclip" size={18} color="#666" />
-              </View>
-              <View style={styles.addBtnTexts}>
-                <Text style={styles.addBtnLabel}>Arquivos</Text>
-                <Text style={styles.addBtnSub}>PDF ou imagem do armazenamento</Text>
-              </View>
-              <Feather name="chevron-right" size={16} color="#2a2a2a" />
-            </Pressable>
-          </View>
+          <Pressable style={styles.addBtn} onPress={pickFile}>
+            <View style={styles.addBtnIcon}>
+              <Feather name="paperclip" size={18} color="#666" />
+            </View>
+            <View style={styles.addBtnTexts}>
+              <Text style={styles.addBtnLabel}>Selecionar arquivo</Text>
+              <Text style={styles.addBtnSub}>Imagem ou PDF do dispositivo</Text>
+            </View>
+            <Feather name="chevron-right" size={16} color="#2a2a2a" />
+          </Pressable>
         </View>
 
         {/* Instruções — no final */}
@@ -358,24 +325,16 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 
-  addBtns: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 14,
-    overflow: "hidden",
-  },
   addBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-  },
-  addBtnDivider: {
-    height: 1,
-    backgroundColor: "#111",
-    marginHorizontal: 16,
+    backgroundColor: "#0a0a0a",
+    borderWidth: 1,
+    borderColor: "#161616",
+    borderRadius: 14,
   },
   addBtnIcon: {
     width: 36,
