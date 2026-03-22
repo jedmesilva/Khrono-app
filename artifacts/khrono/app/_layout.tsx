@@ -66,15 +66,13 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <ContractsProvider>
-                <CardsProvider>
-                  <ConfirmationProvider>
-                    <RootLayoutNav />
-                  </ConfirmationProvider>
-                </CardsProvider>
-              </ContractsProvider>
-            </BottomSheetModalProvider>
+            <ContractsProvider>
+              <CardsProvider>
+                <ConfirmationProvider>
+                  <RootLayoutNav />
+                </ConfirmationProvider>
+              </CardsProvider>
+            </ContractsProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
       </ErrorBoundary>
