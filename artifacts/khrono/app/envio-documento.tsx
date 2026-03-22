@@ -2,9 +2,10 @@ import { Feather } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
   Platform,
   Pressable,
   ScrollView,
@@ -68,40 +69,65 @@ export default function EnvioDocumentoScreen() {
   const [selectedType, setSelectedType] = useState<DocType>("RG");
   const [files, setFiles] = useState<DocFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [picking, setPicking] = useState(false);
+
+  const pulseAnim = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    if (!picking) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.4, duration: 700, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [picking, pulseAnim]);
 
   const config = DOC_CONFIG[selectedType];
 
   async function pickFromGallery() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      quality: 0.9,
-    });
+    setPicking(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        quality: 0.9,
+      });
 
-    if (!result.canceled) {
-      const newFiles: DocFile[] = result.assets.map((a) => ({
-        uri: a.uri,
-        name: a.fileName ?? `imagem_${Date.now()}.jpg`,
-        mimeType: a.mimeType ?? "image/jpeg",
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
+      if (!result.canceled) {
+        const newFiles: DocFile[] = result.assets.map((a) => ({
+          uri: a.uri,
+          name: a.fileName ?? `imagem_${Date.now()}.jpg`,
+          mimeType: a.mimeType ?? "image/jpeg",
+        }));
+        setFiles((prev) => [...prev, ...newFiles]);
+      }
+    } finally {
+      setPicking(false);
     }
   }
 
   async function pickDocument() {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/*", "application/pdf"],
-      multiple: true,
-      copyToCacheDirectory: true,
-    });
+    setPicking(true);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        multiple: true,
+        copyToCacheDirectory: true,
+      });
 
-    if (!result.canceled) {
-      const newFiles: DocFile[] = result.assets.map((a) => ({
-        uri: a.uri,
-        name: a.name,
-        mimeType: a.mimeType ?? "application/octet-stream",
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
+      if (!result.canceled) {
+        const newFiles: DocFile[] = result.assets.map((a) => ({
+          uri: a.uri,
+          name: a.name,
+          mimeType: a.mimeType ?? "application/octet-stream",
+        }));
+        setFiles((prev) => [...prev, ...newFiles]);
+      }
+    } finally {
+      setPicking(false);
     }
   }
 
@@ -191,8 +217,29 @@ export default function EnvioDocumentoScreen() {
           </View>
         </View>
 
+        {/* Skeleton de carregamento */}
+        {picking && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>PROCESSANDO ARQUIVOS</Text>
+            <View style={styles.fileList}>
+              {[1, 2].map((i) => (
+                <Animated.View
+                  key={i}
+                  style={[styles.fileItem, styles.skeletonItem, { opacity: pulseAnim }]}
+                >
+                  <View style={[styles.fileIcon, styles.skeletonBlock]} />
+                  <View style={styles.skeletonLines}>
+                    <View style={[styles.skeletonLine, { width: "65%" }]} />
+                    <View style={[styles.skeletonLine, { width: "40%", marginTop: 6 }]} />
+                  </View>
+                </Animated.View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Arquivos adicionados */}
-        {files.length > 0 && (
+        {!picking && files.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>ARQUIVOS ADICIONADOS</Text>
             <View style={styles.fileList}>
@@ -220,14 +267,22 @@ export default function EnvioDocumentoScreen() {
             Aceitos: imagens (JPG, PNG) e documentos PDF
           </Text>
           <View style={styles.uploadBtns}>
-            <Pressable style={styles.uploadBtn} onPress={pickFromGallery}>
-              <Feather name="image" size={20} color="#555" />
-              <Text style={styles.uploadBtnLabel}>Galeria</Text>
+            <Pressable
+              style={[styles.uploadBtn, picking && styles.uploadBtnDisabled]}
+              onPress={pickFromGallery}
+              disabled={picking}
+            >
+              <Feather name="image" size={20} color={picking ? "#333" : "#555"} />
+              <Text style={[styles.uploadBtnLabel, picking && { color: "#333" }]}>Galeria</Text>
               <Text style={styles.uploadBtnSub}>JPG, PNG</Text>
             </Pressable>
-            <Pressable style={styles.uploadBtn} onPress={pickDocument}>
-              <Feather name="file-text" size={20} color="#555" />
-              <Text style={styles.uploadBtnLabel}>Arquivos</Text>
+            <Pressable
+              style={[styles.uploadBtn, picking && styles.uploadBtnDisabled]}
+              onPress={pickDocument}
+              disabled={picking}
+            >
+              <Feather name="file-text" size={20} color={picking ? "#333" : "#555"} />
+              <Text style={[styles.uploadBtnLabel, picking && { color: "#333" }]}>Arquivos</Text>
               <Text style={styles.uploadBtnSub}>PDF, imagens</Text>
             </Pressable>
           </View>
@@ -381,6 +436,27 @@ const styles = StyleSheet.create({
   },
   fileRemoveBtn: {
     padding: 4,
+  },
+
+  skeletonItem: {
+    backgroundColor: "#0d0d0d",
+    borderColor: "#161616",
+  },
+  skeletonBlock: {
+    backgroundColor: "#1a1a1a",
+    borderColor: "#222",
+  },
+  skeletonLines: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  skeletonLine: {
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: "#1e1e1e",
+  },
+  uploadBtnDisabled: {
+    opacity: 0.35,
   },
 
   uploadHint: {
