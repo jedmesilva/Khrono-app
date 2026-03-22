@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
 
@@ -63,6 +64,7 @@ export default function ContractDetailScreen() {
   const [suporteAberto, setSuporteAberto] = useState(false);
   const [faqAberto, setFaqAberto] = useState<number | null>(null);
   const [faqExpandido, setFaqExpandido] = useState(false);
+  const [confirmEncerrar, setConfirmEncerrar] = useState(false);
 
   useEffect(() => {
     if (!contract || contract.status !== "active") return;
@@ -109,6 +111,12 @@ export default function ContractDetailScreen() {
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
   const handleEncerrar = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setConfirmEncerrar(true);
+  };
+
+  const handleConfirmarEncerramento = () => {
+    setConfirmEncerrar(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     endContract(contract.id);
   };
@@ -422,6 +430,17 @@ export default function ContractDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      <AppDialog
+        visible={confirmEncerrar}
+        title="Encerrar contrato?"
+        message="O valor será calculado e registrado no histórico."
+        buttons={[
+          { text: "Cancelar", style: "cancel", onPress: () => setConfirmEncerrar(false) },
+          { text: "Encerrar", style: "destructive", onPress: handleConfirmarEncerramento },
+        ]}
+        onDismiss={() => setConfirmEncerrar(false)}
+      />
     </View>
   );
 }
