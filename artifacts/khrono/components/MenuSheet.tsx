@@ -1,12 +1,14 @@
 import { Feather } from "@expo/vector-icons";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
-  Modal,
   Pressable,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,45 +34,50 @@ export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const [logoutDialog, setLogoutDialog] = useState(false);
 
+  const snapPoints = useMemo(() => ["60%"], []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.7}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
+  if (!visible) return null;
+
   const menuItems: MenuItem[] = [
     {
       id: "docs",
       icon: "file-text",
       label: "Documentos",
       sublabel: "RG, CPF, comprovantes",
-      onPress: () => {
-        Haptics.selectionAsync();
-        onClose();
-      },
+      onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
       id: "personal",
       icon: "user",
       label: "Dados pessoais",
       sublabel: "Nome, endereço, contato",
-      onPress: () => {
-        Haptics.selectionAsync();
-        onClose();
-      },
+      onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
       id: "support",
       icon: "message-circle",
       label: "Suporte",
       sublabel: "Tire suas dúvidas",
-      onPress: () => {
-        Haptics.selectionAsync();
-        onClose();
-      },
+      onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
       id: "terms",
       icon: "shield",
       label: "Privacidade e termos",
-      onPress: () => {
-        Haptics.selectionAsync();
-        onClose();
-      },
+      onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
       id: "logout",
@@ -86,19 +93,19 @@ export function MenuSheet({ visible, onClose }: Props) {
 
   return (
     <>
-      <Modal
-        visible={visible}
-        animationType="slide"
-        transparent
-        onRequestClose={onClose}
+      <BottomSheet
+        index={0}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={styles.handle}
+        onClose={onClose}
       >
-        <TouchableWithoutFeedback onPress={onClose}>
-          <View style={styles.overlay} />
-        </TouchableWithoutFeedback>
-
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-          <View style={styles.handle} />
-
+        <BottomSheetScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          showsVerticalScrollIndicator={false}
+        >
           {/* User info row */}
           <View style={styles.userRow}>
             <View style={styles.avatar}>
@@ -140,12 +147,7 @@ export function MenuSheet({ visible, onClose }: Props) {
                   />
                 </View>
                 <View style={styles.menuTextWrap}>
-                  <Text
-                    style={[
-                      styles.menuLabel,
-                      item.danger && { color: "#ff3b30" },
-                    ]}
-                  >
+                  <Text style={[styles.menuLabel, item.danger && { color: "#ff3b30" }]}>
                     {item.label}
                   </Text>
                   {item.sublabel && (
@@ -160,15 +162,15 @@ export function MenuSheet({ visible, onClose }: Props) {
           </View>
 
           <Text style={styles.version}>Khrono v1.0.0</Text>
-        </View>
-      </Modal>
+        </BottomSheetScrollView>
+      </BottomSheet>
 
       <AppDialog
         visible={logoutDialog}
         title="Sair da conta?"
         message="Você precisará fazer login novamente."
         buttons={[
-          { text: "Cancelar", style: "cancel" },
+          { text: "Cancelar", style: "cancel", onPress: () => setLogoutDialog(false) },
           {
             text: "Sair",
             style: "destructive",
@@ -185,29 +187,20 @@ export function MenuSheet({ visible, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-  },
-  sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  sheetBackground: {
     backgroundColor: "#0d0d0d",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderTopWidth: 1,
     borderColor: "#1a1a1a",
-    paddingTop: 12,
   },
   handle: {
+    backgroundColor: "#2a2a2a",
     width: 36,
     height: 4,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
+  },
+  content: {
+    paddingTop: 8,
   },
   userRow: {
     flexDirection: "row",

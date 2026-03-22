@@ -1,12 +1,13 @@
 import { Feather } from "@expo/vector-icons";
-import React from "react";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import React, { useCallback, useMemo } from "react";
 import {
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -71,93 +72,94 @@ export function NotificationsSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
 
+  const snapPoints = useMemo(() => ["75%"], []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.7}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
+    <BottomSheet
+      index={0}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      backgroundStyle={styles.sheetBackground}
+      handleIndicatorStyle={styles.handle}
+      onClose={onClose}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.handle} />
-
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Notificações</Text>
-            {unreadCount > 0 && (
-              <Text style={styles.unreadLabel}>{unreadCount} não lidas</Text>
-            )}
-          </View>
-          <Pressable onPress={onClose} hitSlop={12}>
-            <Feather name="x" size={18} color="#555" />
-          </Pressable>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Notificações</Text>
+          {unreadCount > 0 && (
+            <Text style={styles.unreadLabel}>{unreadCount} não lidas</Text>
+          )}
         </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.list}
-        >
-          {MOCK_NOTIFICATIONS.map((n, i) => (
-            <View key={n.id}>
-              <View style={[styles.item, n.read && styles.itemRead]}>
-                <View style={[styles.iconWrap, { backgroundColor: n.iconColor + "18" }]}>
-                  <Feather name={n.icon} size={16} color={n.iconColor} />
-                </View>
-                <View style={styles.itemContent}>
-                  <View style={styles.itemTop}>
-                    <Text style={[styles.itemTitle, n.read && styles.itemTitleRead]}>
-                      {n.title}
-                    </Text>
-                    <Text style={styles.itemTime}>{n.time}</Text>
-                  </View>
-                  <Text style={styles.itemBody}>{n.body}</Text>
-                </View>
-                {!n.read && <View style={styles.dot} />}
-              </View>
-              {i < MOCK_NOTIFICATIONS.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))}
-        </ScrollView>
+        <Pressable onPress={onClose} hitSlop={12}>
+          <Feather name="x" size={18} color="#555" />
+        </Pressable>
       </View>
-    </Modal>
+
+      <BottomSheetScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom, 24) }]}
+      >
+        {MOCK_NOTIFICATIONS.map((n, i) => (
+          <View key={n.id}>
+            <View style={[styles.item, n.read && styles.itemRead]}>
+              <View style={[styles.iconWrap, { backgroundColor: n.iconColor + "18" }]}>
+                <Feather name={n.icon} size={16} color={n.iconColor} />
+              </View>
+              <View style={styles.itemContent}>
+                <View style={styles.itemTop}>
+                  <Text style={[styles.itemTitle, n.read && styles.itemTitleRead]}>
+                    {n.title}
+                  </Text>
+                  <Text style={styles.itemTime}>{n.time}</Text>
+                </View>
+                <Text style={styles.itemBody}>{n.body}</Text>
+              </View>
+              {!n.read && <View style={styles.dot} />}
+            </View>
+            {i < MOCK_NOTIFICATIONS.length - 1 && <View style={styles.divider} />}
+          </View>
+        ))}
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-  },
-  sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  sheetBackground: {
     backgroundColor: "#0d0d0d",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderTopWidth: 1,
     borderColor: "#1a1a1a",
-    paddingTop: 12,
-    maxHeight: "80%",
   },
   handle: {
+    backgroundColor: "#2a2a2a",
     width: 36,
     height: 4,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
   },
   header: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 24,
+    paddingTop: 4,
     marginBottom: 20,
   },
   title: {
