@@ -195,7 +195,7 @@ export default function ContaScreen() {
                     </View>
                   ) : (
                     <Pressable style={styles.editIconBtn} onPress={() => startEdit(f.key)}>
-                      <Feather name="edit-2" size={14} color="#444" />
+                      <Feather name="edit-2" size={13} color="#666" />
                     </Pressable>
                   )}
                 </View>
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  fieldList: { gap: 2 },
+  fieldList: { gap: 10 },
   fieldRow: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
@@ -548,8 +548,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    marginBottom: 2,
-    gap: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   fieldRowEditing: {
     borderColor: Colors.accent + "50",
@@ -573,18 +574,20 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_400Regular",
     fontSize: 14,
     color: "#fff",
-    paddingVertical: 0,
+    paddingVertical: 2,
     borderBottomWidth: 1,
     borderBottomColor: Colors.accent + "40",
   },
   editIconBtn: {
-    alignSelf: "flex-end",
-    padding: 4,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#141414",
+    borderWidth: 1,
+    borderColor: "#222",
   },
   editActions: {
     flexDirection: "row",
     gap: 8,
-    justifyContent: "flex-end",
   },
   cancelBtn: {
     paddingHorizontal: 14,
