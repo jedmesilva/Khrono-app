@@ -1,11 +1,20 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
-  Dimensions,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,25 +23,17 @@ import {
   View,
 } from "react-native";
 import Animated, {
-  interpolate,
   Extrapolation,
-  runOnJS,
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Gesture, GestureDetector, ScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
-import { useConfirmation, ProviderData } from "@/context/ConfirmationContext";
-
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const SPRING_CONFIG = { damping: 22, stiffness: 350 } as const;
-const DISMISS_THRESHOLD = 80;
-const VELOCITY_THRESHOLD = 600;
+import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
@@ -115,19 +116,28 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
 type HireMethod = "PINCODE" | "QRCODE" | "NFC" | "LINK";
 type Props = { open: boolean; onClose: () => void };
 
-const KEYPAD = ["1","2","3","4","5","6","7","8","9","","0","del"];
+const KEYPAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
 
 // ─── PINCODE ────────────────────────────────────────────────────────────────
 
-function PincodeContent({ onFoundProvider, onShowDialog }: { onFoundProvider: (p: ProviderData) => void; onShowDialog: (d: DialogState) => void }) {
+function PincodeContent({
+  onFoundProvider,
+  onShowDialog,
+}: {
+  onFoundProvider: (p: ProviderData) => void;
+  onShowDialog: (d: DialogState) => void;
+}) {
   const [pin, setPin] = useState("");
   const [found, setFound] = useState<ProviderData | null>(null);
 
   const handleKey = (d: string) => {
-    if (d === "del") { setPin(p => p.slice(0, -1)); return; }
+    if (d === "del") {
+      setPin((p) => p.slice(0, -1));
+      return;
+    }
     if (pin.length < 6) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setPin(p => p + d);
+      setPin((p) => p + d);
     }
   };
 
@@ -182,7 +192,7 @@ function PincodeContent({ onFoundProvider, onShowDialog }: { onFoundProvider: (p
       <Text style={sub.desc}>Digite o código do prestador para iniciar o contrato</Text>
 
       <View style={sub.pinRow}>
-        {[0,1,2,3,4,5].map(i => (
+        {[0, 1, 2, 3, 4, 5].map((i) => (
           <View key={i} style={[sub.pinDigit, pin.length > i && sub.pinDigitFilled]}>
             <Text style={sub.pinDigitText}>{pin[i] ? "•" : ""}</Text>
           </View>
@@ -257,7 +267,12 @@ function QrcodeContent({ onShowDialog }: { onShowDialog: (d: DialogState) => voi
         <Text style={sub.viewfinderLabel}>câmera indisponível em preview</Text>
       </View>
 
-      <Pressable style={sub.ghostBtn} onPress={() => onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar manualmente." })}>
+      <Pressable
+        style={sub.ghostBtn}
+        onPress={() =>
+          onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar manualmente." })
+        }
+      >
         <Text style={sub.ghostBtnText}>Inserir código manualmente</Text>
       </Pressable>
     </View>
@@ -356,20 +371,12 @@ function LinkContent({ onShowDialog }: { onShowDialog: (d: DialogState) => void 
       <Pressable
         style={[sub.primaryBtn, link.length === 0 && sub.primaryBtnDisabled]}
         disabled={link.length === 0}
-        onPress={() => onShowDialog({ title: "Em breve", message: "Conexão via link estará disponível em breve." })}
+        onPress={() =>
+          onShowDialog({ title: "Em breve", message: "Conexão via link estará disponível em breve." })
+        }
       >
         <Text style={sub.primaryBtnText}>Conectar</Text>
       </Pressable>
-    </View>
-  );
-}
-
-// ─── DRAGGABLE HANDLE ────────────────────────────────────────────────────────
-
-function DragHandle() {
-  return (
-    <View style={styles.handleArea}>
-      <View style={styles.handle} />
     </View>
   );
 }
@@ -384,140 +391,11 @@ export function HireSheet({ open, onClose }: Props) {
   const [disponivel, setDisponivel] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
-  // Modal visible state: stays true while animation is running
-  const [modalVisible, setModalVisible] = useState(false);
-  const isAnimatingOut = useRef(false);
+  const mainRef = useRef<BottomSheet>(null);
+  const subRef = useRef<BottomSheetModal>(null);
 
-  // Reanimated shared values
-  const backdropOpacity = useSharedValue(0);
-  const mainTranslateY = useSharedValue(SCREEN_HEIGHT);
-  const subTranslateY = useSharedValue(SCREEN_HEIGHT);
-
-  // Scroll-at-top tracking (shared values so gesture callbacks can read them)
-  const isMainScrollAtTop = useSharedValue(true);
-  const isSubScrollAtTop = useSharedValue(true);
-
-  // Native scroll gestures — used to let our pan run simultaneously with scroll
-  const nativeMainScroll = useMemo(() => Gesture.Native(), []);
-  const nativeSubScroll = useMemo(() => Gesture.Native(), []);
-
-  // Open: show modal and animate in
-  useEffect(() => {
-    if (open) {
-      isAnimatingOut.current = false;
-      setModalVisible(true);
-    }
-  }, [open]);
-
-  // When modal becomes visible, animate in
-  useEffect(() => {
-    if (modalVisible && open) {
-      backdropOpacity.value = withTiming(1, { duration: 260 });
-      mainTranslateY.value = withSpring(0, SPRING_CONFIG);
-    }
-  }, [modalVisible]);
-
-  // Animate sub sheet when subMode changes
-  useEffect(() => {
-    if (subMode) {
-      subTranslateY.value = withSpring(0, SPRING_CONFIG);
-    } else {
-      subTranslateY.value = withTiming(SCREEN_HEIGHT, { duration: 240 });
-    }
-  }, [subMode]);
-
-  const animateOut = useCallback((afterAnimation?: () => void) => {
-    if (isAnimatingOut.current) return;
-    isAnimatingOut.current = true;
-
-    subTranslateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 });
-    backdropOpacity.value = withTiming(0, { duration: 240 });
-    mainTranslateY.value = withTiming(SCREEN_HEIGHT, { duration: 300 }, (finished) => {
-      if (finished) {
-        runOnJS(setModalVisible)(false);
-        runOnJS(setSubMode)(null);
-        if (afterAnimation) runOnJS(afterAnimation)();
-      }
-    });
-  }, []);
-
-  const handleClose = useCallback(() => {
-    animateOut(onClose);
-  }, [animateOut, onClose]);
-
-  const handleCloseSubSheet = useCallback(() => {
-    setSubMode(null);
-  }, []);
-
-  const handleFoundProvider = useCallback((provider: ProviderData) => {
-    setPendingProvider(provider);
-    animateOut(() => {
-      onClose();
-      router.push("/contract-confirm");
-    });
-  }, [setPendingProvider, animateOut, onClose, router]);
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
-
-  const mainSheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: mainTranslateY.value }],
-  }));
-
-  const subSheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: subTranslateY.value }],
-  }));
-
-  // Pan gesture for the main sheet — runs simultaneously with the inner scroll
-  const mainPanGesture = useMemo(() =>
-    Gesture.Pan()
-      .onUpdate((e) => {
-        if (e.translationY > 0 && isMainScrollAtTop.value) {
-          mainTranslateY.value = e.translationY;
-        }
-      })
-      .onEnd((e) => {
-        if (mainTranslateY.value > DISMISS_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD) {
-          runOnJS(handleClose)();
-        } else {
-          mainTranslateY.value = withSpring(0, SPRING_CONFIG);
-        }
-      })
-      .simultaneousWithExternalGesture(nativeMainScroll),
-  [handleClose, nativeMainScroll]);
-
-  // Pan gesture for the sub sheet
-  const subPanGesture = useMemo(() =>
-    Gesture.Pan()
-      .onUpdate((e) => {
-        if (e.translationY > 0 && isSubScrollAtTop.value) {
-          subTranslateY.value = e.translationY;
-        }
-      })
-      .onEnd((e) => {
-        if (subTranslateY.value > DISMISS_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD) {
-          runOnJS(handleCloseSubSheet)();
-        } else {
-          subTranslateY.value = withSpring(0, SPRING_CONFIG);
-        }
-      })
-      .simultaneousWithExternalGesture(nativeSubScroll),
-  [handleCloseSubSheet, nativeSubScroll]);
-
-  const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
-    { icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={Colors.accent} />, label: "QRCODE",      method: "QRCODE"  },
-    { icon: <Feather name="wifi"                        size={22} color={Colors.accent} />, label: "APROXIMAÇÃO", method: "NFC"     },
-    { icon: <Feather name="hash"                        size={22} color={Colors.accent} />, label: "PINCODE",    method: "PINCODE" },
-    { icon: <Feather name="link"                        size={22} color={Colors.accent} />, label: "LINK",       method: "LINK"    },
-  ];
-
-  const availOptions = [
-    { label: "Meu PINCODE",        desc: "Informe seu código para contratação direta",              pin: "1257", icon: null },
-    { label: "Gerar QRCODE",       desc: "Mostre o QR Code para ser escaneado",                     pin: null,   icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={Colors.accentGreen} /> },
-    { label: "Compartilhar LINK",  desc: "Copie e compartilhe o link de contratação",               pin: null,   icon: <Feather name="link" size={24} color={Colors.accentGreen} /> },
-    { label: "Iniciar APROXIMAÇÃO",desc: "Ative o NFC e aproxime os dois dispositivos",             pin: null,   icon: <Feather name="wifi" size={24} color={Colors.accentGreen} /> },
-  ];
+  const snapPoints = useMemo(() => ["88%"], []);
+  const subSnapPoints = useMemo(() => ["80%"], []);
 
   const subTitles: Record<HireMethod, string> = {
     PINCODE: "PINCODE",
@@ -526,175 +404,277 @@ export function HireSheet({ open, onClose }: Props) {
     LINK: "Link",
   };
 
+  // Open / close main sheet based on `open` prop
+  useEffect(() => {
+    if (open) {
+      mainRef.current?.snapToIndex(0);
+    } else {
+      mainRef.current?.close();
+    }
+  }, [open]);
+
+  // Open / close sub sheet based on subMode
+  useEffect(() => {
+    if (subMode) {
+      subRef.current?.present();
+    } else {
+      subRef.current?.dismiss();
+    }
+  }, [subMode]);
+
+  const handleFoundProvider = useCallback(
+    (provider: ProviderData) => {
+      setPendingProvider(provider);
+      subRef.current?.dismiss();
+      mainRef.current?.close();
+      setTimeout(() => {
+        onClose();
+        router.push("/contract-confirm");
+      }, 300);
+    },
+    [setPendingProvider, onClose, router]
+  );
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.72}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
+  const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
+    {
+      icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={Colors.accent} />,
+      label: "QRCODE",
+      method: "QRCODE",
+    },
+    {
+      icon: <Feather name="wifi" size={22} color={Colors.accent} />,
+      label: "APROXIMAÇÃO",
+      method: "NFC",
+    },
+    {
+      icon: <Feather name="hash" size={22} color={Colors.accent} />,
+      label: "PINCODE",
+      method: "PINCODE",
+    },
+    {
+      icon: <Feather name="link" size={22} color={Colors.accent} />,
+      label: "LINK",
+      method: "LINK",
+    },
+  ];
+
+  const availOptions = [
+    {
+      label: "Meu PINCODE",
+      desc: "Informe seu código para contratação direta",
+      pin: "1257",
+      icon: null,
+    },
+    {
+      label: "Gerar QRCODE",
+      desc: "Mostre o QR Code para ser escaneado",
+      pin: null,
+      icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={Colors.accentGreen} />,
+    },
+    {
+      label: "Compartilhar LINK",
+      desc: "Copie e compartilhe o link de contratação",
+      pin: null,
+      icon: <Feather name="link" size={24} color={Colors.accentGreen} />,
+    },
+    {
+      label: "Iniciar APROXIMAÇÃO",
+      desc: "Ative o NFC e aproxime os dois dispositivos",
+      pin: null,
+      icon: <Feather name="wifi" size={24} color={Colors.accentGreen} />,
+    },
+  ];
+
   return (
     <>
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="none"
-        statusBarTranslucent
-        onRequestClose={handleClose}
+      {/* ── Main Sheet ── */}
+      <BottomSheet
+        ref={mainRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={styles.handle}
+        onClose={onClose}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
-        {/* Backdrop */}
-        <Animated.View
-          style={[StyleSheet.absoluteFillObject, styles.backdrop, backdropStyle]}
-          pointerEvents="none"
-        />
-        <Pressable
-          style={[StyleSheet.absoluteFillObject]}
-          onPress={handleClose}
-        />
+        <BottomSheetScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 16 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.sheetTitle}>Contratação direta</Text>
 
-        {/* ── Main sheet ── */}
-        <GestureDetector gesture={mainPanGesture}>
-          <Animated.View
-            style={[styles.sheet, { paddingBottom: insets.bottom + 16 }, mainSheetStyle]}
-            pointerEvents="box-none"
+          {/* AI card */}
+          <Pressable
+            style={styles.aiCard}
+            onPress={() =>
+              setDialog({
+                title: "IA em breve",
+                message: "A busca inteligente estará disponível em breve.",
+              })
+            }
           >
-            <DragHandle />
+            <View style={styles.aiIconWrap}>
+              <Feather name="zap" size={20} color={Colors.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.aiTitle}>Descrever o que preciso</Text>
+              <Text style={styles.aiDesc}>
+                A IA entende sua necessidade e encontra a pessoa certa para você
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={16} color={Colors.accent + "80"} />
+          </Pressable>
 
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-              style={{ flex: 1 }}
-            >
-              <GestureDetector gesture={nativeMainScroll}>
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  bounces={false}
-                  onScroll={(e) => {
-                    isMainScrollAtTop.value = e.nativeEvent.contentOffset.y <= 0;
-                  }}
-                  scrollEventThrottle={16}
-                >
-              <Text style={styles.sheetTitle}>Contratação direta</Text>
+          {/* Divider */}
+          <View style={styles.divRow}>
+            <View style={styles.divLine} />
+            <Text style={styles.divText}>OU CONTRATAR DIRETO</Text>
+            <View style={styles.divLine} />
+          </View>
 
-              {/* AI card */}
+          {/* 4-column hire grid */}
+          <View style={styles.hireGrid}>
+            {hireOptions.map((opt) => (
               <Pressable
-                style={styles.aiCard}
-                onPress={() => setDialog({ title: "IA em breve", message: "A busca inteligente estará disponível em breve." })}
+                key={opt.method}
+                style={({ pressed }) => [styles.hireItem, pressed && styles.hireItemPressed]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSubMode(opt.method);
+                }}
               >
-                <View style={styles.aiIconWrap}>
-                  <Feather name="zap" size={20} color={Colors.accent} />
+                {opt.icon}
+                <Text style={styles.hireLabel}>{opt.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* Disponibilidade */}
+          <View style={styles.availHeaderRow}>
+            <Text style={styles.availTitle}>Disponibilidade</Text>
+            <Pressable
+              style={styles.toggleRow}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setDisponivel((d) => !d);
+              }}
+            >
+              <Text
+                style={[
+                  styles.toggleLabel,
+                  { color: disponivel ? Colors.accentGreen : "#444" },
+                ]}
+              >
+                {disponivel ? "Disponível" : "Indisponível"}
+              </Text>
+              <View
+                style={[
+                  styles.toggle,
+                  { backgroundColor: disponivel ? Colors.accentGreen : "#1e1e1e" },
+                ]}
+              >
+                <View style={[styles.toggleThumb, { left: disponivel ? 21 : 3 }]} />
+              </View>
+            </Pressable>
+          </View>
+
+          <View style={{ opacity: disponivel ? 1 : 0.3, gap: 10, marginBottom: 8 }}>
+            {availOptions.map((opt) => (
+              <Pressable
+                key={opt.label}
+                style={({ pressed }) => [
+                  styles.availRow,
+                  pressed && disponivel && styles.availRowPressed,
+                ]}
+                onPress={() => {
+                  if (!disponivel) return;
+                  if (opt.pin) {
+                    setDialog({
+                      title: "Seu PIN",
+                      message: `Informe o código  ${opt.pin}  para quem deseja te contratar.`,
+                    });
+                  } else {
+                    setDialog({
+                      title: "Em breve",
+                      message: "Esta funcionalidade estará disponível em breve.",
+                    });
+                  }
+                }}
+              >
+                <View style={styles.availIcon}>
+                  {opt.pin ? (
+                    <Text style={styles.pinDisplay}>{opt.pin}</Text>
+                  ) : (
+                    opt.icon
+                  )}
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.aiTitle}>Descrever o que preciso</Text>
-                  <Text style={styles.aiDesc}>A IA entende sua necessidade e encontra a pessoa certa para você</Text>
+                  <Text style={styles.availLabel}>{opt.label}</Text>
+                  <Text style={styles.availDesc}>{opt.desc}</Text>
                 </View>
-                <Feather name="chevron-right" size={16} color={Colors.accent + "80"} />
               </Pressable>
+            ))}
+          </View>
+        </BottomSheetScrollView>
+      </BottomSheet>
 
-              {/* Divider */}
-              <View style={styles.divRow}>
-                <View style={styles.divLine} />
-                <Text style={styles.divText}>OU CONTRATAR DIRETO</Text>
-                <View style={styles.divLine} />
-              </View>
-
-              {/* 4-column hire grid */}
-              <View style={styles.hireGrid}>
-                {hireOptions.map((opt) => (
-                  <Pressable
-                    key={opt.method}
-                    style={({ pressed }) => [styles.hireItem, pressed && styles.hireItemPressed]}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setSubMode(opt.method);
-                    }}
-                  >
-                    {opt.icon}
-                    <Text style={styles.hireLabel}>{opt.label}</Text>
-                  </Pressable>
-                ))}
-              </View>
-
-              {/* Disponibilidade */}
-              <View style={styles.availHeaderRow}>
-                <Text style={styles.availTitle}>Disponibilidade</Text>
-                <Pressable
-                  style={styles.toggleRow}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setDisponivel(d => !d);
-                  }}
-                >
-                  <Text style={[styles.toggleLabel, { color: disponivel ? Colors.accentGreen : "#444" }]}>
-                    {disponivel ? "Disponível" : "Indisponível"}
-                  </Text>
-                  <View style={[styles.toggle, { backgroundColor: disponivel ? Colors.accentGreen : "#1e1e1e" }]}>
-                    <View style={[styles.toggleThumb, { left: disponivel ? 21 : 3 }]} />
-                  </View>
-                </Pressable>
-              </View>
-
-              <View style={{ opacity: disponivel ? 1 : 0.3, gap: 10, marginBottom: 8 }}>
-                {availOptions.map((opt) => (
-                  <Pressable
-                    key={opt.label}
-                    style={({ pressed }) => [styles.availRow, pressed && disponivel && styles.availRowPressed]}
-                    onPress={() => {
-                      if (!disponivel) return;
-                      if (opt.pin) {
-                        setDialog({ title: "Seu PIN", message: `Informe o código  ${opt.pin}  para quem deseja te contratar.` });
-                      } else {
-                        setDialog({ title: "Em breve", message: "Esta funcionalidade estará disponível em breve." });
-                      }
-                    }}
-                  >
-                    <View style={styles.availIcon}>
-                      {opt.pin
-                        ? <Text style={styles.pinDisplay}>{opt.pin}</Text>
-                        : opt.icon}
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.availLabel}>{opt.label}</Text>
-                      <Text style={styles.availDesc}>{opt.desc}</Text>
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-
-                  <View style={{ height: 8 }} />
-                </ScrollView>
-              </GestureDetector>
-            </KeyboardAvoidingView>
-          </Animated.View>
-        </GestureDetector>
-
-        {/* ── Sub sheet (no nested Modal) ── */}
-        <GestureDetector gesture={subPanGesture}>
-          <Animated.View
-            style={[styles.sheet, styles.subSheet, { paddingBottom: insets.bottom + 24 }, subSheetStyle]}
-            pointerEvents={subMode ? "box-none" : "none"}
+      {/* ── Sub Sheet (PINCODE / QR / NFC / LINK) ── */}
+      <BottomSheetModal
+        ref={subRef}
+        snapPoints={subSnapPoints}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.subSheetBackground}
+        handleIndicatorStyle={styles.handle}
+        onDismiss={() => setSubMode(null)}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
+        >
+          <BottomSheetScrollView
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <DragHandle />
-
+            {/* Header */}
             <View style={styles.sheetHeaderRow}>
-              <Pressable onPress={handleCloseSubSheet} style={styles.backBtn}>
+              <Pressable onPress={() => setSubMode(null)} style={styles.backBtn}>
                 <Feather name="arrow-left" size={18} color={Colors.accent} />
               </Pressable>
-              <Text style={styles.sheetHeaderLabel}>{subMode ? subTitles[subMode] : ""}</Text>
+              <Text style={styles.sheetHeaderLabel}>
+                {subMode ? subTitles[subMode] : ""}
+              </Text>
             </View>
 
-            <GestureDetector gesture={nativeSubScroll}>
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                bounces={false}
-                onScroll={(e) => {
-                  isSubScrollAtTop.value = e.nativeEvent.contentOffset.y <= 0;
-                }}
-                scrollEventThrottle={16}
-              >
-                {subMode === "PINCODE" && <PincodeContent onFoundProvider={handleFoundProvider} onShowDialog={setDialog} />}
-                {subMode === "QRCODE"  && <QrcodeContent onShowDialog={setDialog} />}
-                {subMode === "NFC"     && <NfcContent />}
-                {subMode === "LINK"    && <LinkContent onShowDialog={setDialog} />}
-                <View style={{ height: 8 }} />
-              </ScrollView>
-            </GestureDetector>
-          </Animated.View>
-        </GestureDetector>
-      </Modal>
+            {subMode === "PINCODE" && (
+              <PincodeContent onFoundProvider={handleFoundProvider} onShowDialog={setDialog} />
+            )}
+            {subMode === "QRCODE" && <QrcodeContent onShowDialog={setDialog} />}
+            {subMode === "NFC" && <NfcContent />}
+            {subMode === "LINK" && <LinkContent onShowDialog={setDialog} />}
+          </BottomSheetScrollView>
+        </KeyboardAvoidingView>
+      </BottomSheetModal>
 
       <AppDialog
         visible={!!dialog}
@@ -710,37 +690,28 @@ export function HireSheet({ open, onClose }: Props) {
 // ─── STYLES ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  backdrop: {
-    backgroundColor: "rgba(0,0,0,0.72)",
-  },
-  sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  sheetBackground: {
     backgroundColor: "#0f0f0f",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     borderTopWidth: 1,
     borderColor: "#1e1e1e",
-    paddingHorizontal: 20,
-    maxHeight: "90%",
   },
-  subSheet: {
+  subSheetBackground: {
     backgroundColor: "#111",
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     borderTopWidth: 1,
     borderColor: "#222",
   },
-  handleArea: {
-    alignItems: "center",
-    paddingTop: 14,
-    paddingBottom: 10,
-  },
   handle: {
+    backgroundColor: "#2a2a2a",
     width: 36,
     height: 4,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 2,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
   },
   sheetHeaderRow: {
     flexDirection: "row",
