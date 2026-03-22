@@ -928,7 +928,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#161616",
     borderRadius: 16,
-    padding: 18,
+    padding: 16,
   },
   cardAccordionHeader: {
     flexDirection: "row",
