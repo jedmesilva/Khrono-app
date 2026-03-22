@@ -7,6 +7,28 @@ packages = ["unzip"]
 expertMode = true
 
 [workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=22861 pnpm --filter @workspace/khrono run dev"
+waitForPort = 22861
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 22861
