@@ -1,10 +1,11 @@
 import { Feather } from "@expo/vector-icons";
-import BottomSheet, {
+import {
+  BottomSheetModal,
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -89,10 +90,21 @@ const dot = StyleSheet.create({
 
 export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: Props) {
   const insets = useSafeAreaInsets();
+  const ref = useRef<BottomSheetModal>(null);
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
 
   const snapPoints = useMemo(() => ["72%"], []);
+
+  useEffect(() => {
+    if (visible) {
+      setSelectedMode(mode);
+      setAddress(fixedAddress);
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [visible]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -118,20 +130,18 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
     setSelectedMode(m);
   };
 
-  if (!visible) return null;
-
   const hasChanges =
     selectedMode !== mode || (selectedMode === "fixed" && address !== fixedAddress);
 
   return (
-    <BottomSheet
-      index={0}
+    <BottomSheetModal
+      ref={ref}
       snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.handle}
-      onClose={onClose}
+      onDismiss={onClose}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
@@ -290,7 +300,7 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
           </Pressable>
         </BottomSheetScrollView>
       </KeyboardAvoidingView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 
