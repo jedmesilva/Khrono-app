@@ -1,8 +1,10 @@
 import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Animated,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -81,6 +83,20 @@ export default function ContaScreen() {
     nascimento: "15/04/1990",
   });
 
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  async function pickProfileImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  }
+
   const { documents } = useDocuments();
   const [faceStatus, setFaceStatus] = useState<VerifStatus>("rejected");
 
@@ -157,11 +173,20 @@ export default function ContaScreen() {
 
         {/* Avatar */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>JS</Text>
-          </View>
-          <Text style={styles.avatarName}>{userData.nome}</Text>
-          <Text style={styles.avatarEmail}>{userData.email}</Text>
+          <Pressable style={styles.avatarWrap} onPress={pickProfileImage}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {userData.nome.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()}
+                </Text>
+              </View>
+            )}
+            <View style={styles.avatarEditBadge}>
+              <Feather name="camera" size={11} color="#fff" />
+            </View>
+          </Pressable>
         </View>
 
         {/* ── Dados pessoais ── */}
@@ -496,34 +521,45 @@ const styles = StyleSheet.create({
   avatarSection: {
     alignItems: "center",
     marginBottom: 28,
-    gap: 6,
+  },
+  avatarWrap: {
+    position: "relative",
   },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: "#161616",
     borderWidth: 2,
     borderColor: Colors.accent + "30",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 4,
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: Colors.accent + "30",
   },
   avatarText: {
     fontFamily: "DMMono_500Medium",
-    fontSize: 22,
+    fontSize: 24,
     color: Colors.accent,
     fontWeight: "700",
   },
-  avatarName: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 18,
-    color: "#fff",
-  },
-  avatarEmail: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#444",
+  avatarEditBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: Colors.background,
   },
 
   section: { marginBottom: 28 },
