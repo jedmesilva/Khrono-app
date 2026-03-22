@@ -116,7 +116,12 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
 type HireMethod = "PINCODE" | "QRCODE" | "NFC" | "LINK";
 type Props = { open: boolean; onClose: () => void };
 
-const KEYPAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
+const KEYPAD_ROWS = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+  ["", "0", "del"],
+];
 
 // ─── PINCODE ────────────────────────────────────────────────────────────────
 
@@ -200,22 +205,26 @@ function PincodeContent({
       </View>
 
       <View style={sub.keypadGrid}>
-        {KEYPAD.map((d, i) => (
-          <Pressable
-            key={i}
-            onPress={() => d && handleKey(d)}
-            style={({ pressed }) => [
-              sub.keypadBtn,
-              d === "" && sub.keypadBtnEmpty,
-              pressed && !!d && sub.keypadBtnPressed,
-            ]}
-          >
-            {d === "del" ? (
-              <Feather name="delete" size={20} color="#666" />
-            ) : (
-              <Text style={sub.keypadBtnText}>{d}</Text>
-            )}
-          </Pressable>
+        {KEYPAD_ROWS.map((row, ri) => (
+          <View key={ri} style={sub.keypadRow}>
+            {row.map((d, ci) => (
+              <Pressable
+                key={ci}
+                onPress={() => d && handleKey(d)}
+                style={({ pressed }) => [
+                  sub.keypadBtn,
+                  d === "" && sub.keypadBtnEmpty,
+                  pressed && !!d && sub.keypadBtnPressed,
+                ]}
+              >
+                {d === "del" ? (
+                  <Feather name="delete" size={20} color="#666" />
+                ) : (
+                  <Text style={sub.keypadBtnText}>{d}</Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
         ))}
       </View>
 
@@ -1010,14 +1019,16 @@ const sub = StyleSheet.create({
     fontFamily: "DMMono_500Medium",
   },
   keypadGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     gap: 10,
     marginBottom: 24,
   },
+  keypadRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
   keypadBtn: {
-    width: "30%",
-    aspectRatio: 1.6,
+    flex: 1,
+    height: 54,
     backgroundColor: "#0d0d0d",
     borderWidth: 1,
     borderColor: "#1e1e1e",
