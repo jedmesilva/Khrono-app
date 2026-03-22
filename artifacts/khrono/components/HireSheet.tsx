@@ -1,14 +1,13 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -23,7 +22,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, ScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
@@ -367,38 +366,11 @@ function LinkContent({ onShowDialog }: { onShowDialog: (d: DialogState) => void 
 
 // ─── DRAGGABLE HANDLE ────────────────────────────────────────────────────────
 
-function DragHandle({
-  translateY,
-  onDismiss,
-}: {
-  translateY: ReturnType<typeof useSharedValue<number>>;
-  onDismiss: () => void;
-}) {
-  const startY = useSharedValue(0);
-
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      startY.value = translateY.value;
-    })
-    .onUpdate((e) => {
-      if (e.translationY > 0) {
-        translateY.value = e.translationY;
-      }
-    })
-    .onEnd((e) => {
-      if (e.translationY > DISMISS_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD) {
-        runOnJS(onDismiss)();
-      } else {
-        translateY.value = withSpring(0, SPRING_CONFIG);
-      }
-    });
-
+function DragHandle() {
   return (
-    <GestureDetector gesture={panGesture}>
-      <View style={styles.handleArea} hitSlop={{ top: 8, bottom: 8, left: 40, right: 40 }}>
-        <View style={styles.handle} />
-      </View>
-    </GestureDetector>
+    <View style={styles.handleArea}>
+      <View style={styles.handle} />
+    </View>
   );
 }
 
@@ -420,6 +392,14 @@ export function HireSheet({ open, onClose }: Props) {
   const backdropOpacity = useSharedValue(0);
   const mainTranslateY = useSharedValue(SCREEN_HEIGHT);
   const subTranslateY = useSharedValue(SCREEN_HEIGHT);
+
+  // Scroll-at-top tracking (shared values so gesture callbacks can read them)
+  const isMainScrollAtTop = useSharedValue(true);
+  const isSubScrollAtTop = useSharedValue(true);
+
+  // Native scroll gestures — used to let our pan run simultaneously with scroll
+  const nativeMainScroll = useMemo(() => Gesture.Native(), []);
+  const nativeSubScroll = useMemo(() => Gesture.Native(), []);
 
   // Open: show modal and animate in
   useEffect(() => {
@@ -489,6 +469,42 @@ export function HireSheet({ open, onClose }: Props) {
     transform: [{ translateY: subTranslateY.value }],
   }));
 
+  // Pan gesture for the main sheet — runs simultaneously with the inner scroll
+  const mainPanGesture = useMemo(() =>
+    Gesture.Pan()
+      .onUpdate((e) => {
+        if (e.translationY > 0 && isMainScrollAtTop.value) {
+          mainTranslateY.value = e.translationY;
+        }
+      })
+      .onEnd((e) => {
+        if (mainTranslateY.value > DISMISS_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD) {
+          runOnJS(handleClose)();
+        } else {
+          mainTranslateY.value = withSpring(0, SPRING_CONFIG);
+        }
+      })
+      .simultaneousWithExternalGesture(nativeMainScroll),
+  [handleClose, nativeMainScroll]);
+
+  // Pan gesture for the sub sheet
+  const subPanGesture = useMemo(() =>
+    Gesture.Pan()
+      .onUpdate((e) => {
+        if (e.translationY > 0 && isSubScrollAtTop.value) {
+          subTranslateY.value = e.translationY;
+        }
+      })
+      .onEnd((e) => {
+        if (subTranslateY.value > DISMISS_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD) {
+          runOnJS(handleCloseSubSheet)();
+        } else {
+          subTranslateY.value = withSpring(0, SPRING_CONFIG);
+        }
+      })
+      .simultaneousWithExternalGesture(nativeSubScroll),
+  [handleCloseSubSheet, nativeSubScroll]);
+
   const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
     { icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={Colors.accent} />, label: "QRCODE",      method: "QRCODE"  },
     { icon: <Feather name="wifi"                        size={22} color={Colors.accent} />, label: "APROXIMAÇÃO", method: "NFC"     },
@@ -530,17 +546,26 @@ export function HireSheet({ open, onClose }: Props) {
         />
 
         {/* ── Main sheet ── */}
-        <Animated.View
-          style={[styles.sheet, { paddingBottom: insets.bottom + 16 }, mainSheetStyle]}
-          pointerEvents="box-none"
-        >
-          <DragHandle translateY={mainTranslateY} onDismiss={handleClose} />
-
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            style={{ flex: 1 }}
+        <GestureDetector gesture={mainPanGesture}>
+          <Animated.View
+            style={[styles.sheet, { paddingBottom: insets.bottom + 16 }, mainSheetStyle]}
+            pointerEvents="box-none"
           >
-            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+            <DragHandle />
+
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              style={{ flex: 1 }}
+            >
+              <GestureDetector gesture={nativeMainScroll}>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                  onScroll={(e) => {
+                    isMainScrollAtTop.value = e.nativeEvent.contentOffset.y <= 0;
+                  }}
+                  scrollEventThrottle={16}
+                >
               <Text style={styles.sheetTitle}>Contratação direta</Text>
 
               {/* AI card */}
@@ -628,33 +653,47 @@ export function HireSheet({ open, onClose }: Props) {
                 ))}
               </View>
 
-              <View style={{ height: 8 }} />
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </Animated.View>
+                  <View style={{ height: 8 }} />
+                </ScrollView>
+              </GestureDetector>
+            </KeyboardAvoidingView>
+          </Animated.View>
+        </GestureDetector>
 
         {/* ── Sub sheet (no nested Modal) ── */}
-        <Animated.View
-          style={[styles.sheet, styles.subSheet, { paddingBottom: insets.bottom + 24 }, subSheetStyle]}
-          pointerEvents={subMode ? "box-none" : "none"}
-        >
-          <DragHandle translateY={subTranslateY} onDismiss={handleCloseSubSheet} />
+        <GestureDetector gesture={subPanGesture}>
+          <Animated.View
+            style={[styles.sheet, styles.subSheet, { paddingBottom: insets.bottom + 24 }, subSheetStyle]}
+            pointerEvents={subMode ? "box-none" : "none"}
+          >
+            <DragHandle />
 
-          <View style={styles.sheetHeaderRow}>
-            <Pressable onPress={handleCloseSubSheet} style={styles.backBtn}>
-              <Feather name="arrow-left" size={18} color={Colors.accent} />
-            </Pressable>
-            <Text style={styles.sheetHeaderLabel}>{subMode ? subTitles[subMode] : ""}</Text>
-          </View>
+            <View style={styles.sheetHeaderRow}>
+              <Pressable onPress={handleCloseSubSheet} style={styles.backBtn}>
+                <Feather name="arrow-left" size={18} color={Colors.accent} />
+              </Pressable>
+              <Text style={styles.sheetHeaderLabel}>{subMode ? subTitles[subMode] : ""}</Text>
+            </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" bounces={false}>
-            {subMode === "PINCODE" && <PincodeContent onFoundProvider={handleFoundProvider} onShowDialog={setDialog} />}
-            {subMode === "QRCODE"  && <QrcodeContent onShowDialog={setDialog} />}
-            {subMode === "NFC"     && <NfcContent />}
-            {subMode === "LINK"    && <LinkContent onShowDialog={setDialog} />}
-            <View style={{ height: 8 }} />
-          </ScrollView>
-        </Animated.View>
+            <GestureDetector gesture={nativeSubScroll}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                bounces={false}
+                onScroll={(e) => {
+                  isSubScrollAtTop.value = e.nativeEvent.contentOffset.y <= 0;
+                }}
+                scrollEventThrottle={16}
+              >
+                {subMode === "PINCODE" && <PincodeContent onFoundProvider={handleFoundProvider} onShowDialog={setDialog} />}
+                {subMode === "QRCODE"  && <QrcodeContent onShowDialog={setDialog} />}
+                {subMode === "NFC"     && <NfcContent />}
+                {subMode === "LINK"    && <LinkContent onShowDialog={setDialog} />}
+                <View style={{ height: 8 }} />
+              </ScrollView>
+            </GestureDetector>
+          </Animated.View>
+        </GestureDetector>
       </Modal>
 
       <AppDialog
