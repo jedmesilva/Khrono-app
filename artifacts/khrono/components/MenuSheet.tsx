@@ -1,11 +1,10 @@
 import { Feather } from "@expo/vector-icons";
-import {
-  BottomSheetModal,
+import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -33,15 +32,9 @@ type Props = {
 
 export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
-  const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
 
   const snapPoints = useMemo(() => ["60%"], []);
-
-  useEffect(() => {
-    if (visible) ref.current?.present();
-    else ref.current?.dismiss();
-  }, [visible]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -96,16 +89,18 @@ export function MenuSheet({ visible, onClose }: Props) {
     },
   ];
 
+  if (!visible) return null;
+
   return (
     <>
-      <BottomSheetModal
-        ref={ref}
+      <BottomSheet
+        index={0}
         snapPoints={snapPoints}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handle}
-        onDismiss={onClose}
+        onClose={onClose}
       >
         <BottomSheetScrollView
           contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
