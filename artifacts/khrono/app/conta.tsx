@@ -81,6 +81,10 @@ export default function ContaScreen() {
 
   const [deleteDialog, setDeleteDialog] = useState(false);
 
+  const [docExpanded, setDocExpanded] = useState(false);
+  const [faceExpanded, setFaceExpanded] = useState(false);
+  const [pwdExpanded, setPwdExpanded] = useState(false);
+
   function showToast(msg: string) {
     setToastMsg(msg);
     setToastVisible(true);
@@ -210,7 +214,7 @@ export default function ContaScreen() {
 
           {/* Documento */}
           <View style={styles.verifBlock}>
-            <View style={styles.verifBlockHeader}>
+            <Pressable style={styles.verifBlockHeader} onPress={() => setDocExpanded((v) => !v)}>
               <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
                 <Feather name="file-text" size={16} color="#555" />
               </View>
@@ -219,73 +223,81 @@ export default function ContaScreen() {
                 <Text style={styles.verifBlockSub}>RG, CNH ou Passaporte</Text>
               </View>
               <StatusBadge status={docStatus} />
-            </View>
+              <Feather
+                name={docExpanded ? "chevron-up" : "chevron-down"}
+                size={15}
+                color="#333"
+                style={{ marginLeft: 8 }}
+              />
+            </Pressable>
 
-            {docStatus === "rejected" && (
-              <View style={styles.rejectedMsg}>
-                <Feather name="alert-circle" size={12} color="#ff3b30" />
-                <Text style={styles.rejectedMsgText}>
-                  Documento ilegível ou expirado. Envie novamente com boa iluminação.
-                </Text>
-              </View>
-            )}
-
-            {docNeedsAction && (
-              <View style={styles.verifContent}>
-                {/* Tipo de documento */}
-                <Text style={styles.verifLabel}>Tipo de documento</Text>
-                <View style={styles.docTypeRow}>
-                  {(["RG", "CNH", "Passaporte"] as DocType[]).map((d) => (
-                    <Pressable
-                      key={d}
-                      style={[styles.docTypeBtn, docType === d && styles.docTypeBtnActive]}
-                      onPress={() => setDocType(d)}
-                    >
-                      <Text style={[styles.docTypeBtnText, docType === d && styles.docTypeBtnTextActive]}>
-                        {d}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-
-                {/* Upload frente/verso */}
-                <View style={styles.uploadRow}>
-                  <Pressable
-                    style={[styles.uploadBtn, docFront && styles.uploadBtnDone]}
-                    onPress={() => setDocFront(true)}
-                  >
-                    <Feather name={docFront ? "check" : "camera"} size={18} color={docFront ? Colors.accentGreen : "#555"} />
-                    <Text style={[styles.uploadBtnText, docFront && { color: Colors.accentGreen }]}>
-                      {docFront ? "Frente enviada" : "Frente"}
+            {docExpanded && (
+              <>
+                {docStatus === "rejected" && (
+                  <View style={styles.rejectedMsg}>
+                    <Feather name="alert-circle" size={12} color="#ff3b30" />
+                    <Text style={styles.rejectedMsgText}>
+                      Documento ilegível ou expirado. Envie novamente com boa iluminação.
                     </Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.uploadBtn, docBack && styles.uploadBtnDone]}
-                    onPress={() => setDocBack(true)}
-                  >
-                    <Feather name={docBack ? "check" : "camera"} size={18} color={docBack ? Colors.accentGreen : "#555"} />
-                    <Text style={[styles.uploadBtnText, docBack && { color: Colors.accentGreen }]}>
-                      {docBack ? "Verso enviado" : "Verso"}
-                    </Text>
-                  </Pressable>
-                </View>
-
-                {docFront && docBack && (
-                  <Pressable
-                    style={styles.submitVerifBtn}
-                    onPress={() => { setDocStatus("pending"); showToast("Documento enviado para análise"); }}
-                  >
-                    <Feather name="upload" size={14} color="#fff" />
-                    <Text style={styles.submitVerifBtnText}>Enviar para análise</Text>
-                  </Pressable>
+                  </View>
                 )}
-              </View>
+
+                {docNeedsAction && (
+                  <View style={styles.verifContent}>
+                    <Text style={styles.verifLabel}>Tipo de documento</Text>
+                    <View style={styles.docTypeRow}>
+                      {(["RG", "CNH", "Passaporte"] as DocType[]).map((d) => (
+                        <Pressable
+                          key={d}
+                          style={[styles.docTypeBtn, docType === d && styles.docTypeBtnActive]}
+                          onPress={() => setDocType(d)}
+                        >
+                          <Text style={[styles.docTypeBtnText, docType === d && styles.docTypeBtnTextActive]}>
+                            {d}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <View style={styles.uploadRow}>
+                      <Pressable
+                        style={[styles.uploadBtn, docFront && styles.uploadBtnDone]}
+                        onPress={() => setDocFront(true)}
+                      >
+                        <Feather name={docFront ? "check" : "camera"} size={18} color={docFront ? Colors.accentGreen : "#555"} />
+                        <Text style={[styles.uploadBtnText, docFront && { color: Colors.accentGreen }]}>
+                          {docFront ? "Frente enviada" : "Frente"}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.uploadBtn, docBack && styles.uploadBtnDone]}
+                        onPress={() => setDocBack(true)}
+                      >
+                        <Feather name={docBack ? "check" : "camera"} size={18} color={docBack ? Colors.accentGreen : "#555"} />
+                        <Text style={[styles.uploadBtnText, docBack && { color: Colors.accentGreen }]}>
+                          {docBack ? "Verso enviado" : "Verso"}
+                        </Text>
+                      </Pressable>
+                    </View>
+
+                    {docFront && docBack && (
+                      <Pressable
+                        style={styles.submitVerifBtn}
+                        onPress={() => { setDocStatus("pending"); setDocExpanded(false); showToast("Documento enviado para análise"); }}
+                      >
+                        <Feather name="upload" size={14} color="#fff" />
+                        <Text style={styles.submitVerifBtnText}>Enviar para análise</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                )}
+              </>
             )}
           </View>
 
           {/* Reconhecimento facial */}
           <View style={[styles.verifBlock, { marginTop: 10 }]}>
-            <View style={styles.verifBlockHeader}>
+            <Pressable style={styles.verifBlockHeader} onPress={() => setFaceExpanded((v) => !v)}>
               <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
                 <Feather name="aperture" size={16} color="#555" />
               </View>
@@ -294,35 +306,45 @@ export default function ContaScreen() {
                 <Text style={styles.verifBlockSub}>Verificação com liveness</Text>
               </View>
               <StatusBadge status={faceStatus} />
-            </View>
+              <Feather
+                name={faceExpanded ? "chevron-up" : "chevron-down"}
+                size={15}
+                color="#333"
+                style={{ marginLeft: 8 }}
+              />
+            </Pressable>
 
-            {faceStatus === "rejected" && (
-              <View style={styles.rejectedMsg}>
-                <Feather name="alert-circle" size={12} color="#ff3b30" />
-                <Text style={styles.rejectedMsgText}>
-                  Não foi possível confirmar a identidade. Tente em ambiente com boa iluminação.
-                </Text>
-              </View>
-            )}
-
-            {faceNeedsAction && (
-              <View style={styles.verifContent}>
-                <View style={styles.faceGuide}>
-                  <View style={styles.faceOval}>
-                    <Feather name="user" size={36} color="#2a2a2a" />
+            {faceExpanded && (
+              <>
+                {faceStatus === "rejected" && (
+                  <View style={styles.rejectedMsg}>
+                    <Feather name="alert-circle" size={12} color="#ff3b30" />
+                    <Text style={styles.rejectedMsgText}>
+                      Não foi possível confirmar a identidade. Tente em ambiente com boa iluminação.
+                    </Text>
                   </View>
-                  <Text style={styles.faceGuideText}>
-                    Posicione seu rosto dentro da área e mantenha o olhar na câmera
-                  </Text>
-                </View>
-                <Pressable
-                  style={styles.submitVerifBtn}
-                  onPress={() => { setFaceStatus("pending"); showToast("Verificação facial iniciada"); }}
-                >
-                  <Feather name="video" size={14} color="#fff" />
-                  <Text style={styles.submitVerifBtnText}>Iniciar verificação</Text>
-                </Pressable>
-              </View>
+                )}
+
+                {faceNeedsAction && (
+                  <View style={styles.verifContent}>
+                    <View style={styles.faceGuide}>
+                      <View style={styles.faceOval}>
+                        <Feather name="user" size={36} color="#2a2a2a" />
+                      </View>
+                      <Text style={styles.faceGuideText}>
+                        Posicione seu rosto dentro da área e mantenha o olhar na câmera
+                      </Text>
+                    </View>
+                    <Pressable
+                      style={styles.submitVerifBtn}
+                      onPress={() => { setFaceStatus("pending"); setFaceExpanded(false); showToast("Verificação facial iniciada"); }}
+                    >
+                      <Feather name="video" size={14} color="#fff" />
+                      <Text style={styles.submitVerifBtnText}>Iniciar verificação</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </>
             )}
           </View>
         </View>
@@ -333,45 +355,57 @@ export default function ContaScreen() {
 
           {/* Troca de senha */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Alterar senha</Text>
-            <View style={styles.pwdFields}>
-              {[
-                { label: "Senha atual",        value: currentPwd,  setter: setCurrentPwd,  show: showCurrentPwd, toggle: () => setShowCurrentPwd((v) => !v) },
-                { label: "Nova senha",         value: newPwd,      setter: setNewPwd,      show: showNewPwd,     toggle: () => setShowNewPwd((v) => !v)     },
-                { label: "Confirmar nova senha", value: confirmPwd, setter: setConfirmPwd, show: showConfirmPwd, toggle: () => setShowConfirmPwd((v) => !v) },
-              ].map((f) => (
-                <View key={f.label} style={styles.pwdRow}>
-                  <Text style={styles.fieldLabel}>{f.label}</Text>
-                  <View style={styles.pwdInputWrap}>
-                    <TextInput
-                      style={styles.pwdInput}
-                      value={f.value}
-                      onChangeText={f.setter}
-                      secureTextEntry={!f.show}
-                      placeholder="••••••••"
-                      placeholderTextColor="#333"
-                      autoCapitalize="none"
-                    />
-                    <Pressable onPress={f.toggle} hitSlop={10}>
-                      <Feather name={f.show ? "eye-off" : "eye"} size={15} color="#444" />
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-            </View>
-            <Pressable
-              style={[
-                styles.changePwdBtn,
-                (!currentPwd || !newPwd || !confirmPwd) && styles.changePwdBtnDisabled,
-              ]}
-              disabled={!currentPwd || !newPwd || !confirmPwd}
-              onPress={() => {
-                setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
-                showToast("Senha alterada com sucesso");
-              }}
-            >
-              <Text style={styles.changePwdBtnText}>Alterar senha</Text>
+            <Pressable style={styles.cardAccordionHeader} onPress={() => setPwdExpanded((v) => !v)}>
+              <View style={styles.cardAccordionLeft}>
+                <Feather name="lock" size={15} color="#555" />
+                <Text style={styles.cardTitle}>Alterar senha</Text>
+              </View>
+              <Feather name={pwdExpanded ? "chevron-up" : "chevron-down"} size={15} color="#333" />
             </Pressable>
+
+            {pwdExpanded && (
+              <>
+                <View style={[styles.pwdFields, { marginTop: 16 }]}>
+                  {[
+                    { label: "Senha atual",          value: currentPwd,  setter: setCurrentPwd,  show: showCurrentPwd, toggle: () => setShowCurrentPwd((v) => !v) },
+                    { label: "Nova senha",           value: newPwd,      setter: setNewPwd,      show: showNewPwd,     toggle: () => setShowNewPwd((v) => !v)     },
+                    { label: "Confirmar nova senha", value: confirmPwd,  setter: setConfirmPwd,  show: showConfirmPwd, toggle: () => setShowConfirmPwd((v) => !v) },
+                  ].map((f) => (
+                    <View key={f.label} style={styles.pwdRow}>
+                      <Text style={styles.fieldLabel}>{f.label}</Text>
+                      <View style={styles.pwdInputWrap}>
+                        <TextInput
+                          style={styles.pwdInput}
+                          value={f.value}
+                          onChangeText={f.setter}
+                          secureTextEntry={!f.show}
+                          placeholder="••••••••"
+                          placeholderTextColor="#333"
+                          autoCapitalize="none"
+                        />
+                        <Pressable onPress={f.toggle} hitSlop={10}>
+                          <Feather name={f.show ? "eye-off" : "eye"} size={15} color="#444" />
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+                <Pressable
+                  style={[
+                    styles.changePwdBtn,
+                    (!currentPwd || !newPwd || !confirmPwd) && styles.changePwdBtnDisabled,
+                  ]}
+                  disabled={!currentPwd || !newPwd || !confirmPwd}
+                  onPress={() => {
+                    setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
+                    setPwdExpanded(false);
+                    showToast("Senha alterada com sucesso");
+                  }}
+                >
+                  <Text style={styles.changePwdBtnText}>Alterar senha</Text>
+                </Pressable>
+              </>
+            )}
           </View>
 
           {/* 2FA */}
@@ -791,17 +825,27 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
   },
+  cardAccordionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  cardAccordionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
   cardTitle: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 14,
     color: "#fff",
-    marginBottom: 4,
   },
   cardSub: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
     color: "#444",
     lineHeight: 16,
+    marginTop: 4,
     marginBottom: 16,
   },
   pwdFields: { gap: 14, marginBottom: 16 },
