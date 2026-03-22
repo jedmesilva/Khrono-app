@@ -82,7 +82,6 @@ export default function ContaScreen() {
   const [deleteDialog, setDeleteDialog] = useState(false);
 
   const [docExpanded, setDocExpanded] = useState(false);
-  const [faceExpanded, setFaceExpanded] = useState(false);
   const [pwdExpanded, setPwdExpanded] = useState(false);
 
   function showToast(msg: string) {
@@ -297,7 +296,7 @@ export default function ContaScreen() {
 
           {/* Reconhecimento facial */}
           <View style={[styles.verifBlock, { marginTop: 10 }]}>
-            <Pressable style={styles.verifBlockHeader} onPress={() => setFaceExpanded((v) => !v)}>
+            <View style={styles.verifBlockHeader}>
               <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
                 <Feather name="aperture" size={16} color="#555" />
               </View>
@@ -306,45 +305,27 @@ export default function ContaScreen() {
                 <Text style={styles.verifBlockSub}>Verificação com liveness</Text>
               </View>
               <StatusBadge status={faceStatus} />
-              <Feather
-                name={faceExpanded ? "chevron-up" : "chevron-down"}
-                size={15}
-                color="#333"
-                style={{ marginLeft: 8 }}
-              />
-            </Pressable>
+            </View>
 
-            {faceExpanded && (
-              <>
-                {faceStatus === "rejected" && (
-                  <View style={styles.rejectedMsg}>
-                    <Feather name="alert-circle" size={12} color="#ff3b30" />
-                    <Text style={styles.rejectedMsgText}>
-                      Não foi possível confirmar a identidade. Tente em ambiente com boa iluminação.
-                    </Text>
-                  </View>
-                )}
+            {faceStatus === "rejected" && (
+              <View style={styles.rejectedMsg}>
+                <Feather name="alert-circle" size={12} color="#ff3b30" />
+                <Text style={styles.rejectedMsgText}>
+                  Não foi possível confirmar a identidade. Tente em ambiente com boa iluminação.
+                </Text>
+              </View>
+            )}
 
-                {faceNeedsAction && (
-                  <View style={styles.verifContent}>
-                    <View style={styles.faceGuide}>
-                      <View style={styles.faceOval}>
-                        <Feather name="user" size={36} color="#2a2a2a" />
-                      </View>
-                      <Text style={styles.faceGuideText}>
-                        Posicione seu rosto dentro da área e mantenha o olhar na câmera
-                      </Text>
-                    </View>
-                    <Pressable
-                      style={styles.submitVerifBtn}
-                      onPress={() => { setFaceStatus("pending"); setFaceExpanded(false); showToast("Verificação facial iniciada"); }}
-                    >
-                      <Feather name="video" size={14} color="#fff" />
-                      <Text style={styles.submitVerifBtnText}>Iniciar verificação</Text>
-                    </Pressable>
-                  </View>
-                )}
-              </>
+            {faceNeedsAction && (
+              <View style={styles.verifContent}>
+                <Pressable
+                  style={styles.submitVerifBtn}
+                  onPress={() => router.push("/verificacao-facial")}
+                >
+                  <Feather name="video" size={14} color="#fff" />
+                  <Text style={styles.submitVerifBtnText}>Fazer reconhecimento facial</Text>
+                </Pressable>
+              </View>
             )}
           </View>
         </View>
