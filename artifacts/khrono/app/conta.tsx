@@ -15,9 +15,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
+import { DocStatus, useDocuments } from "@/context/DocumentsContext";
 
 type VerifStatus = "none" | "pending" | "approved" | "rejected";
-type DocType = "RG" | "CNH" | "Passaporte";
 type EditingField = "nome" | "email" | "telefone" | "cpf" | "nascimento" | null;
 
 const STATUS_COLORS: Record<VerifStatus, { bg: string; border: string; text: string; label: string }> = {
@@ -26,6 +26,21 @@ const STATUS_COLORS: Record<VerifStatus, { bg: string; border: string; text: str
   approved: { bg: Colors.accentGreen + "12", border: Colors.accentGreen + "30", text: Colors.accentGreen, label: "Aprovado" },
   rejected: { bg: "#ff3b3015",              border: "#ff3b3030",            text: "#ff3b30",        label: "Reprovado"  },
 };
+
+const DOC_STATUS_COLORS: Record<DocStatus, { bg: string; border: string; text: string; label: string }> = {
+  analise:    { bg: Colors.accent + "12",      border: Colors.accent + "30",        text: Colors.accent,      label: "Em análise"  },
+  verificado: { bg: Colors.accentGreen + "12", border: Colors.accentGreen + "30",   text: Colors.accentGreen, label: "Verificado"  },
+  invalido:   { bg: "#ff3b3015",               border: "#ff3b3030",                 text: "#ff3b30",          label: "Inválido"    },
+};
+
+function DocStatusBadge({ status }: { status: DocStatus }) {
+  const s = DOC_STATUS_COLORS[status];
+  return (
+    <View style={[styles.statusBadge, { backgroundColor: s.bg, borderColor: s.border }]}>
+      <Text style={[styles.statusBadgeText, { color: s.text }]}>{s.label}</Text>
+    </View>
+  );
+}
 
 function StatusBadge({ status }: { status: VerifStatus }) {
   const s = STATUS_COLORS[status];
@@ -66,11 +81,8 @@ export default function ContaScreen() {
     nascimento: "15/04/1990",
   });
 
-  const [docStatus, setDocStatus] = useState<VerifStatus>("none");
+  const { documents } = useDocuments();
   const [faceStatus, setFaceStatus] = useState<VerifStatus>("rejected");
-  const [docType, setDocType] = useState<DocType>("RG");
-  const [docFront, setDocFront] = useState(false);
-  const [docBack, setDocBack] = useState(false);
 
   const [showCurrentPwd, setShowCurrentPwd] = useState(false);
   const [showNewPwd, setShowNewPwd] = useState(false);
@@ -81,7 +93,6 @@ export default function ContaScreen() {
 
   const [deleteDialog, setDeleteDialog] = useState(false);
 
-  const [docExpanded, setDocExpanded] = useState(false);
   const [pwdExpanded, setPwdExpanded] = useState(false);
 
   function showToast(msg: string) {
@@ -120,7 +131,6 @@ export default function ContaScreen() {
     { key: "nascimento", label: "Data de nascimento", placeholder: "DD/MM/AAAA"         },
   ];
 
-  const docNeedsAction = docStatus === "none" || docStatus === "rejected";
   const faceNeedsAction = faceStatus === "none" || faceStatus === "rejected";
 
   return (
@@ -213,85 +223,54 @@ export default function ContaScreen() {
 
           {/* Documento */}
           <View style={styles.verifBlock}>
-            <Pressable style={styles.verifBlockHeader} onPress={() => setDocExpanded((v) => !v)}>
+            <View style={styles.verifBlockHeader}>
               <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
                 <Feather name="file-text" size={16} color="#555" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.verifBlockTitle}>Documento</Text>
+                <Text style={styles.verifBlockTitle}>Documentos</Text>
                 <Text style={styles.verifBlockSub}>RG, CNH ou Passaporte</Text>
               </View>
-              <StatusBadge status={docStatus} />
-              <Feather
-                name={docExpanded ? "chevron-up" : "chevron-down"}
-                size={15}
-                color="#333"
-                style={{ marginLeft: 8 }}
-              />
-            </Pressable>
+            </View>
 
-            {docExpanded && (
-              <>
-                {docStatus === "rejected" && (
-                  <View style={styles.rejectedMsg}>
-                    <Feather name="alert-circle" size={12} color="#ff3b30" />
-                    <Text style={styles.rejectedMsgText}>
-                      Documento ilegível ou expirado. Envie novamente com boa iluminação.
-                    </Text>
-                  </View>
-                )}
-
-                {docNeedsAction && (
-                  <View style={styles.verifContent}>
-                    <Text style={styles.verifLabel}>Tipo de documento</Text>
-                    <View style={styles.docTypeRow}>
-                      {(["RG", "CNH", "Passaporte"] as DocType[]).map((d) => (
-                        <Pressable
-                          key={d}
-                          style={[styles.docTypeBtn, docType === d && styles.docTypeBtnActive]}
-                          onPress={() => setDocType(d)}
-                        >
-                          <Text style={[styles.docTypeBtnText, docType === d && styles.docTypeBtnTextActive]}>
-                            {d}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-
-                    <View style={styles.uploadRow}>
-                      <Pressable
-                        style={[styles.uploadBtn, docFront && styles.uploadBtnDone]}
-                        onPress={() => setDocFront(true)}
-                      >
-                        <Feather name={docFront ? "check" : "camera"} size={18} color={docFront ? Colors.accentGreen : "#555"} />
-                        <Text style={[styles.uploadBtnText, docFront && { color: Colors.accentGreen }]}>
-                          {docFront ? "Frente enviada" : "Frente"}
+            {documents.length > 0 && (
+              <View style={styles.docList}>
+                {documents.map((doc, index) => (
+                  <View key={doc.id}>
+                    {index > 0 && <View style={styles.docDivider} />}
+                    <View style={styles.docItem}>
+                      <View style={styles.docItemIcon}>
+                        <Feather name="file-text" size={14} color="#555" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.docItemType}>{doc.type}</Text>
+                        <Text style={styles.docItemMeta}>
+                          {doc.submittedAt} · {doc.files.length} arquivo{doc.files.length !== 1 ? "s" : ""}
                         </Text>
-                      </Pressable>
-                      <Pressable
-                        style={[styles.uploadBtn, docBack && styles.uploadBtnDone]}
-                        onPress={() => setDocBack(true)}
-                      >
-                        <Feather name={docBack ? "check" : "camera"} size={18} color={docBack ? Colors.accentGreen : "#555"} />
-                        <Text style={[styles.uploadBtnText, docBack && { color: Colors.accentGreen }]}>
-                          {docBack ? "Verso enviado" : "Verso"}
-                        </Text>
-                      </Pressable>
+                      </View>
+                      <DocStatusBadge status={doc.status} />
                     </View>
-
-                    {docFront && docBack && (
-                      <Pressable
-                        style={styles.submitVerifBtn}
-                        onPress={() => { setDocStatus("pending"); setDocExpanded(false); showToast("Documento enviado para análise"); }}
-                      >
-                        <Feather name="upload" size={14} color="#fff" />
-                        <Text style={styles.submitVerifBtnText}>Enviar para análise</Text>
-                      </Pressable>
-                    )}
                   </View>
-                )}
-              </>
+                ))}
+              </View>
             )}
+
+            {documents.length === 0 && (
+              <View style={styles.docEmpty}>
+                <Feather name="inbox" size={22} color="#222" />
+                <Text style={styles.docEmptyText}>Nenhum documento enviado</Text>
+              </View>
+            )}
+
+            <View style={styles.verifContent}>
+              <Pressable
+                style={styles.submitVerifBtn}
+                onPress={() => router.push("/envio-documento")}
+              >
+                <Feather name="upload" size={14} color="#fff" />
+                <Text style={styles.submitVerifBtnText}>Enviar documento</Text>
+              </Pressable>
+            </View>
           </View>
 
           {/* Reconhecimento facial */}
@@ -774,6 +753,56 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#fff",
   },
+
+  docList: {
+    borderTopWidth: 1,
+    borderTopColor: "#111",
+  },
+  docDivider: {
+    height: 1,
+    backgroundColor: "#111",
+  },
+  docItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  docItemIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#111",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  docItemType: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#ccc",
+    marginBottom: 2,
+  },
+  docItemMeta: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    color: "#444",
+  },
+  docEmpty: {
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#111",
+  },
+  docEmptyText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#333",
+  },
+
   faceGuide: {
     alignItems: "center",
     gap: 12,

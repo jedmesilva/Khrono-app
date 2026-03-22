@@ -20,6 +20,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CardsProvider } from "@/context/CardsContext";
 import { ContractsProvider } from "@/context/ContractsContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
+import { DocumentsProvider } from "@/context/DocumentsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,6 +58,14 @@ function RootLayoutNav() {
         name="service/[id]"
         options={{ headerShown: false, presentation: "card" }}
       />
+      <Stack.Screen
+        name="verificacao-facial"
+        options={{ headerShown: false, presentation: "card" }}
+      />
+      <Stack.Screen
+        name="envio-documento"
+        options={{ headerShown: false, presentation: "card" }}
+      />
     </Stack>
   );
 }
@@ -87,7 +96,9 @@ export default function RootLayout() {
             <ContractsProvider>
               <CardsProvider>
                 <ConfirmationProvider>
-                  <RootLayoutNav />
+                  <DocumentsProvider>
+                    <RootLayoutNav />
+                  </DocumentsProvider>
                 </ConfirmationProvider>
               </CardsProvider>
             </ContractsProvider>
