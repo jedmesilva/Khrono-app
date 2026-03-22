@@ -64,7 +64,7 @@ export function MenuSheet({ visible, onClose }: Props) {
       icon: "user",
       label: "Minha conta",
       sublabel: "Dados pessoais, verificação, segurança",
-      onPress: () => { Haptics.selectionAsync(); onClose(); router.push("/conta"); },
+      onPress: () => { Haptics.selectionAsync(); onClose(); setTimeout(() => router.push("/conta"), 300); },
     },
     {
       id: "support",
