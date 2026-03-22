@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { LocationSheet, LocationMode } from "@/components/LocationSheet";
 import Colors from "@/constants/colors";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -187,6 +188,9 @@ export default function ProfileScreen() {
   const isWeb = Platform.OS === "web";
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [locationSheetOpen, setLocationSheetOpen] = useState(false);
+  const [locationMode, setLocationMode] = useState<LocationMode>("realtime");
+  const [fixedAddress, setFixedAddress] = useState("Belo Horizonte, MG");
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
   const avgRating =
@@ -269,6 +273,47 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>AVALIAÇÃO</Text>
           </View>
         </View>
+
+        {/* Location card */}
+        <Pressable
+          style={styles.locationCard}
+          onPress={() => setLocationSheetOpen(true)}
+        >
+          <View style={[
+            styles.locationIconWrap,
+            locationMode === "realtime"
+              ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "30" }
+              : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "30" },
+          ]}>
+            <Feather
+              name={locationMode === "realtime" ? "navigation" : "map-pin"}
+              size={18}
+              color={locationMode === "realtime" ? Colors.accentGreen : Colors.accent}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={styles.locationTopRow}>
+              <Text style={styles.locationLabel}>Localização de serviço</Text>
+              <View style={[
+                styles.locationModeBadge,
+                locationMode === "realtime"
+                  ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "25" }
+                  : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "25" },
+              ]}>
+                <Text style={[
+                  styles.locationModeBadgeText,
+                  { color: locationMode === "realtime" ? Colors.accentGreen : Colors.accent },
+                ]}>
+                  {locationMode === "realtime" ? "Tempo real" : "Fixa"}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.locationAddress}>
+              {locationMode === "realtime" ? `${fixedAddress} · GPS ativo` : fixedAddress}
+            </Text>
+          </View>
+          <Feather name="chevron-right" size={16} color="#2a2a2a" />
+        </Pressable>
 
         {/* Skills */}
         <View style={styles.section}>
@@ -401,6 +446,17 @@ export default function ProfileScreen() {
         buttons={dialog?.buttons}
         onDismiss={() => setDialog(null)}
       />
+
+      <LocationSheet
+        visible={locationSheetOpen}
+        onClose={() => setLocationSheetOpen(false)}
+        mode={locationMode}
+        fixedAddress={fixedAddress}
+        onSave={(mode, address) => {
+          setLocationMode(mode);
+          if (mode === "fixed") setFixedAddress(address);
+        }}
+      />
     </View>
   );
 }
@@ -513,6 +569,57 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   statDivider: { width: 1, height: 30, backgroundColor: "#1a1a1a" },
+  locationCard: {
+    backgroundColor: "#0a0a0a",
+    borderWidth: 1,
+    borderColor: "#161616",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 16,
+  },
+  locationIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  locationTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  locationLabel: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    color: "#444",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    flex: 1,
+  },
+  locationModeBadge: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  locationModeBadgeText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 9,
+    letterSpacing: 0.5,
+  },
+  locationAddress: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#fff",
+  },
   pinCard: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
