@@ -84,6 +84,7 @@ export default function ContaScreen() {
   });
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
 
   async function pickProfileImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -93,8 +94,18 @@ export default function ContaScreen() {
       quality: 0.8,
     });
     if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+      setPendingImage(result.assets[0].uri);
     }
+  }
+
+  function saveProfileImage() {
+    setProfileImage(pendingImage);
+    setPendingImage(null);
+    showToast("Foto de perfil atualizada");
+  }
+
+  function discardProfileImage() {
+    setPendingImage(null);
   }
 
   const { documents } = useDocuments();
@@ -174,8 +185,8 @@ export default function ContaScreen() {
         {/* Avatar */}
         <View style={styles.avatarSection}>
           <Pressable style={styles.avatarWrap} onPress={pickProfileImage}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+            {pendingImage || profileImage ? (
+              <Image source={{ uri: pendingImage ?? profileImage! }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
@@ -187,6 +198,19 @@ export default function ContaScreen() {
               <Feather name="camera" size={11} color="#fff" />
             </View>
           </Pressable>
+
+          {pendingImage && (
+            <View style={styles.avatarActions}>
+              <Pressable style={styles.avatarDiscardBtn} onPress={discardProfileImage}>
+                <Feather name="x" size={13} color="#666" />
+                <Text style={styles.avatarDiscardText}>Descartar</Text>
+              </Pressable>
+              <Pressable style={styles.avatarSaveBtn} onPress={saveProfileImage}>
+                <Feather name="check" size={13} color="#fff" />
+                <Text style={styles.avatarSaveText}>Salvar foto</Text>
+              </Pressable>
+            </View>
+          )}
         </View>
 
         {/* ── Dados pessoais ── */}
@@ -560,6 +584,41 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 2,
     borderColor: Colors.background,
+  },
+  avatarActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 14,
+  },
+  avatarDiscardBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#222",
+    backgroundColor: "#0a0a0a",
+  },
+  avatarDiscardText: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 12,
+    color: "#555",
+  },
+  avatarSaveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.accent,
+  },
+  avatarSaveText: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 12,
+    color: "#fff",
   },
 
   section: { marginBottom: 28 },
