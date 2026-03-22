@@ -154,47 +154,43 @@ export default function EnvioDocumentoScreen() {
           </View>
         </View>
 
-        {/* Arquivos adicionados */}
-        {files.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              ARQUIVOS ADICIONADOS · {files.length}
-            </Text>
-            <View style={styles.fileList}>
-              {files.map((file, index) => (
-                <View key={index} style={styles.fileItem}>
-                  <View style={styles.fileIconWrap}>
-                    <Feather name={getFileIcon(file.mimeType)} size={15} color={Colors.accent} />
-                  </View>
-                  <Text style={styles.fileName} numberOfLines={1} ellipsizeMode="middle">
-                    {file.name}
-                  </Text>
-                  <Pressable
-                    style={styles.fileRemoveBtn}
-                    onPress={() => removeFile(index)}
-                    hitSlop={10}
-                  >
-                    <Feather name="x" size={13} color="#444" />
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Adicionar arquivos */}
+        {/* Arquivos */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>ADICIONAR ARQUIVOS</Text>
-          <Pressable style={styles.addBtn} onPress={pickFile}>
-            <View style={styles.addBtnIcon}>
-              <Feather name="paperclip" size={18} color="#666" />
-            </View>
-            <View style={styles.addBtnTexts}>
-              <Text style={styles.addBtnLabel}>Selecionar arquivo</Text>
-              <Text style={styles.addBtnSub}>Imagem ou PDF do dispositivo</Text>
-            </View>
-            <Feather name="chevron-right" size={16} color="#2a2a2a" />
-          </Pressable>
+          <Text style={styles.sectionLabel}>
+            {files.length > 0 ? `ARQUIVOS · ${files.length}` : "ARQUIVOS"}
+          </Text>
+          <View style={styles.filesSection}>
+            {files.map((file, index) => (
+              <View key={index} style={styles.fileItem}>
+                <View style={styles.fileIconWrap}>
+                  <Feather name={getFileIcon(file.mimeType)} size={15} color={Colors.accent} />
+                </View>
+                <Text style={styles.fileName} numberOfLines={1} ellipsizeMode="middle">
+                  {file.name}
+                </Text>
+                <Pressable
+                  style={styles.fileRemoveBtn}
+                  onPress={() => removeFile(index)}
+                  hitSlop={10}
+                >
+                  <Feather name="x" size={13} color="#444" />
+                </Pressable>
+              </View>
+            ))}
+            {files.length > 0 && <View style={styles.filesDivider} />}
+            <Pressable style={styles.addBtn} onPress={pickFile}>
+              <View style={styles.addBtnIcon}>
+                <Feather name="paperclip" size={18} color="#666" />
+              </View>
+              <View style={styles.addBtnTexts}>
+                <Text style={styles.addBtnLabel}>
+                  {files.length > 0 ? "Adicionar mais arquivos" : "Selecionar arquivo"}
+                </Text>
+                <Text style={styles.addBtnSub}>Imagem ou PDF do dispositivo</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color="#2a2a2a" />
+            </Pressable>
+          </View>
         </View>
 
         {/* Instruções — no final */}
@@ -294,17 +290,19 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  fileList: { gap: 6 },
+  filesSection: {
+    backgroundColor: "#0a0a0a",
+    borderWidth: 1,
+    borderColor: "#161616",
+    borderRadius: 14,
+    overflow: "hidden",
+  },
   fileItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 12,
   },
   fileIconWrap: {
     width: 30,
@@ -324,6 +322,11 @@ const styles = StyleSheet.create({
   fileRemoveBtn: {
     padding: 4,
   },
+  filesDivider: {
+    height: 1,
+    backgroundColor: "#111",
+    marginHorizontal: 14,
+  },
 
   addBtn: {
     flexDirection: "row",
@@ -331,10 +334,6 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 14,
   },
   addBtnIcon: {
     width: 36,
