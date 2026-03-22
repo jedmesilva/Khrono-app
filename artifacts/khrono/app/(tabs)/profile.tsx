@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Platform,
@@ -13,168 +14,63 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode } from "@/components/LocationSheet";
 import Colors from "@/constants/colors";
+import {
+  MY_PROFILE,
+  Skill,
+  Tool,
+  VERIFICATION_LABELS,
+  VerificationType,
+} from "@/constants/profile-data";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
+type ViewState = "main" | "skills" | "skill_detail" | "tools";
 
-const MY_PROFILE = {
-  name: "Jedme Silva",
-  initials: "JS",
-  location: "Belo Horizonte, MG",
-  totalContracts: 43,
-  since: "Mar 2024",
-  baseRate: 50,
-  pinCode: "1257",
-  tools: [
-    {
-      id: "t1",
-      name: "Honda Civic 2019",
-      type: "Veículo",
-      icon: "truck" as const,
-      details: "Prata · 4 portas · Ar condicionado",
-      available: true,
-    },
-    {
-      id: "t2",
-      name: "Kit Furadeira Bosch",
-      type: "Ferramenta",
-      icon: "tool" as const,
-      details: "Furadeira + bits + nível + parafusadeira",
-      available: true,
-    },
-    {
-      id: "t3",
-      name: "Carrinho de Mudança",
-      type: "Equipamento",
-      icon: "box" as const,
-      details: "Capacidade 200kg · Com cintas",
-      available: false,
-    },
-  ],
-  skills: [
-    {
-      id: "s1",
-      name: "Montador de Móveis",
-      multiplier: 1.0,
-      rating: 4.9,
-      reviews: 28,
-      contracts: 31,
-      isNew: false,
-      reviewsList: [
-        { author: "Bruno Souza", rating: 5, text: "Excelente trabalho, montou tudo rápido e com cuidado.", date: "08/11/2024" },
-        { author: "Ana Pereira", rating: 5, text: "Super recomendo, muito profissional.", date: "01/11/2024" },
-        { author: "Rafael Lima", rating: 4, text: "Bom trabalho, pontual e organizado.", date: "20/10/2024" },
-      ],
-    },
-    {
-      id: "s2",
-      name: "Carregador / Mudanças",
-      multiplier: 0.8,
-      rating: 4.7,
-      reviews: 12,
-      contracts: 12,
-      isNew: false,
-      reviewsList: [
-        { author: "Mariana Costa", rating: 5, text: "Cuidadoso com os móveis, ótimo serviço.", date: "05/10/2024" },
-        { author: "Felipe Andrade", rating: 4, text: "Chegou no horário, serviço bem feito.", date: "22/09/2024" },
-      ],
-    },
-    {
-      id: "s3",
-      name: "Pintor",
-      multiplier: 1.5,
-      rating: 0,
-      reviews: 0,
-      contracts: 0,
-      isNew: true,
-      reviewsList: [],
-    },
-  ],
-};
-
-type Skill = typeof MY_PROFILE.skills[0];
-
-function SkillDetail({ skill, baseRate, onBack }: { skill: Skill; baseRate: number; onBack: () => void }) {
-  const [tab, setTab] = useState<"reviews" | "activity">("reviews");
-  const rate = baseRate * skill.multiplier;
-
+function VerifiedBadge({ type, onPress }: { type: VerificationType; onPress: () => void }) {
   return (
-    <View style={styles.skillDetailContainer}>
-      {/* Back header */}
-      <View style={styles.skillDetailHeader}>
+    <Pressable onPress={onPress} style={styles.verifiedBadge}>
+      <Feather name="check-circle" size={9} color="#4a9eff" />
+      <Text style={styles.verifiedBadgeText}>Verificado</Text>
+    </Pressable>
+  );
+}
+
+function SkillDetailView({ skill, onBack, onVerifiedPress }: {
+  skill: Skill;
+  onBack: () => void;
+  onVerifiedPress: (type: VerificationType) => void;
+}) {
+  return (
+    <View style={styles.subContainer}>
+      <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
           <Feather name="arrow-left" size={18} color={Colors.accent} />
         </Pressable>
-        <View style={styles.skillDetailInfo}>
-          <Text style={styles.skillDetailName}>{skill.name}</Text>
-          {!skill.isNew ? (
-            <View style={styles.ratingRowSmall}>
-              <Feather name="star" size={10} color={Colors.accent} />
-              <Text style={styles.ratingTextSmall}>
-                {skill.rating} · {skill.reviews} avaliações · {skill.contracts} contratos
-              </Text>
-            </View>
-          ) : (
-            <Text style={styles.newSkillTag}>skill nova · sem atividade ainda</Text>
-          )}
-          <View style={styles.rateRow}>
-            <Text style={styles.skillRate}>R${rate.toFixed(0)}/h</Text>
-            <View style={styles.multiplierBadge}>
-              <Text style={styles.multiplierText}>{skill.multiplier}x</Text>
-            </View>
+        <View style={{ flex: 1 }}>
+          <View style={styles.nameWithBadge}>
+            <Text style={styles.subTitle} numberOfLines={1}>{skill.name}</Text>
+            {skill.verified && (
+              <VerifiedBadge
+                type={skill.verified.type}
+                onPress={() => skill.verified && onVerifiedPress(skill.verified.type)}
+              />
+            )}
           </View>
+          {skill.isNew ? (
+            <Text style={styles.newSkillTag}>skill nova · sem atividade ainda</Text>
+          ) : null}
         </View>
       </View>
 
-      {/* Tabs */}
-      <View style={styles.tabBar}>
-        {(["reviews", "activity"] as const).map((t) => (
-          <Pressable
-            key={t}
-            style={[styles.tabItem, tab === t && styles.tabItemActive]}
-            onPress={() => setTab(t)}
-          >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-              {t === "reviews" ? "Avaliações" : "Atividade"}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {/* Tab content */}
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.tabContent}>
-        {skill.isNew ? (
-          <View style={styles.emptyState}>
-            <Feather name="clock" size={28} color="#333" />
-            <Text style={styles.emptyText}>nenhuma atividade ainda</Text>
-            <Text style={styles.emptySubtext}>os registros aparecerão após o primeiro contrato</Text>
-          </View>
-        ) : tab === "reviews" ? (
-          <View style={styles.reviewList}>
-            {skill.reviewsList.map((r, i) => (
-              <View key={i} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <Text style={styles.reviewAuthor}>{r.author}</Text>
-                  <View style={styles.stars}>
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Feather
-                        key={s}
-                        name="star"
-                        size={10}
-                        color={Colors.accent}
-                        style={{ opacity: s <= r.rating ? 1 : 0.2 }}
-                      />
-                    ))}
-                  </View>
-                </View>
-                <Text style={styles.reviewText}>{r.text}</Text>
-                <Text style={styles.reviewDate}>{r.date}</Text>
-              </View>
-            ))}
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
+        {skill.description ? (
+          <View style={styles.descriptionCard}>
+            <Text style={styles.descriptionLabel}>DESCRIÇÃO</Text>
+            <Text style={styles.descriptionText}>{skill.description}</Text>
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Feather name="bar-chart-2" size={28} color="#333" />
-            <Text style={styles.emptyText}>histórico de contratos em breve</Text>
+            <Feather name="file-text" size={28} color="#333" />
+            <Text style={styles.emptyText}>sem descrição</Text>
           </View>
         )}
         <View style={{ height: 100 }} />
@@ -183,9 +79,130 @@ function SkillDetail({ skill, baseRate, onBack }: { skill: Skill; baseRate: numb
   );
 }
 
+function SkillsListView({ onBack, onSelectSkill, onVerifiedPress, onAdd }: {
+  onBack: () => void;
+  onSelectSkill: (skill: Skill) => void;
+  onVerifiedPress: (type: VerificationType) => void;
+  onAdd: () => void;
+}) {
+  const verifiedCount = MY_PROFILE.skills.filter((s) => s.verified !== null).length;
+
+  return (
+    <View style={styles.subContainer}>
+      <View style={styles.subHeader}>
+        <Pressable onPress={onBack} style={styles.backBtn}>
+          <Feather name="arrow-left" size={18} color={Colors.accent} />
+        </Pressable>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.subTitle}>Skills</Text>
+          <Text style={styles.subMeta}>
+            {MY_PROFILE.skills.length} skills · {verifiedCount} verificadas
+          </Text>
+        </View>
+        <Pressable style={styles.addBtn} onPress={onAdd}>
+          <Feather name="plus" size={11} color="#555" />
+          <Text style={styles.addBtnText}>adicionar</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
+        {MY_PROFILE.skills.map((skill) => (
+          <Pressable key={skill.id} style={styles.listCard} onPress={() => onSelectSkill(skill)}>
+            <View style={[styles.listIcon, { borderColor: skill.isNew ? "#1e1e1e" : Colors.accent + "20" }]}>
+              <Feather name="tool" size={18} color={skill.isNew ? "#444" : Colors.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.nameWithBadge}>
+                <Text style={[styles.listCardName, { flex: 1 }]} numberOfLines={1}>{skill.name}</Text>
+                {skill.verified && (
+                  <VerifiedBadge
+                    type={skill.verified.type}
+                    onPress={() => skill.verified && onVerifiedPress(skill.verified.type)}
+                  />
+                )}
+              </View>
+              {skill.description ? (
+                <Text style={styles.listCardSub} numberOfLines={1} ellipsizeMode="tail">
+                  {skill.description}
+                </Text>
+              ) : null}
+            </View>
+            <Feather name="chevron-right" size={16} color="#2a2a2a" />
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+function ToolsListView({ onBack, onVerifiedPress, onAdd }: {
+  onBack: () => void;
+  onVerifiedPress: (type: VerificationType) => void;
+  onAdd: () => void;
+}) {
+  const verifiedCount = MY_PROFILE.tools.filter((t) => t.verified !== null).length;
+
+  return (
+    <View style={styles.subContainer}>
+      <View style={styles.subHeader}>
+        <Pressable onPress={onBack} style={styles.backBtn}>
+          <Feather name="arrow-left" size={18} color={Colors.accent} />
+        </Pressable>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.subTitle}>Tools</Text>
+          <Text style={styles.subMeta}>
+            {MY_PROFILE.tools.length} tools · {verifiedCount} verificadas
+          </Text>
+        </View>
+        <Pressable style={styles.addBtn} onPress={onAdd}>
+          <Feather name="plus" size={11} color="#555" />
+          <Text style={styles.addBtnText}>adicionar</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
+        {MY_PROFILE.tools.map((tool) => (
+          <View key={tool.id} style={[styles.listCard, { opacity: tool.available ? 1 : 0.55 }]}>
+            <View style={[styles.listIcon, { borderColor: tool.available ? Colors.accentGreen + "20" : "#1e1e1e" }]}>
+              <Feather name={tool.icon} size={18} color={tool.available ? Colors.accentGreen : "#444"} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.nameWithBadge}>
+                <Text style={[styles.listCardName, { flex: 1 }]} numberOfLines={1}>{tool.name}</Text>
+                {tool.verified && (
+                  <VerifiedBadge
+                    type={tool.verified.type}
+                    onPress={() => tool.verified && onVerifiedPress(tool.verified.type)}
+                  />
+                )}
+              </View>
+              <View style={styles.toolMetaRow}>
+                <Text style={styles.listCardSub}>{tool.type}</Text>
+                <View style={[
+                  styles.availBadge,
+                  {
+                    backgroundColor: tool.available ? Colors.accentGreen + "15" : "#1e1e1e",
+                    borderColor: tool.available ? Colors.accentGreen + "25" : "#2a2a2a",
+                  },
+                ]}>
+                  <Text style={[styles.availBadgeText, { color: tool.available ? Colors.accentGreen : "#444" }]}>
+                    {tool.available ? "disponível" : "indisponível"}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.toolDetails} numberOfLines={1}>{tool.details}</Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
+  const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
@@ -193,22 +210,79 @@ export default function ProfileScreen() {
   const [fixedAddress, setFixedAddress] = useState("Belo Horizonte, MG");
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
-  const avgRating =
-    MY_PROFILE.skills.filter((s) => s.rating > 0).reduce((sum, s) => sum + s.rating, 0) /
-      MY_PROFILE.skills.filter((s) => s.rating > 0).length || 0;
+  const verifiedSkillsCount = MY_PROFILE.skills.filter((s) => s.verified !== null).length;
+  const verifiedToolsCount = MY_PROFILE.tools.filter((t) => t.verified !== null).length;
+  const hasVerified = verifiedSkillsCount > 0 || verifiedToolsCount > 0;
 
-  if (selectedSkill) {
+  const avgRating =
+    MY_PROFILE.services.filter((s) => s.rating > 0).reduce((sum, s) => sum + s.rating, 0) /
+      (MY_PROFILE.services.filter((s) => s.rating > 0).length || 1);
+
+  function handleVerifiedPress(type: VerificationType) {
+    setDialog({
+      title: VERIFICATION_LABELS[type],
+      message:
+        type === "documentation"
+          ? "Identidade e documentação verificadas pela equipe Krono."
+          : type === "community"
+          ? "Verificado por avaliações da comunidade de usuários."
+          : "Verificação em análise pela equipe Krono.",
+    });
+  }
+
+  if (view === "skill_detail" && selectedSkill) {
     return (
-      <View
-        style={[
-          styles.container,
-          { backgroundColor: Colors.background, paddingTop: topPadding + 20 },
-        ]}
-      >
-        <SkillDetail
+      <View style={[styles.container, { backgroundColor: Colors.background, paddingTop: topPadding + 20 }]}>
+        <SkillDetailView
           skill={selectedSkill}
-          baseRate={MY_PROFILE.baseRate}
-          onBack={() => setSelectedSkill(null)}
+          onBack={() => { setSelectedSkill(null); setView("skills"); }}
+          onVerifiedPress={handleVerifiedPress}
+        />
+        <AppDialog
+          visible={!!dialog}
+          title={dialog?.title ?? ""}
+          message={dialog?.message}
+          buttons={dialog?.buttons}
+          onDismiss={() => setDialog(null)}
+        />
+      </View>
+    );
+  }
+
+  if (view === "skills") {
+    return (
+      <View style={[styles.container, { backgroundColor: Colors.background, paddingTop: topPadding + 20 }]}>
+        <SkillsListView
+          onBack={() => setView("main")}
+          onSelectSkill={(skill) => { setSelectedSkill(skill); setView("skill_detail"); }}
+          onVerifiedPress={handleVerifiedPress}
+          onAdd={() => router.push("/cadastro-skill")}
+        />
+        <AppDialog
+          visible={!!dialog}
+          title={dialog?.title ?? ""}
+          message={dialog?.message}
+          buttons={dialog?.buttons}
+          onDismiss={() => setDialog(null)}
+        />
+      </View>
+    );
+  }
+
+  if (view === "tools") {
+    return (
+      <View style={[styles.container, { backgroundColor: Colors.background, paddingTop: topPadding + 20 }]}>
+        <ToolsListView
+          onBack={() => setView("main")}
+          onVerifiedPress={handleVerifiedPress}
+          onAdd={() => router.push("/cadastro-tool")}
+        />
+        <AppDialog
+          visible={!!dialog}
+          title={dialog?.title ?? ""}
+          message={dialog?.message}
+          buttons={dialog?.buttons}
+          onDismiss={() => setDialog(null)}
         />
       </View>
     );
@@ -236,18 +310,21 @@ export default function ProfileScreen() {
           <Text style={styles.headerSub}>perfil</Text>
         </View>
 
-        {/* Avatar */}
+        {/* Avatar + Info */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarWrap}>
-            <View style={styles.avatarLarge}>
-              <Text style={styles.avatarLargeText}>{MY_PROFILE.initials}</Text>
-            </View>
-            <Pressable style={styles.editBtn}>
-              <Feather name="edit-2" size={10} color="#fff" />
-            </Pressable>
+          <View style={styles.avatarLarge}>
+            <Text style={styles.avatarLargeText}>{MY_PROFILE.initials}</Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{MY_PROFILE.name}</Text>
+            <View style={styles.nameWithBadge}>
+              <Text style={styles.profileName}>{MY_PROFILE.name}</Text>
+              {hasVerified && (
+                <VerifiedBadge
+                  type="documentation"
+                  onPress={() => handleVerifiedPress("documentation")}
+                />
+              )}
+            </View>
             <View style={styles.locationRow}>
               <Feather name="map-pin" size={11} color="#555" />
               <Text style={styles.locationText}>{MY_PROFILE.location}</Text>
@@ -264,8 +341,8 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{MY_PROFILE.skills.length}</Text>
-            <Text style={styles.statLabel}>SKILLS</Text>
+            <Text style={styles.statValue}>{MY_PROFILE.services.length}</Text>
+            <Text style={styles.statLabel}>SERVICES</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -275,10 +352,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Location card */}
-        <Pressable
-          style={styles.locationCard}
-          onPress={() => setLocationSheetOpen(true)}
-        >
+        <Pressable style={styles.locationCard} onPress={() => setLocationSheetOpen(true)}>
           <View style={[
             styles.locationIconWrap,
             locationMode === "realtime"
@@ -315,78 +389,42 @@ export default function ProfileScreen() {
           <Feather name="chevron-right" size={16} color="#2a2a2a" />
         </Pressable>
 
-        {/* Skills */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Skills</Text>
-            <View style={styles.sectionHeaderRight}>
-              <View style={styles.baseBadge}>
-                <Text style={styles.baseBadgeLabel}>base</Text>
-                <Text style={styles.baseBadgeRate}>R${MY_PROFILE.baseRate}/h</Text>
-              </View>
-              <Pressable
-                style={styles.addBtn}
-                onPress={() => setDialog({ title: "Em breve", message: "Adicionar skills em breve." })}
-              >
-                <Feather name="plus" size={11} color="#555" />
-                <Text style={styles.addBtnText}>adicionar</Text>
-              </Pressable>
+        {/* Skills + Tools compact cards */}
+        <View style={styles.compactRow}>
+          <Pressable style={styles.compactCard} onPress={() => setView("skills")}>
+            <View style={[styles.compactIcon, { borderColor: Colors.accent + "20" }]}>
+              <Feather name="tool" size={16} color={Colors.accent} />
             </View>
-          </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.compactTitle}>Skills</Text>
+              <Text style={styles.compactMeta}>
+                {MY_PROFILE.skills.length} · {verifiedSkillsCount} verificadas
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={14} color="#2a2a2a" />
+          </Pressable>
 
-          <View style={styles.list}>
-            {MY_PROFILE.skills.map((s) => (
-              <Pressable
-                key={s.id}
-                style={styles.skillCard}
-                onPress={() => setSelectedSkill(s)}
-              >
-                <View style={styles.skillIcon}>
-                  <Feather
-                    name="tool"
-                    size={18}
-                    color={s.isNew ? "#444" : Colors.accent}
-                  />
-                </View>
-                <View style={styles.skillInfo}>
-                  <View style={styles.skillNameRow}>
-                    <Text style={styles.skillName}>{s.name}</Text>
-                    {s.isNew && (
-                      <View style={styles.newBadge}>
-                        <Text style={styles.newBadgeText}>novo</Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.skillRateRow}>
-                    <Text style={styles.skillRateText}>
-                      R${(MY_PROFILE.baseRate * s.multiplier).toFixed(0)}/h
-                    </Text>
-                    <View style={styles.multiBadge}>
-                      <Text style={styles.multiBadgeText}>{s.multiplier}x</Text>
-                    </View>
-                  </View>
-                  {!s.isNew && (
-                    <View style={styles.ratingRow}>
-                      <Feather name="star" size={10} color={Colors.accent} />
-                      <Text style={styles.ratingTextSm}>
-                        {s.rating} · {s.reviews} avaliações
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <Feather name="chevron-right" size={16} color="#2a2a2a" />
-              </Pressable>
-            ))}
-          </View>
+          <Pressable style={styles.compactCard} onPress={() => setView("tools")}>
+            <View style={[styles.compactIcon, { borderColor: Colors.accentGreen + "20" }]}>
+              <Feather name="box" size={16} color={Colors.accentGreen} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.compactTitle}>Tools</Text>
+              <Text style={styles.compactMeta}>
+                {MY_PROFILE.tools.length} · {verifiedToolsCount} verificadas
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={14} color="#2a2a2a" />
+          </Pressable>
         </View>
 
-        {/* Tools */}
+        {/* Services */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Tools</Text>
+            <Text style={styles.sectionTitle}>Services</Text>
             <Pressable
               style={styles.addBtn}
-              onPress={() => setDialog({ title: "Em breve", message: "Adicionar tools em breve." })}
+              onPress={() => setDialog({ title: "Em breve", message: "Criação de services em breve." })}
             >
               <Feather name="plus" size={11} color="#555" />
               <Text style={styles.addBtnText}>adicionar</Text>
@@ -394,51 +432,65 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.list}>
-            {MY_PROFILE.tools.map((t) => (
-              <View
-                key={t.id}
-                style={[styles.toolCard, { opacity: t.available ? 1 : 0.5 }]}
-              >
-                <View style={[styles.toolIcon, { borderColor: t.available ? Colors.accentGreen + "20" : "#1e1e1e" }]}>
-                  <Feather
-                    name={t.icon}
-                    size={18}
-                    color={t.available ? Colors.accentGreen : "#444"}
-                  />
-                </View>
-                <View style={styles.toolInfo}>
-                  <View style={styles.toolNameRow}>
-                    <Text style={styles.toolName}>{t.name}</Text>
-                    <View
-                      style={[
-                        styles.availBadge,
-                        {
-                          backgroundColor: t.available ? Colors.accentGreen + "15" : "#1e1e1e",
-                          borderColor: t.available ? Colors.accentGreen + "25" : "#2a2a2a",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.availBadgeText,
-                          { color: t.available ? Colors.accentGreen : "#444" },
-                        ]}
-                      >
-                        {t.available ? "disponível" : "indisponível"}
+            {MY_PROFILE.services.map((sv) => {
+              const skill = MY_PROFILE.skills.find((s) => s.id === sv.skillId);
+              const tools = MY_PROFILE.tools.filter((t) => sv.toolIds.includes(t.id));
+
+              return (
+                <Pressable
+                  key={sv.id}
+                  style={styles.serviceCard}
+                  onPress={() => router.push(`/service/${sv.id}`)}
+                >
+                  {/* Service name + rate */}
+                  <View style={styles.serviceTopRow}>
+                    <Text style={styles.serviceName}>{sv.name}</Text>
+                    <Text style={styles.serviceRate}>R${sv.hourlyRate}/h</Text>
+                  </View>
+
+                  {/* Composition */}
+                  <View style={styles.compositionRow}>
+                    {skill && (
+                      <View style={styles.compositionItem}>
+                        <Feather name="star" size={10} color={Colors.accent} />
+                        <Text style={styles.compositionSkill} numberOfLines={1}>{skill.name}</Text>
+                        {skill.verified && (
+                          <View style={styles.compVerifiedDot} />
+                        )}
+                      </View>
+                    )}
+                    {tools.length > 0 && (
+                      <View style={styles.compositionItem}>
+                        <Feather name="key" size={10} color={Colors.accentGreen} />
+                        <Text style={styles.compositionTool} numberOfLines={1}>
+                          {tools.map((t) => t.name).join(", ")}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Rating */}
+                  {!sv.isNew ? (
+                    <View style={styles.serviceRatingRow}>
+                      <Feather name="star" size={10} color={Colors.accent} />
+                      <Text style={styles.serviceRatingText}>
+                        {sv.rating} · {sv.reviews} avaliações · {sv.contracts} contratos
                       </Text>
                     </View>
-                  </View>
-                  <Text style={styles.toolType}>{t.type}</Text>
-                  <Text style={styles.toolDetails}>{t.details}</Text>
-                </View>
-                <Pressable style={styles.editIconBtn}>
-                  <Feather name="edit-2" size={14} color="#2a2a2a" />
+                  ) : (
+                    <View style={styles.newBadgeWrap}>
+                      <View style={styles.newBadge}>
+                        <Text style={styles.newBadgeText}>novo</Text>
+                      </View>
+                    </View>
+                  )}
                 </Pressable>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
       </ScrollView>
+
       <AppDialog
         visible={!!dialog}
         title={dialog?.title ?? ""}
@@ -465,6 +517,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -484,13 +537,13 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: "uppercase",
   },
+
   avatarSection: {
     flexDirection: "row",
     gap: 16,
     alignItems: "flex-start",
     marginBottom: 20,
   },
-  avatarWrap: { position: "relative", flexShrink: 0 },
   avatarLarge: {
     width: 72,
     height: 72,
@@ -500,6 +553,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.accent + "30",
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
   avatarLargeText: {
     fontFamily: "DMMono_500Medium",
@@ -507,30 +561,17 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     fontWeight: "700",
   },
-  editBtn: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: Colors.accent,
-    borderWidth: 2,
-    borderColor: "#060606",
-    alignItems: "center",
-    justifyContent: "center",
-  },
   profileInfo: { flex: 1, paddingTop: 4 },
   profileName: {
     fontFamily: "Sora_700Bold",
     fontSize: 18,
     color: "#fff",
-    marginBottom: 4,
   },
   locationRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    marginTop: 6,
     marginBottom: 2,
   },
   locationText: {
@@ -543,6 +584,33 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#333",
   },
+
+  verifiedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#0d1f33",
+    borderWidth: 1,
+    borderColor: "#1a3a5c",
+    borderRadius: 20,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    flexShrink: 0,
+  },
+  verifiedBadgeText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 9,
+    color: "#4a9eff",
+  },
+
+  nameWithBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+    marginBottom: 4,
+  },
+
   statsCard: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
@@ -569,6 +637,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   statDivider: { width: 1, height: 30, backgroundColor: "#1a1a1a" },
+
   locationCard: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
@@ -620,37 +689,45 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#fff",
   },
-  pinCard: {
+
+  compactRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 24,
+  },
+  compactCard: {
+    flex: 1,
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
-    borderColor: Colors.accent + "20",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderColor: "#161616",
+    borderRadius: 16,
+    padding: 14,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 28,
+    gap: 10,
   },
-  pinCardLabel: {
+  compactIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#161616",
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  compactTitle: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#fff",
+    marginBottom: 2,
+  },
+  compactMeta: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: "#555",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 4,
+    color: "#444",
   },
-  pinCardCode: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 22,
-    color: Colors.accent,
-    letterSpacing: 4,
-  },
-  copyBtn: {
-    padding: 8,
-    backgroundColor: Colors.accent + "15",
-    borderRadius: 10,
-  },
+
   section: { marginBottom: 28 },
   sectionHeader: {
     flexDirection: "row",
@@ -662,32 +739,6 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_700Bold",
     fontSize: 14,
     color: "#fff",
-  },
-  sectionHeaderRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  baseBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  baseBadgeLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#444",
-  },
-  baseBadgeRate: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 11,
-    color: Colors.accent,
   },
   addBtn: {
     flexDirection: "row",
@@ -706,87 +757,113 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   list: { gap: 10 },
-  skillCard: {
+
+  serviceCard: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
     borderColor: "#161616",
     borderRadius: 16,
     padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
   },
-  skillIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: Colors.accent + "20",
-    alignItems: "center",
-    justifyContent: "center",
+  serviceTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  serviceName: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 14,
+    color: "#fff",
+    flex: 1,
+    marginRight: 8,
+  },
+  serviceRate: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 13,
+    color: Colors.accent,
     flexShrink: 0,
   },
-  skillInfo: { flex: 1 },
-  skillNameRow: {
+  compositionRow: {
+    gap: 6,
+    marginBottom: 10,
+  },
+  compositionItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
+    gap: 6,
   },
-  skillName: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#fff",
+  compositionSkill: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: Colors.accent + "cc",
+    flex: 1,
   },
+  compositionTool: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: Colors.accentGreen + "cc",
+    flex: 1,
+  },
+  compVerifiedDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#4a9eff",
+    flexShrink: 0,
+  },
+  serviceRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  serviceRatingText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    color: "#555",
+  },
+  newBadgeWrap: { flexDirection: "row" },
   newBadge: {
     backgroundColor: Colors.accentGreen + "15",
     borderWidth: 1,
     borderColor: Colors.accentGreen + "25",
     borderRadius: 20,
-    paddingHorizontal: 7,
-    paddingVertical: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
   newBadgeText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
     color: Colors.accentGreen,
   },
-  skillRateRow: {
+
+  subContainer: { flex: 1 },
+  subHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 3,
+    gap: 12,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
-  skillRateText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 12,
-    color: Colors.accent,
+  backBtn: { padding: 4 },
+  subTitle: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 16,
+    color: "#fff",
   },
-  multiBadge: {
-    backgroundColor: Colors.accent + "10",
-    borderWidth: 1,
-    borderColor: Colors.accent + "20",
-    borderRadius: 20,
-    paddingHorizontal: 7,
-    paddingVertical: 1,
-  },
-  multiBadgeText: {
+  subMeta: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: Colors.accent + "80",
+    fontSize: 10,
+    color: "#444",
+    marginTop: 2,
   },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  ratingTextSm: {
+  newSkillTag: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
     color: "#555",
   },
-  toolCard: {
+
+  listCard: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
     borderColor: "#161616",
@@ -796,7 +873,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
   },
-  toolIcon: {
+  listIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
@@ -806,18 +883,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  toolInfo: { flex: 1 },
-  toolNameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-    marginBottom: 2,
-  },
-  toolName: {
+  listCardName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
     color: "#fff",
+  },
+  listCardSub: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#444",
+    marginTop: 2,
+  },
+  toolMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
   },
   availBadge: {
     borderWidth: 1,
@@ -829,133 +910,38 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
   },
-  toolType: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    marginBottom: 2,
-  },
   toolDetails: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
     color: "#333",
+    marginTop: 2,
   },
-  editIconBtn: { padding: 4, flexShrink: 0 },
-  skillDetailContainer: { flex: 1 },
-  skillDetailHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    marginBottom: 20,
+
+  skillDetailContent: {
     paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 100,
   },
-  backBtn: { padding: 4, marginTop: 2 },
-  skillDetailInfo: { flex: 1 },
-  skillDetailName: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 16,
-    color: "#fff",
-    marginBottom: 4,
-  },
-  ratingRowSmall: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 6,
-  },
-  ratingTextSmall: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#666",
-  },
-  newSkillTag: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#555",
-    marginBottom: 6,
-  },
-  rateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  skillRate: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 13,
-    color: Colors.accent,
-  },
-  multiplierBadge: {
-    backgroundColor: Colors.accent + "15",
-    borderWidth: 1,
-    borderColor: Colors.accent + "25",
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 1,
-  },
-  multiplierText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: Colors.accent,
-  },
-  tabBar: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderColor: "#1a1a1a",
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  tabItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-    marginBottom: -1,
-  },
-  tabItemActive: {
-    borderBottomColor: Colors.accent,
-  },
-  tabText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  tabTextActive: {
-    color: Colors.accent,
-  },
-  tabContent: { flex: 1, paddingHorizontal: 20 },
-  reviewList: { gap: 10 },
-  reviewCard: {
+  descriptionCard: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
     borderColor: "#161616",
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
   },
-  reviewHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  reviewAuthor: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#fff",
-  },
-  stars: { flexDirection: "row", gap: 2 },
-  reviewText: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 12,
-    color: "#666",
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  reviewDate: {
+  descriptionLabel: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
+    fontSize: 9,
+    color: "#444",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  descriptionText: {
+    fontFamily: "Sora_400Regular",
+    fontSize: 13,
+    color: "#888",
+    lineHeight: 20,
   },
   emptyState: {
     alignItems: "center",
@@ -966,13 +952,5 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 13,
     color: "#333",
-  },
-  emptySubtext: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#222",
-    textAlign: "center",
-    maxWidth: 220,
-    lineHeight: 17,
   },
 });
