@@ -134,7 +134,7 @@ export default function EnvioDocumentoScreen() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: topPadding + 16, paddingBottom: 100 },
+          { paddingTop: topPadding + 16, paddingBottom: 120 },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -148,37 +148,89 @@ export default function EnvioDocumentoScreen() {
           <View style={{ width: 26 }} />
         </View>
 
-        {/* Tipo de documento */}
+        {/* Tipo de documento — chips horizontais */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>TIPO DE DOCUMENTO</Text>
-          <View style={styles.typeList}>
+          <View style={styles.chipRow}>
             {DOC_TYPES.map((type) => {
               const active = selectedType === type;
               return (
                 <Pressable
                   key={type}
-                  style={[styles.typeCard, active && styles.typeCardActive]}
+                  style={[styles.chip, active && styles.chipActive]}
                   onPress={() => { setSelectedType(type); setFiles([]); }}
                 >
-                  <View style={[styles.typeCardDot, active && styles.typeCardDotActive]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.typeCardLabel, active && styles.typeCardLabelActive]}>
-                      {type}
-                    </Text>
-                    {type === "RG" && (
-                      <Text style={styles.typeCardSub}>Frente e verso</Text>
-                    )}
-                  </View>
                   {active && (
-                    <Feather name="check" size={14} color={Colors.accent} />
+                    <View style={styles.chipDot} />
                   )}
+                  <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
+                    {type}
+                  </Text>
                 </Pressable>
               );
             })}
           </View>
         </View>
 
-        {/* Instruções */}
+        {/* Arquivos adicionados */}
+        {files.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>
+              ARQUIVOS ADICIONADOS · {files.length}
+            </Text>
+            <View style={styles.fileList}>
+              {files.map((file, index) => (
+                <View key={index} style={styles.fileItem}>
+                  <View style={styles.fileIconWrap}>
+                    <Feather name={getFileIcon(file.mimeType)} size={15} color={Colors.accent} />
+                  </View>
+                  <Text style={styles.fileName} numberOfLines={1} ellipsizeMode="middle">
+                    {file.name}
+                  </Text>
+                  <Pressable
+                    style={styles.fileRemoveBtn}
+                    onPress={() => removeFile(index)}
+                    hitSlop={10}
+                  >
+                    <Feather name="x" size={13} color="#444" />
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Adicionar arquivos */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>ADICIONAR ARQUIVOS</Text>
+          <View style={styles.addBtns}>
+            <Pressable style={styles.addBtn} onPress={pickFromGallery}>
+              <View style={styles.addBtnIcon}>
+                <Feather name="image" size={18} color="#666" />
+              </View>
+              <View style={styles.addBtnTexts}>
+                <Text style={styles.addBtnLabel}>Galeria</Text>
+                <Text style={styles.addBtnSub}>Fotos do dispositivo</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color="#2a2a2a" />
+            </Pressable>
+
+            <View style={styles.addBtnDivider} />
+
+            <Pressable style={styles.addBtn} onPress={pickDocument}>
+              <View style={styles.addBtnIcon}>
+                <Feather name="paperclip" size={18} color="#666" />
+              </View>
+              <View style={styles.addBtnTexts}>
+                <Text style={styles.addBtnLabel}>Arquivos</Text>
+                <Text style={styles.addBtnSub}>PDF ou imagem do armazenamento</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color="#2a2a2a" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Instruções — no final */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>INSTRUÇÕES — {selectedType}</Text>
           <View style={styles.instructionsCard}>
@@ -188,48 +240,6 @@ export default function EnvioDocumentoScreen() {
                 <Text style={styles.instructionText}>{inst}</Text>
               </View>
             ))}
-          </View>
-        </View>
-
-        {/* Arquivos adicionados */}
-        {files.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>ARQUIVOS ADICIONADOS</Text>
-            <View style={styles.fileList}>
-              {files.map((file, index) => (
-                <View key={index} style={styles.fileItem}>
-                  <View style={styles.fileIcon}>
-                    <Feather name={getFileIcon(file.mimeType)} size={16} color="#555" />
-                  </View>
-                  <Text style={styles.fileName} numberOfLines={1} ellipsizeMode="middle">
-                    {file.name}
-                  </Text>
-                  <Pressable style={styles.fileRemoveBtn} onPress={() => removeFile(index)} hitSlop={8}>
-                    <Feather name="x" size={14} color="#444" />
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Botões de upload */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>ADICIONAR ARQUIVOS</Text>
-          <Text style={styles.uploadHint}>
-            Aceitos: imagens (JPG, PNG) e documentos PDF
-          </Text>
-          <View style={styles.uploadBtns}>
-            <Pressable style={styles.uploadBtn} onPress={pickFromGallery}>
-              <Feather name="image" size={20} color="#555" />
-              <Text style={styles.uploadBtnLabel}>Galeria</Text>
-              <Text style={styles.uploadBtnSub}>JPG, PNG</Text>
-            </Pressable>
-            <Pressable style={styles.uploadBtn} onPress={pickDocument}>
-              <Feather name="file-text" size={20} color="#555" />
-              <Text style={styles.uploadBtnLabel}>Arquivos</Text>
-              <Text style={styles.uploadBtnSub}>PDF, imagens</Text>
-            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -243,7 +253,11 @@ export default function EnvioDocumentoScreen() {
         >
           <Feather name={submitting ? "loader" : "upload"} size={16} color="#fff" />
           <Text style={styles.submitBtnText}>
-            {submitting ? "Enviando..." : `Enviar para análise${files.length > 0 ? ` · ${files.length} arquivo${files.length !== 1 ? "s" : ""}` : ""}`}
+            {submitting
+              ? "Enviando..."
+              : files.length > 0
+                ? `Enviar para análise · ${files.length} arquivo${files.length !== 1 ? "s" : ""}`
+                : "Enviar para análise"}
           </Text>
         </Pressable>
       </View>
@@ -279,46 +293,114 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  typeList: { gap: 8 },
-  typeCard: {
+  chipRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    backgroundColor: "#0a0a0a",
+  },
+  chipActive: {
+    borderColor: Colors.accent + "60",
+    backgroundColor: Colors.accent + "10",
+  },
+  chipDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: Colors.accent,
+  },
+  chipLabel: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#444",
+  },
+  chipLabelActive: {
+    color: "#fff",
+  },
+
+  fileList: { gap: 6 },
+  fileItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
     borderColor: "#161616",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+  },
+  fileIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: Colors.accent + "10",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  fileName: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 12,
+    color: "#888",
+    flex: 1,
+  },
+  fileRemoveBtn: {
+    padding: 4,
+  },
+
+  addBtns: {
+    backgroundColor: "#0a0a0a",
+    borderWidth: 1,
+    borderColor: "#161616",
     borderRadius: 14,
+    overflow: "hidden",
+  },
+  addBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  typeCardActive: {
-    borderColor: Colors.accent + "50",
-    backgroundColor: Colors.accent + "08",
+  addBtnDivider: {
+    height: 1,
+    backgroundColor: "#111",
+    marginHorizontal: 16,
   },
-  typeCardDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#333",
+  addBtnIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#111",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
-  typeCardDotActive: {
-    borderColor: Colors.accent,
-    backgroundColor: Colors.accent,
+  addBtnTexts: {
+    flex: 1,
+    gap: 2,
   },
-  typeCardLabel: {
+  addBtnLabel: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#555",
+    fontSize: 13,
+    color: "#ccc",
   },
-  typeCardLabelActive: {
-    color: "#fff",
-  },
-  typeCardSub: {
+  addBtnSub: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#333",
-    marginTop: 2,
+    color: "#444",
   },
 
   instructionsCard: {
@@ -348,71 +430,6 @@ const styles = StyleSheet.create({
     color: "#555",
     lineHeight: 18,
     flex: 1,
-  },
-
-  fileList: { gap: 8 },
-  fileItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  fileIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  fileName: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#888",
-    flex: 1,
-  },
-  fileRemoveBtn: {
-    padding: 4,
-  },
-
-  uploadHint: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
-    marginBottom: 12,
-  },
-  uploadBtns: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  uploadBtn: {
-    flex: 1,
-    paddingVertical: 20,
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#0a0a0a",
-    borderStyle: "dashed",
-  },
-  uploadBtnLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#555",
-  },
-  uploadBtnSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
   },
 
   footer: {
