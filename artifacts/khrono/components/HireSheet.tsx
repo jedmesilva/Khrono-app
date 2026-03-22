@@ -391,7 +391,6 @@ export function HireSheet({ open, onClose }: Props) {
   const [disponivel, setDisponivel] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
-  const mainRef = useRef<BottomSheet>(null);
   const subRef = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ["88%"], []);
@@ -403,15 +402,6 @@ export function HireSheet({ open, onClose }: Props) {
     NFC: "Aproximação",
     LINK: "Link",
   };
-
-  // Open / close main sheet based on `open` prop
-  useEffect(() => {
-    if (open) {
-      mainRef.current?.snapToIndex(0);
-    } else {
-      mainRef.current?.close();
-    }
-  }, [open]);
 
   // Open / close sub sheet based on subMode
   useEffect(() => {
@@ -426,7 +416,6 @@ export function HireSheet({ open, onClose }: Props) {
     (provider: ProviderData) => {
       setPendingProvider(provider);
       subRef.current?.dismiss();
-      mainRef.current?.close();
       setTimeout(() => {
         onClose();
         router.push("/contract-confirm");
@@ -447,6 +436,9 @@ export function HireSheet({ open, onClose }: Props) {
     ),
     []
   );
+
+  // Don't render anything when closed — avoids invisible touch-blocking overlay
+  if (!open) return null;
 
   const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
     {
@@ -502,8 +494,7 @@ export function HireSheet({ open, onClose }: Props) {
     <>
       {/* ── Main Sheet ── */}
       <BottomSheet
-        ref={mainRef}
-        index={-1}
+        index={0}
         snapPoints={snapPoints}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
