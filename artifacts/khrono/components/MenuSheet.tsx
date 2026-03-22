@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { router } from "expo-router";
+
 import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
 
@@ -60,9 +62,9 @@ export function MenuSheet({ visible, onClose }: Props) {
     {
       id: "personal",
       icon: "user",
-      label: "Dados pessoais",
-      sublabel: "Nome, endereço, contato",
-      onPress: () => { Haptics.selectionAsync(); onClose(); },
+      label: "Minha conta",
+      sublabel: "Dados pessoais, verificação, segurança",
+      onPress: () => { Haptics.selectionAsync(); onClose(); router.push("/conta"); },
     },
     {
       id: "support",

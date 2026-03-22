@@ -41,6 +41,22 @@ function RootLayoutNav() {
         name="contract-confirm"
         options={{ headerShown: false, presentation: "card" }}
       />
+      <Stack.Screen
+        name="conta"
+        options={{ headerShown: false, presentation: "card" }}
+      />
+      <Stack.Screen
+        name="cadastro-skill"
+        options={{ headerShown: false, presentation: "card" }}
+      />
+      <Stack.Screen
+        name="cadastro-tool"
+        options={{ headerShown: false, presentation: "card" }}
+      />
+      <Stack.Screen
+        name="service/[id]"
+        options={{ headerShown: false, presentation: "card" }}
+      />
     </Stack>
   );
 }
