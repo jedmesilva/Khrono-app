@@ -199,7 +199,7 @@ function PincodeContent({
       <View style={sub.pinRow}>
         {[0, 1, 2, 3, 4, 5].map((i) => (
           <View key={i} style={[sub.pinDigit, pin.length > i && sub.pinDigitFilled]}>
-            <Text style={sub.pinDigitText}>{pin[i] ? "•" : ""}</Text>
+            <Text style={sub.pinDigitText}>{pin[i] ?? ""}</Text>
           </View>
         ))}
       </View>
