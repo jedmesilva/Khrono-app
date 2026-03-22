@@ -60,13 +60,6 @@ export function MenuSheet({ visible, onClose }: Props) {
       onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
-      id: "personal",
-      icon: "user",
-      label: "Minha conta",
-      sublabel: "Dados pessoais, verificação, segurança",
-      onPress: () => { Haptics.selectionAsync(); onClose(); setTimeout(() => router.push("/conta"), 300); },
-    },
-    {
       id: "support",
       icon: "message-circle",
       label: "Suporte",
@@ -109,7 +102,10 @@ export function MenuSheet({ visible, onClose }: Props) {
           showsVerticalScrollIndicator={false}
         >
           {/* User info row */}
-          <View style={styles.userRow}>
+          <Pressable
+            style={({ pressed }) => [styles.userRow, pressed && { opacity: 0.7 }]}
+            onPress={() => { Haptics.selectionAsync(); onClose(); setTimeout(() => router.push("/conta"), 300); }}
+          >
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>EU</Text>
             </View>
@@ -121,7 +117,7 @@ export function MenuSheet({ visible, onClose }: Props) {
               <Feather name="check" size={10} color={Colors.accentGreen} />
               <Text style={styles.verifiedText}>verificado</Text>
             </View>
-          </View>
+          </Pressable>
 
           <View style={styles.divider} />
 
