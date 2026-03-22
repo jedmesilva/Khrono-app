@@ -1,10 +1,12 @@
 import { Feather } from "@expo/vector-icons";
-import BottomSheet, {
+import {
+  BottomSheetModal,
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useMemo, useState } from "react";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -12,8 +14,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { router } from "expo-router";
 
 import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
@@ -34,9 +34,18 @@ type Props = {
 
 export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
 
   const snapPoints = useMemo(() => ["60%"], []);
+
+  useEffect(() => {
+    if (visible) {
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [visible]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -84,27 +93,29 @@ export function MenuSheet({ visible, onClose }: Props) {
     },
   ];
 
-  if (!visible) return null;
-
   return (
     <>
-      <BottomSheet
-        index={0}
+      <BottomSheetModal
+        ref={ref}
         snapPoints={snapPoints}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handle}
-        onClose={onClose}
+        onDismiss={onClose}
       >
         <BottomSheetScrollView
           contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
           showsVerticalScrollIndicator={false}
         >
-          {/* User info row */}
+          {/* User info row — clicável para ir à tela de conta */}
           <Pressable
             style={({ pressed }) => [styles.userRow, pressed && { opacity: 0.7 }]}
-            onPress={() => { Haptics.selectionAsync(); onClose(); setTimeout(() => router.push("/conta"), 300); }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              onClose();
+              setTimeout(() => router.push("/conta"), 300);
+            }}
           >
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>EU</Text>
@@ -161,7 +172,7 @@ export function MenuSheet({ visible, onClose }: Props) {
 
           <Text style={styles.version}>Khrono v1.0.0</Text>
         </BottomSheetScrollView>
-      </BottomSheet>
+      </BottomSheetModal>
 
       <AppDialog
         visible={logoutDialog}

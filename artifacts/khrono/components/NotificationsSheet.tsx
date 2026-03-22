@@ -1,9 +1,10 @@
 import { Feather } from "@expo/vector-icons";
-import BottomSheet, {
+import {
+  BottomSheetModal,
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -70,9 +71,18 @@ type Props = {
 
 export function NotificationsSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const ref = useRef<BottomSheetModal>(null);
   const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
 
   const snapPoints = useMemo(() => ["75%"], []);
+
+  useEffect(() => {
+    if (visible) {
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [visible]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -87,17 +97,15 @@ export function NotificationsSheet({ visible, onClose }: Props) {
     []
   );
 
-  if (!visible) return null;
-
   return (
-    <BottomSheet
-      index={0}
+    <BottomSheetModal
+      ref={ref}
       snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.sheetBackground}
       handleIndicatorStyle={styles.handle}
-      onClose={onClose}
+      onDismiss={onClose}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -137,7 +145,7 @@ export function NotificationsSheet({ visible, onClose }: Props) {
           </View>
         ))}
       </BottomSheetScrollView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 
