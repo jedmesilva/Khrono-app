@@ -109,7 +109,7 @@ export default function ContaScreen() {
   }
 
   const { documents } = useDocuments();
-  const [faceStatus, setFaceStatus] = useState<VerifStatus>("rejected");
+  const [faceStatus, setFaceStatus] = useState<VerifStatus>("none");
 
   const [showCurrentPwd, setShowCurrentPwd] = useState(false);
   const [showNewPwd, setShowNewPwd] = useState(false);
