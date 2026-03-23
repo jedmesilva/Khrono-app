@@ -365,10 +365,7 @@ export default function ContaScreen() {
           {/* Troca de senha */}
           <View style={styles.card}>
             <Pressable style={styles.cardAccordionHeader} onPress={() => setPwdExpanded((v) => !v)}>
-              <View style={styles.cardAccordionLeft}>
-                <Feather name="lock" size={15} color="#555" />
-                <Text style={styles.cardTitle}>Alterar senha</Text>
-              </View>
+              <Text style={styles.cardTitle}>Alterar senha</Text>
               <Feather name={pwdExpanded ? "chevron-up" : "chevron-down"} size={15} color="#333" />
             </Pressable>
 
