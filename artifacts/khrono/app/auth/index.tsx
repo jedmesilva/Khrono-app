@@ -12,13 +12,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Reanimated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from "react-native-reanimated";
-import { useKeyboardAnimation } from "react-native-keyboard-controller";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -109,23 +103,13 @@ export default function EntradaScreen() {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
-  const sheetFade = useSharedValue(0);
-
-  const { height: keyboardHeight } = useKeyboardAnimation();
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 700, delay: 200, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 600, delay: 200, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
-
-    sheetFade.value = withDelay(200, withTiming(1, { duration: 700 }));
   }, []);
-
-  const sheetAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: sheetFade.value,
-    marginBottom: keyboardHeight.value,
-  }));
 
   function handleChangeText(text: string) {
     if (text === "") {
@@ -185,65 +169,67 @@ export default function EntradaScreen() {
         <Text style={styles.logoSub}>marketplace de serviços</Text>
       </Animated.View>
 
-      <Reanimated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }, sheetAnimatedStyle]}>
-        <Text style={styles.sheetTitle}>Entre ou crie sua conta</Text>
-        <Text style={styles.sheetSub}>Digite seu e-mail ou telefone para continuar</Text>
+      <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
+        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim }]}>
+          <Text style={styles.sheetTitle}>Entre ou crie sua conta</Text>
+          <Text style={styles.sheetSub}>Digite seu e-mail ou telefone para continuar</Text>
 
-        <View style={[styles.inputWrap, displayValue.length > 0 && styles.inputWrapActive]}>
-          <View style={styles.inputIconWrap}>
-            {inputType === "email" ? (
-              <Feather name="mail" size={16} color="#ff6b35" />
-            ) : inputType === "phone" ? (
-              <Feather name="phone" size={16} color="#ff6b35" />
-            ) : (
-              <Feather name="at-sign" size={16} color="#444" />
+          <View style={[styles.inputWrap, displayValue.length > 0 && styles.inputWrapActive]}>
+            <View style={styles.inputIconWrap}>
+              {inputType === "email" ? (
+                <Feather name="mail" size={16} color="#ff6b35" />
+              ) : inputType === "phone" ? (
+                <Feather name="phone" size={16} color="#ff6b35" />
+              ) : (
+                <Feather name="at-sign" size={16} color="#444" />
+              )}
+            </View>
+            <TextInput
+              style={styles.input}
+              value={displayValue}
+              onChangeText={handleChangeText}
+              placeholder="e-mail ou telefone"
+              placeholderTextColor="#333"
+              keyboardType="default"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              returnKeyType="done"
+              onSubmitEditing={handleContinue}
+            />
+            {displayValue.length > 0 && (
+              <Pressable onPress={handleClear} style={styles.clearBtn} hitSlop={8}>
+                <Feather name="x" size={14} color="#444" />
+              </Pressable>
             )}
           </View>
-          <TextInput
-            style={styles.input}
-            value={displayValue}
-            onChangeText={handleChangeText}
-            placeholder="e-mail ou telefone"
-            placeholderTextColor="#333"
-            keyboardType="default"
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-            returnKeyType="done"
-            onSubmitEditing={handleContinue}
-          />
-          {displayValue.length > 0 && (
-            <Pressable onPress={handleClear} style={styles.clearBtn} hitSlop={8}>
-              <Feather name="x" size={14} color="#444" />
-            </Pressable>
+
+          {inputType !== "unknown" && displayValue.length > 0 && (
+            <View style={styles.detectedBadge}>
+              <Feather name={inputType === "email" ? "mail" : "phone"} size={10} color="#ff6b35" />
+              <Text style={styles.detectedText}>
+                {inputType === "email" ? "e-mail detectado" : "telefone detectado"}
+              </Text>
+            </View>
           )}
-        </View>
 
-        {inputType !== "unknown" && displayValue.length > 0 && (
-          <View style={styles.detectedBadge}>
-            <Feather name={inputType === "email" ? "mail" : "phone"} size={10} color="#ff6b35" />
-            <Text style={styles.detectedText}>
-              {inputType === "email" ? "e-mail detectado" : "telefone detectado"}
-            </Text>
-          </View>
-        )}
+          <Pressable
+            style={[styles.btn, !canContinue && styles.btnDisabled]}
+            onPress={handleContinue}
+            disabled={!canContinue}
+          >
+            <Text style={styles.btnText}>Continuar</Text>
+            <Feather name="arrow-right" size={16} color="#fff" />
+          </Pressable>
 
-        <Pressable
-          style={[styles.btn, !canContinue && styles.btnDisabled]}
-          onPress={handleContinue}
-          disabled={!canContinue}
-        >
-          <Text style={styles.btnText}>Continuar</Text>
-          <Feather name="arrow-right" size={16} color="#fff" />
-        </Pressable>
-
-        <Text style={styles.terms}>
-          Ao continuar, você aceita os{" "}
-          <Text style={{ color: "#555" }}>Termos de Uso</Text>
-          {" "}e a{" "}
-          <Text style={{ color: "#555" }}>Política de Privacidade</Text>
-        </Text>
-      </Reanimated.View>
+          <Text style={styles.terms}>
+            Ao continuar, você aceita os{" "}
+            <Text style={{ color: "#555" }}>Termos de Uso</Text>
+            {" "}e a{" "}
+            <Text style={{ color: "#555" }}>Política de Privacidade</Text>
+          </Text>
+        </Animated.View>
+      </KeyboardStickyView>
     </View>
   );
 }
