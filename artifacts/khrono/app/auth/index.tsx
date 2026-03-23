@@ -1,14 +1,11 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
-import { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
   Easing,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -16,13 +13,12 @@ import {
   View,
 } from "react-native";
 import Reanimated, {
-  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { useKeyboardHandler } from "react-native-keyboard-controller";
+import { useKeyboardAnimation } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -113,23 +109,9 @@ export default function EntradaScreen() {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
-
   const sheetFade = useSharedValue(0);
-  const keyboardProgress = useSharedValue(0);
 
-  useKeyboardHandler(
-    {
-      onMove: (e) => {
-        "worklet";
-        keyboardProgress.value = e.progress;
-      },
-      onEnd: (e) => {
-        "worklet";
-        keyboardProgress.value = e.progress;
-      },
-    },
-    []
-  );
+  const { height: keyboardHeight } = useKeyboardAnimation();
 
   useEffect(() => {
     Animated.parallel([
@@ -140,17 +122,10 @@ export default function EntradaScreen() {
     sheetFade.value = withDelay(200, withTiming(1, { duration: 700 }));
   }, []);
 
-  const sheetAnimatedStyle = useAnimatedStyle(() => {
-    const paddingBottom = interpolate(
-      keyboardProgress.value,
-      [0, 1],
-      [insets.bottom + 20, 20]
-    );
-    return {
-      opacity: sheetFade.value,
-      paddingBottom,
-    };
-  });
+  const sheetAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: sheetFade.value,
+    marginBottom: keyboardHeight.value,
+  }));
 
   function handleChangeText(text: string) {
     if (text === "") {
@@ -193,11 +168,7 @@ export default function EntradaScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={0}
-    >
+    <View style={styles.root}>
       <View style={styles.background} pointerEvents="none">
         <FloatingOrb size={280} color="#ff6b35" x={-80} y={-60} duration={7000} delay={0} />
         <FloatingOrb size={200} color="#ff6b35" x={width - 140} y={80} duration={9000} delay={500} />
@@ -214,7 +185,7 @@ export default function EntradaScreen() {
         <Text style={styles.logoSub}>marketplace de serviços</Text>
       </Animated.View>
 
-      <Reanimated.View style={[styles.sheet, sheetAnimatedStyle]}>
+      <Reanimated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }, sheetAnimatedStyle]}>
         <Text style={styles.sheetTitle}>Entre ou crie sua conta</Text>
         <Text style={styles.sheetSub}>Digite seu e-mail ou telefone para continuar</Text>
 
@@ -273,7 +244,7 @@ export default function EntradaScreen() {
           <Text style={{ color: "#555" }}>Política de Privacidade</Text>
         </Text>
       </Reanimated.View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
