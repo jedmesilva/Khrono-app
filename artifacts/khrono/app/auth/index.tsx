@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -9,12 +10,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import Reanimated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
+import { useKeyboardHandler } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -106,12 +114,43 @@ export default function EntradaScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
 
+  const sheetFade = useSharedValue(0);
+  const keyboardProgress = useSharedValue(0);
+
+  useKeyboardHandler(
+    {
+      onMove: (e) => {
+        "worklet";
+        keyboardProgress.value = e.progress;
+      },
+      onEnd: (e) => {
+        "worklet";
+        keyboardProgress.value = e.progress;
+      },
+    },
+    []
+  );
+
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 700, delay: 200, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 600, delay: 200, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
+
+    sheetFade.value = withDelay(200, withTiming(1, { duration: 700 }));
   }, []);
+
+  const sheetAnimatedStyle = useAnimatedStyle(() => {
+    const paddingBottom = interpolate(
+      keyboardProgress.value,
+      [0, 1],
+      [insets.bottom + 20, 20]
+    );
+    return {
+      opacity: sheetFade.value,
+      paddingBottom,
+    };
+  });
 
   function handleChangeText(text: string) {
     if (text === "") {
@@ -175,9 +214,7 @@ export default function EntradaScreen() {
         <Text style={styles.logoSub}>marketplace de serviços</Text>
       </Animated.View>
 
-      <Animated.View
-        style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim }]}
-      >
+      <Reanimated.View style={[styles.sheet, sheetAnimatedStyle]}>
         <Text style={styles.sheetTitle}>Entre ou crie sua conta</Text>
         <Text style={styles.sheetSub}>Digite seu e-mail ou telefone para continuar</Text>
 
@@ -235,7 +272,7 @@ export default function EntradaScreen() {
           {" "}e a{" "}
           <Text style={{ color: "#555" }}>Política de Privacidade</Text>
         </Text>
-      </Animated.View>
+      </Reanimated.View>
     </KeyboardAvoidingView>
   );
 }
