@@ -489,6 +489,7 @@ export default function ProfileScreen() {
             })}
           </View>
         </View>
+
       </ScrollView>
 
       <AppDialog

@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
 
 type MenuItem = {
   id: string;
@@ -34,6 +35,7 @@ type Props = {
 
 export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const { logout } = useAuth();
   const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
 
@@ -183,9 +185,10 @@ export function MenuSheet({ visible, onClose }: Props) {
           {
             text: "Sair",
             style: "destructive",
-            onPress: () => {
+            onPress: async () => {
               setLogoutDialog(false);
               onClose();
+              await logout();
             },
           },
         ]}
