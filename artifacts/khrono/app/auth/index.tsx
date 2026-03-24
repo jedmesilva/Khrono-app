@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
+import { findMockUser } from "@/constants/mockUsers";
 import {
   Animated,
   Dimensions,
@@ -148,7 +149,16 @@ export default function EntradaScreen() {
     const contact = inputType === "phone"
       ? rawValue.replace(/\D/g, "")
       : displayValue.trim();
-    router.push({ pathname: "/auth/verificacao", params: { contact, type: inputType } });
+
+    const existingUser = findMockUser(contact);
+    if (existingUser) {
+      router.push({
+        pathname: "/auth/login",
+        params: { contact, type: inputType, name: existingUser.name, firstName: existingUser.firstName },
+      });
+    } else {
+      router.push({ pathname: "/auth/verificacao", params: { contact, type: inputType } });
+    }
   }
 
   return (
@@ -227,6 +237,12 @@ export default function EntradaScreen() {
             <Text style={{ color: "#555" }}>Termos de Uso</Text>
             {" "}e a{" "}
             <Text style={{ color: "#555" }}>Política de Privacidade</Text>
+          </Text>
+
+          <Text style={styles.hint}>
+            Cadastrado:{" "}
+            <Text style={{ color: "#444", fontFamily: "DMMono_500Medium" }}>joao@email.com</Text>
+            {" "}· Novo: qualquer outro e-mail
           </Text>
         </Animated.View>
       </KeyboardStickyView>
@@ -352,5 +368,13 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
     lineHeight: 16,
+    marginBottom: 12,
+  },
+  hint: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 9,
+    color: "#2a2a2a",
+    textAlign: "center",
+    lineHeight: 14,
   },
 });

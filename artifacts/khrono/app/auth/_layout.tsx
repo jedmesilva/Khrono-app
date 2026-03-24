@@ -10,6 +10,7 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ animation: "fade" }} />
+      <Stack.Screen name="login" />
       <Stack.Screen name="verificacao" />
       <Stack.Screen name="senha" />
       <Stack.Screen name="nome" />
