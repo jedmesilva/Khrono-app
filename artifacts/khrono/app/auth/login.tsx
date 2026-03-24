@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Pressable,
@@ -15,19 +16,15 @@ import {
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useAuth } from "@/context/AuthContext";
-import { findMockUser } from "@/constants/mockUsers";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
-  const { contact, type, name, firstName } = useLocalSearchParams<{
+  const { contact, type } = useLocalSearchParams<{
     contact: string;
     type: string;
-    name: string;
-    firstName: string;
   }>();
 
-  const { completeOnboarding } = useAuth();
   const [senha, setSenha] = useState("");
   const [showSenha, setShowSenha] = useState(false);
   const [error, setError] = useState(false);
@@ -69,27 +66,32 @@ export default function LoginScreen() {
 
   async function handleLogin() {
     if (senha.length < 1 || loading) return;
+    setLoading(true);
 
-    const user = findMockUser(contact ?? "");
-    if (!user || senha !== user.password) {
+    const email = type === "email" ? contact : `${contact}@khrono.app`;
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    });
+
+    if (authError) {
+      setLoading(false);
       setError(true);
       shake();
       setSenha("");
       return;
     }
 
-    setLoading(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-    await completeOnboarding({
-      contact: contact ?? "",
-      name: user.name,
-      firstName: user.firstName,
-    });
   }
 
   function handleForgotPassword() {
-    router.push({ pathname: "/auth/verificacao", params: { contact, type } });
+    Alert.alert(
+      "Redefinir senha",
+      "Enviamos um link de redefinição para o seu e-mail.",
+      [{ text: "OK" }]
+    );
   }
 
   const displayContact =
@@ -117,9 +119,7 @@ export default function LoginScreen() {
             </View>
 
             <Text style={styles.title}>Bem-vindo de volta</Text>
-            <Text style={styles.subtitle}>
-              {firstName ? `Olá, ${firstName}! ` : ""}Digite sua senha para entrar.
-            </Text>
+            <Text style={styles.subtitle}>Digite sua senha para entrar.</Text>
 
             <View style={styles.contactChip}>
               <Feather
@@ -155,10 +155,6 @@ export default function LoginScreen() {
             {error && (
               <Text style={styles.errorText}>Senha incorreta. Tente novamente.</Text>
             )}
-
-            <Text style={styles.hintText}>
-              Dica: use <Text style={{ color: "#ff6b35", fontFamily: "DMMono_500Medium" }}>senha123</Text> para testar
-            </Text>
 
             <Pressable onPress={handleForgotPassword} style={styles.forgotBtn}>
               <Text style={styles.forgotText}>Esqueci minha senha</Text>
@@ -286,15 +282,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingLeft: 4,
   },
-  hintText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#333",
-    marginBottom: 24,
-    paddingLeft: 4,
-  },
   forgotBtn: {
     alignSelf: "flex-start",
+    marginTop: 4,
   },
   forgotText: {
     fontFamily: "DMMono_400Regular",

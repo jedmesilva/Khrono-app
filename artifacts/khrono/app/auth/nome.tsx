@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Alert,
   Easing,
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +16,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 export default function NomeScreen() {
   const insets = useSafeAreaInsets();
-  const { contact, type } = useLocalSearchParams<{ contact: string; type: string }>();
-  const { completeOnboarding } = useAuth();
+  const { contact, type, password } = useLocalSearchParams<{
+    contact: string;
+    type: string;
+    password: string;
+  }>();
   const [nome, setNome] = useState("");
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -53,11 +57,32 @@ export default function NomeScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    await completeOnboarding({
-      contact: contact ?? "",
-      name: nome.trim(),
-      firstName,
+    const email = type === "email" ? contact : undefined;
+    const phone = type === "phone" ? `+55${contact}` : undefined;
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email ?? `${contact}@khrono.app`,
+      password: password ?? "",
+      options: {
+        data: { name: nome.trim(), first_name: firstName },
+      },
     });
+
+    if (error) {
+      setLoading(false);
+      Alert.alert("Erro ao criar conta", error.message);
+      return;
+    }
+
+    if (data.user) {
+      await supabase.from("profiles").insert({
+        id: data.user.id,
+        name: nome.trim(),
+        first_name: firstName,
+        email: email ?? null,
+        phone: phone ?? null,
+      });
+    }
 
     router.push({ pathname: "/auth/boas-vindas", params: { firstName } });
     setLoading(false);
@@ -119,8 +144,10 @@ export default function NomeScreen() {
               onPress={handleProceed}
               disabled={!canProceed || loading}
             >
-              <Text style={styles.btnText}>Entrar no Krono</Text>
-              <Feather name="arrow-right" size={16} color="#fff" />
+              <Text style={styles.btnText}>
+                {loading ? "Criando conta..." : "Entrar no Krono"}
+              </Text>
+              {!loading && <Feather name="arrow-right" size={16} color="#fff" />}
             </Pressable>
           </View>
         </Animated.View>

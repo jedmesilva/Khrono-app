@@ -1,34 +1,43 @@
 modules = ["nodejs-20"]
-[nix]
-channel = "stable-25_05"
-packages = ["unzip"]
+  [nix]
+  channel = "stable-25_05"
+  packages = ["unzip"]
 
-[agent]
-expertMode = true
+  [agent]
+  expertMode = true
 
-[workflows]
-runButton = "Project"
+  [[mcp.servers]]
+  name = "supabase"
+  command = "npx"
+  args = ["-y", "@supabase/mcp-server-supabase@latest", "--access-token", "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb", "--project-ref", "hbekmqzdoxcsznykuxdj"]
 
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
+  [workflows]
+  runButton = "Project"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
+  [[workflows.workflow]]
+  name = "Project"
+  mode = "parallel"
+  author = "agent"
 
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
+  [[workflows.workflow.tasks]]
+  task = "workflow.run"
+  args = "Start application"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=22861 pnpm --filter @workspace/khrono run dev"
-waitForPort = 22861
+  [[workflows.workflow]]
+  name = "Start application"
+  author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
+  [[workflows.workflow.tasks]]
+  task = "shell.exec"
+  args = "PORT=22861 pnpm --filter @workspace/khrono run dev"
+  waitForPort = 22861
+
+  [workflows.workflow.metadata]
+  outputType = "webview"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
 
 [[ports]]
 localPort = 8081
@@ -46,9 +55,11 @@ externalPort = 80
 localPort = 22862
 externalPort = 3000
 
-[userenv]
+  [userenv]
 
-[userenv.shared]
-EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
-EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
-SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
+  [userenv.shared]
+  EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
+  EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
+  SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
+  SUPABASE_ACCESS_TOKEN = "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb"
+  

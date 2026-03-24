@@ -65,7 +65,7 @@ export default function SenhaScreen() {
   function handleProceed() {
     if (!canProceed) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push({ pathname: "/auth/nome", params: { contact, type } });
+    router.push({ pathname: "/auth/nome", params: { contact, type, password: senha } });
   }
 
   return (
