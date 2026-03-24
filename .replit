@@ -51,3 +51,4 @@ externalPort = 3000
 [userenv.shared]
 EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
 EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
+SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
