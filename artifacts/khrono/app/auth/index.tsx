@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Dimensions,
   Easing,
@@ -14,17 +15,11 @@ import {
 } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { supabase } from "@/lib/supabase";
 
 const { width } = Dimensions.get("window");
 
-type InputType = "email" | "phone" | "unknown";
-
-function detectInputType(value: string): InputType {
-  if (value.includes("@")) return "email";
-  const onlyDigitsAndFormatting = /^[\d\s()\-+]+$/.test(value) && value.length > 0;
-  if (onlyDigitsAndFormatting) return "phone";
-  return "unknown";
-}
+type InputMode = "email" | "phone";
 
 function formatPhone(digits: string): string {
   const d = digits.slice(0, 11);
@@ -33,20 +28,8 @@ function formatPhone(digits: string): string {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
-function FloatingOrb({
-  size,
-  color,
-  x,
-  y,
-  duration,
-  delay,
-}: {
-  size: number;
-  color: string;
-  x: number;
-  y: number;
-  duration: number;
-  delay: number;
+function FloatingOrb({ size, color, x, y, duration, delay }: {
+  size: number; color: string; x: number; y: number; duration: number; delay: number;
 }) {
   const tx = useRef(new Animated.Value(0)).current;
   const ty = useRef(new Animated.Value(0)).current;
@@ -81,10 +64,8 @@ function FloatingOrb({
       pointerEvents="none"
       style={{
         position: "absolute",
-        left: x,
-        top: y,
-        width: size,
-        height: size,
+        left: x, top: y,
+        width: size, height: size,
         borderRadius: size / 2,
         backgroundColor: color,
         opacity: Animated.multiply(opacity, 0.15),
@@ -96,10 +77,16 @@ function FloatingOrb({
 
 export default function EntradaScreen() {
   const insets = useSafeAreaInsets();
+  const [inputMode, setInputMode] = useState<InputMode>("email");
   const [rawValue, setRawValue] = useState("");
   const [displayValue, setDisplayValue] = useState("");
-  const inputType = detectInputType(displayValue);
-  const canContinue = displayValue.trim().length >= 5;
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  const isEmail = inputMode === "email";
+  const canContinue = isEmail
+    ? displayValue.trim().length >= 5 && displayValue.includes("@")
+    : rawValue.length === 11;
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
@@ -111,30 +98,29 @@ export default function EntradaScreen() {
     ]).start();
   }, []);
 
+  function switchMode(mode: InputMode) {
+    setInputMode(mode);
+    setRawValue("");
+    setDisplayValue("");
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }
+
   function handleChangeText(text: string) {
+    if (isEmail) {
+      setRawValue(text);
+      setDisplayValue(text);
+      return;
+    }
+
     if (text === "") {
       setRawValue("");
       setDisplayValue("");
       return;
     }
 
-    if (text.includes("@")) {
-      setRawValue(text);
-      setDisplayValue(text);
-      return;
-    }
-
-    const onlyDigits = text.replace(/\D/g, "");
-    const hadDigitsOnly = /^[\d\s()\-]+$/.test(displayValue) || displayValue === "";
-
-    if (onlyDigits.length > 0 && hadDigitsOnly && !text.match(/[a-zA-Z]/)) {
-      const digits = onlyDigits.slice(0, 11);
-      setRawValue(digits);
-      setDisplayValue(formatPhone(digits));
-    } else {
-      setRawValue(text);
-      setDisplayValue(text);
-    }
+    const onlyDigits = text.replace(/\D/g, "").slice(0, 11);
+    setRawValue(onlyDigits);
+    setDisplayValue(formatPhone(onlyDigits));
   }
 
   function handleClear() {
@@ -142,24 +128,30 @@ export default function EntradaScreen() {
     setDisplayValue("");
   }
 
-  function handleContinue() {
-    if (!canContinue) return;
+  async function handleContinue() {
+    if (!canContinue || loading) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const contact = inputType === "phone"
-      ? rawValue.replace(/\D/g, "")
-      : displayValue.trim();
+    setLoading(true);
 
-    router.push({ pathname: "/auth/verificacao", params: { contact, type: inputType } });
-  }
+    const contact = isEmail ? displayValue.trim() : rawValue;
 
-  function handleLogin() {
-    if (!canContinue) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const contact = inputType === "phone"
-      ? rawValue.replace(/\D/g, "")
-      : displayValue.trim();
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq(isEmail ? "email" : "phone", isEmail ? contact : `+55${contact}`)
+        .maybeSingle();
 
-    router.push({ pathname: "/auth/login", params: { contact, type: inputType } });
+      if (data) {
+        router.push({ pathname: "/auth/login", params: { contact, type: isEmail ? "email" : "phone" } });
+      } else {
+        router.push({ pathname: "/auth/verificacao", params: { contact, type: isEmail ? "email" : "phone" } });
+      }
+    } catch {
+      router.push({ pathname: "/auth/verificacao", params: { contact, type: isEmail ? "email" : "phone" } });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -182,31 +174,37 @@ export default function EntradaScreen() {
 
       <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
         <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim }]}>
-          <Text style={styles.sheetTitle}>Entre ou crie sua conta</Text>
-          <Text style={styles.sheetSub}>Digite seu e-mail ou telefone para continuar</Text>
+          <Text style={styles.sheetTitle}>
+            {isEmail ? "Qual é o seu e-mail?" : "Qual é o seu telefone?"}
+          </Text>
+          <Text style={styles.sheetSub}>
+            {isEmail
+              ? "Se já tiver conta, pedimos a senha. Se não, criamos uma."
+              : "Se já tiver conta, pedimos a senha. Se não, criamos uma."}
+          </Text>
 
           <View style={[styles.inputWrap, displayValue.length > 0 && styles.inputWrapActive]}>
             <View style={styles.inputIconWrap}>
-              {inputType === "email" ? (
-                <Feather name="mail" size={16} color="#ff6b35" />
-              ) : inputType === "phone" ? (
-                <Feather name="phone" size={16} color="#ff6b35" />
-              ) : (
-                <Feather name="at-sign" size={16} color="#444" />
-              )}
+              <Feather
+                name={isEmail ? "mail" : "phone"}
+                size={16}
+                color={displayValue.length > 0 ? "#ff6b35" : "#444"}
+              />
             </View>
             <TextInput
+              ref={inputRef}
               style={styles.input}
               value={displayValue}
               onChangeText={handleChangeText}
-              placeholder="e-mail ou telefone"
+              placeholder={isEmail ? "seu@email.com" : "(11) 99999-9999"}
               placeholderTextColor="#333"
-              keyboardType="default"
+              keyboardType={isEmail ? "email-address" : "phone-pad"}
               autoCapitalize="none"
               autoCorrect={false}
-              autoComplete="off"
+              autoComplete={isEmail ? "email" : "tel"}
               returnKeyType="done"
               onSubmitEditing={handleContinue}
+              autoFocus
             />
             {displayValue.length > 0 && (
               <Pressable onPress={handleClear} style={styles.clearBtn} hitSlop={8}>
@@ -215,30 +213,29 @@ export default function EntradaScreen() {
             )}
           </View>
 
-          {inputType !== "unknown" && displayValue.length > 0 && (
-            <View style={styles.detectedBadge}>
-              <Feather name={inputType === "email" ? "mail" : "phone"} size={10} color="#ff6b35" />
-              <Text style={styles.detectedText}>
-                {inputType === "email" ? "e-mail detectado" : "telefone detectado"}
-              </Text>
-            </View>
-          )}
-
           <Pressable
-            style={[styles.btn, !canContinue && styles.btnDisabled]}
+            style={[styles.btn, (!canContinue || loading) && styles.btnDisabled]}
             onPress={handleContinue}
-            disabled={!canContinue}
+            disabled={!canContinue || loading}
           >
-            <Text style={styles.btnText}>Criar conta</Text>
-            <Feather name="arrow-right" size={16} color="#fff" />
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Text style={styles.btnText}>Continuar</Text>
+                <Feather name="arrow-right" size={16} color="#fff" />
+              </>
+            )}
           </Pressable>
 
           <Pressable
-            style={[styles.btnSecondary, !canContinue && styles.btnDisabled]}
-            onPress={handleLogin}
-            disabled={!canContinue}
+            style={styles.btnSecondary}
+            onPress={() => switchMode(isEmail ? "phone" : "email")}
           >
-            <Text style={styles.btnSecondaryText}>Já tenho conta · Entrar</Text>
+            <Feather name={isEmail ? "phone" : "mail"} size={14} color="#555" />
+            <Text style={styles.btnSecondaryText}>
+              {isEmail ? "Continuar com telefone" : "Continuar com e-mail"}
+            </Text>
           </Pressable>
 
           <Text style={styles.terms}>
@@ -303,6 +300,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#555",
     marginBottom: 24,
+    lineHeight: 18,
   },
   inputWrap: {
     flexDirection: "row",
@@ -313,7 +311,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 52,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   inputWrapActive: {
     borderColor: "#ff6b3540",
@@ -333,19 +331,6 @@ const styles = StyleSheet.create({
   clearBtn: {
     padding: 4,
   },
-  detectedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginBottom: 16,
-    paddingLeft: 4,
-  },
-  detectedText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#ff6b35",
-    letterSpacing: 0.5,
-  },
   btn: {
     backgroundColor: "#ff6b35",
     borderRadius: 14,
@@ -354,18 +339,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    marginTop: 8,
     marginBottom: 10,
-  },
-  btnSecondary: {
-    borderRadius: 14,
-    height: 48,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    marginBottom: 20,
   },
   btnDisabled: {
     opacity: 0.35,
@@ -374,6 +348,17 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_600SemiBold",
     fontSize: 15,
     color: "#fff",
+  },
+  btnSecondary: {
+    borderRadius: 14,
+    height: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    marginBottom: 20,
   },
   btnSecondaryText: {
     fontFamily: "DMMono_400Regular",
