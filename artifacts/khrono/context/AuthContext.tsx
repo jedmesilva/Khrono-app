@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 
 type User = {
   id: string;
@@ -35,30 +36,41 @@ async function fetchProfile(userId: string): Promise<User | null> {
   };
 }
 
+function userFromSession(session: Session): User {
+  const meta = session.user.user_metadata ?? {};
+  return {
+    id: session.user.id,
+    contact: session.user.email ?? "",
+    name: meta.name ?? "",
+    firstName: meta.first_name ?? "",
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
+  async function applySession(session: Session) {
+    const fallback = userFromSession(session);
+    setUser(fallback);
+    setIsAuthenticated(true);
+
+    const profile = await fetchProfile(session.user.id);
+    if (profile) setUser(profile);
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
-        if (profile) {
-          setUser(profile);
-          setIsAuthenticated(true);
-        }
+      if (session) {
+        await applySession(session);
       }
       setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
-        if (profile) {
-          setUser(profile);
-          setIsAuthenticated(true);
-        }
+      if (session) {
+        await applySession(session);
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -74,10 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const profile = await fetchProfile(session.user.id);
-      if (profile) setUser(profile);
-    }
+    if (session) await applySession(session);
   }, []);
 
   return (
