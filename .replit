@@ -31,8 +31,20 @@ waitForPort = 22861
 outputType = "webview"
 
 [[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 3002
+
+[[ports]]
 localPort = 22861
 externalPort = 80
+
+[[ports]]
+localPort = 22862
+externalPort = 3000
 
 [userenv]
 
