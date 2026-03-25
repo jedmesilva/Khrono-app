@@ -58,15 +58,27 @@ export default function NomeScreen() {
         return;
       }
 
-      // Set the password for the OTP-created account
-      const { error: updateError } = await supabase.auth.updateUser({
-        password,
-        data: { name: nome.trim(), first_name: firstName },
+      const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+      const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
+      // Update password + metadata via direct REST call (avoids SDK hang)
+      const updateRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        method: "PUT",
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password,
+          data: { name: nome.trim(), first_name: firstName },
+        }),
       });
 
-      if (updateError) {
+      if (!updateRes.ok) {
+        const err = await updateRes.json().catch(() => ({}));
         setLoading(false);
-        Alert.alert("Erro ao definir senha", updateError.message);
+        Alert.alert("Erro ao definir senha", err?.message ?? `Erro ${updateRes.status}`);
         return;
       }
 
