@@ -6,6 +6,8 @@ import {
   Alert,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,7 +15,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { supabase } from "@/lib/supabase";
@@ -100,8 +101,12 @@ export default function LoginScreen() {
       : contact;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <ScrollView
+        style={[styles.container, { paddingTop: insets.top + 16 }]}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -159,25 +164,21 @@ export default function LoginScreen() {
             <Pressable onPress={handleForgotPassword} style={styles.forgotBtn}>
               <Text style={styles.forgotText}>Esqueci minha senha</Text>
             </Pressable>
+
+            <Animated.View style={[styles.footer, { paddingBottom: insets.bottom + 4, opacity: fadeAnim }]}>
+              <Pressable
+                style={[styles.btn, (senha.length < 1 || loading) && styles.btnDisabled]}
+                onPress={handleLogin}
+                disabled={senha.length < 1 || loading}
+              >
+                <Text style={styles.btnText}>{loading ? "Entrando..." : "Entrar"}</Text>
+                {!loading && <Feather name="arrow-right" size={16} color="#fff" />}
+              </Pressable>
+            </Animated.View>
           </View>
         </Animated.View>
       </ScrollView>
-
-      <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
-        <Animated.View
-          style={[styles.footer, { paddingBottom: insets.bottom + 20, opacity: fadeAnim }]}
-        >
-          <Pressable
-            style={[styles.btn, (senha.length < 1 || loading) && styles.btnDisabled]}
-            onPress={handleLogin}
-            disabled={senha.length < 1 || loading}
-          >
-            <Text style={styles.btnText}>{loading ? "Entrando..." : "Entrar"}</Text>
-            {!loading && <Feather name="arrow-right" size={16} color="#fff" />}
-          </Pressable>
-        </Animated.View>
-      </KeyboardStickyView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -293,8 +294,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   footer: {
-    paddingHorizontal: 28,
-    backgroundColor: "#060606",
+    marginTop: 32,
   },
   btn: {
     backgroundColor: "#ff6b35",
