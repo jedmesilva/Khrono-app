@@ -3,8 +3,8 @@ import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
   Alert,
+  Animated,
   Easing,
   KeyboardAvoidingView,
   Platform,
@@ -15,7 +15,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 import { supabase } from "@/lib/supabase";
 
 export default function NomeScreen() {
@@ -37,17 +36,8 @@ export default function NomeScreen() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 450,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
     setTimeout(() => inputRef.current?.focus(), 400);
   }, []);
@@ -57,31 +47,32 @@ export default function NomeScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    const email = type === "email" ? contact : undefined;
-    const phone = type === "phone" ? `+55${contact}` : undefined;
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email ?? `${contact}@khrono.app`,
-      password: password ?? "",
-      options: {
-        data: { name: nome.trim(), first_name: firstName },
-      },
+    const { data: { user }, error: updateError } = await supabase.auth.updateUser({
+      password,
+      data: { name: nome.trim(), first_name: firstName },
     });
 
-    if (error) {
+    if (updateError || !user) {
       setLoading(false);
-      Alert.alert("Erro ao criar conta", error.message);
+      Alert.alert("Erro", updateError?.message ?? "Não foi possível finalizar o cadastro.");
       return;
     }
 
-    if (data.user) {
-      await supabase.from("profiles").insert({
-        id: data.user.id,
-        name: nome.trim(),
-        first_name: firstName,
-        email: email ?? null,
-        phone: phone ?? null,
-      });
+    const email = type === "email" ? contact : null;
+    const phone = type === "phone" ? `+55${contact}` : null;
+
+    const { error: profileError } = await supabase.from("profiles").upsert({
+      id: user.id,
+      name: nome.trim(),
+      first_name: firstName,
+      email,
+      phone,
+    });
+
+    if (profileError) {
+      setLoading(false);
+      Alert.alert("Erro", "Conta criada, mas houve um problema ao salvar seu perfil.");
+      return;
     }
 
     router.push({ pathname: "/auth/boas-vindas", params: { firstName } });
@@ -89,10 +80,7 @@ export default function NomeScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
         <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
@@ -157,117 +145,55 @@ export default function NomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#060606",
-  },
+  container: { flex: 1, backgroundColor: "#060606" },
   backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 16,
-    marginBottom: 8,
+    width: 40, height: 40,
+    alignItems: "center", justifyContent: "center",
+    marginLeft: 16, marginBottom: 8,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 28,
-    paddingTop: 20,
-  },
+  content: { flex: 1, paddingHorizontal: 28, paddingTop: 20 },
   iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
+    width: 56, height: 56, borderRadius: 18,
+    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 28,
-    color: "#fff",
-    letterSpacing: -0.8,
-    marginBottom: 10,
+    fontFamily: "Sora_700Bold", fontSize: 28, color: "#fff",
+    letterSpacing: -0.8, marginBottom: 10,
   },
   subtitle: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 32,
-    lineHeight: 20,
+    fontFamily: "DMMono_400Regular", fontSize: 13, color: "#555",
+    marginBottom: 32, lineHeight: 20,
   },
   label: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 11,
-    color: "#555",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 8,
+    fontFamily: "DMMono_500Medium", fontSize: 11, color: "#555",
+    letterSpacing: 1, textTransform: "uppercase", marginBottom: 8,
   },
   inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    height: 52,
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#111", borderWidth: 1, borderColor: "#1e1e1e",
+    borderRadius: 14, paddingHorizontal: 16, height: 52,
   },
-  inputWrapActive: {
-    borderColor: "#ff6b3540",
-  },
+  inputWrapActive: { borderColor: "#ff6b3540" },
   input: {
-    flex: 1,
-    fontFamily: "Sora_400Regular",
-    fontSize: 16,
-    color: "#fff",
+    flex: 1, fontFamily: "Sora_400Regular", fontSize: 16, color: "#fff",
   },
-  clearBtn: {
-    padding: 4,
-  },
+  clearBtn: { padding: 4 },
   previewWrap: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#0a0a0a",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
+    marginTop: 20, padding: 16,
+    backgroundColor: "#0a0a0a", borderRadius: 14,
+    borderWidth: 1, borderColor: "#1a1a1a",
   },
   previewLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 6,
+    fontFamily: "DMMono_400Regular", fontSize: 10, color: "#444",
+    letterSpacing: 1, textTransform: "uppercase", marginBottom: 6,
   },
-  previewName: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 18,
-    color: "#fff",
-  },
-  footer: {
-    paddingHorizontal: 28,
-  },
+  previewName: { fontFamily: "Sora_600SemiBold", fontSize: 18, color: "#fff" },
+  footer: { paddingHorizontal: 28 },
   btn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 14,
-    height: 52,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
+    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
   },
-  btnDisabled: {
-    opacity: 0.3,
-  },
-  btnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-    color: "#fff",
-  },
+  btnDisabled: { opacity: 0.3 },
+  btnText: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: "#fff" },
 });

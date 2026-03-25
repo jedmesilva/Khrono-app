@@ -37,11 +37,11 @@ function AuthGuard() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "auth";
-    const inBoasVindas = segments[1] === "boas-vindas";
+    const inSignupFlow = ["boas-vindas", "senha", "nome"].includes(segments[1] as string);
 
     if (!isAuthenticated && !inAuthGroup) {
       router.replace("/auth");
-    } else if (isAuthenticated && inAuthGroup && !inBoasVindas) {
+    } else if (isAuthenticated && inAuthGroup && !inSignupFlow) {
       router.replace("/(tabs)");
     }
   }, [isAuthenticated, isLoading, segments]);

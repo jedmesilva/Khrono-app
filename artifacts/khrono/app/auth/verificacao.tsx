@@ -12,16 +12,18 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { supabase } from "@/lib/supabase";
 
 const CODE_LENGTH = 6;
-const MOCK_CODE = "123456";
 
 export default function VerificacaoScreen() {
   const insets = useSafeAreaInsets();
   const { contact, type } = useLocalSearchParams<{ contact: string; type: string }>();
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
-  const [error, setError] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(30);
+  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(true);
+  const [verifying, setVerifying] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(60);
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -30,20 +32,10 @@ export default function VerificacaoScreen() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 450,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
-
-    setTimeout(() => inputRefs.current[0]?.focus(), 400);
+    sendOtp();
   }, []);
 
   useEffect(() => {
@@ -51,6 +43,19 @@ export default function VerificacaoScreen() {
     const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [resendCooldown]);
+
+  async function sendOtp() {
+    setSending(true);
+    setError(null);
+    const email = type === "email" ? contact : `${contact}@khrono.app`;
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+    setSending(false);
+    if (otpError) setError("Não foi possível enviar o código. Tente novamente.");
+    else setTimeout(() => inputRefs.current[0]?.focus(), 400);
+  }
 
   function shake() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -68,15 +73,9 @@ export default function VerificacaoScreen() {
     const newCode = [...code];
     newCode[index] = digit;
     setCode(newCode);
-    setError(false);
-
-    if (digit && index < CODE_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    if (newCode.every((d) => d !== "")) {
-      handleVerify(newCode.join(""));
-    }
+    setError(null);
+    if (digit && index < CODE_LENGTH - 1) inputRefs.current[index + 1]?.focus();
+    if (newCode.every((d) => d !== "")) handleVerify(newCode.join(""));
   }
 
   function handleKeyPress(index: number, key: string) {
@@ -88,12 +87,21 @@ export default function VerificacaoScreen() {
     }
   }
 
-  function handleVerify(codeStr?: string) {
-    const toVerify = codeStr ?? code.join("");
-    if (toVerify.length < CODE_LENGTH) return;
+  async function handleVerify(codeStr?: string) {
+    const token = codeStr ?? code.join("");
+    if (token.length < CODE_LENGTH || verifying) return;
 
-    if (toVerify !== MOCK_CODE) {
-      setError(true);
+    setVerifying(true);
+    const email = type === "email" ? contact : `${contact}@khrono.app`;
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: "email",
+    });
+
+    if (verifyError) {
+      setVerifying(false);
+      setError("Código inválido ou expirado. Tente novamente.");
       shake();
       setCode(Array(CODE_LENGTH).fill(""));
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
@@ -102,20 +110,20 @@ export default function VerificacaoScreen() {
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.push({ pathname: "/auth/senha", params: { contact, type } });
+    setVerifying(false);
   }
 
-  function handleResend() {
+  async function handleResend() {
     if (resendCooldown > 0) return;
-    setResendCooldown(30);
+    setResendCooldown(60);
     setCode(Array(CODE_LENGTH).fill(""));
-    setError(false);
-    setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    setError(null);
+    await sendOtp();
   }
 
-  const displayContact =
-    type === "phone"
-      ? `+55 (${contact?.slice(0, 2)}) ${contact?.slice(2, 7)}-${contact?.slice(7)}`
-      : contact;
+  const displayContact = type === "phone"
+    ? `+55 (${contact?.slice(0, 2)}) ${contact?.slice(2, 7)}-${contact?.slice(7)}`
+    : contact;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
@@ -129,55 +137,47 @@ export default function VerificacaoScreen() {
             <Feather name={type === "email" ? "mail" : "smartphone"} size={28} color="#ff6b35" />
           </View>
 
-          <Text style={styles.title}>Verificação</Text>
+          <Text style={styles.title}>Confirme seu {type === "email" ? "e-mail" : "telefone"}</Text>
           <Text style={styles.subtitle}>
-            Enviamos um código de 6 dígitos para
+            {sending
+              ? "Enviando código..."
+              : `Enviamos um código de 6 dígitos para`}
           </Text>
-          <Text style={styles.contactText}>{displayContact}</Text>
+          {!sending && <Text style={styles.contactText}>{displayContact}</Text>}
 
-          <Animated.View
-            style={[
-              styles.codeRow,
-              { transform: [{ translateX: shakeAnim }] },
-            ]}
-          >
-            {Array(CODE_LENGTH)
-              .fill(0)
-              .map((_, i) => (
-                <TextInput
-                  key={i}
-                  ref={(r) => { inputRefs.current[i] = r; }}
-                  style={[
-                    styles.codeBox,
-                    code[i] ? styles.codeBoxFilled : null,
-                    error ? styles.codeBoxError : null,
-                  ]}
-                  value={code[i]}
-                  onChangeText={(v) => handleDigit(i, v)}
-                  onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  textAlign="center"
-                  selectionColor="#ff6b35"
-                  caretHidden
-                />
-              ))}
+          <Animated.View style={[styles.codeRow, { transform: [{ translateX: shakeAnim }] }]}>
+            {Array(CODE_LENGTH).fill(0).map((_, i) => (
+              <TextInput
+                key={i}
+                ref={(r) => { inputRefs.current[i] = r; }}
+                style={[
+                  styles.codeBox,
+                  code[i] ? styles.codeBoxFilled : null,
+                  error ? styles.codeBoxError : null,
+                ]}
+                value={code[i]}
+                onChangeText={(v) => handleDigit(i, v)}
+                onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+                keyboardType="number-pad"
+                maxLength={1}
+                textAlign="center"
+                selectionColor="#ff6b35"
+                caretHidden
+                editable={!sending && !verifying}
+              />
+            ))}
           </Animated.View>
 
-          {error && (
-            <Text style={styles.errorText}>Código incorreto. Tente novamente.</Text>
-          )}
-
-          <Text style={styles.hintText}>
-            Dica: use <Text style={{ color: "#ff6b35", fontFamily: "DMMono_500Medium" }}>123456</Text> para testar
-          </Text>
+          {error && <Text style={styles.errorText}>{error}</Text>}
 
           <Pressable
-            style={[styles.btn, code.join("").length < CODE_LENGTH && styles.btnDisabled]}
+            style={[styles.btn, (code.join("").length < CODE_LENGTH || verifying || sending) && styles.btnDisabled]}
             onPress={() => handleVerify()}
-            disabled={code.join("").length < CODE_LENGTH}
+            disabled={code.join("").length < CODE_LENGTH || verifying || sending}
           >
-            <Text style={styles.btnText}>Verificar</Text>
+            <Text style={styles.btnText}>
+              {verifying ? "Verificando..." : "Verificar"}
+            </Text>
           </Pressable>
 
           <Pressable onPress={handleResend} disabled={resendCooldown > 0}>
@@ -194,114 +194,49 @@ export default function VerificacaoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#060606",
-  },
+  container: { flex: 1, backgroundColor: "#060606" },
   backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 16,
-    marginBottom: 8,
+    width: 40, height: 40,
+    alignItems: "center", justifyContent: "center",
+    marginLeft: 16, marginBottom: 8,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 28,
-    paddingTop: 20,
-  },
+  content: { flex: 1, paddingHorizontal: 28, paddingTop: 20 },
   iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
+    width: 56, height: 56, borderRadius: 18,
+    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 28,
-    color: "#fff",
-    letterSpacing: -0.8,
-    marginBottom: 10,
+    fontFamily: "Sora_700Bold", fontSize: 28, color: "#fff",
+    letterSpacing: -0.8, marginBottom: 10,
   },
   subtitle: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 4,
+    fontFamily: "DMMono_400Regular", fontSize: 13, color: "#555", marginBottom: 4,
   },
   contactText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 36,
+    fontFamily: "DMMono_500Medium", fontSize: 14, color: "#888", marginBottom: 36,
   },
-  codeRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 12,
-  },
+  codeRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
   codeBox: {
-    flex: 1,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    fontFamily: "DMMono_500Medium",
-    fontSize: 22,
-    color: "#fff",
+    flex: 1, height: 56, borderRadius: 14,
+    backgroundColor: "#111", borderWidth: 1, borderColor: "#1e1e1e",
+    fontFamily: "DMMono_500Medium", fontSize: 22, color: "#fff",
   },
-  codeBoxFilled: {
-    borderColor: "#ff6b3550",
-    backgroundColor: "#ff6b3508",
-  },
-  codeBoxError: {
-    borderColor: "#ff444460",
-    backgroundColor: "#ff444408",
-  },
+  codeBoxFilled: { borderColor: "#ff6b3550", backgroundColor: "#ff6b3508" },
+  codeBoxError: { borderColor: "#ff444460", backgroundColor: "#ff444408" },
   errorText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#ff4444",
-    marginBottom: 8,
-    paddingLeft: 4,
-  },
-  hintText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#333",
-    marginBottom: 28,
-    paddingLeft: 4,
+    fontFamily: "DMMono_400Regular", fontSize: 12,
+    color: "#ff4444", marginBottom: 12, paddingLeft: 4,
   },
   btn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 14,
-    height: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
+    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    alignItems: "center", justifyContent: "center", marginBottom: 20,
   },
-  btnDisabled: {
-    opacity: 0.3,
-  },
-  btnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-    color: "#fff",
-  },
+  btnDisabled: { opacity: 0.3 },
+  btnText: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: "#fff" },
   resendText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#ff6b35",
-    textAlign: "center",
+    fontFamily: "DMMono_400Regular", fontSize: 12,
+    color: "#ff6b35", textAlign: "center",
   },
-  resendDisabled: {
-    color: "#444",
-  },
+  resendDisabled: { color: "#444" },
 });
