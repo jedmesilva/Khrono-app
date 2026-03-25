@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Image,
   Platform,
@@ -17,7 +18,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
 import { DocStatus, useDocuments } from "@/context/DocumentsContext";
+import { supabase } from "@/lib/supabase";
 
 type VerifStatus = "none" | "pending" | "approved" | "rejected";
 type EditingField = "nome" | "email" | "telefone" | "cpf" | "nascimento" | null;
@@ -67,6 +70,7 @@ export default function ContaScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
+  const { user, refreshUser, logout } = useAuth();
 
   const toastAnim = useRef(new Animated.Value(-80)).current;
   const [toastVisible, setToastVisible] = useState(false);
@@ -74,17 +78,124 @@ export default function ContaScreen() {
 
   const [editing, setEditing] = useState<EditingField>(null);
   const [draft, setDraft] = useState("");
+  const [savingField, setSavingField] = useState(false);
 
   const [userData, setUserData] = useState({
-    nome: "Jedme Silva",
-    email: "jedme@email.com",
-    telefone: "(31) 99999-1234",
-    cpf: "123.456.789-00",
-    nascimento: "15/04/1990",
+    nome: "",
+    email: "",
+    telefone: "",
+    cpf: "",
+    nascimento: "",
   });
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
+
+  const { documents } = useDocuments();
+  const [faceStatus, setFaceStatus] = useState<VerifStatus>("none");
+
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [changingPwd, setChangingPwd] = useState(false);
+
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [pwdExpanded, setPwdExpanded] = useState(false);
+
+  // Load real profile from Supabase
+  useEffect(() => {
+    async function loadProfile() {
+      if (!user?.id) return;
+      setLoadingProfile(true);
+      const { data } = await supabase
+        .from("profiles")
+        .select("name, email, phone, profile_image_url, cpf, birth_date")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        const rawPhone = data.phone ?? "";
+        const digits = rawPhone.startsWith("+55") ? rawPhone.slice(3) : rawPhone;
+        const formatted = digits.length === 11
+          ? `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+          : digits;
+
+        setUserData({
+          nome: data.name ?? "",
+          email: data.email ?? "",
+          telefone: formatted,
+          cpf: data.cpf ?? "",
+          nascimento: data.birth_date ?? "",
+        });
+        if (data.profile_image_url) setProfileImage(data.profile_image_url);
+      }
+      setLoadingProfile(false);
+    }
+    loadProfile();
+  }, [user?.id]);
+
+  function showToast(msg: string) {
+    setToastMsg(msg);
+    setToastVisible(true);
+    Animated.sequence([
+      Animated.timing(toastAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.delay(2000),
+      Animated.timing(toastAnim, { toValue: -80, duration: 300, useNativeDriver: true }),
+    ]).start(() => setToastVisible(false));
+  }
+
+  function startEdit(field: EditingField) {
+    const val = field ? userData[field] : "";
+    setDraft(val);
+    setEditing(field);
+  }
+
+  async function saveEdit() {
+    if (!editing || !user?.id) return;
+    setSavingField(true);
+
+    // Build the update payload for Supabase
+    const dbField: Record<string, string> = {
+      nome: "name",
+      email: "email",
+      telefone: "phone",
+      cpf: "cpf",
+      nascimento: "birth_date",
+    };
+
+    let valueToSave = draft;
+    // Normalize phone back to +55XXXXXXXXXXX
+    if (editing === "telefone") {
+      const digits = draft.replace(/\D/g, "");
+      valueToSave = digits ? `+55${digits}` : "";
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ [dbField[editing]]: valueToSave })
+      .eq("id", user.id);
+
+    setSavingField(false);
+
+    if (error) {
+      Alert.alert("Erro", "Não foi possível salvar. Tente novamente.");
+      return;
+    }
+
+    setUserData((prev) => ({ ...prev, [editing]: draft }));
+    setEditing(null);
+    await refreshUser();
+    showToast("Alteração salva com sucesso");
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setDraft("");
+  }
 
   async function pickProfileImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -102,60 +213,64 @@ export default function ContaScreen() {
     setProfileImage(pendingImage);
     setPendingImage(null);
     showToast("Foto de perfil atualizada");
+    // TODO: upload to Supabase Storage when configured
   }
 
   function discardProfileImage() {
     setPendingImage(null);
   }
 
-  const { documents } = useDocuments();
-  const [faceStatus, setFaceStatus] = useState<VerifStatus>("none");
+  async function handleChangePassword() {
+    if (!currentPwd || !newPwd || !confirmPwd) return;
+    if (newPwd !== confirmPwd) {
+      Alert.alert("Erro", "A nova senha e a confirmação não coincidem.");
+      return;
+    }
+    if (newPwd.length < 6) {
+      Alert.alert("Erro", "A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
 
-  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
-  const [showNewPwd, setShowNewPwd] = useState(false);
-  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
-  const [currentPwd, setCurrentPwd] = useState("");
-  const [newPwd, setNewPwd] = useState("");
-  const [confirmPwd, setConfirmPwd] = useState("");
+    setChangingPwd(true);
 
-  const [deleteDialog, setDeleteDialog] = useState(false);
+    // Verify current password by trying to sign in
+    const email = userData.email || user?.contact || "";
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPwd,
+    });
 
-  const [pwdExpanded, setPwdExpanded] = useState(false);
+    if (signInError) {
+      setChangingPwd(false);
+      Alert.alert("Senha incorreta", "A senha atual informada está errada.");
+      return;
+    }
 
-  function showToast(msg: string) {
-    setToastMsg(msg);
-    setToastVisible(true);
-    Animated.sequence([
-      Animated.timing(toastAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.delay(2000),
-      Animated.timing(toastAnim, { toValue: -80, duration: 300, useNativeDriver: true }),
-    ]).start(() => setToastVisible(false));
+    // Update to new password
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPwd });
+
+    setChangingPwd(false);
+
+    if (updateError) {
+      Alert.alert("Erro", updateError.message);
+      return;
+    }
+
+    setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
+    setPwdExpanded(false);
+    showToast("Senha alterada com sucesso");
   }
 
-  function startEdit(field: EditingField) {
-    const val = field ? userData[field] : "";
-    setDraft(field === "cpf" ? userData.cpf : val);
-    setEditing(field);
-  }
-
-  function saveEdit() {
-    if (!editing) return;
-    setUserData((prev) => ({ ...prev, [editing]: draft }));
-    setEditing(null);
-    showToast("Alteração salva com sucesso");
-  }
-
-  function cancelEdit() {
-    setEditing(null);
-    setDraft("");
-  }
+  const initials = userData.nome
+    ? userData.nome.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()
+    : (user?.name ?? "?").slice(0, 2).toUpperCase();
 
   const FIELDS: { key: keyof typeof userData; label: string; masked?: boolean; placeholder: string }[] = [
-    { key: "nome",       label: "Nome completo",    placeholder: "Seu nome completo"    },
-    { key: "email",      label: "E-mail",           placeholder: "seu@email.com"        },
-    { key: "telefone",   label: "Telefone",         placeholder: "(00) 00000-0000"      },
-    { key: "cpf",        label: "CPF",              masked: true, placeholder: "000.000.000-00" },
-    { key: "nascimento", label: "Data de nascimento", placeholder: "DD/MM/AAAA"         },
+    { key: "nome",       label: "Nome completo",      placeholder: "Seu nome completo"    },
+    { key: "email",      label: "E-mail",             placeholder: "seu@email.com"        },
+    { key: "telefone",   label: "Telefone",           placeholder: "(00) 00000-0000"      },
+    { key: "cpf",        label: "CPF",                masked: true, placeholder: "000.000.000-00" },
+    { key: "nascimento", label: "Data de nascimento", placeholder: "DD/MM/AAAA"           },
   ];
 
   const faceNeedsAction = faceStatus === "none" || faceStatus === "rejected";
@@ -189,15 +304,17 @@ export default function ContaScreen() {
               <Image source={{ uri: pendingImage ?? profileImage! }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {userData.nome.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()}
-                </Text>
+                <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}
             <View style={styles.avatarEditBadge}>
               <Feather name="camera" size={11} color="#fff" />
             </View>
           </Pressable>
+
+          {!loadingProfile && userData.nome ? (
+            <Text style={styles.avatarName}>{userData.nome}</Text>
+          ) : null}
 
           {pendingImage && (
             <View style={styles.avatarActions}>
@@ -220,9 +337,9 @@ export default function ContaScreen() {
           <View style={styles.fieldList}>
             {FIELDS.map((f) => {
               const isEditing = editing === f.key;
-              const displayValue = f.masked && editing !== f.key
+              const displayValue = f.masked && editing !== f.key && userData[f.key]
                 ? "•••.•••.•••-••"
-                : userData[f.key];
+                : (userData[f.key] || (loadingProfile ? "Carregando..." : "Não informado"));
 
               return (
                 <View
@@ -240,19 +357,22 @@ export default function ContaScreen() {
                         placeholderTextColor="#333"
                         autoCapitalize="none"
                         autoFocus
+                        keyboardType={f.key === "telefone" ? "phone-pad" : f.key === "nascimento" ? "numeric" : "default"}
                       />
                     ) : (
-                      <Text style={styles.fieldValue}>{displayValue}</Text>
+                      <Text style={[styles.fieldValue, !userData[f.key] && styles.fieldValueEmpty]}>
+                        {displayValue}
+                      </Text>
                     )}
                   </View>
 
                   {isEditing ? (
                     <View style={styles.editActions}>
-                      <Pressable style={styles.cancelBtn} onPress={cancelEdit}>
+                      <Pressable style={styles.cancelBtn} onPress={cancelEdit} disabled={savingField}>
                         <Text style={styles.cancelBtnText}>Cancelar</Text>
                       </Pressable>
-                      <Pressable style={styles.saveBtn} onPress={saveEdit}>
-                        <Text style={styles.saveBtnText}>Salvar</Text>
+                      <Pressable style={styles.saveBtn} onPress={saveEdit} disabled={savingField}>
+                        <Text style={styles.saveBtnText}>{savingField ? "..." : "Salvar"}</Text>
                       </Pressable>
                     </View>
                   ) : (
@@ -270,7 +390,6 @@ export default function ContaScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Verificação de identidade</Text>
 
-          {/* Documento */}
           <View style={styles.verifBlock}>
             <View style={styles.verifBlockHeader}>
               <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
@@ -322,7 +441,6 @@ export default function ContaScreen() {
             </View>
           </View>
 
-          {/* Reconhecimento facial */}
           <View style={[styles.verifBlock, { marginTop: 10 }]}>
             <View style={styles.verifBlockHeader}>
               <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
@@ -362,7 +480,6 @@ export default function ContaScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Segurança</Text>
 
-          {/* Troca de senha */}
           <View style={styles.card}>
             <Pressable style={styles.cardAccordionHeader} onPress={() => setPwdExpanded((v) => !v)}>
               <Text style={styles.cardTitle}>Alterar senha</Text>
@@ -399,22 +516,19 @@ export default function ContaScreen() {
                 <Pressable
                   style={[
                     styles.changePwdBtn,
-                    (!currentPwd || !newPwd || !confirmPwd) && styles.changePwdBtnDisabled,
+                    (!currentPwd || !newPwd || !confirmPwd || changingPwd) && styles.changePwdBtnDisabled,
                   ]}
-                  disabled={!currentPwd || !newPwd || !confirmPwd}
-                  onPress={() => {
-                    setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
-                    setPwdExpanded(false);
-                    showToast("Senha alterada com sucesso");
-                  }}
+                  disabled={!currentPwd || !newPwd || !confirmPwd || changingPwd}
+                  onPress={handleChangePassword}
                 >
-                  <Text style={styles.changePwdBtnText}>Alterar senha</Text>
+                  <Text style={styles.changePwdBtnText}>
+                    {changingPwd ? "Alterando..." : "Alterar senha"}
+                  </Text>
                 </Pressable>
               </>
             )}
           </View>
 
-          {/* 2FA */}
           <View style={[styles.card, { marginTop: 10 }]}>
             <Text style={styles.cardTitle}>Autenticação em dois fatores</Text>
             <Text style={styles.cardSub}>
@@ -422,23 +536,6 @@ export default function ContaScreen() {
             </Text>
 
             <View style={styles.twoFaList}>
-              {/* SMS - ativo */}
-              <View style={styles.twoFaItem}>
-                <View style={[styles.twoFaIcon, { borderColor: Colors.accentGreen + "30", backgroundColor: Colors.accentGreen + "10" }]}>
-                  <Feather name="message-circle" size={16} color={Colors.accentGreen} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.twoFaLabel}>SMS</Text>
-                  <Text style={styles.twoFaSub}>(31) 99999-••••</Text>
-                </View>
-                <View style={styles.twoFaActiveBadge}>
-                  <Text style={styles.twoFaActiveBadgeText}>ativo</Text>
-                </View>
-              </View>
-
-              <View style={styles.twoFaDivider} />
-
-              {/* Authenticator app */}
               <View style={styles.twoFaItem}>
                 <View style={[styles.twoFaIcon, { borderColor: "#1e1e1e", backgroundColor: "#161616" }]}>
                   <Feather name="shield" size={16} color="#555" />
@@ -487,7 +584,7 @@ export default function ContaScreen() {
         message="Todos os seus dados, contratos e histórico serão removidos permanentemente. Esta ação não pode ser desfeita."
         buttons={[
           { text: "Cancelar", style: "cancel", onPress: () => setDeleteDialog(false) },
-          { text: "Excluir", style: "destructive", onPress: () => setDeleteDialog(false) },
+          { text: "Excluir", style: "destructive", onPress: () => { setDeleteDialog(false); logout(); } },
         ]}
         onDismiss={() => setDeleteDialog(false)}
       />
@@ -543,9 +640,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 28,
   },
-  avatarWrap: {
-    position: "relative",
-  },
+  avatarWrap: { position: "relative" },
   avatar: {
     width: 80,
     height: 80,
@@ -581,6 +676,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 2,
     borderColor: Colors.background,
+  },
+  avatarName: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 16,
+    color: "#fff",
+    marginTop: 12,
   },
   avatarActions: {
     flexDirection: "row",
@@ -620,103 +721,101 @@ const styles = StyleSheet.create({
 
   section: { marginBottom: 28 },
   sectionTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 14,
+    fontFamily: "DMMono_500Medium",
+    fontSize: 11,
+    color: "#444",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 12,
   },
 
-  fieldList: { gap: 10 },
-  fieldRow: {
-    backgroundColor: "#0a0a0a",
+  fieldList: {
+    backgroundColor: "#0d0d0d",
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderColor: "#181818",
+    overflow: "hidden",
+  },
+  fieldRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#141414",
   },
   fieldRowEditing: {
-    borderColor: Colors.accent + "50",
-    backgroundColor: Colors.accent + "05",
+    backgroundColor: "#111",
+    borderBottomColor: Colors.accent + "20",
   },
   fieldMeta: { flex: 1 },
   fieldLabel: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 9,
+    fontSize: 10,
     color: "#444",
-    letterSpacing: 1.2,
+    letterSpacing: 0.8,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   fieldValue: {
     fontFamily: "Sora_400Regular",
     fontSize: 14,
     color: "#ccc",
   },
+  fieldValueEmpty: { color: "#333" },
   fieldInput: {
     fontFamily: "Sora_400Regular",
     fontSize: 14,
     color: "#fff",
-    paddingVertical: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.accent + "40",
-  },
-  editIconBtn: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: "#141414",
-    borderWidth: 1,
-    borderColor: "#222",
+    padding: 0,
   },
   editActions: {
     flexDirection: "row",
     gap: 8,
+    marginLeft: 8,
   },
   cancelBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#222",
-    borderRadius: 10,
   },
   cancelBtnText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 11,
     color: "#555",
   },
   saveBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
     backgroundColor: Colors.accent,
-    borderRadius: 10,
   },
   saveBtnText: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
+    fontSize: 11,
     color: "#fff",
   },
+  editIconBtn: { padding: 6 },
 
   statusBadge: {
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    flexShrink: 0,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   statusBadgeText: {
     fontFamily: "DMMono_500Medium",
-    fontSize: 9,
-    letterSpacing: 0.3,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
 
   verifBlock: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
+    backgroundColor: "#0d0d0d",
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#181818",
     overflow: "hidden",
   },
   verifBlockHeader: {
@@ -726,144 +825,62 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   verifIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "#161616",
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     borderWidth: 1,
+    backgroundColor: "#111",
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
   },
   verifBlockTitle: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 2,
+    fontSize: 13,
+    color: "#ccc",
   },
   verifBlockSub: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 10,
+    fontSize: 11,
     color: "#444",
-  },
-  rejectedMsg: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    backgroundColor: "#ff3b3010",
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ff3b3020",
-  },
-  rejectedMsgText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#ff3b30cc",
-    flex: 1,
-    lineHeight: 15,
+    marginTop: 2,
   },
   verifContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#141414",
-    paddingTop: 14,
-    gap: 12,
-  },
-  verifLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#444",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 2,
-  },
-  docTypeRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  docTypeBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 10,
-    alignItems: "center",
-    backgroundColor: "#0d0d0d",
-  },
-  docTypeBtnActive: {
-    borderColor: Colors.accent + "50",
-    backgroundColor: Colors.accent + "10",
-  },
-  docTypeBtnText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 11,
-    color: "#444",
-  },
-  docTypeBtnTextActive: {
-    color: Colors.accent,
-  },
-  uploadRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  uploadBtn: {
-    flex: 1,
-    paddingVertical: 18,
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 12,
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#0d0d0d",
-    borderStyle: "dashed",
-  },
-  uploadBtnDone: {
-    borderColor: Colors.accentGreen + "40",
-    backgroundColor: Colors.accentGreen + "08",
-    borderStyle: "solid",
-  },
-  uploadBtnText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
+    padding: 12,
+    paddingTop: 0,
   },
   submitVerifBtn: {
-    backgroundColor: Colors.accent,
-    borderRadius: 12,
-    paddingVertical: 13,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     gap: 8,
+    backgroundColor: "#161616",
+    borderWidth: 1,
+    borderColor: "#222",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    alignSelf: "flex-start",
   },
   submitVerifBtnText: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
+    fontSize: 12,
     color: "#fff",
   },
-
   docList: {
     borderTopWidth: 1,
-    borderTopColor: "#111",
+    borderTopColor: "#141414",
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
-  docDivider: {
-    height: 1,
-    backgroundColor: "#111",
-  },
+  docDivider: { height: 1, backgroundColor: "#141414" },
   docItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    gap: 10,
+    paddingVertical: 10,
   },
   docItemIcon: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 8,
     backgroundColor: "#111",
     borderWidth: 1,
@@ -873,58 +890,52 @@ const styles = StyleSheet.create({
   },
   docItemType: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
+    fontSize: 12,
     color: "#ccc",
-    marginBottom: 2,
   },
   docItemMeta: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
     color: "#444",
+    marginTop: 2,
   },
   docEmpty: {
     alignItems: "center",
     gap: 8,
     paddingVertical: 20,
     borderTopWidth: 1,
-    borderTopColor: "#111",
+    borderTopColor: "#141414",
   },
   docEmptyText: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 11,
+    fontSize: 12,
     color: "#333",
   },
-
-  faceGuide: {
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 8,
+  rejectedMsg: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 10,
+    backgroundColor: "#ff3b3010",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ff3b3025",
   },
-  faceOval: {
-    width: 100,
-    height: 120,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: Colors.accent + "40",
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#111",
-  },
-  faceGuideText: {
+  rejectedMsgText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#444",
-    textAlign: "center",
-    lineHeight: 17,
-    maxWidth: 220,
+    color: "#ff3b30",
+    flex: 1,
+    lineHeight: 16,
   },
 
   card: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
+    backgroundColor: "#0d0d0d",
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#181818",
     padding: 16,
   },
   cardAccordionHeader: {
@@ -932,25 +943,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  cardAccordionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
   cardTitle: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#fff",
+    fontSize: 13,
+    color: "#ccc",
   },
   cardSub: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
     color: "#444",
-    lineHeight: 16,
     marginTop: 4,
-    marginBottom: 16,
+    lineHeight: 16,
   },
-  pwdFields: { gap: 14, marginBottom: 16 },
+  pwdFields: { gap: 12 },
   pwdRow: { gap: 6 },
   pwdInputWrap: {
     flexDirection: "row",
@@ -960,93 +965,89 @@ const styles = StyleSheet.create({
     borderColor: "#1e1e1e",
     borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 11,
-    gap: 10,
+    height: 44,
+    gap: 8,
   },
   pwdInput: {
     flex: 1,
     fontFamily: "DMMono_400Regular",
     fontSize: 14,
     color: "#fff",
-    paddingVertical: 0,
   },
   changePwdBtn: {
+    marginTop: 16,
     backgroundColor: Colors.accent,
-    borderRadius: 12,
-    paddingVertical: 13,
+    borderRadius: 10,
+    paddingVertical: 11,
     alignItems: "center",
   },
-  changePwdBtnDisabled: { opacity: 0.35 },
+  changePwdBtnDisabled: { opacity: 0.3 },
   changePwdBtnText: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
+    fontSize: 13,
     color: "#fff",
   },
 
-  twoFaList: {},
+  twoFaList: { marginTop: 14, gap: 0 },
   twoFaItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 12,
-  },
-  twoFaDivider: {
-    height: 1,
-    backgroundColor: "#141414",
+    paddingVertical: 4,
   },
   twoFaIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
   },
   twoFaLabel: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: "#fff",
-    marginBottom: 2,
+    color: "#ccc",
   },
   twoFaSub: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 10,
+    fontSize: 11,
     color: "#444",
+    marginTop: 2,
   },
   twoFaActiveBadge: {
     backgroundColor: Colors.accentGreen + "15",
     borderWidth: 1,
     borderColor: Colors.accentGreen + "30",
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   twoFaActiveBadgeText: {
     fontFamily: "DMMono_500Medium",
-    fontSize: 9,
+    fontSize: 10,
     color: Colors.accentGreen,
   },
+  twoFaDivider: { height: 1, backgroundColor: "#141414", marginVertical: 10 },
   configureBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
     borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 10,
+    borderColor: "#222",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   configureBtnText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "Sora_600SemiBold",
     fontSize: 11,
     color: "#555",
   },
 
   dangerSection: {
-    backgroundColor: "#ff3b3008",
     borderWidth: 1,
     borderColor: "#ff3b3020",
     borderRadius: 16,
     padding: 16,
-    marginBottom: 8,
+    backgroundColor: "#ff3b3008",
+    marginBottom: 20,
   },
   dangerHeader: {
     flexDirection: "row",
@@ -1072,7 +1073,7 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: "#ff3b3010",
     borderWidth: 1,
-    borderColor: "#ff3b3025",
+    borderColor: "#ff3b3020",
     borderRadius: 12,
     padding: 14,
   },
@@ -1080,12 +1081,12 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
     color: "#ff3b30",
-    marginBottom: 3,
   },
   deleteBtnSub: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#ff3b3080",
-    lineHeight: 14,
+    fontSize: 11,
+    color: "#ff3b3070",
+    marginTop: 2,
+    lineHeight: 15,
   },
 });

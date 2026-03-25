@@ -9,6 +9,8 @@ export const profilesTable = pgTable("profiles", {
   email: text("email"),
   phone: text("phone"),
   profileImageUrl: text("profile_image_url"),
+  cpf: text("cpf"),
+  birthDate: text("birth_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
