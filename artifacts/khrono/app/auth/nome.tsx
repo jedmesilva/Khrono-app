@@ -47,25 +47,28 @@ export default function NomeScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    const { data: { user }, error: updateError } = await supabase.auth.updateUser({
+    const email = type === "email" ? contact : `${contact}@khrono.app`;
+    const phone = type === "phone" ? `+55${contact}` : null;
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
       password,
-      data: { name: nome.trim(), first_name: firstName },
+      options: {
+        data: { name: nome.trim(), first_name: firstName },
+      },
     });
 
-    if (updateError || !user) {
+    if (signUpError || !data.user) {
       setLoading(false);
-      Alert.alert("Erro", updateError?.message ?? "Não foi possível finalizar o cadastro.");
+      Alert.alert("Erro ao criar conta", signUpError?.message ?? "Tente novamente.");
       return;
     }
 
-    const email = type === "email" ? contact : null;
-    const phone = type === "phone" ? `+55${contact}` : null;
-
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: user.id,
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: data.user.id,
       name: nome.trim(),
       first_name: firstName,
-      email,
+      email: type === "email" ? contact : null,
       phone,
     });
 
@@ -75,7 +78,7 @@ export default function NomeScreen() {
       return;
     }
 
-    router.push({ pathname: "/auth/boas-vindas", params: { firstName } });
+    router.replace({ pathname: "/auth/boas-vindas", params: { firstName } });
     setLoading(false);
   }
 
