@@ -48,59 +48,33 @@ export default function NomeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // Verify we still have a valid session (from OTP verification)
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setLoading(false);
-        Alert.alert("Sessão expirada", "Seu código de verificação expirou. Por favor, comece novamente.", [
-          { text: "OK", onPress: () => router.replace("/auth") },
-        ]);
-        return;
-      }
+      const email = type === "email" ? contact : `${contact}@khrono.app`;
 
-      const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-      const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
-
-      // Update password + metadata via direct REST call (avoids SDK hang)
-      const updateRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        method: "PUT",
-        headers: {
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          password,
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
           data: { name: nome.trim(), first_name: firstName },
-        }),
+        },
       });
 
-      if (!updateRes.ok) {
-        const err = await updateRes.json().catch(() => ({}));
+      if (error) {
         setLoading(false);
-        Alert.alert("Erro ao definir senha", err?.message ?? `Erro ${updateRes.status}`);
+        Alert.alert("Erro ao criar conta", error.message);
         return;
       }
 
-      // Create or update the profile record
-      const email = type === "email" ? contact : null;
-      const phone = type === "phone" ? `+55${contact}` : null;
-
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: session.user.id,
-        name: nome.trim(),
-        first_name: firstName,
-        email,
-        phone,
-      }, { onConflict: "id" });
-
-      if (profileError) {
+      if (!data.user) {
         setLoading(false);
-        Alert.alert("Erro", "Conta criada, mas não foi possível salvar seu perfil. Tente novamente.");
+        Alert.alert("Erro", "Não foi possível criar a conta. Tente novamente.");
         return;
       }
 
-      router.replace({ pathname: "/auth/boas-vindas", params: { firstName } });
+      // Navigate to verification — Supabase sent the OTP confirmation email
+      router.push({
+        pathname: "/auth/verificacao",
+        params: { contact, type, mode: "signup", firstName, userId: data.user.id },
+      });
     } catch (e: any) {
       setLoading(false);
       Alert.alert("Erro inesperado", e?.message ?? "Tente novamente.");
@@ -161,7 +135,7 @@ export default function NomeScreen() {
               disabled={!canProceed || loading}
             >
               <Text style={styles.btnText}>
-                {loading ? "Criando conta..." : "Entrar no Krono"}
+                {loading ? "Criando conta..." : "Continuar"}
               </Text>
               {!loading && <Feather name="arrow-right" size={16} color="#fff" />}
             </Pressable>

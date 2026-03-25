@@ -18,10 +18,19 @@ const CODE_LENGTH = 6;
 
 export default function VerificacaoScreen() {
   const insets = useSafeAreaInsets();
-  const { contact, type } = useLocalSearchParams<{ contact: string; type: string }>();
+  const { contact, type, mode, firstName, userId } = useLocalSearchParams<{
+    contact: string;
+    type: string;
+    mode?: string;       // "signup" = OTP already sent by signUp
+    firstName?: string;
+    userId?: string;
+  }>();
+
+  const isSignupMode = mode === "signup";
+
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [error, setError] = useState<string | null>(null);
-  const [sending, setSending] = useState(true);
+  const [sending, setSending] = useState(!isSignupMode); // signup already sent; otp mode sends on mount
   const [verifying, setVerifying] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -35,7 +44,13 @@ export default function VerificacaoScreen() {
       Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
-    sendOtp();
+
+    if (isSignupMode) {
+      // OTP was already sent by signUp — just focus the input
+      setTimeout(() => inputRefs.current[0]?.focus(), 400);
+    } else {
+      sendOtp();
+    }
   }, []);
 
   useEffect(() => {
@@ -93,13 +108,15 @@ export default function VerificacaoScreen() {
 
     setVerifying(true);
     const email = type === "email" ? contact : `${contact}@khrono.app`;
-    const { error: verifyError } = await supabase.auth.verifyOtp({
+
+    const otpType = isSignupMode ? "signup" : "email";
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: "email",
+      type: otpType,
     });
 
-    if (verifyError) {
+    if (verifyError || !data.session) {
       setVerifying(false);
       setError("Código inválido ou expirado. Tente novamente.");
       shake();
@@ -108,8 +125,24 @@ export default function VerificacaoScreen() {
       return;
     }
 
+    // In signup mode, create the profile record now that the user is confirmed
+    if (isSignupMode && data.session) {
+      const user = data.session.user;
+      const meta = user.user_metadata ?? {};
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        name: meta.name ?? "",
+        first_name: meta.first_name ?? firstName ?? "",
+        email: type === "email" ? contact : null,
+        phone: type === "phone" ? `+55${contact}` : null,
+      }, { onConflict: "id" });
+    }
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.push({ pathname: "/auth/senha", params: { contact, type } });
+    router.replace({
+      pathname: "/auth/boas-vindas",
+      params: { firstName: firstName ?? data.session?.user.user_metadata?.first_name ?? "" },
+    });
     setVerifying(false);
   }
 
@@ -118,7 +151,13 @@ export default function VerificacaoScreen() {
     setResendCooldown(60);
     setCode(Array(CODE_LENGTH).fill(""));
     setError(null);
-    await sendOtp();
+
+    if (isSignupMode) {
+      const email = type === "email" ? contact : `${contact}@khrono.app`;
+      await supabase.auth.resend({ type: "signup", email });
+    } else {
+      await sendOtp();
+    }
   }
 
   const displayContact = type === "phone"
@@ -137,11 +176,11 @@ export default function VerificacaoScreen() {
             <Feather name={type === "email" ? "mail" : "smartphone"} size={28} color="#ff6b35" />
           </View>
 
-          <Text style={styles.title}>Confirme seu {type === "email" ? "e-mail" : "telefone"}</Text>
+          <Text style={styles.title}>Confirme seu e-mail</Text>
           <Text style={styles.subtitle}>
             {sending
               ? "Enviando código..."
-              : `Enviamos um código de 6 dígitos para`}
+              : "Enviamos um código de 6 dígitos para"}
           </Text>
           {!sending && <Text style={styles.contactText}>{displayContact}</Text>}
 

@@ -145,10 +145,10 @@ export default function EntradaScreen() {
       if (data) {
         router.push({ pathname: "/auth/login", params: { contact, type: isEmail ? "email" : "phone" } });
       } else {
-        router.push({ pathname: "/auth/verificacao", params: { contact, type: isEmail ? "email" : "phone" } });
+        router.push({ pathname: "/auth/senha", params: { contact, type: isEmail ? "email" : "phone" } });
       }
     } catch {
-      router.push({ pathname: "/auth/verificacao", params: { contact, type: isEmail ? "email" : "phone" } });
+      router.push({ pathname: "/auth/senha", params: { contact, type: isEmail ? "email" : "phone" } });
     } finally {
       setLoading(false);
     }
