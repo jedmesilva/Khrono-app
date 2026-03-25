@@ -28,7 +28,7 @@ export default function NomeScreen() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
-  const canProceed = nome.trim().split(" ").filter(Boolean).length >= 1 && nome.trim().length >= 2;
+  const canProceed = nome.trim().length >= 2;
   const firstName = nome.trim().split(" ")[0] ?? "";
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -47,39 +47,52 @@ export default function NomeScreen() {
     setLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    const email = type === "email" ? contact : `${contact}@khrono.app`;
-    const phone = type === "phone" ? `+55${contact}` : null;
+    try {
+      // Verify we still have a valid session (from OTP verification)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        Alert.alert("Sessão expirada", "Seu código de verificação expirou. Por favor, comece novamente.", [
+          { text: "OK", onPress: () => router.replace("/auth") },
+        ]);
+        return;
+      }
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
+      // Set the password for the OTP-created account
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
         data: { name: nome.trim(), first_name: firstName },
-      },
-    });
+      });
 
-    if (signUpError || !data.user) {
+      if (updateError) {
+        setLoading(false);
+        Alert.alert("Erro ao definir senha", updateError.message);
+        return;
+      }
+
+      // Create or update the profile record
+      const email = type === "email" ? contact : null;
+      const phone = type === "phone" ? `+55${contact}` : null;
+
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        id: session.user.id,
+        name: nome.trim(),
+        first_name: firstName,
+        email,
+        phone,
+      }, { onConflict: "id" });
+
+      if (profileError) {
+        setLoading(false);
+        Alert.alert("Erro", "Conta criada, mas não foi possível salvar seu perfil. Tente novamente.");
+        return;
+      }
+
+      router.replace({ pathname: "/auth/boas-vindas", params: { firstName } });
+    } catch (e: any) {
       setLoading(false);
-      Alert.alert("Erro ao criar conta", signUpError?.message ?? "Tente novamente.");
-      return;
+      Alert.alert("Erro inesperado", e?.message ?? "Tente novamente.");
     }
-
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: data.user.id,
-      name: nome.trim(),
-      first_name: firstName,
-      email: type === "email" ? contact : null,
-      phone,
-    });
-
-    if (profileError) {
-      setLoading(false);
-      Alert.alert("Erro", "Conta criada, mas houve um problema ao salvar seu perfil.");
-      return;
-    }
-
-    router.replace({ pathname: "/auth/boas-vindas", params: { firstName } });
-    setLoading(false);
   }
 
   return (

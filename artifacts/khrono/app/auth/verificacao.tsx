@@ -109,8 +109,6 @@ export default function VerificacaoScreen() {
     }
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // Sign out the temporary OTP session — real account is created at the end of signup
-    await supabase.auth.signOut();
     router.push({ pathname: "/auth/senha", params: { contact, type } });
     setVerifying(false);
   }
