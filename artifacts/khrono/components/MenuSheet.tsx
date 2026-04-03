@@ -75,13 +75,6 @@ export function MenuSheet({ visible, onClose }: Props) {
       },
     },
     {
-      id: "support",
-      icon: "message-circle",
-      label: "Suporte",
-      sublabel: "Tire suas dúvidas",
-      onPress: () => { Haptics.selectionAsync(); onClose(); },
-    },
-    {
       id: "definicoes",
       icon: "settings",
       label: "Definições",
@@ -91,6 +84,13 @@ export function MenuSheet({ visible, onClose }: Props) {
         onClose();
         setTimeout(() => router.push("/definicoes"), 300);
       },
+    },
+    {
+      id: "support",
+      icon: "message-circle",
+      label: "Suporte",
+      sublabel: "Tire suas dúvidas",
+      onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
       id: "logout",
