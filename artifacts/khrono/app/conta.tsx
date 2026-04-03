@@ -26,16 +26,16 @@ type VerifStatus = "none" | "pending" | "approved" | "rejected";
 type EditingField = "nome" | "email" | "telefone" | "cpf" | "nascimento" | null;
 
 const STATUS_COLORS: Record<VerifStatus, { bg: string; border: string; text: string; label: string }> = {
-  none:     { bg: "#111",                    border: "#1e1e1e",              text: "#444",           label: "Não enviado" },
-  pending:  { bg: "#ff6b3512",      border: "#ff6b3530",   text: "#ff6b35",    label: "Em análise"  },
-  approved: { bg: "#00e5a012", border: "#00e5a030", text: "#00e5a0", label: "Aprovado" },
-  rejected: { bg: "#ff3b3015",              border: "#ff3b3030",            text: "#ff3b30",        label: "Reprovado"  },
+  none:     { bg: "transparent",    border: "transparent",     text: "transparent",   label: "Não enviado" },
+  pending:  { bg: "#ff6b3512",      border: "#ff6b3530",       text: "#ff6b35",       label: "Em análise"  },
+  approved: { bg: "#00e5a012",      border: "#00e5a030",       text: "#00e5a0",       label: "Aprovado"    },
+  rejected: { bg: "#ff3b3015",      border: "#ff3b3030",       text: "#ff3b30",       label: "Reprovado"   },
 };
 
 const DOC_STATUS_COLORS: Record<DocStatus, { bg: string; border: string; text: string; label: string }> = {
-  analise:    { bg: "#ff6b3512",      border: "#ff6b3530",        text: "#ff6b35",      label: "Em análise"  },
-  verificado: { bg: "#00e5a012", border: "#00e5a030",   text: "#00e5a0", label: "Verificado"  },
-  invalido:   { bg: "#ff3b3015",               border: "#ff3b3030",                 text: "#ff3b30",          label: "Inválido"    },
+  analise:    { bg: "#ff6b3512", border: "#ff6b3530", text: "#ff6b35",  label: "Em análise" },
+  verificado: { bg: "#00e5a012", border: "#00e5a030", text: "#00e5a0",  label: "Verificado" },
+  invalido:   { bg: "#ff3b3015", border: "#ff3b3030", text: "#ff3b30",  label: "Inválido"   },
 };
 
 function DocStatusBadge({ status }: { status: DocStatus }) {
@@ -49,6 +49,7 @@ function DocStatusBadge({ status }: { status: DocStatus }) {
 
 function StatusBadge({ status }: { status: VerifStatus }) {
   const s = STATUS_COLORS[status];
+  if (status === "none") return null;
   return (
     <View style={[styles.statusBadge, { backgroundColor: s.bg, borderColor: s.border }]}>
       <Text style={[styles.statusBadgeText, { color: s.text }]}>{s.label}</Text>
@@ -81,13 +82,7 @@ export default function ContaScreen() {
   const [draft, setDraft] = useState("");
   const [savingField, setSavingField] = useState(false);
 
-  const [userData, setUserData] = useState({
-    nome: "",
-    email: "",
-    telefone: "",
-    cpf: "",
-    nascimento: "",
-  });
+  const [userData, setUserData] = useState({ nome: "", email: "", telefone: "", cpf: "", nascimento: "" });
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -107,7 +102,6 @@ export default function ContaScreen() {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [pwdExpanded, setPwdExpanded] = useState(false);
 
-  // Load real profile from Supabase
   useEffect(() => {
     async function loadProfile() {
       if (!user?.id) return;
@@ -124,14 +118,7 @@ export default function ContaScreen() {
         const formatted = digits.length === 11
           ? `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
           : digits;
-
-        setUserData({
-          nome: data.name ?? "",
-          email: data.email ?? "",
-          telefone: formatted,
-          cpf: data.cpf ?? "",
-          nascimento: data.birth_date ?? "",
-        });
+        setUserData({ nome: data.name ?? "", email: data.email ?? "", telefone: formatted, cpf: data.cpf ?? "", nascimento: data.birth_date ?? "" });
         if (data.profile_image_url) setProfileImage(data.profile_image_url);
       }
       setLoadingProfile(false);
@@ -158,105 +145,42 @@ export default function ContaScreen() {
   async function saveEdit() {
     if (!editing || !user?.id) return;
     setSavingField(true);
-
-    // Build the update payload for Supabase
-    const dbField: Record<string, string> = {
-      nome: "name",
-      email: "email",
-      telefone: "phone",
-      cpf: "cpf",
-      nascimento: "birth_date",
-    };
-
+    const dbField: Record<string, string> = { nome: "name", email: "email", telefone: "phone", cpf: "cpf", nascimento: "birth_date" };
     let valueToSave = draft;
-    // Normalize phone back to +55XXXXXXXXXXX
     if (editing === "telefone") {
       const digits = draft.replace(/\D/g, "");
       valueToSave = digits ? `+55${digits}` : "";
     }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({ [dbField[editing]]: valueToSave })
-      .eq("id", user.id);
-
+    const { error } = await supabase.from("profiles").update({ [dbField[editing]]: valueToSave }).eq("id", user.id);
     setSavingField(false);
-
-    if (error) {
-      Alert.alert("Erro", "Não foi possível salvar. Tente novamente.");
-      return;
-    }
-
+    if (error) { Alert.alert("Erro", "Não foi possível salvar. Tente novamente."); return; }
     setUserData((prev) => ({ ...prev, [editing]: draft }));
     setEditing(null);
     await refreshUser();
     showToast("Alteração salva com sucesso");
   }
 
-  function cancelEdit() {
-    setEditing(null);
-    setDraft("");
-  }
+  function cancelEdit() { setEditing(null); setDraft(""); }
 
   async function pickProfileImage() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setPendingImage(result.assets[0].uri);
-    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+    if (!result.canceled) setPendingImage(result.assets[0].uri);
   }
 
-  function saveProfileImage() {
-    setProfileImage(pendingImage);
-    setPendingImage(null);
-    showToast("Foto de perfil atualizada");
-    // TODO: upload to Supabase Storage when configured
-  }
-
-  function discardProfileImage() {
-    setPendingImage(null);
-  }
+  function saveProfileImage() { setProfileImage(pendingImage); setPendingImage(null); showToast("Foto de perfil atualizada"); }
+  function discardProfileImage() { setPendingImage(null); }
 
   async function handleChangePassword() {
     if (!currentPwd || !newPwd || !confirmPwd) return;
-    if (newPwd !== confirmPwd) {
-      Alert.alert("Erro", "A nova senha e a confirmação não coincidem.");
-      return;
-    }
-    if (newPwd.length < 6) {
-      Alert.alert("Erro", "A nova senha deve ter pelo menos 6 caracteres.");
-      return;
-    }
-
+    if (newPwd !== confirmPwd) { Alert.alert("Erro", "A nova senha e a confirmação não coincidem."); return; }
+    if (newPwd.length < 6) { Alert.alert("Erro", "A nova senha deve ter pelo menos 6 caracteres."); return; }
     setChangingPwd(true);
-
-    // Verify current password by trying to sign in
     const email = userData.email || user?.contact || "";
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password: currentPwd,
-    });
-
-    if (signInError) {
-      setChangingPwd(false);
-      Alert.alert("Senha incorreta", "A senha atual informada está errada.");
-      return;
-    }
-
-    // Update to new password
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPwd });
+    if (signInError) { setChangingPwd(false); Alert.alert("Senha incorreta", "A senha atual informada está errada."); return; }
     const { error: updateError } = await supabase.auth.updateUser({ password: newPwd });
-
     setChangingPwd(false);
-
-    if (updateError) {
-      Alert.alert("Erro", updateError.message);
-      return;
-    }
-
+    if (updateError) { Alert.alert("Erro", updateError.message); return; }
     setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
     setPwdExpanded(false);
     showToast("Senha alterada com sucesso");
@@ -282,19 +206,15 @@ export default function ContaScreen() {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: topPadding + 16, paddingBottom: isWeb ? 34 + 84 + 20 : 100 },
-        ]}
+        contentContainerStyle={[styles.content, { paddingTop: topPadding + 16, paddingBottom: isWeb ? 34 + 84 + 20 : 100 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={"#ff6b35"} />
+            <Feather name="arrow-left" size={18} color="#ff6b35" />
           </Pressable>
-          <Text style={styles.headerTitle}>Minha conta</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Minha conta</Text>
           <View style={{ width: 26 }} />
         </View>
 
@@ -304,7 +224,7 @@ export default function ContaScreen() {
             {pendingImage || profileImage ? (
               <Image source={{ uri: pendingImage ?? profileImage! }} style={styles.avatarImage} />
             ) : (
-              <View style={styles.avatar}>
+              <View style={[styles.avatar, { backgroundColor: colors.avatarBg, borderColor: "#ff6b3530" }]}>
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}
@@ -314,14 +234,14 @@ export default function ContaScreen() {
           </Pressable>
 
           {!loadingProfile && userData.nome ? (
-            <Text style={styles.avatarName}>{userData.nome}</Text>
+            <Text style={[styles.avatarName, { color: colors.text }]}>{userData.nome}</Text>
           ) : null}
 
           {pendingImage && (
             <View style={styles.avatarActions}>
-              <Pressable style={styles.avatarDiscardBtn} onPress={discardProfileImage}>
-                <Feather name="x" size={13} color="#666" />
-                <Text style={styles.avatarDiscardText}>Descartar</Text>
+              <Pressable style={[styles.avatarDiscardBtn, { borderColor: colors.inputBorder, backgroundColor: colors.inputBg }]} onPress={discardProfileImage}>
+                <Feather name="x" size={13} color={colors.textMuted} />
+                <Text style={[styles.avatarDiscardText, { color: colors.textMuted }]}>Descartar</Text>
               </Pressable>
               <Pressable style={styles.avatarSaveBtn} onPress={saveProfileImage}>
                 <Feather name="check" size={13} color="#fff" />
@@ -331,11 +251,10 @@ export default function ContaScreen() {
           )}
         </View>
 
-        {/* ── Dados pessoais ── */}
+        {/* Dados pessoais */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Dados pessoais</Text>
-
-          <View style={styles.fieldList}>
+          <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Dados pessoais</Text>
+          <View style={[styles.fieldList, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             {FIELDS.map((f) => {
               const isEditing = editing === f.key;
               const displayValue = f.masked && editing !== f.key && userData[f.key]
@@ -343,34 +262,30 @@ export default function ContaScreen() {
                 : (userData[f.key] || (loadingProfile ? "Carregando..." : "Não informado"));
 
               return (
-                <View
-                  key={f.key}
-                  style={[styles.fieldRow, isEditing && styles.fieldRowEditing]}
-                >
+                <View key={f.key} style={[styles.fieldRow, { borderBottomColor: colors.surface }, isEditing && { backgroundColor: colors.inputBg, borderBottomColor: "#ff6b3520" }]}>
                   <View style={styles.fieldMeta}>
-                    <Text style={styles.fieldLabel}>{f.label}</Text>
+                    <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{f.label}</Text>
                     {isEditing ? (
                       <TextInput
-                        style={styles.fieldInput}
+                        style={[styles.fieldInput, { color: colors.text }]}
                         value={draft}
                         onChangeText={setDraft}
                         placeholder={f.placeholder}
-                        placeholderTextColor="#333"
+                        placeholderTextColor={colors.textDim}
                         autoCapitalize="none"
                         autoFocus
                         keyboardType={f.key === "telefone" ? "phone-pad" : f.key === "nascimento" ? "numeric" : "default"}
                       />
                     ) : (
-                      <Text style={[styles.fieldValue, !userData[f.key] && styles.fieldValueEmpty]}>
+                      <Text style={[styles.fieldValue, { color: colors.textSecondary }, !userData[f.key] && { color: colors.textDim }]}>
                         {displayValue}
                       </Text>
                     )}
                   </View>
-
                   {isEditing ? (
                     <View style={styles.editActions}>
-                      <Pressable style={styles.cancelBtn} onPress={cancelEdit} disabled={savingField}>
-                        <Text style={styles.cancelBtnText}>Cancelar</Text>
+                      <Pressable style={[styles.cancelBtn, { borderColor: colors.inputBorder }]} onPress={cancelEdit} disabled={savingField}>
+                        <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
                       </Pressable>
                       <Pressable style={styles.saveBtn} onPress={saveEdit} disabled={savingField}>
                         <Text style={styles.saveBtnText}>{savingField ? "..." : "Salvar"}</Text>
@@ -378,7 +293,7 @@ export default function ContaScreen() {
                     </View>
                   ) : (
                     <Pressable style={styles.editIconBtn} onPress={() => startEdit(f.key)}>
-                      <Feather name="edit-2" size={13} color="#666" />
+                      <Feather name="edit-2" size={13} color={colors.textMuted} />
                     </Pressable>
                   )}
                 </View>
@@ -387,33 +302,33 @@ export default function ContaScreen() {
           </View>
         </View>
 
-        {/* ── Verificação de identidade ── */}
+        {/* Verificação de identidade */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Verificação de identidade</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Verificação de identidade</Text>
 
-          <View style={styles.verifBlock}>
+          <View style={[styles.verifBlock, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={styles.verifBlockHeader}>
-              <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
-                <Feather name="file-text" size={16} color="#555" />
+              <View style={[styles.verifIconWrap, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
+                <Feather name="file-text" size={16} color={colors.textSecondary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.verifBlockTitle}>Documentos</Text>
-                <Text style={styles.verifBlockSub}>RG, CNH ou Passaporte</Text>
+                <Text style={[styles.verifBlockTitle, { color: colors.textSecondary }]}>Documentos</Text>
+                <Text style={[styles.verifBlockSub, { color: colors.textMuted }]}>RG, CNH ou Passaporte</Text>
               </View>
             </View>
 
             {documents.length > 0 && (
-              <View style={styles.docList}>
+              <View style={[styles.docList, { borderTopColor: colors.surface }]}>
                 {documents.map((doc, index) => (
                   <View key={doc.id}>
-                    {index > 0 && <View style={styles.docDivider} />}
+                    {index > 0 && <View style={[styles.docDivider, { backgroundColor: colors.surface }]} />}
                     <View style={styles.docItem}>
-                      <View style={styles.docItemIcon}>
-                        <Feather name="file-text" size={14} color="#555" />
+                      <View style={[styles.docItemIcon, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                        <Feather name="file-text" size={14} color={colors.textSecondary} />
                       </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.docItemType}>{doc.type}</Text>
-                        <Text style={styles.docItemMeta}>
+                        <Text style={[styles.docItemType, { color: colors.textSecondary }]}>{doc.type}</Text>
+                        <Text style={[styles.docItemMeta, { color: colors.textMuted }]}>
                           {doc.submittedAt} · {doc.files.length} arquivo{doc.files.length !== 1 ? "s" : ""}
                         </Text>
                       </View>
@@ -425,31 +340,28 @@ export default function ContaScreen() {
             )}
 
             {documents.length === 0 && (
-              <View style={styles.docEmpty}>
-                <Feather name="inbox" size={22} color="#222" />
-                <Text style={styles.docEmptyText}>Nenhum documento enviado</Text>
+              <View style={[styles.docEmpty, { borderTopColor: colors.surface }]}>
+                <Feather name="inbox" size={22} color={colors.textDim} />
+                <Text style={[styles.docEmptyText, { color: colors.textDim }]}>Nenhum documento enviado</Text>
               </View>
             )}
 
             <View style={styles.verifContent}>
-              <Pressable
-                style={styles.submitVerifBtn}
-                onPress={() => router.push("/envio-documento")}
-              >
-                <Feather name="upload" size={14} color="#fff" />
-                <Text style={styles.submitVerifBtnText}>Enviar documento</Text>
+              <Pressable style={[styles.submitVerifBtn, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]} onPress={() => router.push("/envio-documento")}>
+                <Feather name="upload" size={14} color={colors.text} />
+                <Text style={[styles.submitVerifBtnText, { color: colors.text }]}>Enviar documento</Text>
               </Pressable>
             </View>
           </View>
 
-          <View style={[styles.verifBlock, { marginTop: 10 }]}>
+          <View style={[styles.verifBlock, { marginTop: 10, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={styles.verifBlockHeader}>
-              <View style={[styles.verifIconWrap, { borderColor: "#1e1e1e" }]}>
-                <Feather name="aperture" size={16} color="#555" />
+              <View style={[styles.verifIconWrap, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
+                <Feather name="aperture" size={16} color={colors.textSecondary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.verifBlockTitle}>Reconhecimento facial</Text>
-                <Text style={styles.verifBlockSub}>Verificação com liveness</Text>
+                <Text style={[styles.verifBlockTitle, { color: colors.textSecondary }]}>Reconhecimento facial</Text>
+                <Text style={[styles.verifBlockSub, { color: colors.textMuted }]}>Verificação com liveness</Text>
               </View>
               <StatusBadge status={faceStatus} />
             </View>
@@ -465,26 +377,23 @@ export default function ContaScreen() {
 
             {faceNeedsAction && (
               <View style={styles.verifContent}>
-                <Pressable
-                  style={styles.submitVerifBtn}
-                  onPress={() => router.push("/verificacao-facial")}
-                >
-                  <Feather name="video" size={14} color="#fff" />
-                  <Text style={styles.submitVerifBtnText}>Fazer reconhecimento facial</Text>
+                <Pressable style={[styles.submitVerifBtn, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]} onPress={() => router.push("/verificacao-facial")}>
+                  <Feather name="video" size={14} color={colors.text} />
+                  <Text style={[styles.submitVerifBtnText, { color: colors.text }]}>Fazer reconhecimento facial</Text>
                 </Pressable>
               </View>
             )}
           </View>
         </View>
 
-        {/* ── Segurança ── */}
+        {/* Segurança */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Segurança</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Segurança</Text>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Pressable style={styles.cardAccordionHeader} onPress={() => setPwdExpanded((v) => !v)}>
-              <Text style={styles.cardTitle}>Alterar senha</Text>
-              <Feather name={pwdExpanded ? "chevron-up" : "chevron-down"} size={15} color="#333" />
+              <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>Alterar senha</Text>
+              <Feather name={pwdExpanded ? "chevron-up" : "chevron-down"} size={15} color={colors.textMuted} />
             </Pressable>
 
             {pwdExpanded && (
@@ -496,83 +405,69 @@ export default function ContaScreen() {
                     { label: "Confirmar nova senha", value: confirmPwd,  setter: setConfirmPwd,  show: showConfirmPwd, toggle: () => setShowConfirmPwd((v) => !v) },
                   ].map((f) => (
                     <View key={f.label} style={styles.pwdRow}>
-                      <Text style={styles.fieldLabel}>{f.label}</Text>
-                      <View style={styles.pwdInputWrap}>
+                      <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{f.label}</Text>
+                      <View style={[styles.pwdInputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
                         <TextInput
-                          style={styles.pwdInput}
+                          style={[styles.pwdInput, { color: colors.text }]}
                           value={f.value}
                           onChangeText={f.setter}
                           secureTextEntry={!f.show}
                           placeholder="••••••••"
-                          placeholderTextColor="#333"
+                          placeholderTextColor={colors.textDim}
                           autoCapitalize="none"
                         />
                         <Pressable onPress={f.toggle} hitSlop={10}>
-                          <Feather name={f.show ? "eye-off" : "eye"} size={15} color="#444" />
+                          <Feather name={f.show ? "eye-off" : "eye"} size={15} color={colors.textMuted} />
                         </Pressable>
                       </View>
                     </View>
                   ))}
                 </View>
                 <Pressable
-                  style={[
-                    styles.changePwdBtn,
-                    (!currentPwd || !newPwd || !confirmPwd || changingPwd) && styles.changePwdBtnDisabled,
-                  ]}
+                  style={[styles.changePwdBtn, (!currentPwd || !newPwd || !confirmPwd || changingPwd) && styles.changePwdBtnDisabled]}
                   disabled={!currentPwd || !newPwd || !confirmPwd || changingPwd}
                   onPress={handleChangePassword}
                 >
-                  <Text style={styles.changePwdBtnText}>
-                    {changingPwd ? "Alterando..." : "Alterar senha"}
-                  </Text>
+                  <Text style={styles.changePwdBtnText}>{changingPwd ? "Alterando..." : "Alterar senha"}</Text>
                 </Pressable>
               </>
             )}
           </View>
 
-          <View style={[styles.card, { marginTop: 10 }]}>
-            <Text style={styles.cardTitle}>Autenticação em dois fatores</Text>
-            <Text style={styles.cardSub}>
-              Adicione uma camada extra de segurança à sua conta.
-            </Text>
-
+          <View style={[styles.card, { marginTop: 10, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>Autenticação em dois fatores</Text>
+            <Text style={[styles.cardSub, { color: colors.textMuted }]}>Adicione uma camada extra de segurança à sua conta.</Text>
             <View style={styles.twoFaList}>
               <View style={styles.twoFaItem}>
-                <View style={[styles.twoFaIcon, { borderColor: "#1e1e1e", backgroundColor: "#161616" }]}>
-                  <Feather name="shield" size={16} color="#555" />
+                <View style={[styles.twoFaIcon, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
+                  <Feather name="shield" size={16} color={colors.textSecondary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.twoFaLabel}>App autenticador</Text>
-                  <Text style={styles.twoFaSub}>Google Authenticator, Authy...</Text>
+                  <Text style={[styles.twoFaLabel, { color: colors.textSecondary }]}>App autenticador</Text>
+                  <Text style={[styles.twoFaSub, { color: colors.textMuted }]}>Google Authenticator, Authy...</Text>
                 </View>
-                <Pressable
-                  style={styles.configureBtn}
-                  onPress={() => showToast("Em breve disponível")}
-                >
-                  <Text style={styles.configureBtnText}>Configurar</Text>
+                <Pressable style={[styles.configureBtn, { borderColor: colors.inputBorder }]} onPress={() => showToast("Em breve disponível")}>
+                  <Text style={[styles.configureBtnText, { color: colors.textMuted }]}>Configurar</Text>
                 </Pressable>
               </View>
             </View>
           </View>
         </View>
 
-        {/* ── Zona de perigo ── */}
+        {/* Zona de perigo */}
         <View style={styles.dangerSection}>
           <View style={styles.dangerHeader}>
             <Feather name="alert-triangle" size={14} color="#ff3b30" />
             <Text style={styles.dangerTitle}>Zona de perigo</Text>
           </View>
-          <Text style={styles.dangerDesc}>
+          <Text style={[styles.dangerDesc, { color: colors.textSecondary }]}>
             As ações abaixo são irreversíveis e afetam permanentemente sua conta.
           </Text>
-
           <Pressable style={styles.deleteBtn} onPress={() => setDeleteDialog(true)}>
             <Feather name="trash-2" size={15} color="#ff3b30" />
             <View style={{ flex: 1 }}>
               <Text style={styles.deleteBtnLabel}>Excluir minha conta</Text>
-              <Text style={styles.deleteBtnSub}>
-                Remove todos os seus dados, contratos e histórico permanentemente.
-              </Text>
+              <Text style={styles.deleteBtnSub}>Remove todos os seus dados, contratos e histórico permanentemente.</Text>
             </View>
             <Feather name="chevron-right" size={15} color="#ff3b3060" />
           </Pressable>
@@ -597,496 +492,85 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-
   toast: {
-    position: "absolute",
-    top: 0,
-    left: 20,
-    right: 20,
-    zIndex: 999,
-    backgroundColor: "#00e5a0",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    position: "absolute", top: 0, left: 20, right: 20, zIndex: 999,
+    backgroundColor: "#00e5a0", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
+    flexDirection: "row", alignItems: "center", gap: 10,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
   },
-  toastText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#fff",
-    flex: 1,
-  },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 28,
-  },
+  toastText: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#fff", flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 28 },
   backBtn: { padding: 4 },
-  headerTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 16,
-    color: "#fff",
-  },
-
-  avatarSection: {
-    alignItems: "center",
-    marginBottom: 28,
-  },
+  headerTitle: { fontFamily: "Sora_700Bold", fontSize: 16 },
+  avatarSection: { alignItems: "center", marginBottom: 28 },
   avatarWrap: { position: "relative" },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#161616",
-    borderWidth: 2,
-    borderColor: "#ff6b3530",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: "#ff6b3530",
-  },
-  avatarText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 24,
-    color: "#ff6b35",
-    fontWeight: "700",
-  },
-  avatarEditBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#ff6b35",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-  },
-  avatarName: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 16,
-    color: "#fff",
-    marginTop: 12,
-  },
-  avatarActions: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 14,
-  },
-  avatarDiscardBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#222",
-    backgroundColor: "#0a0a0a",
-  },
-  avatarDiscardText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
-    color: "#555",
-  },
-  avatarSaveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#ff6b35",
-  },
-  avatarSaveText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
-    color: "#fff",
-  },
-
+  avatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+  avatarImage: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: "#ff6b3530" },
+  avatarText: { fontFamily: "DMMono_500Medium", fontSize: 24, color: "#ff6b35" },
+  avatarEditBadge: { position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: "#ff6b35", alignItems: "center", justifyContent: "center", borderWidth: 2 },
+  avatarName: { fontFamily: "Sora_600SemiBold", fontSize: 16, marginTop: 12 },
+  avatarActions: { flexDirection: "row", gap: 8, marginTop: 14 },
+  avatarDiscardBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+  avatarDiscardText: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
+  avatarSaveBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: "#ff6b35" },
+  avatarSaveText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#fff" },
   section: { marginBottom: 28 },
-  sectionTitle: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 11,
-    color: "#444",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-
-  fieldList: {
-    backgroundColor: "#0d0d0d",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#181818",
-    overflow: "hidden",
-  },
-  fieldRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#141414",
-  },
-  fieldRowEditing: {
-    backgroundColor: "#111",
-    borderBottomColor: "#ff6b3520",
-  },
+  sectionTitle: { fontFamily: "DMMono_500Medium", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  fieldList: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  fieldRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },
   fieldMeta: { flex: 1 },
-  fieldLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: 3,
-  },
-  fieldValue: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 14,
-    color: "#ccc",
-  },
-  fieldValueEmpty: { color: "#333" },
-  fieldInput: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 14,
-    color: "#fff",
-    padding: 0,
-  },
-  editActions: {
-    flexDirection: "row",
-    gap: 8,
-    marginLeft: 8,
-  },
-  cancelBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#222",
-  },
-  cancelBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 11,
-    color: "#555",
-  },
-  saveBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "#ff6b35",
-  },
-  saveBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 11,
-    color: "#fff",
-  },
+  fieldLabel: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 3 },
+  fieldValue: { fontFamily: "Sora_400Regular", fontSize: 14 },
+  fieldInput: { fontFamily: "Sora_400Regular", fontSize: 14, padding: 0 },
+  editActions: { flexDirection: "row", gap: 8, marginLeft: 8 },
+  cancelBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
+  cancelBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11 },
+  saveBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: "#ff6b35" },
+  saveBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#fff" },
   editIconBtn: { padding: 6 },
-
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  statusBadgeText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 10,
-    letterSpacing: 0.5,
-  },
-
-  verifBlock: {
-    backgroundColor: "#0d0d0d",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#181818",
-    overflow: "hidden",
-  },
-  verifBlockHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 16,
-  },
-  verifIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: "#111",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  verifBlockTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ccc",
-  },
-  verifBlockSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    marginTop: 2,
-  },
-  verifContent: {
-    padding: 12,
-    paddingTop: 0,
-  },
-  submitVerifBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#222",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    alignSelf: "flex-start",
-  },
-  submitVerifBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
-    color: "#fff",
-  },
-  docList: {
-    borderTopWidth: 1,
-    borderTopColor: "#141414",
-    marginHorizontal: 16,
-    marginBottom: 12,
-  },
-  docDivider: { height: 1, backgroundColor: "#141414" },
-  docItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 10,
-  },
-  docItemIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  docItemType: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
-    color: "#ccc",
-  },
-  docItemMeta: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    marginTop: 2,
-  },
-  docEmpty: {
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#141414",
-  },
-  docEmptyText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#333",
-  },
-  rejectedMsg: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 10,
-    backgroundColor: "#ff3b3010",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ff3b3025",
-  },
-  rejectedMsgText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#ff3b30",
-    flex: 1,
-    lineHeight: 16,
-  },
-
-  card: {
-    backgroundColor: "#0d0d0d",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#181818",
-    padding: 16,
-  },
-  cardAccordionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ccc",
-  },
-  cardSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    marginTop: 4,
-    lineHeight: 16,
-  },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
+  statusBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 10, letterSpacing: 0.5 },
+  verifBlock: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  verifBlockHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
+  verifIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  verifBlockTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
+  verifBlockSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 2 },
+  verifContent: { padding: 12, paddingTop: 0 },
+  submitVerifBtn: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, alignSelf: "flex-start" },
+  submitVerifBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
+  docList: { borderTopWidth: 1, marginHorizontal: 16, marginBottom: 12 },
+  docDivider: { height: 1 },
+  docItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
+  docItemIcon: { width: 30, height: 30, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  docItemType: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
+  docItemMeta: { fontFamily: "DMMono_400Regular", fontSize: 10, marginTop: 2 },
+  docEmpty: { alignItems: "center", gap: 8, paddingVertical: 20, borderTopWidth: 1 },
+  docEmptyText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
+  rejectedMsg: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginHorizontal: 16, marginBottom: 12, padding: 10, backgroundColor: "#ff3b3010", borderRadius: 8, borderWidth: 1, borderColor: "#ff3b3025" },
+  rejectedMsgText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff3b30", flex: 1, lineHeight: 16 },
+  card: { borderRadius: 16, borderWidth: 1, padding: 16 },
+  cardAccordionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  cardTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
+  cardSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 4, lineHeight: 16 },
   pwdFields: { gap: 12 },
   pwdRow: { gap: 6 },
-  pwdInputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    height: 44,
-    gap: 8,
-  },
-  pwdInput: {
-    flex: 1,
-    fontFamily: "DMMono_400Regular",
-    fontSize: 14,
-    color: "#fff",
-  },
-  changePwdBtn: {
-    marginTop: 16,
-    backgroundColor: "#ff6b35",
-    borderRadius: 10,
-    paddingVertical: 11,
-    alignItems: "center",
-  },
+  pwdInputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 44, gap: 8 },
+  pwdInput: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 14 },
+  changePwdBtn: { marginTop: 16, backgroundColor: "#ff6b35", borderRadius: 10, paddingVertical: 11, alignItems: "center" },
   changePwdBtnDisabled: { opacity: 0.3 },
-  changePwdBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#fff",
-  },
-
+  changePwdBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#fff" },
   twoFaList: { marginTop: 14, gap: 0 },
-  twoFaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 4,
-  },
-  twoFaIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  twoFaLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ccc",
-  },
-  twoFaSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    marginTop: 2,
-  },
-  twoFaActiveBadge: {
-    backgroundColor: "#00e5a015",
-    borderWidth: 1,
-    borderColor: "#00e5a030",
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  twoFaActiveBadgeText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 10,
-    color: "#00e5a0",
-  },
-  twoFaDivider: { height: 1, backgroundColor: "#141414", marginVertical: 10 },
-  configureBtn: {
-    borderWidth: 1,
-    borderColor: "#222",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  configureBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 11,
-    color: "#555",
-  },
-
-  dangerSection: {
-    borderWidth: 1,
-    borderColor: "#ff3b3020",
-    borderRadius: 16,
-    padding: 16,
-    backgroundColor: "#ff3b3008",
-    marginBottom: 20,
-  },
-  dangerHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 6,
-  },
-  dangerTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 13,
-    color: "#ff3b30",
-  },
-  dangerDesc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#555",
-    lineHeight: 16,
-    marginBottom: 14,
-  },
-  deleteBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#ff3b3010",
-    borderWidth: 1,
-    borderColor: "#ff3b3020",
-    borderRadius: 12,
-    padding: 14,
-  },
-  deleteBtnLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ff3b30",
-  },
-  deleteBtnSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#ff3b3070",
-    marginTop: 2,
-    lineHeight: 15,
-  },
+  twoFaItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
+  twoFaIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  twoFaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
+  twoFaSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 2 },
+  configureBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  configureBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11 },
+  dangerSection: { borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 16, padding: 16, backgroundColor: "#ff3b3008", marginBottom: 20 },
+  dangerHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
+  dangerTitle: { fontFamily: "Sora_700Bold", fontSize: 13, color: "#ff3b30" },
+  dangerDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 14 },
+  deleteBtn: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#ff3b3010", borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 12, padding: 14 },
+  deleteBtnLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff3b30" },
+  deleteBtnSub: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff3b3070", marginTop: 2, lineHeight: 15 },
 });

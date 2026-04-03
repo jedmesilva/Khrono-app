@@ -16,46 +16,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 
 const TOOL_TYPES = [
-  {
-    id: "veiculo",
-    label: "Veículo",
-    icon: "truck" as const,
-    description: "Carro, moto, van ou qualquer veículo usado no trabalho",
-  },
-  {
-    id: "ferramenta",
-    label: "Ferramenta",
-    icon: "tool" as const,
-    description: "Ferramentas manuais ou elétricas que você utiliza",
-  },
-  {
-    id: "equipamento",
-    label: "Equipamento",
-    icon: "box" as const,
-    description: "Equipamentos, máquinas ou acessórios especializados",
-  },
+  { id: "veiculo", label: "Veículo", icon: "truck" as const, description: "Carro, moto, van ou qualquer veículo usado no trabalho" },
+  { id: "ferramenta", label: "Ferramenta", icon: "tool" as const, description: "Ferramentas manuais ou elétricas que você utiliza" },
+  { id: "equipamento", label: "Equipamento", icon: "box" as const, description: "Equipamentos, máquinas ou acessórios especializados" },
 ];
 
 const SUGGESTIONS_BY_TYPE: Record<string, string[]> = {
   veiculo: ["Carro", "Moto", "Van", "Caminhão", "Pickup", "Bicicleta", "Scooter"],
-  ferramenta: [
-    "Furadeira",
-    "Serra Circular",
-    "Parafusadeira",
-    "Esmerilhadeira",
-    "Martelo",
-    "Chave de Fenda",
-    "Nível a Laser",
-  ],
-  equipamento: [
-    "Escada",
-    "Carrinho de Mudança",
-    "Betoneira",
-    "Compressor de Ar",
-    "Gerador",
-    "Andaime",
-    "Aspirador Industrial",
-  ],
+  ferramenta: ["Furadeira", "Serra Circular", "Parafusadeira", "Esmerilhadeira", "Martelo", "Chave de Fenda", "Nível a Laser"],
+  equipamento: ["Escada", "Carrinho de Mudança", "Betoneira", "Compressor de Ar", "Gerador", "Andaime", "Aspirador Industrial"],
 };
 
 const TOTAL_STEPS = 3;
@@ -75,18 +44,12 @@ export default function CadastroToolScreen() {
   const [available, setAvailable] = useState(true);
 
   const suggestions = toolType ? SUGGESTIONS_BY_TYPE[toolType] ?? [] : [];
-  const filtered =
-    query.length > 0
-      ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
-      : [];
+  const filtered = query.length > 0 ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase())) : [];
 
   const currentStep = step === "done" ? TOTAL_STEPS : (step as number);
   const progress = currentStep / TOTAL_STEPS;
 
-  function handleSelectSuggestion(name: string) {
-    setToolName(name);
-    setQuery(name);
-  }
+  function handleSelectSuggestion(name: string) { setToolName(name); setQuery(name); }
 
   function handleBack() {
     if (step === 1) router.back();
@@ -95,16 +58,13 @@ export default function CadastroToolScreen() {
   }
 
   function handleNext() {
-    if (step === 1 && toolType) {
-      setStep(2);
-    } else if (step === 2) {
+    if (step === 1 && toolType) setStep(2);
+    else if (step === 2) {
       const name = toolName || query;
       if (!name.trim()) return;
       setToolName(name.trim());
       setStep(3);
-    } else if (step === 3) {
-      setStep("done");
-    }
+    } else if (step === 3) setStep("done");
   }
 
   if (step === "done") {
@@ -112,15 +72,18 @@ export default function CadastroToolScreen() {
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <View style={styles.doneWrap}>
           <View style={styles.doneIcon}>
-            <Feather name="check" size={32} color={"#00e5a0"} />
+            <Feather name="check" size={32} color="#00e5a0" />
           </View>
-          <Text style={styles.doneTitle}>Tool adicionada!</Text>
-          <Text style={styles.doneSub}>
-            <Text style={{ color: "#00e5a0" }}>{toolName}</Text> foi cadastrada no seu perfil
-            como {available ? "disponível" : "indisponível"}.
+          <Text style={[styles.doneTitle, { color: colors.text }]}>Tool adicionada!</Text>
+          <Text style={[styles.doneSub, { color: colors.textSecondary }]}>
+            <Text style={{ color: "#00e5a0" }}>{toolName}</Text> foi cadastrada no seu perfil como{" "}
+            {available ? "disponível" : "indisponível"}.
           </Text>
-          <Pressable style={styles.secondaryBtn} onPress={() => { setStep(1); setToolType(""); setToolName(""); setQuery(""); setDetails(""); setAvailable(true); }}>
-            <Feather name="plus" size={14} color={"#00e5a0"} />
+          <Pressable
+            style={styles.secondaryBtn}
+            onPress={() => { setStep(1); setToolType(""); setToolName(""); setQuery(""); setDetails(""); setAvailable(true); }}
+          >
+            <Feather name="plus" size={14} color="#00e5a0" />
             <Text style={styles.secondaryBtnText}>Adicionar outra tool</Text>
           </Pressable>
           <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
@@ -133,66 +96,43 @@ export default function CadastroToolScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color={"#00e5a0"} />
+          <Feather name="arrow-left" size={18} color="#00e5a0" />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Text style={styles.stepIndicator}>
+          <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>
             Passo {currentStep} de {TOTAL_STEPS}
           </Text>
-          <View style={styles.progressBar}>
+          <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
             <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
           </View>
         </View>
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {step === 1 && (
           <>
-            <Text style={styles.stepTitle}>Que tipo de tool?</Text>
-            <Text style={styles.stepSub}>
-              Selecione a categoria que melhor descreve o que você vai adicionar.
-            </Text>
-
+            <Text style={[styles.stepTitle, { color: colors.text }]}>Que tipo de tool?</Text>
+            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>Selecione a categoria que melhor descreve o que você vai adicionar.</Text>
             <View style={styles.typeGrid}>
               {TOOL_TYPES.map((t) => (
                 <Pressable
                   key={t.id}
-                  style={[
-                    styles.typeCard,
-                    toolType === t.id && styles.typeCardSelected,
-                  ]}
+                  style={[styles.typeCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }, toolType === t.id && styles.typeCardSelected]}
                   onPress={() => setToolType(t.id)}
                 >
                   <View style={[
                     styles.typeIcon,
-                    toolType === t.id
-                      ? { backgroundColor: "#00e5a020", borderColor: "#00e5a040" }
-                      : { backgroundColor: "#161616", borderColor: "#1e1e1e" },
+                    toolType === t.id ? { backgroundColor: "#00e5a020", borderColor: "#00e5a040" } : { backgroundColor: colors.surface, borderColor: colors.surfaceBorder },
                   ]}>
-                    <Feather
-                      name={t.icon}
-                      size={22}
-                      color={toolType === t.id ? "#00e5a0" : "#444"}
-                    />
+                    <Feather name={t.icon} size={22} color={toolType === t.id ? "#00e5a0" : colors.textMuted} />
                   </View>
-                  <Text style={[
-                    styles.typeLabel,
-                    toolType === t.id && styles.typeLabelSelected,
-                  ]}>
-                    {t.label}
-                  </Text>
-                  <Text style={styles.typeDescription}>{t.description}</Text>
+                  <Text style={[styles.typeLabel, { color: colors.textSecondary }, toolType === t.id && styles.typeLabelSelected]}>{t.label}</Text>
+                  <Text style={[styles.typeDescription, { color: colors.textMuted }]}>{t.description}</Text>
                   {toolType === t.id && (
                     <View style={styles.typeCheck}>
-                      <Feather name="check" size={11} color={"#00e5a0"} />
+                      <Feather name="check" size={11} color="#00e5a0" />
                     </View>
                   )}
                 </Pressable>
@@ -203,39 +143,34 @@ export default function CadastroToolScreen() {
 
         {step === 2 && (
           <>
-            <Text style={styles.stepTitle}>
+            <Text style={[styles.stepTitle, { color: colors.text }]}>
               Nome da {TOOL_TYPES.find((t) => t.id === toolType)?.label.toLowerCase() ?? "tool"}
             </Text>
-            <Text style={styles.stepSub}>
-              Escreva o nome ou escolha uma sugestão da lista.
-            </Text>
+            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>Escreva o nome ou escolha uma sugestão da lista.</Text>
 
-            <View style={styles.inputWrap}>
-              <Feather name="search" size={15} color="#444" style={styles.inputIcon} />
+            <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+              <Feather name="search" size={15} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 value={query}
-                onChangeText={(t) => {
-                  setQuery(t);
-                  setToolName(t);
-                }}
+                onChangeText={(t) => { setQuery(t); setToolName(t); }}
                 placeholder="Buscar ou escrever..."
-                placeholderTextColor="#333"
+                placeholderTextColor={colors.textDim}
                 autoCapitalize="words"
               />
               {query.length > 0 && (
                 <Pressable onPress={() => { setQuery(""); setToolName(""); }}>
-                  <Feather name="x" size={15} color="#444" />
+                  <Feather name="x" size={15} color={colors.textMuted} />
                 </Pressable>
               )}
             </View>
 
             {query.length === 0 && (
               <View style={styles.chipsSection}>
-                <Text style={styles.chipsLabel}>SUGESTÕES</Text>
+                <Text style={[styles.chipsLabel, { color: colors.textMuted }]}>SUGESTÕES</Text>
                 <View style={styles.chips}>
                   {suggestions.map((s) => (
-                    <Pressable key={s} style={styles.chip} onPress={() => handleSelectSuggestion(s)}>
+                    <Pressable key={s} style={[styles.chip, { backgroundColor: colors.inputBg }]} onPress={() => handleSelectSuggestion(s)}>
                       <Text style={styles.chipText}>{s}</Text>
                     </Pressable>
                   ))}
@@ -246,13 +181,9 @@ export default function CadastroToolScreen() {
             {filtered.length > 0 && (
               <View style={styles.suggestionList}>
                 {filtered.map((s) => (
-                  <Pressable
-                    key={s}
-                    style={styles.suggestionItem}
-                    onPress={() => handleSelectSuggestion(s)}
-                  >
-                    <Feather name="box" size={13} color={"#00e5a0"} />
-                    <Text style={styles.suggestionText}>{s}</Text>
+                  <Pressable key={s} style={[styles.suggestionItem, { borderBottomColor: colors.surface }]} onPress={() => handleSelectSuggestion(s)}>
+                    <Feather name="box" size={13} color="#00e5a0" />
+                    <Text style={[styles.suggestionText, { color: colors.textSecondary }]}>{s}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -260,9 +191,9 @@ export default function CadastroToolScreen() {
 
             {query.length > 0 && filtered.length === 0 && (
               <View style={styles.freeTextHint}>
-                <Feather name="plus-circle" size={13} color="#555" />
-                <Text style={styles.freeTextHintText}>
-                  Usar "<Text style={{ color: "#fff" }}>{query}</Text>" como nome
+                <Feather name="plus-circle" size={13} color={colors.textSecondary} />
+                <Text style={[styles.freeTextHintText, { color: colors.textSecondary }]}>
+                  Usar "<Text style={{ color: colors.text }}>{query}</Text>" como nome
                 </Text>
               </View>
             )}
@@ -271,37 +202,34 @@ export default function CadastroToolScreen() {
 
         {step === 3 && (
           <>
-            <Text style={styles.stepTitle}>Detalhes</Text>
-            <Text style={styles.stepSub}>
-              Adicione informações extras sobre{" "}
-              <Text style={{ color: "#00e5a0" }}>{toolName}</Text> e defina a disponibilidade.
+            <Text style={[styles.stepTitle, { color: colors.text }]}>Detalhes</Text>
+            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
+              Adicione informações extras sobre <Text style={{ color: "#00e5a0" }}>{toolName}</Text> e defina a disponibilidade.
             </Text>
 
             <TextInput
-              style={styles.textarea}
+              style={[styles.textarea, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text }]}
               value={details}
               onChangeText={setDetails}
               placeholder="Ex: cor, capacidade, modelo, ano, condição..."
-              placeholderTextColor="#333"
+              placeholderTextColor={colors.textDim}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
             />
 
-            <View style={styles.availCard}>
+            <View style={[styles.availCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.availTitle}>Disponível agora</Text>
-                <Text style={styles.availSub}>
-                  {available
-                    ? "Esta tool aparecerá como disponível no perfil."
-                    : "Esta tool aparecerá como indisponível."}
+                <Text style={[styles.availTitle, { color: colors.text }]}>Disponível agora</Text>
+                <Text style={[styles.availSub, { color: colors.textMuted }]}>
+                  {available ? "Esta tool aparecerá como disponível no perfil." : "Esta tool aparecerá como indisponível."}
                 </Text>
               </View>
               <Switch
                 value={available}
                 onValueChange={setAvailable}
-                trackColor={{ false: "#1e1e1e", true: "#00e5a060" }}
-                thumbColor={available ? "#00e5a0" : "#444"}
+                trackColor={{ false: colors.surfaceBorder, true: "#00e5a060" }}
+                thumbColor={available ? "#00e5a0" : colors.textMuted}
               />
             </View>
           </>
@@ -310,24 +238,17 @@ export default function CadastroToolScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* Bottom action */}
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20 }]}>
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
         <Pressable
           style={[
             styles.primaryBtn,
             { flex: 1 },
-            ((step === 1 && !toolType) || (step === 2 && !toolName.trim() && !query.trim())) &&
-              styles.primaryBtnDisabled,
+            ((step === 1 && !toolType) || (step === 2 && !toolName.trim() && !query.trim())) && styles.primaryBtnDisabled,
           ]}
           onPress={handleNext}
-          disabled={
-            (step === 1 && !toolType) ||
-            (step === 2 && !toolName.trim() && !query.trim())
-          }
+          disabled={(step === 1 && !toolType) || (step === 2 && !toolName.trim() && !query.trim())}
         >
-          <Text style={styles.primaryBtnText}>
-            {step === 3 ? "Concluir" : "Próximo"}
-          </Text>
+          <Text style={styles.primaryBtnText}>{step === 3 ? "Concluir" : "Próximo"}</Text>
         </Pressable>
       </View>
     </View>
@@ -335,299 +256,60 @@ export default function CadastroToolScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    paddingHorizontal: 20,
-    marginBottom: 28,
-  },
-  backBtn: {
-    padding: 4,
-    flexShrink: 0,
-  },
-  stepIndicator: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: 3,
-    backgroundColor: "#161616",
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#00e5a0",
-    borderRadius: 2,
-  },
-
-  content: {
-    paddingHorizontal: 20,
-  },
-  stepTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 22,
-    color: "#fff",
-    marginBottom: 8,
-  },
-  stepSub: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 13,
-    color: "#555",
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-
-  typeGrid: {
-    gap: 10,
-  },
-  typeCard: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 16,
-    padding: 18,
-    position: "relative",
-  },
-  typeCardSelected: {
-    borderColor: "#00e5a040",
-    backgroundColor: "#00e5a008",
-  },
-  typeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  typeLabel: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 4,
-  },
-  typeLabelSelected: {
-    color: "#fff",
-  },
-  typeDescription: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 12,
-    color: "#444",
-    lineHeight: 18,
-  },
+  container: { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 28 },
+  backBtn: { padding: 4, flexShrink: 0 },
+  stepIndicator: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 },
+  progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
+  progressFill: { height: "100%", backgroundColor: "#00e5a0", borderRadius: 2 },
+  content: { paddingHorizontal: 20 },
+  stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
+  stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
+  typeGrid: { gap: 10 },
+  typeCard: { borderWidth: 1, borderRadius: 16, padding: 18, position: "relative" },
+  typeCardSelected: { borderColor: "#00e5a040", backgroundColor: "#00e5a008" },
+  typeIcon: { width: 48, height: 48, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center", marginBottom: 12 },
+  typeLabel: { fontFamily: "Sora_700Bold", fontSize: 16, marginBottom: 4 },
+  typeLabelSelected: { color: "#fff" },
+  typeDescription: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18 },
   typeCheck: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#00e5a020",
-    borderWidth: 1,
-    borderColor: "#00e5a040",
-    alignItems: "center",
-    justifyContent: "center",
+    position: "absolute", top: 16, right: 16, width: 22, height: 22, borderRadius: 11,
+    backgroundColor: "#00e5a020", borderWidth: 1, borderColor: "#00e5a040",
+    alignItems: "center", justifyContent: "center",
   },
-
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
-    marginBottom: 20,
-  },
+  inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
-  input: {
-    flex: 1,
-    fontFamily: "Sora_400Regular",
-    fontSize: 14,
-    color: "#fff",
-  },
-
+  input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
   chipsSection: { marginBottom: 10 },
-  chipsLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#444",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  chip: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#00e5a025",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  chipText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#00e5a0",
-  },
-
-  suggestionList: {
-    gap: 2,
-  },
-  suggestionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 13,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: "#0e0e0e",
-  },
-  suggestionText: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 14,
-    color: "#ccc",
-  },
-
-  freeTextHint: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 4,
-  },
-  freeTextHintText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#555",
-  },
-
-  textarea: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 16,
-    fontFamily: "Sora_400Regular",
-    fontSize: 14,
-    color: "#fff",
-    minHeight: 120,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-
-  availCard: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 14,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  availTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 3,
-  },
-  availSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-    lineHeight: 15,
-  },
-
-  bottomBar: {
-    flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#0e0e0e",
-  },
-  primaryBtn: {
-    backgroundColor: "#00e5a0",
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryBtnDisabled: {
-    opacity: 0.35,
-  },
-  primaryBtnText: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 14,
-    color: "#060606",
-  },
-
+  chipsLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: { borderWidth: 1, borderColor: "#00e5a025", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
+  chipText: { fontFamily: "DMMono_400Regular", fontSize: 12, color: "#00e5a0" },
+  suggestionList: { gap: 2 },
+  suggestionItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13, paddingHorizontal: 4, borderBottomWidth: 1 },
+  suggestionText: { fontFamily: "Sora_400Regular", fontSize: 14 },
+  freeTextHint: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 4 },
+  freeTextHintText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
+  textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 120, lineHeight: 22, marginBottom: 16 },
+  availCard: { borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 },
+  availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 3 },
+  availSub: { fontFamily: "DMMono_400Regular", fontSize: 10, lineHeight: 15 },
+  bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
+  primaryBtn: { backgroundColor: "#00e5a0", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
+  primaryBtnDisabled: { opacity: 0.35 },
+  primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#060606" },
   secondaryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#00e5a012",
-    borderWidth: 1,
-    borderColor: "#00e5a030",
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    width: "100%",
-    justifyContent: "center",
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: "#00e5a012", borderWidth: 1, borderColor: "#00e5a030",
+    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, width: "100%", justifyContent: "center",
   },
-  secondaryBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#00e5a0",
-  },
-
-  doneWrap: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 40,
-    gap: 16,
-  },
+  secondaryBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#00e5a0" },
+  doneWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, gap: 16 },
   doneIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#00e5a015",
-    borderWidth: 1,
-    borderColor: "#00e5a030",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: "#00e5a015", borderWidth: 1, borderColor: "#00e5a030",
+    alignItems: "center", justifyContent: "center", marginBottom: 8,
   },
-  doneTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 22,
-    color: "#fff",
-    textAlign: "center",
-  },
-  doneSub: {
-    fontFamily: "Sora_400Regular",
-    fontSize: 14,
-    color: "#555",
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 12,
-  },
+  doneTitle: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center" },
+  doneSub: { fontFamily: "Sora_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 12 },
 });

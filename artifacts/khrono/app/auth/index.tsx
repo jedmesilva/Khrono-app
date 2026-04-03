@@ -16,6 +16,7 @@ import {
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/context/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -76,6 +77,7 @@ function FloatingOrb({ size, color, x, y, duration, delay }: {
 }
 
 export default function EntradaScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [inputMode, setInputMode] = useState<InputMode>("email");
   const [rawValue, setRawValue] = useState("");
@@ -155,7 +157,7 @@ export default function EntradaScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.background} pointerEvents="none">
         <FloatingOrb size={280} color="#ff6b35" x={-80} y={-60} duration={7000} delay={0} />
         <FloatingOrb size={200} color="#ff6b35" x={width - 140} y={80} duration={9000} delay={500} />
@@ -166,38 +168,38 @@ export default function EntradaScreen() {
         style={[styles.logoArea, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
         pointerEvents="none"
       >
-        <Text style={styles.logoText}>
+        <Text style={[styles.logoText, { color: colors.text }]}>
           Kr<Text style={{ color: "#ff6b35" }}>o</Text>no
         </Text>
-        <Text style={styles.logoSub}>marketplace de serviços</Text>
+        <Text style={[styles.logoSub, { color: colors.textMuted }]}>marketplace de serviços</Text>
       </Animated.View>
 
       <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
-        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim }]}>
-          <Text style={styles.sheetTitle}>
+        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <Text style={[styles.sheetTitle, { color: colors.text }]}>
             {isEmail ? "Qual é o seu e-mail?" : "Qual é o seu telefone?"}
           </Text>
-          <Text style={styles.sheetSub}>
+          <Text style={[styles.sheetSub, { color: colors.textSecondary }]}>
             {isEmail
               ? "Se já tiver conta, pedimos a senha. Se não, criamos uma."
               : "Se já tiver conta, pedimos a senha. Se não, criamos uma."}
           </Text>
 
-          <View style={[styles.inputWrap, displayValue.length > 0 && styles.inputWrapActive]}>
+          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }, displayValue.length > 0 && styles.inputWrapActive]}>
             <View style={styles.inputIconWrap}>
               <Feather
                 name={isEmail ? "mail" : "phone"}
                 size={16}
-                color={displayValue.length > 0 ? "#ff6b35" : "#444"}
+                color={displayValue.length > 0 ? "#ff6b35" : colors.textMuted}
               />
             </View>
             <TextInput
               ref={inputRef}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
               value={displayValue}
               onChangeText={handleChangeText}
               placeholder={isEmail ? "seu@email.com" : "(11) 99999-9999"}
-              placeholderTextColor="#333"
+              placeholderTextColor={colors.textDim}
               keyboardType={isEmail ? "email-address" : "phone-pad"}
               autoCapitalize="none"
               autoCorrect={false}
@@ -208,7 +210,7 @@ export default function EntradaScreen() {
             />
             {displayValue.length > 0 && (
               <Pressable onPress={handleClear} style={styles.clearBtn} hitSlop={8}>
-                <Feather name="x" size={14} color="#444" />
+                <Feather name="x" size={14} color={colors.textMuted} />
               </Pressable>
             )}
           </View>
@@ -229,20 +231,20 @@ export default function EntradaScreen() {
           </Pressable>
 
           <Pressable
-            style={styles.btnSecondary}
+            style={[styles.btnSecondary, { borderColor: colors.inputBorder }]}
             onPress={() => switchMode(isEmail ? "phone" : "email")}
           >
-            <Feather name={isEmail ? "phone" : "mail"} size={14} color="#555" />
-            <Text style={styles.btnSecondaryText}>
+            <Feather name={isEmail ? "phone" : "mail"} size={14} color={colors.textSecondary} />
+            <Text style={[styles.btnSecondaryText, { color: colors.textSecondary }]}>
               {isEmail ? "Continuar com telefone" : "Continuar com e-mail"}
             </Text>
           </Pressable>
 
-          <Text style={styles.terms}>
+          <Text style={[styles.terms, { color: colors.textDim }]}>
             Ao continuar, você aceita os{" "}
-            <Text style={{ color: "#555" }}>Termos de Uso</Text>
+            <Text style={{ color: colors.textSecondary }}>Termos de Uso</Text>
             {" "}e a{" "}
-            <Text style={{ color: "#555" }}>Política de Privacidade</Text>
+            <Text style={{ color: colors.textSecondary }}>Política de Privacidade</Text>
           </Text>
         </Animated.View>
       </KeyboardStickyView>
@@ -253,7 +255,6 @@ export default function EntradaScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#060606",
   },
   background: {
     ...StyleSheet.absoluteFillObject,
@@ -266,48 +267,40 @@ const styles = StyleSheet.create({
   logoText: {
     fontFamily: "Sora_700Bold",
     fontSize: 52,
-    color: "#ffffff",
     letterSpacing: -2,
     marginBottom: 10,
   },
   logoSub: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#444",
     letterSpacing: 2,
     textTransform: "uppercase",
   },
   sheet: {
-    backgroundColor: "#0a0a0a",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: "#1a1a1a",
     paddingTop: 28,
     paddingHorizontal: 24,
   },
   sheetTitle: {
     fontFamily: "Sora_700Bold",
     fontSize: 22,
-    color: "#ffffff",
     marginBottom: 6,
     letterSpacing: -0.5,
   },
   sheetSub: {
     fontFamily: "DMMono_400Regular",
     fontSize: 12,
-    color: "#555",
     marginBottom: 24,
     lineHeight: 18,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#111",
     borderWidth: 1,
-    borderColor: "#1e1e1e",
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 52,
@@ -325,7 +318,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: "DMMono_400Regular",
     fontSize: 15,
-    color: "#fff",
     height: "100%",
   },
   clearBtn: {
@@ -357,18 +349,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     borderWidth: 1,
-    borderColor: "#1e1e1e",
     marginBottom: 20,
   },
   btnSecondaryText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 13,
-    color: "#555",
   },
   terms: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#333",
     textAlign: "center",
     lineHeight: 16,
     marginBottom: 12,

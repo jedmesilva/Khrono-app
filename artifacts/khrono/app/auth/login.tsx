@@ -18,8 +18,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { contact, type } = useLocalSearchParams<{
     contact: string;
@@ -38,19 +40,9 @@ export default function LoginScreen() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 450,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
-
     setTimeout(() => inputRef.current?.focus(), 450);
   }, []);
 
@@ -68,14 +60,8 @@ export default function LoginScreen() {
   async function handleLogin() {
     if (senha.length < 1 || loading) return;
     setLoading(true);
-
     const email = type === "email" ? contact : `${contact}@khrono.app`;
-
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    });
-
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password: senha });
     if (authError) {
       setLoading(false);
       setError(true);
@@ -83,39 +69,28 @@ export default function LoginScreen() {
       setSenha("");
       return;
     }
-
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }
 
   function handleForgotPassword() {
-    Alert.alert(
-      "Redefinir senha",
-      "Enviamos um link de redefinição para o seu e-mail.",
-      [{ text: "OK" }]
-    );
+    Alert.alert("Redefinir senha", "Enviamos um link de redefinição para o seu e-mail.", [{ text: "OK" }]);
   }
 
-  const displayContact =
-    type === "phone"
-      ? `(${contact?.slice(0, 2)}) ${contact?.slice(2, 7)}-${contact?.slice(7)}`
-      : contact;
+  const displayContact = type === "phone"
+    ? `(${contact?.slice(0, 2)}) ${contact?.slice(2, 7)}-${contact?.slice(7)}`
+    : contact;
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView
-        style={[styles.container, { paddingTop: insets.top + 16 }]}
+        style={[styles.container, { paddingTop: insets.top + 16, backgroundColor: colors.background }]}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View
-          style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
-        >
+        <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Feather name="arrow-left" size={20} color="#888" />
+            <Feather name="arrow-left" size={20} color={colors.textSecondary} />
           </Pressable>
 
           <View style={styles.content}>
@@ -123,46 +98,45 @@ export default function LoginScreen() {
               <Feather name="lock" size={28} color="#ff6b35" />
             </View>
 
-            <Text style={styles.title}>Bem-vindo de volta</Text>
-            <Text style={styles.subtitle}>Digite sua senha para entrar.</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Bem-vindo de volta</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Digite sua senha para entrar.</Text>
 
             <View style={styles.contactChip}>
-              <Feather
-                name={type === "email" ? "mail" : "smartphone"}
-                size={13}
-                color="#ff6b35"
-              />
+              <Feather name={type === "email" ? "mail" : "smartphone"} size={13} color="#ff6b35" />
               <Text style={styles.contactChipText}>{displayContact}</Text>
             </View>
 
-            <Text style={styles.label}>Senha</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Senha</Text>
             <Animated.View
-              style={[styles.inputWrap, error && styles.inputWrapError, { transform: [{ translateX: shakeAnim }] }]}
+              style={[
+                styles.inputWrap,
+                { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
+                error && styles.inputWrapError,
+                { transform: [{ translateX: shakeAnim }] },
+              ]}
             >
               <TextInput
                 ref={inputRef}
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 value={senha}
                 onChangeText={(t) => { setSenha(t); setError(false); }}
                 secureTextEntry={!showSenha}
                 placeholder="sua senha"
-                placeholderTextColor="#333"
+                placeholderTextColor={colors.textDim}
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="done"
                 onSubmitEditing={handleLogin}
               />
               <Pressable onPress={() => setShowSenha(!showSenha)} style={styles.eyeBtn}>
-                <Feather name={showSenha ? "eye-off" : "eye"} size={16} color="#444" />
+                <Feather name={showSenha ? "eye-off" : "eye"} size={16} color={colors.textMuted} />
               </Pressable>
             </Animated.View>
 
-            {error && (
-              <Text style={styles.errorText}>Senha incorreta. Tente novamente.</Text>
-            )}
+            {error && <Text style={styles.errorText}>Senha incorreta. Tente novamente.</Text>}
 
             <Pressable onPress={handleForgotPassword} style={styles.forgotBtn}>
-              <Text style={styles.forgotText}>Esqueci minha senha</Text>
+              <Text style={[styles.forgotText, { color: colors.textSecondary }]}>Esqueci minha senha</Text>
             </Pressable>
 
             <Animated.View style={[styles.footer, { paddingBottom: insets.bottom + 4, opacity: fadeAnim }]}>
@@ -183,134 +157,42 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#060606",
-  },
+  container: { flex: 1 },
   backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 16,
-    marginBottom: 8,
+    width: 40, height: 40,
+    alignItems: "center", justifyContent: "center",
+    marginLeft: 16, marginBottom: 8,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 28,
-    paddingTop: 20,
-    paddingBottom: 40,
-  },
+  content: { flex: 1, paddingHorizontal: 28, paddingTop: 20, paddingBottom: 40 },
   iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
+    width: 56, height: 56, borderRadius: 18,
+    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
-  title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 28,
-    color: "#fff",
-    letterSpacing: -0.8,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 20,
-    lineHeight: 20,
-  },
+  title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 8 },
+  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 20, lineHeight: 20 },
   contactChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    alignSelf: "flex-start",
-    backgroundColor: "#ff6b3510",
-    borderWidth: 1,
-    borderColor: "#ff6b3525",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginBottom: 32,
+    flexDirection: "row", alignItems: "center", gap: 7, alignSelf: "flex-start",
+    backgroundColor: "#ff6b3510", borderWidth: 1, borderColor: "#ff6b3525",
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, marginBottom: 32,
   },
-  contactChipText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 12,
-    color: "#ff6b35",
-  },
-  label: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 11,
-    color: "#555",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
+  contactChipText: { fontFamily: "DMMono_500Medium", fontSize: 12, color: "#ff6b35" },
+  label: { fontFamily: "DMMono_500Medium", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 },
   inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    height: 52,
-    marginBottom: 8,
+    flexDirection: "row", alignItems: "center",
+    borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, height: 52, marginBottom: 8,
   },
-  inputWrapError: {
-    borderColor: "#ff444460",
-    backgroundColor: "#ff444408",
-  },
-  input: {
-    flex: 1,
-    fontFamily: "DMMono_400Regular",
-    fontSize: 15,
-    color: "#fff",
-  },
-  eyeBtn: {
-    padding: 4,
-  },
-  errorText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#ff4444",
-    marginBottom: 8,
-    paddingLeft: 4,
-  },
-  forgotBtn: {
-    alignSelf: "flex-start",
-    marginTop: 4,
-  },
-  forgotText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#555",
-    textDecorationLine: "underline",
-  },
-  footer: {
-    marginTop: 32,
-  },
+  inputWrapError: { borderColor: "#ff444460", backgroundColor: "#ff444408" },
+  input: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 15 },
+  eyeBtn: { padding: 4 },
+  errorText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff4444", marginBottom: 8, paddingLeft: 4 },
+  forgotBtn: { alignSelf: "flex-start", marginTop: 4 },
+  forgotText: { fontFamily: "DMMono_400Regular", fontSize: 12, textDecorationLine: "underline" },
+  footer: { marginTop: 32 },
   btn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 14,
-    height: 52,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
+    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
   },
-  btnDisabled: {
-    opacity: 0.3,
-  },
-  btnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-    color: "#fff",
-  },
+  btnDisabled: { opacity: 0.3 },
+  btnText: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: "#fff" },
 });

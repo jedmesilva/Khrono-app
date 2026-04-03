@@ -13,24 +13,22 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/context/ThemeContext";
 
 const CODE_LENGTH = 6;
 
 export default function VerificacaoScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { contact, type, mode, firstName, userId } = useLocalSearchParams<{
-    contact: string;
-    type: string;
-    mode?: string;       // "signup" = OTP already sent by signUp
-    firstName?: string;
-    userId?: string;
+    contact: string; type: string; mode?: string; firstName?: string; userId?: string;
   }>();
 
   const isSignupMode = mode === "signup";
 
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [error, setError] = useState<string | null>(null);
-  const [sending, setSending] = useState(!isSignupMode); // signup already sent; otp mode sends on mount
+  const [sending, setSending] = useState(!isSignupMode);
   const [verifying, setVerifying] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -44,9 +42,7 @@ export default function VerificacaoScreen() {
       Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 450, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
-
     if (isSignupMode) {
-      // OTP was already sent by signUp — just focus the input
       setTimeout(() => inputRefs.current[0]?.focus(), 400);
     } else {
       sendOtp();
@@ -63,10 +59,7 @@ export default function VerificacaoScreen() {
     setSending(true);
     setError(null);
     const email = type === "email" ? contact : `${contact}@khrono.app`;
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true },
-    });
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     setSending(false);
     if (otpError) setError("Não foi possível enviar o código. Tente novamente.");
     else setTimeout(() => inputRefs.current[0]?.focus(), 400);
@@ -108,13 +101,8 @@ export default function VerificacaoScreen() {
 
     setVerifying(true);
     const email = type === "email" ? contact : `${contact}@khrono.app`;
-
     const otpType = isSignupMode ? "signup" : "email";
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: otpType,
-    });
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({ email, token, type: otpType });
 
     if (verifyError || !data.session) {
       setVerifying(false);
@@ -125,7 +113,6 @@ export default function VerificacaoScreen() {
       return;
     }
 
-    // In signup mode, create the profile record now that the user is confirmed
     if (isSignupMode && data.session) {
       const user = data.session.user;
       const meta = user.user_metadata ?? {};
@@ -151,7 +138,6 @@ export default function VerificacaoScreen() {
     setResendCooldown(60);
     setCode(Array(CODE_LENGTH).fill(""));
     setError(null);
-
     if (isSignupMode) {
       const email = type === "email" ? contact : `${contact}@khrono.app`;
       await supabase.auth.resend({ type: "signup", email });
@@ -165,10 +151,10 @@ export default function VerificacaoScreen() {
     : contact;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+    <View style={[styles.container, { paddingTop: insets.top + 16, backgroundColor: colors.background }]}>
       <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={20} color="#888" />
+          <Feather name="arrow-left" size={20} color={colors.textSecondary} />
         </Pressable>
 
         <View style={styles.content}>
@@ -176,13 +162,11 @@ export default function VerificacaoScreen() {
             <Feather name={type === "email" ? "mail" : "smartphone"} size={28} color="#ff6b35" />
           </View>
 
-          <Text style={styles.title}>Confirme seu e-mail</Text>
-          <Text style={styles.subtitle}>
-            {sending
-              ? "Enviando código..."
-              : "Enviamos um código de 6 dígitos para"}
+          <Text style={[styles.title, { color: colors.text }]}>Confirme seu e-mail</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {sending ? "Enviando código..." : "Enviamos um código de 6 dígitos para"}
           </Text>
-          {!sending && <Text style={styles.contactText}>{displayContact}</Text>}
+          {!sending && <Text style={[styles.contactText, { color: colors.textSecondary }]}>{displayContact}</Text>}
 
           <Animated.View style={[styles.codeRow, { transform: [{ translateX: shakeAnim }] }]}>
             {Array(CODE_LENGTH).fill(0).map((_, i) => (
@@ -191,6 +175,7 @@ export default function VerificacaoScreen() {
                 ref={(r) => { inputRefs.current[i] = r; }}
                 style={[
                   styles.codeBox,
+                  { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text },
                   code[i] ? styles.codeBoxFilled : null,
                   error ? styles.codeBoxError : null,
                 ]}
@@ -214,16 +199,12 @@ export default function VerificacaoScreen() {
             onPress={() => handleVerify()}
             disabled={code.join("").length < CODE_LENGTH || verifying || sending}
           >
-            <Text style={styles.btnText}>
-              {verifying ? "Verificando..." : "Verificar"}
-            </Text>
+            <Text style={styles.btnText}>{verifying ? "Verificando..." : "Verificar"}</Text>
           </Pressable>
 
           <Pressable onPress={handleResend} disabled={resendCooldown > 0}>
-            <Text style={[styles.resendText, resendCooldown > 0 && styles.resendDisabled]}>
-              {resendCooldown > 0
-                ? `Reenviar código em ${resendCooldown}s`
-                : "Reenviar código"}
+            <Text style={[styles.resendText, resendCooldown > 0 && { color: colors.textDim }]}>
+              {resendCooldown > 0 ? `Reenviar código em ${resendCooldown}s` : "Reenviar código"}
             </Text>
           </Pressable>
         </View>
@@ -233,10 +214,9 @@ export default function VerificacaoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#060606" },
+  container: { flex: 1 },
   backBtn: {
-    width: 40, height: 40,
-    alignItems: "center", justifyContent: "center",
+    width: 40, height: 40, alignItems: "center", justifyContent: "center",
     marginLeft: 16, marginBottom: 8,
   },
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 20 },
@@ -245,37 +225,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
-  title: {
-    fontFamily: "Sora_700Bold", fontSize: 28, color: "#fff",
-    letterSpacing: -0.8, marginBottom: 10,
-  },
-  subtitle: {
-    fontFamily: "DMMono_400Regular", fontSize: 13, color: "#555", marginBottom: 4,
-  },
-  contactText: {
-    fontFamily: "DMMono_500Medium", fontSize: 14, color: "#888", marginBottom: 36,
-  },
+  title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 10 },
+  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 4 },
+  contactText: { fontFamily: "DMMono_500Medium", fontSize: 14, marginBottom: 36 },
   codeRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
   codeBox: {
-    flex: 1, height: 56, borderRadius: 14,
-    backgroundColor: "#111", borderWidth: 1, borderColor: "#1e1e1e",
-    fontFamily: "DMMono_500Medium", fontSize: 22, color: "#fff",
+    flex: 1, height: 56, borderRadius: 14, borderWidth: 1,
+    fontFamily: "DMMono_500Medium", fontSize: 22,
   },
   codeBoxFilled: { borderColor: "#ff6b3550", backgroundColor: "#ff6b3508" },
   codeBoxError: { borderColor: "#ff444460", backgroundColor: "#ff444408" },
-  errorText: {
-    fontFamily: "DMMono_400Regular", fontSize: 12,
-    color: "#ff4444", marginBottom: 12, paddingLeft: 4,
-  },
+  errorText: { fontFamily: "DMMono_400Regular", fontSize: 12, color: "#ff4444", marginBottom: 12, paddingLeft: 4 },
   btn: {
     backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
     alignItems: "center", justifyContent: "center", marginBottom: 20,
   },
   btnDisabled: { opacity: 0.3 },
   btnText: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: "#fff" },
-  resendText: {
-    fontFamily: "DMMono_400Regular", fontSize: 12,
-    color: "#ff6b35", textAlign: "center",
-  },
-  resendDisabled: { color: "#444" },
+  resendText: { fontFamily: "DMMono_400Regular", fontSize: 12, color: "#ff6b35", textAlign: "center" },
 });

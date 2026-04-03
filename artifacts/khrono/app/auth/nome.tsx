@@ -16,13 +16,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function NomeScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { contact, type, password } = useLocalSearchParams<{
-    contact: string;
-    type: string;
-    password: string;
+    contact: string; type: string; password: string;
   }>();
   const [nome, setNome] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,13 +49,10 @@ export default function NomeScreen() {
 
     try {
       const email = type === "email" ? contact : `${contact}@khrono.app`;
-
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { name: nome.trim(), first_name: firstName },
-        },
+        options: { data: { name: nome.trim(), first_name: firstName } },
       });
 
       if (error) {
@@ -70,7 +67,6 @@ export default function NomeScreen() {
         return;
       }
 
-      // Navigate to verification — Supabase sent the OTP confirmation email
       router.push({
         pathname: "/auth/verificacao",
         params: { contact, type, mode: "signup", firstName, userId: data.user.id },
@@ -83,10 +79,10 @@ export default function NomeScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.container, { paddingTop: insets.top + 16, backgroundColor: colors.background }]}>
         <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Feather name="arrow-left" size={20} color="#888" />
+            <Feather name="arrow-left" size={20} color={colors.textSecondary} />
           </Pressable>
 
           <View style={styles.content}>
@@ -94,20 +90,24 @@ export default function NomeScreen() {
               <Feather name="smile" size={28} color="#ff6b35" />
             </View>
 
-            <Text style={styles.title}>Como você se chama?</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.text }]}>Como você se chama?</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Seu nome será exibido para quem você contratar e para quem te contratar.
             </Text>
 
-            <Text style={styles.label}>Nome completo</Text>
-            <View style={[styles.inputWrap, nome.length > 0 && styles.inputWrapActive]}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Nome completo</Text>
+            <View style={[
+              styles.inputWrap,
+              { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
+              nome.length > 0 && styles.inputWrapActive,
+            ]}>
               <TextInput
                 ref={inputRef}
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 value={nome}
                 onChangeText={setNome}
                 placeholder="Ex: Carlos Silva"
-                placeholderTextColor="#333"
+                placeholderTextColor={colors.textDim}
                 autoCapitalize="words"
                 autoCorrect={false}
                 returnKeyType="done"
@@ -115,15 +115,15 @@ export default function NomeScreen() {
               />
               {nome.length > 0 && (
                 <Pressable onPress={() => setNome("")} style={styles.clearBtn}>
-                  <Feather name="x" size={14} color="#444" />
+                  <Feather name="x" size={14} color={colors.textMuted} />
                 </Pressable>
               )}
             </View>
 
             {firstName.length > 1 && (
-              <View style={styles.previewWrap}>
-                <Text style={styles.previewLabel}>Como vamos te chamar:</Text>
-                <Text style={styles.previewName}>Olá, {firstName} 👋</Text>
+              <View style={[styles.previewWrap, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+                <Text style={[styles.previewLabel, { color: colors.textMuted }]}>Como vamos te chamar:</Text>
+                <Text style={[styles.previewName, { color: colors.text }]}>Olá, {firstName} 👋</Text>
               </View>
             )}
           </View>
@@ -134,9 +134,7 @@ export default function NomeScreen() {
               onPress={handleProceed}
               disabled={!canProceed || loading}
             >
-              <Text style={styles.btnText}>
-                {loading ? "Criando conta..." : "Continuar"}
-              </Text>
+              <Text style={styles.btnText}>{loading ? "Criando conta..." : "Continuar"}</Text>
               {!loading && <Feather name="arrow-right" size={16} color="#fff" />}
             </Pressable>
           </View>
@@ -147,10 +145,9 @@ export default function NomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#060606" },
+  container: { flex: 1 },
   backBtn: {
-    width: 40, height: 40,
-    alignItems: "center", justifyContent: "center",
+    width: 40, height: 40, alignItems: "center", justifyContent: "center",
     marginLeft: 16, marginBottom: 8,
   },
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 20 },
@@ -159,38 +156,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
-  title: {
-    fontFamily: "Sora_700Bold", fontSize: 28, color: "#fff",
-    letterSpacing: -0.8, marginBottom: 10,
-  },
-  subtitle: {
-    fontFamily: "DMMono_400Regular", fontSize: 13, color: "#555",
-    marginBottom: 32, lineHeight: 20,
-  },
-  label: {
-    fontFamily: "DMMono_500Medium", fontSize: 11, color: "#555",
-    letterSpacing: 1, textTransform: "uppercase", marginBottom: 8,
-  },
+  title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 10 },
+  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 32, lineHeight: 20 },
+  label: { fontFamily: "DMMono_500Medium", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 },
   inputWrap: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: "#111", borderWidth: 1, borderColor: "#1e1e1e",
-    borderRadius: 14, paddingHorizontal: 16, height: 52,
+    borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, height: 52,
   },
   inputWrapActive: { borderColor: "#ff6b3540" },
-  input: {
-    flex: 1, fontFamily: "Sora_400Regular", fontSize: 16, color: "#fff",
-  },
+  input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 16 },
   clearBtn: { padding: 4 },
-  previewWrap: {
-    marginTop: 20, padding: 16,
-    backgroundColor: "#0a0a0a", borderRadius: 14,
-    borderWidth: 1, borderColor: "#1a1a1a",
-  },
-  previewLabel: {
-    fontFamily: "DMMono_400Regular", fontSize: 10, color: "#444",
-    letterSpacing: 1, textTransform: "uppercase", marginBottom: 6,
-  },
-  previewName: { fontFamily: "Sora_600SemiBold", fontSize: 18, color: "#fff" },
+  previewWrap: { marginTop: 20, padding: 16, borderRadius: 14, borderWidth: 1 },
+  previewLabel: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 },
+  previewName: { fontFamily: "Sora_600SemiBold", fontSize: 18 },
   footer: { paddingHorizontal: 28 },
   btn: {
     backgroundColor: "#ff6b35", borderRadius: 14, height: 52,

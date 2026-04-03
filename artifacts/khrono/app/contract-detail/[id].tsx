@@ -41,15 +41,6 @@ const FAQS = [
   { q: "Não consigo avaliar o prestador", r: "A avaliação fica disponível por 7 dias após o encerramento. Se o prazo não venceu e ainda não consegue avaliar, entre em contato." },
 ];
 
-function Linha({ label, valor, corValor }: { label: string; valor: string; corValor?: string }) {
-  return (
-    <View style={styles.linhaRow}>
-      <Text style={styles.linhaLabel}>{label}</Text>
-      <Text style={[styles.linhaValor, corValor ? { color: corValor } : {}]}>{valor}</Text>
-    </View>
-  );
-}
-
 export default function ContractDetailScreen() {
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -78,12 +69,12 @@ export default function ContractDetailScreen() {
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-            <Feather name="arrow-left" size={20} color={"#ff6b35"} />
+            <Feather name="arrow-left" size={20} color="#ff6b35" />
           </Pressable>
-          <Text style={styles.headerTitle}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
         </View>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: "#444", fontFamily: "DMMono_400Regular", fontSize: 12 }}>Contrato não encontrado</Text>
+          <Text style={{ color: colors.textMuted, fontFamily: "DMMono_400Regular", fontSize: 12 }}>Contrato não encontrado</Text>
         </View>
       </View>
     );
@@ -125,20 +116,15 @@ export default function ContractDetailScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[styles.header, { justifyContent: "space-between" }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-            <Feather name="arrow-left" size={20} color={"#ff6b35"} />
+            <Feather name="arrow-left" size={20} color="#ff6b35" />
           </Pressable>
-          <Text style={styles.headerTitle}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
         </View>
-        <Pressable
-          onPress={() => router.replace("/(tabs)" as any)}
-          style={styles.homeBtn}
-          hitSlop={12}
-        >
-          <Feather name="home" size={18} color="#444" />
+        <Pressable onPress={() => router.replace("/(tabs)" as any)} style={styles.homeBtn} hitSlop={12}>
+          <Feather name="home" size={18} color={colors.textMuted} />
         </Pressable>
       </View>
 
@@ -149,30 +135,35 @@ export default function ContractDetailScreen() {
       >
         {/* Status badge + ID */}
         <View style={styles.statusRow}>
-          <View style={[styles.statusBadge, isActive ? styles.statusBadgeActive : styles.statusBadgeEnded]}>
-            <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? "#00e5a0" : "#444" }]} />
-            <Text style={[styles.statusText, { color: isScheduled ? cor : isActive ? "#00e5a0" : "#555" }]}>
+          <View style={[
+            styles.statusBadge,
+            isActive
+              ? { backgroundColor: "#00e5a010", borderColor: "#00e5a025" }
+              : { backgroundColor: colors.surface, borderColor: colors.surfaceBorder },
+          ]}>
+            <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? "#00e5a0" : colors.textMuted }]} />
+            <Text style={[styles.statusText, { color: isScheduled ? cor : isActive ? "#00e5a0" : colors.textSecondary }]}>
               {isScheduled ? "agendado" : isActive ? "em andamento" : "encerrado"}
             </Text>
           </View>
-          <Text style={styles.contratoId}>{contratoId}</Text>
+          <Text style={[styles.contratoId, { color: colors.textMuted }]}>{contratoId}</Text>
         </View>
 
         {/* Pessoa */}
-        <View style={[styles.card, { borderColor: isHiring ? "#1e1e1e" : "#1a2d4a", marginBottom: 12 }]}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
           <View style={styles.pessoaRow}>
             <View style={[styles.avatar, { backgroundColor: cor + "20", borderColor: cor + "40" }]}>
               <Text style={[styles.avatarText, { color: cor }]}>{contract.person.initials}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.pessoaNome}>{contract.person.name}</Text>
+              <Text style={[styles.pessoaNome, { color: colors.text }]}>{contract.person.name}</Text>
               <View style={styles.pessoaMeta}>
-                <Feather name="star" size={11} color={"#ff6b35"} />
-                <Text style={styles.metaText}>
+                <Feather name="star" size={11} color="#ff6b35" />
+                <Text style={[styles.metaText, { color: colors.textSecondary }]}>
                   {contract.person.nota ?? "—"} ({contract.person.avaliacoes ?? "—"})
                 </Text>
-                <Feather name="map-pin" size={11} color="#444" />
-                <Text style={[styles.metaText, { color: "#555" }]}>
+                <Feather name="map-pin" size={11} color={colors.textMuted} />
+                <Text style={[styles.metaText, { color: colors.textMuted }]}>
                   {contract.person.distancia != null ? `${contract.person.distancia} km` : "—"}
                 </Text>
               </View>
@@ -186,42 +177,36 @@ export default function ContractDetailScreen() {
           {contract.person.profileId && (
             <Pressable
               onPress={() => router.push(`/user-profile/${contract.person.profileId}` as any)}
-              style={styles.verPerfilBtn}
+              style={[styles.verPerfilBtn, { borderTopColor: colors.surface }]}
             >
-              <Feather name="user" size={11} color="#444" />
-              <Text style={styles.verPerfilText}>ver perfil</Text>
-              <Feather name="chevron-right" size={11} color="#333" />
+              <Feather name="user" size={11} color={colors.textMuted} />
+              <Text style={[styles.verPerfilText, { color: colors.textMuted }]}>ver perfil</Text>
+              <Feather name="chevron-right" size={11} color={colors.textDim} />
             </Pressable>
           )}
         </View>
 
-        {/* Cronômetro / Timer — somente ativo */}
+        {/* Cronômetro / Timer */}
         {isActive && (
-          <View style={[styles.card, { borderColor: cor + "20", alignItems: "center", marginBottom: 12 }]}>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: cor + "20", alignItems: "center", marginBottom: 12 }]}>
             {isTimer ? (
               <>
-                <Text style={styles.timerLabel}>tempo restante</Text>
-                <Text style={[styles.timerValue, !isScheduled && (restante ?? 0) < 600000 && { color: "#ff4444" }]}>
+                <Text style={[styles.timerLabel, { color: colors.textMuted }]}>tempo restante</Text>
+                <Text style={[styles.timerValue, { color: colors.text }, !isScheduled && (restante ?? 0) < 600000 && { color: "#ff4444" }]}>
                   {formatTimer(Math.floor((restante ?? contract.duracaoTotal ?? 0) / 1000))}
                 </Text>
-                <View style={styles.progressBarWrap}>
-                  <View style={[
-                    styles.progressFill,
-                    {
-                      width: `${Math.round((progresso ?? 0) * 100)}%` as any,
-                      backgroundColor: !isScheduled && (restante ?? 0) < 600000 ? "#ff4444" : cor,
-                    }
-                  ]} />
+                <View style={[styles.progressBarWrap, { backgroundColor: colors.surface }]}>
+                  <View style={[styles.progressFill, { width: `${Math.round((progresso ?? 0) * 100)}%` as any, backgroundColor: !isScheduled && (restante ?? 0) < 600000 ? "#ff4444" : cor }]} />
                 </View>
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
-                <Text style={styles.timerAmountLabel}>valor total fixo</Text>
+                <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>valor total fixo</Text>
               </>
             ) : (
               <>
-                <Text style={styles.timerLabel}>tempo decorrido</Text>
-                <Text style={styles.timerValue}>{formatTimer(Math.floor(elapsed / 1000))}</Text>
+                <Text style={[styles.timerLabel, { color: colors.textMuted }]}>tempo decorrido</Text>
+                <Text style={[styles.timerValue, { color: colors.text }]}>{formatTimer(Math.floor(elapsed / 1000))}</Text>
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
-                <Text style={styles.timerAmountLabel}>{isHiring ? "pagando" : "recebendo"}</Text>
+                <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>{isHiring ? "pagando" : "recebendo"}</Text>
               </>
             )}
             {isScheduled && (
@@ -237,128 +222,93 @@ export default function ContractDetailScreen() {
 
         {/* Serviço */}
         {contract.servico && (
-          <View style={[styles.card, { marginBottom: 12 }]}>
-            <Text style={styles.cardSectionLabel}>serviço contratado</Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
+            <Text style={[styles.cardSectionLabel, { color: colors.textMuted }]}>serviço contratado</Text>
             <View style={{ gap: 10 }}>
               <View style={styles.servicoRow}>
                 <View style={[styles.servicoIconWrap, { backgroundColor: cor + "15", borderColor: cor + "30" }]}>
                   <Feather name="briefcase" size={14} color={cor} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.servicoNome}>{contract.servico.nome}</Text>
+                  <Text style={[styles.servicoNome, { color: colors.text }]}>{contract.servico.nome}</Text>
                   {contract.servico.nota != null && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="star" size={10} color={"#ff6b35"} />
-                      <Text style={styles.servicoMetaText}>
+                      <Feather name="star" size={10} color="#ff6b35" />
+                      <Text style={[styles.servicoMetaText, { color: colors.textSecondary }]}>
                         {contract.servico.nota} · {contract.servico.avaliacoes} avaliações
                       </Text>
                     </View>
                   )}
                   {contract.servico.skill && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="tool" size={9} color={"#ff6b3599"} />
-                      <Text style={[styles.servicoMetaText, { color: "#ff6b3599" }]}>
-                        {contract.servico.skill}
-                      </Text>
+                      <Feather name="tool" size={9} color="#ff6b3599" />
+                      <Text style={[styles.servicoMetaText, { color: "#ff6b3599" }]}>{contract.servico.skill}</Text>
                     </View>
                   )}
                   {contract.servico.tools && contract.servico.tools.length > 0 && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="key" size={9} color={"#00e5a099"} />
+                      <Feather name="key" size={9} color="#00e5a099" />
                       <Text style={[styles.servicoMetaText, { color: "#00e5a099" }]} numberOfLines={1}>
                         {contract.servico.tools.join(", ")}
                       </Text>
                     </View>
                   )}
                 </View>
-                <Text style={[styles.servicoRate, { color: cor }]}>
-                  R${contract.servico.ratePerHour.toFixed(0)}/h
-                </Text>
+                <Text style={[styles.servicoRate, { color: cor }]}>R${contract.servico.ratePerHour.toFixed(0)}/h</Text>
               </View>
             </View>
           </View>
         )}
 
         {/* Detalhes */}
-        <View style={[styles.card, { marginBottom: 12 }]}>
-          <Text style={styles.cardSectionLabel}>detalhes</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
+          <Text style={[styles.cardSectionLabel, { color: colors.textMuted }]}>detalhes</Text>
           <View style={{ gap: 12 }}>
-            <Linha label="Tipo" valor={isTimer ? "Tempo definido" : "Tempo em aberto"} />
-            {!contract.servico && (
-              <Linha label="Valor/hora" valor={`R$${valorHora.toFixed(0)}/h`} corValor={cor} />
-            )}
-            {contract.agendado && contract.agendadoLabel && (
-              <Linha label="Agendado para" valor={contract.agendadoLabel} />
-            )}
-            {!contract.agendado && (
-              <Linha label="Início imediato" valor="Agora" />
-            )}
-            {!isActive && (
-              <>
-                <Linha label="Duração" valor={formatTimer(Math.floor(tempoDecorrido / 1000))} />
-                <Linha
-                  label={isHiring ? "Total pago" : "Total recebido"}
-                  valor={`R$${valorAcumulado}`}
-                  corValor={cor}
-                />
-              </>
-            )}
-            <Linha label="Início" valor={formatData(contract.startedAt)} />
-            {contract.endedAt && (
-              <Linha label="Encerramento" valor={formatData(contract.endedAt)} />
-            )}
+            {[
+              { label: "Tipo", valor: isTimer ? "Tempo definido" : "Tempo em aberto", corValor: undefined },
+              ...(!contract.servico ? [{ label: "Valor/hora", valor: `R$${valorHora.toFixed(0)}/h`, corValor: cor }] : []),
+              ...(contract.agendado && contract.agendadoLabel ? [{ label: "Agendado para", valor: contract.agendadoLabel, corValor: undefined }] : []),
+              ...(!contract.agendado ? [{ label: "Início imediato", valor: "Agora", corValor: undefined }] : []),
+              ...(!isActive ? [
+                { label: "Duração", valor: formatTimer(Math.floor(tempoDecorrido / 1000)), corValor: undefined },
+                { label: isHiring ? "Total pago" : "Total recebido", valor: `R$${valorAcumulado}`, corValor: cor },
+              ] : []),
+              { label: "Início", valor: formatData(contract.startedAt), corValor: undefined },
+              ...(contract.endedAt ? [{ label: "Encerramento", valor: formatData(contract.endedAt), corValor: undefined }] : []),
+            ].map((item, i) => (
+              <View key={i} style={[styles.linhaRow, { borderBottomColor: colors.surface }]}>
+                <Text style={[styles.linhaLabel, { color: colors.textSecondary }]}>{item.label}</Text>
+                <Text style={[styles.linhaValor, { color: item.corValor ?? colors.text }]}>{item.valor}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
         {/* Pagamento */}
         {contract.paymentMethod && (
-          <View style={[styles.card, { marginBottom: 12 }]}>
-            <Text style={styles.cardSectionLabel}>forma de pagamento</Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
+            <Text style={[styles.cardSectionLabel, { color: colors.textMuted }]}>forma de pagamento</Text>
             <View style={styles.pagamentoRow}>
               <View style={[
                 styles.pagamentoIconWrap,
                 contract.paymentMethod === "pix"
                   ? { backgroundColor: "#00e5a015", borderColor: "#00e5a030" }
                   : contract.paymentMethod === "dinheiro"
-                  ? { backgroundColor: "#ffffff08", borderColor: "#ffffff15" }
+                  ? { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }
                   : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" },
               ]}>
                 <Feather
-                  name={
-                    contract.paymentMethod === "cartao" ? "credit-card"
-                    : contract.paymentMethod === "pix" ? "zap"
-                    : "dollar-sign"
-                  }
+                  name={contract.paymentMethod === "cartao" ? "credit-card" : contract.paymentMethod === "pix" ? "zap" : "dollar-sign"}
                   size={15}
-                  color={
-                    contract.paymentMethod === "pix" ? "#00e5a0"
-                    : contract.paymentMethod === "dinheiro" ? "#aaa"
-                    : "#ff6b35"
-                  }
+                  color={contract.paymentMethod === "pix" ? "#00e5a0" : contract.paymentMethod === "dinheiro" ? colors.textMuted : "#ff6b35"}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[
-                  styles.pagamentoLabel,
-                  {
-                    color:
-                      contract.paymentMethod === "pix" ? "#00e5a0"
-                      : contract.paymentMethod === "dinheiro" ? "#aaa"
-                      : "#fff",
-                  },
-                ]}>
-                  {contract.paymentMethod === "cartao"
-                    ? contract.paymentCardLabel ?? "Cartão"
-                    : contract.paymentMethod === "pix"
-                    ? "Pix"
-                    : "Dinheiro"}
+                <Text style={[styles.pagamentoLabel, { color: contract.paymentMethod === "pix" ? "#00e5a0" : contract.paymentMethod === "dinheiro" ? colors.textSecondary : colors.text }]}>
+                  {contract.paymentMethod === "cartao" ? contract.paymentCardLabel ?? "Cartão" : contract.paymentMethod === "pix" ? "Pix" : "Dinheiro"}
                 </Text>
-                <Text style={styles.pagamentoSub}>
-                  {contract.paymentMethod === "cartao"
-                    ? "cartão de crédito/débito"
-                    : contract.paymentMethod === "pix"
-                    ? "QR Code / chave Pix"
-                    : "pago diretamente ao prestador"}
+                <Text style={[styles.pagamentoSub, { color: colors.textMuted }]}>
+                  {contract.paymentMethod === "cartao" ? "cartão de crédito/débito" : contract.paymentMethod === "pix" ? "QR Code / chave Pix" : "pago diretamente ao prestador"}
                 </Text>
               </View>
             </View>
@@ -367,20 +317,20 @@ export default function ContractDetailScreen() {
 
         {/* Tools */}
         {contract.tools && contract.tools.length > 0 && (
-          <View style={[styles.card, { marginBottom: 12 }]}>
-            <Text style={styles.cardSectionLabel}>tools utilizadas</Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
+            <Text style={[styles.cardSectionLabel, { color: colors.textMuted }]}>tools utilizadas</Text>
             <View style={{ gap: 8 }}>
               {contract.tools.map((t, i) => (
                 <View key={i} style={styles.toolRow}>
-                  <View style={styles.toolIcon}>
+                  <View style={[styles.toolIcon, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
                     {t.tipo === "Veículo"
-                      ? <MaterialCommunityIcons name="car-outline" size={14} color="#444" />
-                      : <Feather name="tool" size={14} color="#444" />
+                      ? <MaterialCommunityIcons name="car-outline" size={14} color={colors.textSecondary} />
+                      : <Feather name="tool" size={14} color={colors.textSecondary} />
                     }
                   </View>
                   <View>
-                    <Text style={styles.toolNome}>{t.nome}</Text>
-                    <Text style={styles.toolTipo}>{t.tipo}</Text>
+                    <Text style={[styles.toolNome, { color: colors.textSecondary }]}>{t.nome}</Text>
+                    <Text style={[styles.toolTipo, { color: colors.textMuted }]}>{t.tipo}</Text>
                   </View>
                 </View>
               ))}
@@ -390,70 +340,54 @@ export default function ContractDetailScreen() {
 
         {/* Avaliação pendente */}
         {!isActive && isHiring && !avaliacaoEnviada && (
-          <View style={[styles.card, { borderColor: "#ff6b3530", marginBottom: 12 }]}>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#ff6b3530", marginBottom: 12 }]}>
             <Text style={styles.avaliacaoTitulo}>Avaliação pendente</Text>
-            <Text style={styles.avaliacaoSub}>Como foi sua experiência com {contract.person.name}?</Text>
+            <Text style={[styles.avaliacaoSub, { color: colors.textSecondary }]}>Como foi sua experiência com {contract.person.name}?</Text>
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map(n => (
-                <Pressable
-                  key={n}
-                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNotaSelecionada(n); }}
-                  hitSlop={4}
-                >
-                  <MaterialCommunityIcons
-                    name={n <= notaSelecionada ? "star" : "star-outline"}
-                    size={32}
-                    color={"#ff6b35"}
-                  />
+                <Pressable key={n} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNotaSelecionada(n); }} hitSlop={4}>
+                  <MaterialCommunityIcons name={n <= notaSelecionada ? "star" : "star-outline"} size={32} color="#ff6b35" />
                 </Pressable>
               ))}
             </View>
             <Pressable
               disabled={notaSelecionada === 0}
               onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setAvaliacaoEnviada(true); }}
-              style={[styles.avaliacaoBtn, notaSelecionada === 0 && styles.avaliacaoBtnDisabled]}
+              style={[styles.avaliacaoBtn, notaSelecionada === 0 && { backgroundColor: colors.surface }]}
             >
-              <Text style={[styles.avaliacaoBtnText, notaSelecionada === 0 && { color: "#333" }]}>
-                Enviar avaliação
-              </Text>
+              <Text style={[styles.avaliacaoBtnText, notaSelecionada === 0 && { color: colors.textMuted }]}>Enviar avaliação</Text>
             </Pressable>
           </View>
         )}
 
         {avaliacaoEnviada && (
-          <View style={[styles.card, { borderColor: "#00e5a030", flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }]}>
-            <Feather name="check-circle" size={16} color={"#00e5a0"} />
-            <Text style={{ color: "#00e5a0", fontSize: 13, fontFamily: "Sora_600SemiBold" }}>
-              Avaliação enviada!
-            </Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#00e5a030", flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }]}>
+            <Feather name="check-circle" size={16} color="#00e5a0" />
+            <Text style={{ color: "#00e5a0", fontSize: 13, fontFamily: "Sora_600SemiBold" }}>Avaliação enviada!</Text>
           </View>
         )}
 
         {/* Ações */}
         {isActive && (
-          <Pressable onPress={handleEncerrar} style={styles.encerrarBtn}>
+          <Pressable onPress={handleEncerrar} style={[styles.encerrarBtn, { borderColor: "#ff6b3540" }]}>
             <Text style={styles.encerrarBtnText}>■  encerrar contrato</Text>
           </Pressable>
         )}
 
         {!isActive && (
-          <Pressable
-            onPress={() => router.back()}
-            style={styles.contratarNovBtn}
-          >
-            <Feather name="rotate-ccw" size={15} color={"#ff6b35"} />
+          <Pressable onPress={() => router.back()} style={styles.contratarNovBtn}>
+            <Feather name="rotate-ccw" size={15} color="#ff6b35" />
             <Text style={styles.contratarNovText}>Contratar novamente</Text>
           </Pressable>
         )}
 
-        {/* Suporte */}
-        <Pressable onPress={() => setSuporteAberto(true)} style={styles.suporteBtn}>
-          <Feather name="help-circle" size={15} color="#444" />
-          <Text style={styles.suporteBtnText}>Preciso de ajuda com este contrato</Text>
+        <Pressable onPress={() => setSuporteAberto(true)} style={[styles.suporteBtn, { borderColor: colors.surface }]}>
+          <Feather name="help-circle" size={15} color={colors.textMuted} />
+          <Text style={[styles.suporteBtnText, { color: colors.textMuted }]}>Preciso de ajuda com este contrato</Text>
         </Pressable>
       </ScrollView>
 
-      {/* ── SUPPORT MODAL ── */}
+      {/* Support Modal */}
       <Modal
         visible={suporteAberto}
         transparent
@@ -461,90 +395,58 @@ export default function ContractDetailScreen() {
         onRequestClose={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }}
       >
         <View style={styles.modalOverlay}>
-          <Pressable
-            style={StyleSheet.absoluteFillObject}
-            onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }}
-          />
-          <View style={[styles.supportSheet, { paddingBottom: insets.bottom + 24 }]}>
-            <View style={styles.sheetHandle} />
-
+          <Pressable style={StyleSheet.absoluteFillObject} onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }} />
+          <View style={[styles.supportSheet, { backgroundColor: colors.sheetBg, borderColor: colors.sheetBorder, paddingBottom: insets.bottom + 24 }]}>
+            <View style={[styles.sheetHandle, { backgroundColor: colors.handleColor }]} />
             <View style={styles.sheetHeader}>
               <View>
-                <Text style={styles.sheetTitle}>Ajuda</Text>
-                <Text style={styles.sheetSubtitle}>{contratoId}</Text>
+                <Text style={[styles.sheetTitle, { color: colors.text }]}>Ajuda</Text>
+                <Text style={[styles.sheetSubtitle, { color: colors.textMuted }]}>{contratoId}</Text>
               </View>
-              <Pressable
-                onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }}
-                hitSlop={8}
-              >
-                <Feather name="x" size={18} color="#444" />
+              <Pressable onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }} hitSlop={8}>
+                <Feather name="x" size={18} color={colors.textMuted} />
               </Pressable>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Support options */}
               <View style={{ gap: 10, marginBottom: 20 }}>
                 {[
-                  {
-                    icon: <Feather name="file-text" size={20} color={"#ff6b35"} />,
-                    label: "Perguntas frequentes",
-                    desc: "Respostas para as dúvidas mais comuns",
-                    onPress: () => setFaqExpandido(f => !f),
-                  },
-                  {
-                    icon: <MaterialCommunityIcons name="robot-outline" size={20} color={"#ff6b35"} />,
-                    label: "Falar com a AI",
-                    desc: "Assistente inteligente com contexto do contrato",
-                    onPress: () => {},
-                  },
-                  {
-                    icon: <Feather name="message-circle" size={20} color={"#ff6b35"} />,
-                    label: "Falar com suporte humano",
-                    desc: "Para casos que precisam de atenção especial",
-                    onPress: () => {},
-                  },
+                  { icon: <Feather name="file-text" size={20} color="#ff6b35" />, label: "Perguntas frequentes", desc: "Respostas para as dúvidas mais comuns", onPress: () => setFaqExpandido(f => !f) },
+                  { icon: <MaterialCommunityIcons name="robot-outline" size={20} color="#ff6b35" />, label: "Falar com a AI", desc: "Assistente inteligente com contexto do contrato", onPress: () => {} },
+                  { icon: <Feather name="message-circle" size={20} color="#ff6b35" />, label: "Falar com suporte humano", desc: "Para casos que precisam de atenção especial", onPress: () => {} },
                 ].map(op => (
                   <Pressable
                     key={op.label}
                     onPress={op.onPress}
-                    style={({ pressed }) => [styles.supportOption, pressed && { borderColor: "#ff6b3530" }]}
+                    style={[styles.supportOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                   >
-                    <View style={styles.supportOptionIcon}>
+                    <View style={[styles.supportOptionIcon, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" }]}>
                       {op.icon}
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.supportOptionLabel}>{op.label}</Text>
-                      <Text style={styles.supportOptionDesc}>{op.desc}</Text>
+                      <Text style={[styles.supportOptionLabel, { color: colors.text }]}>{op.label}</Text>
+                      <Text style={[styles.supportOptionDesc, { color: colors.textSecondary }]}>{op.desc}</Text>
                     </View>
-                    <Feather name="chevron-right" size={16} color="#2a2a2a" />
+                    <Feather name="chevron-right" size={16} color={colors.chevron} />
                   </Pressable>
                 ))}
               </View>
 
-              {/* FAQ accordion */}
               {faqExpandido && (
                 <View>
-                  <Text style={styles.faqSectionLabel}>perguntas frequentes</Text>
+                  <Text style={[styles.faqSectionLabel, { color: colors.textMuted }]}>perguntas frequentes</Text>
                   <View style={{ gap: 8 }}>
                     {FAQS.map((f, i) => (
-                      <View key={i} style={styles.faqItem}>
-                        <Pressable
-                          onPress={() => setFaqAberto(faqAberto === i ? null : i)}
-                          style={styles.faqQuestion}
-                        >
-                          <Text style={[styles.faqQuestionText, faqAberto === i && { color: "#fff" }]}>
+                      <View key={i} style={[styles.faqItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+                        <Pressable onPress={() => setFaqAberto(faqAberto === i ? null : i)} style={styles.faqQuestion}>
+                          <Text style={[styles.faqQuestionText, { color: colors.textSecondary }, faqAberto === i && { color: colors.text }]}>
                             {f.q}
                           </Text>
-                          <Feather
-                            name="chevron-right"
-                            size={14}
-                            color="#333"
-                            style={{ transform: [{ rotate: faqAberto === i ? "90deg" : "0deg" }] }}
-                          />
+                          <Feather name="chevron-right" size={14} color={colors.chevron} style={{ transform: [{ rotate: faqAberto === i ? "90deg" : "0deg" }] }} />
                         </Pressable>
                         {faqAberto === i && (
-                          <View style={styles.faqAnswer}>
-                            <Text style={styles.faqAnswerText}>{f.r}</Text>
+                          <View style={[styles.faqAnswer, { borderTopColor: colors.surface }]}>
+                            <Text style={[styles.faqAnswerText, { color: colors.textSecondary }]}>{f.r}</Text>
                           </View>
                         )}
                       </View>
@@ -572,498 +474,77 @@ export default function ContractDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  backBtn: {
-    padding: 4,
-  },
-  homeBtn: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#fff",
-    fontFamily: "Sora_700Bold",
-    letterSpacing: -0.5,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-  },
-  statusBadgeActive: {
-    backgroundColor: "#00e5a010",
-    borderColor: "#00e5a025",
-  },
-  statusBadgeEnded: {
-    backgroundColor: "#ffffff08",
-    borderColor: "#1e1e1e",
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusText: {
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-  },
-  contratoId: {
-    color: "#2a2a2a",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-  },
-  card: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 20,
-    padding: 18,
-  },
-  pessoaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  verPerfilBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#161616",
-  },
-  verPerfilText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    flex: 1,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  avatarText: {
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  pessoaNome: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
-    fontFamily: "Sora_700Bold",
-    marginBottom: 4,
-  },
-  pessoaMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  metaText: {
-    color: "#666",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-  },
-  roleBadge: {
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  roleText: {
-    fontSize: 9,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  timerLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
-  timerValue: {
-    fontSize: 44,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-    color: "#fff",
-    letterSpacing: 3,
-    lineHeight: 52,
-  },
-  timerAmount: {
-    fontSize: 20,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-    marginTop: 8,
-  },
-  timerAmountLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 3,
-  },
-  progressBarWrap: {
-    backgroundColor: "#161616",
-    borderRadius: 4,
-    height: 4,
-    width: "80%",
-    marginTop: 14,
-    marginBottom: 8,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  cardSectionLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 14,
-  },
-  linhaRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#111",
-  },
-  linhaLabel: {
-    color: "#555",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-  },
-  linhaValor: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-    fontFamily: "DMMono_500Medium",
-  },
-  toolRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  toolIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  toolNome: {
-    color: "#ccc",
-    fontSize: 12,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  toolTipo: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 1,
-  },
-  servicoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  servicoIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  servicoNome: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  servicoMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 3,
-  },
-  servicoMetaText: {
-    color: "#555",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-  },
-  servicoRate: {
-    fontSize: 13,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  pagamentoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  pagamentoIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  pagamentoLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  pagamentoSub: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 2,
-  },
-  avaliacaoTitulo: {
-    color: "#ff6b35",
-    fontSize: 12,
-    fontWeight: "700",
-    fontFamily: "Sora_700Bold",
-    marginBottom: 4,
-  },
-  avaliacaoSub: {
-    color: "#555",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-    marginBottom: 16,
-    lineHeight: 16,
-  },
-  starsRow: {
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  avaliacaoBtn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 12,
-    padding: 13,
-    alignItems: "center",
-  },
-  avaliacaoBtnDisabled: {
-    backgroundColor: "#1a1a1a",
-  },
-  avaliacaoBtnText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  encerrarBtn: {
-    borderWidth: 1,
-    borderColor: "#ff6b3540",
-    borderRadius: 14,
-    padding: 15,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  encerrarBtnText: {
-    color: "#ff6b35",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  contratarNovBtn: {
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    borderRadius: 14,
-    padding: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
-  },
-  contratarNovText: {
-    color: "#ff6b35",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  suporteBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 14,
-    padding: 13,
-    marginTop: 4,
-  },
-  suporteBtnText: {
-    color: "#444",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.6)",
-  },
-  supportSheet: {
-    backgroundColor: "#111",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
-    borderColor: "#1e1e1e",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    maxHeight: "85%",
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 20,
-  },
-  sheetTitle: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "Sora_700Bold",
-    marginBottom: 4,
-  },
-  sheetSubtitle: {
-    color: "#444",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-  },
-  supportOption: {
-    backgroundColor: "#0d0d0d",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  supportOptionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3525",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  supportOptionLabel: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-    marginBottom: 3,
-  },
-  supportOptionDesc: {
-    color: "#555",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-    lineHeight: 16,
-  },
-  faqSectionLabel: {
-    color: "#555",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  faqItem: {
-    backgroundColor: "#0d0d0d",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    overflow: "hidden",
-  },
-  faqQuestion: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 14,
-    gap: 12,
-  },
-  faqQuestionText: {
-    color: "#888",
-    fontSize: 12,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-    flex: 1,
-    lineHeight: 18,
-  },
-  faqAnswer: {
-    paddingHorizontal: 14,
-    paddingBottom: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#161616",
-  },
-  faqAnswerText: {
-    color: "#555",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-    lineHeight: 19,
-  },
+  container: { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 },
+  backBtn: { padding: 4 },
+  homeBtn: { padding: 4 },
+  headerTitle: { fontSize: 22, fontFamily: "Sora_700Bold", letterSpacing: -0.5 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 20 },
+  statusRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },
+  statusBadge: { flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12, borderWidth: 1 },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusText: { fontSize: 11, fontFamily: "DMMono_400Regular" },
+  contratoId: { fontSize: 11, fontFamily: "DMMono_400Regular" },
+  card: { borderWidth: 1, borderRadius: 20, padding: 18 },
+  pessoaRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+  verPerfilBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 12, paddingTop: 10, borderTopWidth: 1 },
+  verPerfilText: { fontFamily: "DMMono_400Regular", fontSize: 11, flex: 1 },
+  avatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  avatarText: { fontSize: 16, fontFamily: "DMMono_500Medium" },
+  pessoaNome: { fontSize: 15, fontFamily: "Sora_700Bold", marginBottom: 4 },
+  pessoaMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
+  metaText: { fontSize: 11, fontFamily: "DMMono_400Regular" },
+  roleBadge: { borderWidth: 1, borderRadius: 20, paddingVertical: 4, paddingHorizontal: 8 },
+  roleText: { fontSize: 9, fontFamily: "DMMono_400Regular", letterSpacing: 0.5, textTransform: "uppercase" },
+  timerLabel: { fontSize: 10, fontFamily: "DMMono_400Regular", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 },
+  timerValue: { fontSize: 44, fontFamily: "DMMono_500Medium", letterSpacing: 3, lineHeight: 52 },
+  timerAmount: { fontSize: 20, fontFamily: "DMMono_500Medium", marginTop: 8 },
+  timerAmountLabel: { fontSize: 10, fontFamily: "DMMono_400Regular", marginTop: 3 },
+  progressBarWrap: { borderRadius: 4, height: 4, width: "80%", marginTop: 14, marginBottom: 8, overflow: "hidden" },
+  progressFill: { height: "100%", borderRadius: 4 },
+  cardSectionLabel: { fontSize: 10, fontFamily: "DMMono_400Regular", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 },
+  linhaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 12, borderBottomWidth: 1 },
+  linhaLabel: { fontSize: 12, fontFamily: "DMMono_400Regular" },
+  linhaValor: { fontSize: 12, fontFamily: "DMMono_500Medium" },
+  toolRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  toolIcon: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  toolNome: { fontSize: 12, fontFamily: "Sora_600SemiBold" },
+  toolTipo: { fontSize: 10, fontFamily: "DMMono_400Regular", marginTop: 1 },
+  servicoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  servicoIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  servicoNome: { fontSize: 13, fontFamily: "Sora_600SemiBold" },
+  servicoMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 },
+  servicoMetaText: { fontSize: 10, fontFamily: "DMMono_400Regular" },
+  servicoRate: { fontSize: 13, fontFamily: "DMMono_500Medium" },
+  pagamentoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  pagamentoIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  pagamentoLabel: { fontSize: 13, fontFamily: "Sora_600SemiBold" },
+  pagamentoSub: { fontSize: 10, fontFamily: "DMMono_400Regular", marginTop: 2 },
+  avaliacaoTitulo: { color: "#ff6b35", fontSize: 12, fontFamily: "Sora_700Bold", marginBottom: 4 },
+  avaliacaoSub: { fontSize: 11, fontFamily: "DMMono_400Regular", marginBottom: 16, lineHeight: 16 },
+  starsRow: { flexDirection: "row", gap: 8, justifyContent: "center", marginBottom: 16 },
+  avaliacaoBtn: { backgroundColor: "#ff6b35", borderRadius: 12, padding: 13, alignItems: "center" },
+  avaliacaoBtnText: { color: "#fff", fontSize: 13, fontFamily: "Sora_600SemiBold" },
+  encerrarBtn: { borderWidth: 1, borderRadius: 14, padding: 15, alignItems: "center", marginBottom: 10 },
+  encerrarBtnText: { color: "#ff6b35", fontSize: 12, fontFamily: "DMMono_400Regular", letterSpacing: 1, textTransform: "uppercase" },
+  contratarNovBtn: { backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530", borderRadius: 14, padding: 15, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8, marginBottom: 10 },
+  contratarNovText: { color: "#ff6b35", fontSize: 13, fontFamily: "Sora_600SemiBold" },
+  suporteBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderRadius: 14, padding: 13, marginTop: 4 },
+  suporteBtnText: { fontSize: 12, fontFamily: "DMMono_400Regular" },
+  modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" },
+  supportSheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, paddingHorizontal: 24, paddingTop: 16, maxHeight: "85%" },
+  sheetHandle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 20 },
+  sheetHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 },
+  sheetTitle: { fontSize: 16, fontFamily: "Sora_700Bold", marginBottom: 4 },
+  sheetSubtitle: { fontSize: 11, fontFamily: "DMMono_400Regular" },
+  supportOption: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center", gap: 14 },
+  supportOptionIcon: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  supportOptionLabel: { fontSize: 13, fontFamily: "Sora_600SemiBold", marginBottom: 3 },
+  supportOptionDesc: { fontSize: 11, fontFamily: "DMMono_400Regular", lineHeight: 16 },
+  faqSectionLabel: { fontSize: 10, fontFamily: "DMMono_400Regular", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 },
+  faqItem: { borderWidth: 1, borderRadius: 14, overflow: "hidden" },
+  faqQuestion: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14, gap: 12 },
+  faqQuestionText: { fontSize: 12, fontFamily: "Sora_600SemiBold", flex: 1, lineHeight: 18 },
+  faqAnswer: { paddingHorizontal: 14, paddingBottom: 14, paddingTop: 12, borderTopWidth: 1 },
+  faqAnswerText: { fontSize: 12, fontFamily: "DMMono_400Regular", lineHeight: 19 },
 });
