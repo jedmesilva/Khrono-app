@@ -178,6 +178,10 @@ function PincodeContent({
               <Feather name="tool" size={10} color="#555" />
               <Text style={sub.infoChipText}>{found.services.length} {found.services.length === 1 ? "service" : "services"}</Text>
             </View>
+            <View style={sub.infoChip}>
+              <Feather name="map-pin" size={10} color="#555" />
+              <Text style={sub.infoChipText}>{found.distancia} km</Text>
+            </View>
           </View>
         </View>
         <Text style={sub.confirmDesc}>
