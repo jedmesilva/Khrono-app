@@ -42,4 +42,8 @@ expertMode = true
   EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
   SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
   SUPABASE_ACCESS_TOKEN = "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb"
+
+[[ports]]
+localPort = 22861
+externalPort = 80
   
