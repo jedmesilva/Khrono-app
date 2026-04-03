@@ -39,7 +39,7 @@ export function MenuSheet({ visible, onClose }: Props) {
   const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
 
-  const snapPoints = useMemo(() => ["60%"], []);
+  const snapPoints = useMemo(() => ["68%"], []);
 
   useEffect(() => {
     if (visible) {
@@ -86,6 +86,17 @@ export function MenuSheet({ visible, onClose }: Props) {
       icon: "shield",
       label: "Privacidade e termos",
       onPress: () => { Haptics.selectionAsync(); onClose(); },
+    },
+    {
+      id: "definicoes",
+      icon: "settings",
+      label: "Definições",
+      sublabel: "Notificações, segurança e mais",
+      onPress: () => {
+        Haptics.selectionAsync();
+        onClose();
+        setTimeout(() => router.push("/definicoes"), 300);
+      },
     },
     {
       id: "logout",

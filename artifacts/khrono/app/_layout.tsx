@@ -91,6 +91,10 @@ function RootLayoutNav() {
           name="envio-documento"
           options={{ headerShown: false, presentation: "card" }}
         />
+        <Stack.Screen
+          name="definicoes"
+          options={{ headerShown: false, presentation: "card" }}
+        />
       </Stack>
     </>
   );
