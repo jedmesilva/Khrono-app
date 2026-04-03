@@ -234,6 +234,22 @@ export default function ContractDetailScreen() {
                       </Text>
                     </View>
                   )}
+                  {contract.servico.skill && (
+                    <View style={styles.servicoMeta}>
+                      <Feather name="tool" size={9} color={Colors.accent + "99"} />
+                      <Text style={[styles.servicoMetaText, { color: Colors.accent + "99" }]}>
+                        {contract.servico.skill}
+                      </Text>
+                    </View>
+                  )}
+                  {contract.servico.tools && contract.servico.tools.length > 0 && (
+                    <View style={styles.servicoMeta}>
+                      <Feather name="key" size={9} color={Colors.accentGreen + "99"} />
+                      <Text style={[styles.servicoMetaText, { color: Colors.accentGreen + "99" }]} numberOfLines={1}>
+                        {contract.servico.tools.join(", ")}
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={[styles.servicoRate, { color: cor }]}>
                   R${contract.servico.ratePerHour.toFixed(0)}/h

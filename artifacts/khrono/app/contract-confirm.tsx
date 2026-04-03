@@ -169,6 +169,8 @@ export default function ContractConfirmScreen() {
             nota: servico.nota,
             avaliacoes: servico.avaliacoes,
             ratePerHour: valorHora,
+            skill: servico.skill,
+            tools: servico.tools,
           }
         : undefined,
       paymentMethod: metodoPagamento ?? undefined,
@@ -265,6 +267,20 @@ export default function ContractConfirmScreen() {
                       <Feather name="star" size={10} color={Colors.accent} />
                       <Text style={styles.optionMeta}>{s.nota} · {s.avaliacoes} avaliações</Text>
                     </View>
+                    {s.skill && (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                        <Feather name="tool" size={9} color={Colors.accent + "99"} />
+                        <Text style={[styles.optionMeta, { color: Colors.accent + "99" }]}>{s.skill}</Text>
+                      </View>
+                    )}
+                    {s.tools && s.tools.length > 0 && (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 }}>
+                        <Feather name="key" size={9} color={Colors.accentGreen + "99"} />
+                        <Text style={[styles.optionMeta, { color: Colors.accentGreen + "99" }]} numberOfLines={1}>
+                          {s.tools.join(", ")}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <Text style={[styles.optionRate, ativo && { color: Colors.accent }]}>
                     R${valor}/h

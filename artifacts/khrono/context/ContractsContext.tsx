@@ -31,6 +31,8 @@ export type Contract = {
     nota?: number;
     avaliacoes?: number;
     ratePerHour: number;
+    skill?: string;
+    tools?: string[];
   };
   paymentMethod?: "cartao" | "pix" | "dinheiro";
   paymentCardLabel?: string;
@@ -62,7 +64,7 @@ const INITIAL_ACTIVE: Contract[] = [
     role: "hiring",
     tipo: "cronometro",
     person: { name: "Felipe Andrade", initials: "FA", skill: "Montador de Móveis", nota: 4.8, avaliacoes: 34, distancia: 1.2 },
-    servico: { nome: "Montagem de Móveis", nota: 4.8, avaliacoes: 34, ratePerHour: 60 },
+    servico: { nome: "Montagem de Móveis", nota: 4.8, avaliacoes: 34, ratePerHour: 60, skill: "Montador de Móveis", tools: ["Honda Civic 2019", "Kit Furadeira Bosch"] },
     paymentMethod: "cartao",
     paymentCardLabel: "Mastercard •••• 4291",
     agendado: false,
@@ -76,7 +78,7 @@ const INITIAL_ACTIVE: Contract[] = [
     tipo: "timer",
     duracaoTotal: 1000 * 60 * 60,
     person: { name: "Bruno Souza", initials: "BS", skill: "Consultoria de Redes Sociais", nota: 4.6, avaliacoes: 21, distancia: 2.5 },
-    servico: { nome: "Consultoria de Redes Sociais", nota: 4.6, avaliacoes: 21, ratePerHour: 50 },
+    servico: { nome: "Consultoria de Redes Sociais", nota: 4.6, avaliacoes: 21, ratePerHour: 50, skill: "Consultor Digital" },
     paymentMethod: "pix",
     agendado: false,
     ratePerHour: 50,
@@ -91,7 +93,7 @@ const INITIAL_HISTORY: Contract[] = [
     role: "hiring",
     tipo: "cronometro",
     person: { name: "Rafael Lima", initials: "RL", skill: "Eletricista", nota: 4.9, avaliacoes: 58, distancia: 0.8 },
-    servico: { nome: "Instalação Elétrica", nota: 4.9, avaliacoes: 58, ratePerHour: 60 },
+    servico: { nome: "Instalação Elétrica", nota: 4.9, avaliacoes: 58, ratePerHour: 60, skill: "Eletricista", tools: ["Alicate Amperímetro", "Kit Cabos"] },
     paymentMethod: "dinheiro",
     agendado: false,
     ratePerHour: 60,
@@ -106,7 +108,7 @@ const INITIAL_HISTORY: Contract[] = [
     tipo: "timer",
     duracaoTotal: 1000 * 60 * 90,
     person: { name: "Ana Pereira", initials: "AP", skill: "Cuidadora de Crianças", nota: 4.7, avaliacoes: 12, distancia: 3.1 },
-    servico: { nome: "Cuidado de Crianças", nota: 4.7, avaliacoes: 12, ratePerHour: 50 },
+    servico: { nome: "Cuidado de Crianças", nota: 4.7, avaliacoes: 12, ratePerHour: 50, skill: "Cuidadora" },
     paymentMethod: "cartao",
     paymentCardLabel: "Visa •••• 8823",
     agendado: true,
@@ -122,7 +124,7 @@ const INITIAL_HISTORY: Contract[] = [
     role: "hiring",
     tipo: "cronometro",
     person: { name: "Mariana Costa", initials: "MC", skill: "Encanadora", nota: 4.5, avaliacoes: 27, distancia: 1.9 },
-    servico: { nome: "Reparo Hidráulico", nota: 4.5, avaliacoes: 27, ratePerHour: 80 },
+    servico: { nome: "Reparo Hidráulico", nota: 4.5, avaliacoes: 27, ratePerHour: 80, skill: "Encanadora", tools: ["Kit Hidráulico"] },
     paymentMethod: "pix",
     agendado: false,
     ratePerHour: 80,

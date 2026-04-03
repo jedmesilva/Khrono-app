@@ -6,6 +6,8 @@ export type ProviderService = {
   multiplicador: number;
   avaliacoes: number;
   nota: number;
+  skill?: string;
+  tools?: string[];
 };
 
 export type ProviderData = {

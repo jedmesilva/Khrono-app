@@ -46,8 +46,8 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     distancia: 0.8,
     valorBase: 45,
     services: [
-      { id: 1, nome: "Pintura Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8 },
-      { id: 2, nome: "Gessaria", multiplicador: 0.9, avaliacoes: 8, nota: 4.5 },
+      { id: 1, nome: "Pintura Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8, skill: "Pintor", tools: ["Rolo 23cm", "Escada 6m"] },
+      { id: 2, nome: "Gessaria", multiplicador: 0.9, avaliacoes: 8, nota: 4.5, skill: "Gesseiro", tools: ["Desempenadeira", "Misturador"] },
     ],
   },
   "5678": {
@@ -58,8 +58,8 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     distancia: 2.1,
     valorBase: 80,
     services: [
-      { id: 1, nome: "Personal Training", multiplicador: 1.0, avaliacoes: 128, nota: 5.0 },
-      { id: 2, nome: "Consultoria Nutricional", multiplicador: 1.2, avaliacoes: 34, nota: 4.9 },
+      { id: 1, nome: "Personal Training", multiplicador: 1.0, avaliacoes: 128, nota: 5.0, skill: "Personal Trainer", tools: ["Kit de Treino"] },
+      { id: 2, nome: "Consultoria Nutricional", multiplicador: 1.2, avaliacoes: 34, nota: 4.9, skill: "Nutricionista" },
     ],
   },
   "9012": {
@@ -70,8 +70,8 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     distancia: 3.4,
     valorBase: 60,
     services: [
-      { id: 1, nome: "Instalação Elétrica", multiplicador: 1.0, avaliacoes: 31, nota: 4.7 },
-      { id: 2, nome: "Manutenção Elétrica", multiplicador: 0.9, avaliacoes: 12, nota: 4.6 },
+      { id: 1, nome: "Instalação Elétrica", multiplicador: 1.0, avaliacoes: 31, nota: 4.7, skill: "Eletricista", tools: ["Alicate Amperímetro", "Kit Cabos"] },
+      { id: 2, nome: "Manutenção Elétrica", multiplicador: 0.9, avaliacoes: 12, nota: 4.6, skill: "Eletricista", tools: ["Alicate Amperímetro"] },
     ],
   },
   "4321": {
@@ -82,8 +82,8 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     distancia: 0.5,
     valorBase: 40,
     services: [
-      { id: 1, nome: "Cuidados com Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9 },
-      { id: 2, nome: "Acompanhamento Hospitalar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8 },
+      { id: 1, nome: "Cuidados com Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9, skill: "Cuidadora" },
+      { id: 2, nome: "Acompanhamento Hospitalar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8, skill: "Cuidadora", tools: ["Cadeira de Rodas"] },
     ],
   },
   "1257": {
@@ -94,8 +94,8 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     distancia: 1.8,
     valorBase: 50,
     services: [
-      { id: 1, nome: "Montagem de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6 },
-      { id: 2, nome: "Desmontagem e Transporte", multiplicador: 0.85, avaliacoes: 7, nota: 4.4 },
+      { id: 1, nome: "Montagem de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6, skill: "Montador de Móveis", tools: ["Honda Civic 2019", "Kit Furadeira Bosch"] },
+      { id: 2, nome: "Desmontagem e Transporte", multiplicador: 0.85, avaliacoes: 7, nota: 4.4, skill: "Carregador / Mudanças", tools: ["Honda Civic 2019"] },
     ],
   },
 };
