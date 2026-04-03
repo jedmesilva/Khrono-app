@@ -7,6 +7,11 @@ import React, {
   useState,
 } from "react";
 
+export type ContractTool = {
+  nome: string;
+  tipo: string;
+};
+
 export type Contract = {
   id: string;
   role: "hired" | "hiring";
@@ -21,6 +26,17 @@ export type Contract = {
     avaliacoes?: number;
     distancia?: number;
   };
+  servico?: {
+    nome: string;
+    nota?: number;
+    avaliacoes?: number;
+    ratePerHour: number;
+  };
+  paymentMethod?: "cartao" | "pix" | "dinheiro";
+  paymentCardLabel?: string;
+  agendado?: boolean;
+  agendadoLabel?: string;
+  tools?: ContractTool[];
   ratePerHour: number;
   startedAt: number;
   scheduledFor?: number;

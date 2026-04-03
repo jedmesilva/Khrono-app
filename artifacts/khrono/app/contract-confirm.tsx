@@ -149,6 +149,8 @@ export default function ContractConfirmScreen() {
 
   const aceitar = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const cartao = cards.find(c => c.id === cartaoSelecionadoId);
+    const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : undefined;
     const id = startContract({
       role: "hiring",
       tipo: tipoContrato === "aberto" ? "cronometro" : "timer",
@@ -161,6 +163,18 @@ export default function ContractConfirmScreen() {
         avaliacoes: provider.avaliacoes,
         distancia: provider.distancia,
       },
+      servico: servico
+        ? {
+            nome: servico.nome,
+            nota: servico.nota,
+            avaliacoes: servico.avaliacoes,
+            ratePerHour: valorHora,
+          }
+        : undefined,
+      paymentMethod: metodoPagamento ?? undefined,
+      paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
+      agendado,
+      agendadoLabel: agendado ? formatAgendamento() : undefined,
       ratePerHour: valorHora,
     });
     setActiveContractId(id);

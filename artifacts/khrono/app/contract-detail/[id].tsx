@@ -215,6 +215,34 @@ export default function ContractDetailScreen() {
           </View>
         )}
 
+        {/* Serviço */}
+        {contract.servico && (
+          <View style={[styles.card, { marginBottom: 12 }]}>
+            <Text style={styles.cardSectionLabel}>serviço contratado</Text>
+            <View style={{ gap: 10 }}>
+              <View style={styles.servicoRow}>
+                <View style={[styles.servicoIconWrap, { backgroundColor: cor + "15", borderColor: cor + "30" }]}>
+                  <Feather name="briefcase" size={14} color={cor} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.servicoNome}>{contract.servico.nome}</Text>
+                  {contract.servico.nota != null && (
+                    <View style={styles.servicoMeta}>
+                      <Feather name="star" size={10} color={Colors.accent} />
+                      <Text style={styles.servicoMetaText}>
+                        {contract.servico.nota} · {contract.servico.avaliacoes} avaliações
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.servicoRate, { color: cor }]}>
+                  R${contract.servico.ratePerHour.toFixed(0)}/h
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Detalhes */}
         <View style={[styles.card, { marginBottom: 12 }]}>
           <Text style={styles.cardSectionLabel}>detalhes</Text>
@@ -222,6 +250,12 @@ export default function ContractDetailScreen() {
             <Linha label="Skill" valor={contract.person.skill} />
             <Linha label="Tipo" valor={isTimer ? "Tempo definido" : "Tempo em aberto"} />
             <Linha label="Valor/hora" valor={`R$${valorHora.toFixed(0)}/h`} corValor={cor} />
+            {contract.agendado && contract.agendadoLabel && (
+              <Linha label="Agendado para" valor={contract.agendadoLabel} />
+            )}
+            {!contract.agendado && (
+              <Linha label="Início imediato" valor="Agora" />
+            )}
             {!isActive && (
               <>
                 <Linha label="Duração" valor={formatTimer(Math.floor(tempoDecorrido / 1000))} />
@@ -238,6 +272,61 @@ export default function ContractDetailScreen() {
             )}
           </View>
         </View>
+
+        {/* Pagamento */}
+        {contract.paymentMethod && (
+          <View style={[styles.card, { marginBottom: 12 }]}>
+            <Text style={styles.cardSectionLabel}>forma de pagamento</Text>
+            <View style={styles.pagamentoRow}>
+              <View style={[
+                styles.pagamentoIconWrap,
+                contract.paymentMethod === "pix"
+                  ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "30" }
+                  : contract.paymentMethod === "dinheiro"
+                  ? { backgroundColor: "#ffffff08", borderColor: "#ffffff15" }
+                  : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "30" },
+              ]}>
+                <Feather
+                  name={
+                    contract.paymentMethod === "cartao" ? "credit-card"
+                    : contract.paymentMethod === "pix" ? "zap"
+                    : "dollar-sign"
+                  }
+                  size={15}
+                  color={
+                    contract.paymentMethod === "pix" ? Colors.accentGreen
+                    : contract.paymentMethod === "dinheiro" ? "#aaa"
+                    : Colors.accent
+                  }
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[
+                  styles.pagamentoLabel,
+                  {
+                    color:
+                      contract.paymentMethod === "pix" ? Colors.accentGreen
+                      : contract.paymentMethod === "dinheiro" ? "#aaa"
+                      : "#fff",
+                  },
+                ]}>
+                  {contract.paymentMethod === "cartao"
+                    ? contract.paymentCardLabel ?? "Cartão"
+                    : contract.paymentMethod === "pix"
+                    ? "Pix"
+                    : "Dinheiro"}
+                </Text>
+                <Text style={styles.pagamentoSub}>
+                  {contract.paymentMethod === "cartao"
+                    ? "cartão de crédito/débito"
+                    : contract.paymentMethod === "pix"
+                    ? "QR Code / chave Pix"
+                    : "pago diretamente ao prestador"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Tools */}
         {contract.tools && contract.tools.length > 0 && (
@@ -662,6 +751,67 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "DMMono_400Regular",
     marginTop: 1,
+  },
+  servicoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  servicoIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  servicoNome: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: "Sora_600SemiBold",
+  },
+  servicoMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 3,
+  },
+  servicoMetaText: {
+    color: "#555",
+    fontSize: 10,
+    fontFamily: "DMMono_400Regular",
+  },
+  servicoRate: {
+    fontSize: 13,
+    fontWeight: "700",
+    fontFamily: "DMMono_500Medium",
+  },
+  pagamentoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  pagamentoIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  pagamentoLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: "Sora_600SemiBold",
+  },
+  pagamentoSub: {
+    color: "#444",
+    fontSize: 10,
+    fontFamily: "DMMono_400Regular",
+    marginTop: 2,
   },
   avaliacaoTitulo: {
     color: Colors.accent,
