@@ -220,7 +220,7 @@ export default function ContractDetailScreen() {
                 <Text style={styles.timerLabel}>tempo decorrido</Text>
                 <Text style={styles.timerValue}>{formatTimer(Math.floor(elapsed / 1000))}</Text>
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
-                <Text style={styles.timerAmountLabel}>acumulado</Text>
+                <Text style={styles.timerAmountLabel}>{isHiring ? "pagando" : "recebendo"}</Text>
               </>
             )}
             {isScheduled && (
