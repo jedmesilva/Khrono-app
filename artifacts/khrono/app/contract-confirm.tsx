@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme, ColorPalette } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
 import { useCards } from "@/context/CardsContext";
@@ -52,6 +52,8 @@ export default function ContractConfirmScreen() {
   const { pendingProvider, setPendingProvider } = useConfirmation();
   const { startContract, endContract } = useContracts();
   const { cards } = useCards();
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   // ── ALL HOOKS MUST BE BEFORE ANY CONDITIONAL RETURN ──
   const [etapa, setEtapa] = useState<Etapa>("confirmacao");
@@ -235,15 +237,15 @@ export default function ContractConfirmScreen() {
                 <Text style={styles.providerName}>{provider.name}</Text>
                 <View style={styles.infoChipsRow}>
                   <View style={styles.infoChip}>
-                    <Feather name="briefcase" size={10} color="#555" />
+                    <Feather name="briefcase" size={10} color={colors.textSecondary} />
                     <Text style={styles.infoChipText}>{provider.totalContracts ?? 0} contratos</Text>
                   </View>
                   <View style={styles.infoChip}>
-                    <Feather name="tool" size={10} color="#555" />
+                    <Feather name="tool" size={10} color={colors.textSecondary} />
                     <Text style={styles.infoChipText}>{provider.services.length} {provider.services.length === 1 ? "service" : "services"}</Text>
                   </View>
                   <View style={styles.infoChip}>
-                    <Feather name="map-pin" size={10} color="#555" />
+                    <Feather name="map-pin" size={10} color={colors.textSecondary} />
                     <Text style={styles.infoChipText}>{provider.distancia} km</Text>
                   </View>
                 </View>
@@ -271,18 +273,18 @@ export default function ContractConfirmScreen() {
             style={[styles.scheduleBtn, servico && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, servico && styles.scheduleIconActive]}>
-              <Feather name="tool" size={16} color={servico ? "#ff6b35" : "#444"} />
+              <Feather name="tool" size={16} color={servico ? "#ff6b35" : colors.textMuted} />
             </View>
             <View style={{ flex: 1 }}>
               {servico ? (
                 <>
-                  <Text style={[styles.scheduleLabel, { color: "#fff" }]}>{servico.nome}</Text>
+                  <Text style={[styles.scheduleLabel, { color: colors.text }]}>{servico.nome}</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
                     <Feather name="star" size={9} color={"#ff6b35"} />
                     <Text style={styles.scheduleSub}>{servico.nota} · {servico.avaliacoes} avaliações</Text>
                     {servico.skill && (
                       <>
-                        <Text style={[styles.scheduleSub, { color: "#2a2a2a" }]}>·</Text>
+                        <Text style={[styles.scheduleSub, { color: colors.textDim }]}>·</Text>
                         <Text style={[styles.scheduleSub, { color: "#ff6b3588" }]}>{servico.skill}</Text>
                       </>
                     )}
@@ -300,7 +302,7 @@ export default function ContractConfirmScreen() {
                 R${(provider.valorBase * servico.multiplicador).toFixed(0)}/h
               </Text>
             )}
-            <Feather name="chevron-right" size={14} color="#333" />
+            <Feather name="chevron-right" size={14} color={colors.textDim} />
           </Pressable>
           <View style={{ height: 20 }} />
 
@@ -314,17 +316,17 @@ export default function ContractConfirmScreen() {
             style={[styles.scheduleBtn, agendado && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, agendado && styles.scheduleIconActive]}>
-              <Feather name="calendar" size={16} color={agendado ? "#ff6b35" : "#444"} />
+              <Feather name="calendar" size={16} color={agendado ? "#ff6b35" : colors.textMuted} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.scheduleLabel, agendado && { color: "#fff" }]}>
+              <Text style={[styles.scheduleLabel, agendado && { color: colors.text }]}>
                 {agendado ? formatAgendamento() : "Agora"}
               </Text>
               <Text style={styles.scheduleSub}>
                 {agendado ? "agendado" : "iniciar imediatamente"}
               </Text>
             </View>
-            <Feather name="chevron-right" size={14} color="#333" />
+            <Feather name="chevron-right" size={14} color={colors.textDim} />
           </Pressable>
 
           {/* Tipo de contrato */}
@@ -346,7 +348,7 @@ export default function ContractConfirmScreen() {
                   <View style={[styles.radio, tipoContrato === t.key && styles.radioActive]}>
                     {tipoContrato === t.key && <View style={styles.radioInner} />}
                   </View>
-                  <Text style={[styles.contractTypeLabel, tipoContrato === t.key && { color: "#fff" }]}>
+                  <Text style={[styles.contractTypeLabel, tipoContrato === t.key && { color: colors.text }]}>
                     {t.label}
                   </Text>
                 </View>
@@ -459,14 +461,14 @@ export default function ContractConfirmScreen() {
               styles.scheduleBtn,
               metodoPagamento && styles.scheduleBtnActive,
               metodoPagamento === "pix" && { borderColor: "#00e5a035", backgroundColor: "#00e5a008" },
-              metodoPagamento === "dinheiro" && { borderColor: "#ffffff18", backgroundColor: "#ffffff05" },
+              metodoPagamento === "dinheiro" && { borderColor: colors.surfaceBorder, backgroundColor: colors.card },
             ]}
           >
             <View style={[
               styles.scheduleIcon,
               metodoPagamento && metodoPagamento !== "pix" && metodoPagamento !== "dinheiro" && styles.scheduleIconActive,
               metodoPagamento === "pix" && { borderColor: "#00e5a040", backgroundColor: "#00e5a010" },
-              metodoPagamento === "dinheiro" && { borderColor: "#ffffff20", backgroundColor: "#ffffff08" },
+              metodoPagamento === "dinheiro" && { borderColor: colors.surfaceBorder, backgroundColor: colors.surface },
             ]}>
               <Feather
                 name={
@@ -479,8 +481,8 @@ export default function ContractConfirmScreen() {
                 color={
                   metodoPagamento === "cartao" ? "#ff6b35"
                   : metodoPagamento === "pix" ? "#00e5a0"
-                  : metodoPagamento === "dinheiro" ? "#aaa"
-                  : "#444"
+                  : metodoPagamento === "dinheiro" ? colors.textSecondary
+                  : colors.textMuted
                 }
               />
             </View>
@@ -495,7 +497,7 @@ export default function ContractConfirmScreen() {
                 const cartao = cards.find(c => c.id === cartaoSelecionadoId);
                 return (
                   <>
-                    <Text style={[styles.scheduleLabel, { color: "#fff" }]}>
+                    <Text style={[styles.scheduleLabel, { color: colors.text }]}>
                       {cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : "Cartão"}
                     </Text>
                     <Text style={styles.scheduleSub}>cartão de crédito/débito</Text>
@@ -510,19 +512,19 @@ export default function ContractConfirmScreen() {
               )}
               {metodoPagamento === "dinheiro" && (
                 <>
-                  <Text style={[styles.scheduleLabel, { color: "#ccc" }]}>Dinheiro</Text>
+                  <Text style={[styles.scheduleLabel, { color: colors.textSecondary }]}>Dinheiro</Text>
                   <Text style={styles.scheduleSub}>pague diretamente ao prestador</Text>
                 </>
               )}
             </View>
-            <Feather name="chevron-right" size={14} color="#333" />
+            <Feather name="chevron-right" size={14} color={colors.textDim} />
           </Pressable>
 
           <Pressable
             onPress={metodoPagamento ? confirmar : undefined}
             style={[styles.confirmBtn, !metodoPagamento && styles.confirmBtnDisabled]}
           >
-            <Text style={[styles.confirmBtnText, !metodoPagamento && { color: "#333" }]}>
+            <Text style={[styles.confirmBtnText, !metodoPagamento && { color: colors.textDim }]}>
               {metodoPagamento === "pix" ? "Confirmar e gerar Pix" : "Confirmar e enviar solicitação"}
             </Text>
           </Pressable>
@@ -680,724 +682,726 @@ export default function ContractConfirmScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  backBtn: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#fff",
-    fontFamily: "Sora_700Bold",
-    letterSpacing: -0.5,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-  },
-  sectionLabel: {
-    color: "#555",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  providerCard: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-  },
-  providerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  verPerfilBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#161616",
-  },
-  verPerfilText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#ff6b3599",
-    flex: 1,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#00e5a020",
-    borderWidth: 2,
-    borderColor: "#00e5a040",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  avatarText: {
-    color: "#00e5a0",
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  providerName: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "Sora_700Bold",
-    marginBottom: 4,
-  },
-  infoChipsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 4,
-  },
-  infoChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-  },
-  infoChipText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#555",
-  },
-  rateValue: {
-    color: "#ff6b35",
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  rateLabel: {
-    color: "#444",
-    fontSize: 9,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  optionRow: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  optionRowActive: {
-    backgroundColor: "#ff6b3515",
-    borderColor: "#ff6b3550",
-  },
-  radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
-    borderColor: "#333",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  radioActive: {
-    borderColor: "#ff6b35",
-  },
-  radioInner: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: "#ff6b35",
-  },
-  optionLabel: {
-    color: "#666",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  optionMeta: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-  },
-  optionRate: {
-    color: "#444",
-    fontSize: 14,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  toolRow: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  toolRowActive: {
-    backgroundColor: "#00e5a008",
-    borderColor: "#00e5a030",
-  },
-  toolIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  toolIconActive: {
-    backgroundColor: "#00e5a015",
-    borderColor: "#00e5a030",
-  },
-  toolName: {
-    color: "#666",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  toolType: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 2,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    borderColor: "#333",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  checkboxActive: {
-    backgroundColor: "#00e5a0",
-    borderColor: "#00e5a0",
-  },
-  scheduleBtn: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 8,
-  },
-  scheduleBtnActive: {
-    backgroundColor: "#ff6b3515",
-    borderColor: "#ff6b3550",
-  },
-  scheduleIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  scheduleIconActive: {
-    backgroundColor: "#ff6b3520",
-    borderColor: "#ff6b3530",
-  },
-  scheduleLabel: {
-    color: "#666",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  scheduleSub: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 2,
-  },
-  schedulePicker: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 8,
-  },
-  pickerLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  dayChip: {
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    gap: 4,
-    minWidth: 52,
-  },
-  dayChipActive: {
-    backgroundColor: "#ff6b35",
-    borderColor: "#ff6b35",
-  },
-  dayChipWeekday: {
-    color: "#444",
-    fontSize: 9,
-    fontFamily: "DMMono_400Regular",
-    textTransform: "uppercase",
-  },
-  dayChipNum: {
-    color: "#666",
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  timePicker: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  timeUnit: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  timeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timeBtnText: {
-    color: "#666",
-    fontSize: 18,
-    fontFamily: "DMMono_400Regular",
-  },
-  timeValue: {
-    flex: 1,
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  timeSep: {
-    color: "#444",
-    fontSize: 24,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  scheduleConfirmBtn: {
-    flex: 1,
-    backgroundColor: "#ff6b35",
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center",
-  },
-  scheduleConfirmBtnText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  scheduleNowBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center",
-  },
-  scheduleNowBtnText: {
-    color: "#555",
-    fontSize: 13,
-    fontFamily: "Sora_400Regular",
-  },
-  contractTypeBtn: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 14,
-  },
-  contractTypeBtnActive: {
-    backgroundColor: "#ff6b3515",
-    borderColor: "#ff6b3550",
-  },
-  contractTypeTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    marginBottom: 6,
-  },
-  contractTypeLabel: {
-    color: "#666",
-    fontSize: 12,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-    flex: 1,
-    flexWrap: "wrap",
-    lineHeight: 18,
-  },
-  contractTypeDesc: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    lineHeight: 16,
-    paddingLeft: 26,
-  },
-  durChip: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    alignItems: "center",
-  },
-  durChipActive: {
-    backgroundColor: "#ff6b35",
-    borderColor: "#ff6b35",
-  },
-  durChipText: {
-    color: "#555",
-    fontSize: 11,
-    fontWeight: "600",
-    fontFamily: "DMMono_500Medium",
-  },
-  customChip: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 12,
-    padding: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  customChipActive: {
-    backgroundColor: "#ff6b3515",
-    borderColor: "#ff6b3550",
-  },
-  customChipText: {
-    color: "#555",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-  },
-  valueSummary: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  valueSummaryLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  valueSummaryAmount: {
-    color: "#ff6b35",
-    fontSize: 24,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  valueSummaryMeta: {
-    color: "#333",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 3,
-  },
-  durLabel: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  confirmBtn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 14,
-    padding: 16,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  confirmBtnText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
-    fontFamily: "Sora_700Bold",
-  },
-  confirmBtnDisabled: {
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-  },
-  cancelBtn: {
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    padding: 14,
-    alignItems: "center",
-  },
-  cancelBtnText: {
-    color: "#555",
-    fontSize: 13,
-    fontFamily: "Sora_400Regular",
-  },
-  waitingContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    alignItems: "center",
-  },
-  spinnerWrap: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 28,
-  },
-  spinnerRing: {
-    position: "absolute",
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: "transparent",
-    borderTopColor: "#ff6b35",
-  },
-  spinnerAvatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    backgroundColor: "#0a0a0a",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  spinnerAvatarText: {
-    color: "#00e5a0",
-    fontSize: 22,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-  },
-  waitTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Sora_700Bold",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  waitSub: {
-    color: "#555",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  waitMeta: {
-    color: "#333",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-    marginBottom: 48,
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
-  simCard: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    width: "100%",
-  },
-  simLabel: {
-    color: "#333",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginBottom: 12,
-  },
-  simAcceptBtn: {
-    flex: 1,
-    backgroundColor: "#00e5a015",
-    borderWidth: 1,
-    borderColor: "#00e5a030",
-    borderRadius: 10,
-    padding: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-  },
-  simAcceptText: {
-    color: "#00e5a0",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  simRejectBtn: {
-    flex: 1,
-    backgroundColor: "#ff444415",
-    borderWidth: 1,
-    borderColor: "#ff444430",
-    borderRadius: 10,
-    padding: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  simRejectText: {
-    color: "#ff4444",
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: "Sora_600SemiBold",
-  },
-  activeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#00e5a010",
-    borderWidth: 1,
-    borderColor: "#00e5a025",
-    borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    alignSelf: "flex-start",
-    marginBottom: 28,
-  },
-  activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#00e5a0",
-  },
-  activeBadgeText: {
-    color: "#00e5a0",
-    fontSize: 11,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 1,
-  },
-  activeProviderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    marginBottom: 36,
-  },
-  activeSkillText: {
-    color: "#555",
-    fontSize: 12,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 2,
-  },
-  timerWrap: {
-    alignItems: "center",
-    marginBottom: 36,
-  },
-  timerLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
-  timerValue: {
-    fontSize: 52,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-    color: "#fff",
-    letterSpacing: 4,
-    lineHeight: 60,
-  },
-  timerAmount: {
-    color: "#ff6b35",
-    fontSize: 22,
-    fontWeight: "700",
-    fontFamily: "DMMono_500Medium",
-    marginTop: 12,
-  },
-  timerAmountLabel: {
-    color: "#444",
-    fontSize: 10,
-    fontFamily: "DMMono_400Regular",
-    marginTop: 4,
-  },
-  progressBarWrap: {
-    backgroundColor: "#1a1a1a",
-    borderRadius: 4,
-    height: 4,
-    width: "80%",
-    marginTop: 16,
-    marginBottom: 8,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  endBtn: {
-    borderWidth: 1,
-    borderColor: "#ff6b3540",
-    borderRadius: 14,
-    padding: 16,
-    alignItems: "center",
-  },
-  endBtnText: {
-    color: "#ff6b35",
-    fontSize: 13,
-    fontFamily: "DMMono_400Regular",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 24,
+      paddingTop: 16,
+      paddingBottom: 8,
+    },
+    backBtn: {
+      padding: 4,
+    },
+    headerTitle: {
+      fontSize: 22,
+      fontWeight: "700",
+      color: colors.text,
+      fontFamily: "Sora_700Bold",
+      letterSpacing: -0.5,
+    },
+    scrollContent: {
+      paddingHorizontal: 24,
+      paddingTop: 20,
+    },
+    sectionLabel: {
+      color: colors.textSecondary,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      marginBottom: 12,
+    },
+    providerCard: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 20,
+      padding: 20,
+      marginBottom: 20,
+    },
+    providerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+    },
+    verPerfilBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginTop: 14,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.menuIconBg,
+    },
+    verPerfilText: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: "#ff6b3599",
+      flex: 1,
+    },
+    avatar: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: "#00e5a020",
+      borderWidth: 2,
+      borderColor: "#00e5a040",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    avatarText: {
+      color: "#00e5a0",
+      fontSize: 18,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    providerName: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: "700",
+      fontFamily: "Sora_700Bold",
+      marginBottom: 4,
+    },
+    infoChipsRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 6,
+      marginTop: 4,
+    },
+    infoChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 20,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+    },
+    infoChipText: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
+    rateValue: {
+      color: "#ff6b35",
+      fontSize: 18,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    rateLabel: {
+      color: colors.textMuted,
+      fontSize: 9,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 0.5,
+      marginTop: 2,
+    },
+    optionRow: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    optionRowActive: {
+      backgroundColor: "#ff6b3515",
+      borderColor: "#ff6b3550",
+    },
+    radio: {
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      borderWidth: 2,
+      borderColor: colors.textDim,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    radioActive: {
+      borderColor: "#ff6b35",
+    },
+    radioInner: {
+      width: 7,
+      height: 7,
+      borderRadius: 3.5,
+      backgroundColor: "#ff6b35",
+    },
+    optionLabel: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+    },
+    optionMeta: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+    },
+    optionRate: {
+      color: colors.textMuted,
+      fontSize: 14,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    toolRow: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    toolRowActive: {
+      backgroundColor: "#00e5a008",
+      borderColor: "#00e5a030",
+    },
+    toolIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: colors.menuIconBg,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    toolIconActive: {
+      backgroundColor: "#00e5a015",
+      borderColor: "#00e5a030",
+    },
+    toolName: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+    },
+    toolType: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      marginTop: 2,
+    },
+    checkbox: {
+      width: 18,
+      height: 18,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: colors.textDim,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    checkboxActive: {
+      backgroundColor: "#00e5a0",
+      borderColor: "#00e5a0",
+    },
+    scheduleBtn: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 8,
+    },
+    scheduleBtnActive: {
+      backgroundColor: "#ff6b3515",
+      borderColor: "#ff6b3550",
+    },
+    scheduleIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: colors.menuIconBg,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    scheduleIconActive: {
+      backgroundColor: "#ff6b3520",
+      borderColor: "#ff6b3530",
+    },
+    scheduleLabel: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+    },
+    scheduleSub: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      marginTop: 2,
+    },
+    schedulePicker: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 16,
+      marginBottom: 8,
+    },
+    pickerLabel: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      marginBottom: 10,
+    },
+    dayChip: {
+      backgroundColor: colors.menuIconBg,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      alignItems: "center",
+      gap: 4,
+      minWidth: 52,
+    },
+    dayChipActive: {
+      backgroundColor: "#ff6b35",
+      borderColor: "#ff6b35",
+    },
+    dayChipWeekday: {
+      color: colors.textMuted,
+      fontSize: 9,
+      fontFamily: "DMMono_400Regular",
+      textTransform: "uppercase",
+    },
+    dayChipNum: {
+      color: colors.textSecondary,
+      fontSize: 16,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    timePicker: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    timeUnit: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    timeBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: colors.menuIconBg,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    timeBtnText: {
+      color: colors.textSecondary,
+      fontSize: 18,
+      fontFamily: "DMMono_400Regular",
+    },
+    timeValue: {
+      flex: 1,
+      textAlign: "center",
+      color: colors.text,
+      fontSize: 28,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    timeSep: {
+      color: colors.textMuted,
+      fontSize: 24,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    scheduleConfirmBtn: {
+      flex: 1,
+      backgroundColor: "#ff6b35",
+      borderRadius: 12,
+      padding: 12,
+      alignItems: "center",
+    },
+    scheduleConfirmBtnText: {
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+    },
+    scheduleNowBtn: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 12,
+      padding: 12,
+      alignItems: "center",
+    },
+    scheduleNowBtnText: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontFamily: "Sora_400Regular",
+    },
+    contractTypeBtn: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 14,
+    },
+    contractTypeBtnActive: {
+      backgroundColor: "#ff6b3515",
+      borderColor: "#ff6b3550",
+    },
+    contractTypeTop: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+      marginBottom: 6,
+    },
+    contractTypeLabel: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+      flex: 1,
+      flexWrap: "wrap",
+      lineHeight: 18,
+    },
+    contractTypeDesc: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      lineHeight: 16,
+      paddingLeft: 26,
+    },
+    durChip: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 4,
+      alignItems: "center",
+    },
+    durChipActive: {
+      backgroundColor: "#ff6b35",
+      borderColor: "#ff6b35",
+    },
+    durChipText: {
+      color: colors.textSecondary,
+      fontSize: 11,
+      fontWeight: "600",
+      fontFamily: "DMMono_500Medium",
+    },
+    customChip: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 12,
+      padding: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    customChipActive: {
+      backgroundColor: "#ff6b3515",
+      borderColor: "#ff6b3550",
+    },
+    customChipText: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      fontFamily: "DMMono_400Regular",
+    },
+    valueSummary: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 14,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    valueSummaryLabel: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      marginBottom: 4,
+    },
+    valueSummaryAmount: {
+      color: "#ff6b35",
+      fontSize: 24,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    valueSummaryMeta: {
+      color: colors.textDim,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      marginTop: 3,
+    },
+    durLabel: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    confirmBtn: {
+      backgroundColor: "#ff6b35",
+      borderRadius: 14,
+      padding: 16,
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    confirmBtnText: {
+      color: "#fff",
+      fontSize: 15,
+      fontWeight: "700",
+      fontFamily: "Sora_700Bold",
+    },
+    confirmBtnDisabled: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+    },
+    cancelBtn: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      padding: 14,
+      alignItems: "center",
+    },
+    cancelBtnText: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      fontFamily: "Sora_400Regular",
+    },
+    waitingContainer: {
+      flex: 1,
+      paddingHorizontal: 24,
+      paddingTop: 60,
+      alignItems: "center",
+    },
+    spinnerWrap: {
+      width: 100,
+      height: 100,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 28,
+    },
+    spinnerRing: {
+      position: "absolute",
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      borderWidth: 2,
+      borderColor: "transparent",
+      borderTopColor: "#ff6b35",
+    },
+    spinnerAvatar: {
+      width: 84,
+      height: 84,
+      borderRadius: 42,
+      backgroundColor: colors.card,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    spinnerAvatarText: {
+      color: "#00e5a0",
+      fontSize: 22,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+    },
+    waitTitle: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: "700",
+      fontFamily: "Sora_700Bold",
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    waitSub: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      fontFamily: "DMMono_400Regular",
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    waitMeta: {
+      color: colors.textDim,
+      fontSize: 11,
+      fontFamily: "DMMono_400Regular",
+      marginBottom: 48,
+      textAlign: "center",
+      paddingHorizontal: 20,
+    },
+    simCard: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 16,
+      width: "100%",
+    },
+    simLabel: {
+      color: colors.textDim,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      marginBottom: 12,
+    },
+    simAcceptBtn: {
+      flex: 1,
+      backgroundColor: "#00e5a015",
+      borderWidth: 1,
+      borderColor: "#00e5a030",
+      borderRadius: 10,
+      padding: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+    },
+    simAcceptText: {
+      color: "#00e5a0",
+      fontSize: 13,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+    },
+    simRejectBtn: {
+      flex: 1,
+      backgroundColor: "#ff444415",
+      borderWidth: 1,
+      borderColor: "#ff444430",
+      borderRadius: 10,
+      padding: 12,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    simRejectText: {
+      color: "#ff4444",
+      fontSize: 13,
+      fontWeight: "600",
+      fontFamily: "Sora_600SemiBold",
+    },
+    activeBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: "#00e5a010",
+      borderWidth: 1,
+      borderColor: "#00e5a025",
+      borderRadius: 20,
+      paddingVertical: 6,
+      paddingHorizontal: 14,
+      alignSelf: "flex-start",
+      marginBottom: 28,
+    },
+    activeDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: "#00e5a0",
+    },
+    activeBadgeText: {
+      color: "#00e5a0",
+      fontSize: 11,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 1,
+    },
+    activeProviderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+      marginBottom: 36,
+    },
+    activeSkillText: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      fontFamily: "DMMono_400Regular",
+      marginTop: 2,
+    },
+    timerWrap: {
+      alignItems: "center",
+      marginBottom: 36,
+    },
+    timerLabel: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      marginBottom: 8,
+    },
+    timerValue: {
+      fontSize: 52,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+      color: colors.text,
+      letterSpacing: 4,
+      lineHeight: 60,
+    },
+    timerAmount: {
+      color: "#ff6b35",
+      fontSize: 22,
+      fontWeight: "700",
+      fontFamily: "DMMono_500Medium",
+      marginTop: 12,
+    },
+    timerAmountLabel: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontFamily: "DMMono_400Regular",
+      marginTop: 4,
+    },
+    progressBarWrap: {
+      backgroundColor: colors.cardBorder,
+      borderRadius: 4,
+      height: 4,
+      width: "80%",
+      marginTop: 16,
+      marginBottom: 8,
+      overflow: "hidden",
+    },
+    progressFill: {
+      height: "100%",
+      borderRadius: 4,
+    },
+    endBtn: {
+      borderWidth: 1,
+      borderColor: "#ff6b3540",
+      borderRadius: 14,
+      padding: 16,
+      alignItems: "center",
+    },
+    endBtnText: {
+      color: "#ff6b35",
+      fontSize: 13,
+      fontFamily: "DMMono_400Regular",
+      letterSpacing: 1,
+      textTransform: "uppercase",
+    },
+  });
+}
