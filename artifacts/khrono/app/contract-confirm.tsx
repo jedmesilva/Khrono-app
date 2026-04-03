@@ -233,15 +233,9 @@ export default function ContractConfirmScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.providerName}>{provider.name}</Text>
                 <View style={styles.providerMeta}>
-                  <Feather name="star" size={11} color={Colors.accent} />
-                  <Text style={styles.metaText}>{provider.nota} ({provider.avaliacoes})</Text>
                   <Feather name="map-pin" size={11} color="#444" />
                   <Text style={[styles.metaText, { color: "#555" }]}>{provider.distancia} km</Text>
                 </View>
-              </View>
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.rateValue}>R${valorHora.toFixed(0)}</Text>
-                <Text style={styles.rateLabel}>por hora</Text>
               </View>
             </View>
             {provider.profileId && (
