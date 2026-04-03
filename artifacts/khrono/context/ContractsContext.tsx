@@ -25,6 +25,7 @@ export type Contract = {
     nota?: number;
     avaliacoes?: number;
     distancia?: number;
+    profileId?: string;
   };
   servico?: {
     nome: string;

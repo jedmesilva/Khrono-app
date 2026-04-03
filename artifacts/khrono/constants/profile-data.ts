@@ -52,6 +52,256 @@ export const VERIFICATION_LABELS: Record<VerificationType, string> = {
   pending: "Verificação Pendente",
 };
 
+export interface ProviderProfile {
+  id: string;
+  name: string;
+  initials: string;
+  since: string;
+  totalContracts: number;
+  rating: number;
+  avaliacoes: number;
+  distancia: number;
+  skills: Skill[];
+  tools: Tool[];
+  services: Service[];
+}
+
+export const PROVIDERS: ProviderProfile[] = [
+  {
+    id: "p-1234",
+    name: "Carlos Mendes",
+    initials: "CM",
+    since: "Jan 2023",
+    totalContracts: 87,
+    rating: 4.8,
+    avaliacoes: 42,
+    distancia: 0.8,
+    skills: [
+      { id: "cm-s1", name: "Pintor", description: "Pintura residencial e comercial com acabamento de alta qualidade e materiais inclusos.", verified: { type: "documentation" as VerificationType }, isNew: false },
+      { id: "cm-s2", name: "Gesseiro", description: "Aplicação de gesso, texturas e acabamentos decorativos em paredes e tetos.", verified: { type: "community" as VerificationType }, isNew: false },
+    ],
+    tools: [
+      { id: "cm-t1", name: "Rolo 23cm", type: "Ferramenta", icon: "tool" as const, details: "Rolo para pintura de alta cobertura", available: true, verified: null },
+      { id: "cm-t2", name: "Escada 6m", type: "Equipamento", icon: "box" as const, details: "Escada alumínio extensível 6 metros", available: true, verified: { type: "community" as VerificationType } },
+      { id: "cm-t3", name: "Desempenadeira", type: "Ferramenta", icon: "tool" as const, details: "Desempenadeira inox 50cm para gesso", available: true, verified: null },
+    ],
+    services: [
+      {
+        id: "cm-sv1",
+        name: "Pintura Residencial",
+        skillId: "cm-s1",
+        toolIds: ["cm-t1", "cm-t2"],
+        rating: 4.8,
+        reviews: 42,
+        contracts: 61,
+        hourlyRate: 45,
+        isNew: false,
+        reviewsList: [
+          { author: "Roberto Lima", rating: 5, text: "Trabalho impecável, pintura perfeita e no prazo.", date: "12/01/2025" },
+          { author: "Carla Souza", rating: 5, text: "Muito profissional, deixou tudo limpinho depois.", date: "03/01/2025" },
+          { author: "Marcos Andrade", rating: 4, text: "Bom trabalho, algumas retoques precisaram de ajuste.", date: "18/12/2024" },
+        ],
+        contractsList: [
+          { client: "Roberto Lima", date: "12/01/2025", duration: "6h", value: "R$270" },
+          { client: "Carla Souza", date: "03/01/2025", duration: "4h", value: "R$180" },
+          { client: "Marcos Andrade", date: "18/12/2024", duration: "8h", value: "R$360" },
+        ],
+      },
+      {
+        id: "cm-sv2",
+        name: "Gessaria",
+        skillId: "cm-s2",
+        toolIds: ["cm-t3"],
+        rating: 4.5,
+        reviews: 8,
+        contracts: 10,
+        hourlyRate: 40,
+        isNew: false,
+        reviewsList: [
+          { author: "Fernanda Costa", rating: 5, text: "Textura ficou linda, recomendo muito!", date: "05/11/2024" },
+          { author: "Paulo Ferreira", rating: 4, text: "Bom serviço, pontual e caprichoso.", date: "20/10/2024" },
+        ],
+        contractsList: [
+          { client: "Fernanda Costa", date: "05/11/2024", duration: "5h", value: "R$200" },
+          { client: "Paulo Ferreira", date: "20/10/2024", duration: "4h", value: "R$160" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "p-5678",
+    name: "Juliana Rocha",
+    initials: "JR",
+    since: "Jun 2022",
+    totalContracts: 152,
+    rating: 5.0,
+    avaliacoes: 128,
+    distancia: 2.1,
+    skills: [
+      { id: "jr-s1", name: "Personal Trainer", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento físico.", verified: { type: "documentation" as VerificationType }, isNew: false },
+      { id: "jr-s2", name: "Nutricionista", description: "Consultoria nutricional com planos alimentares personalizados.", verified: { type: "documentation" as VerificationType }, isNew: false },
+    ],
+    tools: [
+      { id: "jr-t1", name: "Kit de Treino", type: "Equipamento", icon: "box" as const, details: "Halteres, elásticos e colchonete", available: true, verified: { type: "documentation" as VerificationType } },
+    ],
+    services: [
+      {
+        id: "jr-sv1",
+        name: "Personal Training",
+        skillId: "jr-s1",
+        toolIds: ["jr-t1"],
+        rating: 5.0,
+        reviews: 128,
+        contracts: 140,
+        hourlyRate: 80,
+        isNew: false,
+        reviewsList: [
+          { author: "Ana Beatriz", rating: 5, text: "Melhor personal que já tive, resultados incríveis!", date: "10/01/2025" },
+          { author: "Thiago Melo", rating: 5, text: "Super dedicada e atenciosa, recomendo demais.", date: "02/01/2025" },
+          { author: "Luciana Pires", rating: 5, text: "Treinos ótimos, muito motivada e profissional.", date: "15/12/2024" },
+        ],
+        contractsList: [
+          { client: "Ana Beatriz", date: "10/01/2025", duration: "1h", value: "R$80" },
+          { client: "Thiago Melo", date: "02/01/2025", duration: "1h", value: "R$80" },
+          { client: "Luciana Pires", date: "15/12/2024", duration: "1h", value: "R$80" },
+        ],
+      },
+      {
+        id: "jr-sv2",
+        name: "Consultoria Nutricional",
+        skillId: "jr-s2",
+        toolIds: [],
+        rating: 4.9,
+        reviews: 34,
+        contracts: 38,
+        hourlyRate: 96,
+        isNew: false,
+        reviewsList: [
+          { author: "Renata Silva", rating: 5, text: "Plano alimentar completíssimo, emagreci 8kg!", date: "08/12/2024" },
+          { author: "Diego Castro", rating: 5, text: "Muito profissional e explicativa.", date: "25/11/2024" },
+        ],
+        contractsList: [
+          { client: "Renata Silva", date: "08/12/2024", duration: "1h30", value: "R$144" },
+          { client: "Diego Castro", date: "25/11/2024", duration: "1h", value: "R$96" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "p-9012",
+    name: "Pedro Alves",
+    initials: "PA",
+    since: "Mar 2023",
+    totalContracts: 45,
+    rating: 4.7,
+    avaliacoes: 31,
+    distancia: 3.4,
+    skills: [
+      { id: "pa-s1", name: "Eletricista", description: "Instalações elétricas residenciais e comerciais, com certificação NR10.", verified: { type: "documentation" as VerificationType }, isNew: false },
+    ],
+    tools: [
+      { id: "pa-t1", name: "Alicate Amperímetro", type: "Ferramenta", icon: "tool" as const, details: "Alicate digital profissional", available: true, verified: null },
+      { id: "pa-t2", name: "Kit Cabos", type: "Equipamento", icon: "box" as const, details: "Cabos elétricos PP 10m, 16A, 25A", available: true, verified: null },
+    ],
+    services: [
+      {
+        id: "pa-sv1",
+        name: "Instalação Elétrica",
+        skillId: "pa-s1",
+        toolIds: ["pa-t1", "pa-t2"],
+        rating: 4.7,
+        reviews: 31,
+        contracts: 34,
+        hourlyRate: 60,
+        isNew: false,
+        reviewsList: [
+          { author: "Gustavo Ramos", rating: 5, text: "Serviço excelente, tudo organizado e seguro.", date: "15/01/2025" },
+          { author: "Simone Alves", rating: 4, text: "Resolveu o problema rapidamente.", date: "28/12/2024" },
+        ],
+        contractsList: [
+          { client: "Gustavo Ramos", date: "15/01/2025", duration: "3h", value: "R$180" },
+          { client: "Simone Alves", date: "28/12/2024", duration: "2h", value: "R$120" },
+        ],
+      },
+      {
+        id: "pa-sv2",
+        name: "Manutenção Elétrica",
+        skillId: "pa-s1",
+        toolIds: ["pa-t1"],
+        rating: 4.6,
+        reviews: 12,
+        contracts: 14,
+        hourlyRate: 54,
+        isNew: false,
+        reviewsList: [
+          { author: "Helena Vieira", rating: 5, text: "Achou o problema rápido, muito competente.", date: "10/12/2024" },
+        ],
+        contractsList: [
+          { client: "Helena Vieira", date: "10/12/2024", duration: "1h30", value: "R$81" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "p-4321",
+    name: "Isabela Martins",
+    initials: "IM",
+    since: "Aug 2022",
+    totalContracts: 94,
+    rating: 4.9,
+    avaliacoes: 77,
+    distancia: 0.5,
+    skills: [
+      { id: "im-s1", name: "Cuidadora", description: "Cuidados com idosos e pessoas com necessidades especiais, com experiência em ambiente hospitalar.", verified: { type: "documentation" as VerificationType }, isNew: false },
+    ],
+    tools: [
+      { id: "im-t1", name: "Cadeira de Rodas", type: "Equipamento", icon: "box" as const, details: "Cadeira dobrável, confortável", available: true, verified: { type: "community" as VerificationType } },
+    ],
+    services: [
+      {
+        id: "im-sv1",
+        name: "Cuidados com Idosos",
+        skillId: "im-s1",
+        toolIds: [],
+        rating: 4.9,
+        reviews: 77,
+        contracts: 83,
+        hourlyRate: 40,
+        isNew: false,
+        reviewsList: [
+          { author: "Família Souza", rating: 5, text: "Cuidou da minha mãe com carinho e dedicação.", date: "14/01/2025" },
+          { author: "Família Rocha", rating: 5, text: "Muito atenciosa, meu pai adorou.", date: "05/01/2025" },
+          { author: "Família Mendes", rating: 5, text: "Profissional exemplar, super recomendo.", date: "20/12/2024" },
+        ],
+        contractsList: [
+          { client: "Família Souza", date: "14/01/2025", duration: "8h", value: "R$320" },
+          { client: "Família Rocha", date: "05/01/2025", duration: "8h", value: "R$320" },
+          { client: "Família Mendes", date: "20/12/2024", duration: "12h", value: "R$480" },
+        ],
+      },
+      {
+        id: "im-sv2",
+        name: "Acompanhamento Hospitalar",
+        skillId: "im-s1",
+        toolIds: ["im-t1"],
+        rating: 4.8,
+        reviews: 22,
+        contracts: 25,
+        hourlyRate: 52,
+        isNew: false,
+        reviewsList: [
+          { author: "Família Lima", rating: 5, text: "Ficou com meu pai durante a cirurgia, tranquilizador.", date: "02/01/2025" },
+          { author: "Família Ferreira", rating: 5, text: "Profissional incrível, muito calma e segura.", date: "10/12/2024" },
+        ],
+        contractsList: [
+          { client: "Família Lima", date: "02/01/2025", duration: "6h", value: "R$312" },
+          { client: "Família Ferreira", date: "10/12/2024", duration: "4h", value: "R$208" },
+        ],
+      },
+    ],
+  },
+];
+
 export const MY_PROFILE = {
   name: "Jedme Silva",
   initials: "JS",

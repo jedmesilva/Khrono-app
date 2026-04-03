@@ -18,6 +18,7 @@ export type ProviderData = {
   distancia: number;
   valorBase: number;
   services: ProviderService[];
+  profileId?: string;
 };
 
 type ConfirmationContextType = {

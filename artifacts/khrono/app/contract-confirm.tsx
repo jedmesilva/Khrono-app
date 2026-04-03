@@ -162,6 +162,7 @@ export default function ContractConfirmScreen() {
         nota: provider.nota,
         avaliacoes: provider.avaliacoes,
         distancia: provider.distancia,
+        profileId: provider.profileId,
       },
       servico: servico
         ? {
@@ -241,6 +242,16 @@ export default function ContractConfirmScreen() {
                 <Text style={styles.rateLabel}>por hora</Text>
               </View>
             </View>
+            {provider.profileId && (
+              <Pressable
+                onPress={() => router.push(`/user-profile/${provider.profileId}` as any)}
+                style={styles.verPerfilBtn}
+              >
+                <Feather name="user" size={11} color={Colors.accent + "99"} />
+                <Text style={styles.verPerfilText}>ver perfil completo</Text>
+                <Feather name="chevron-right" size={11} color={Colors.accent + "60"} />
+              </Pressable>
+            )}
           </View>
 
           {/* Services */}
@@ -703,6 +714,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
+  },
+  verPerfilBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#161616",
+  },
+  verPerfilText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: Colors.accent + "99",
+    flex: 1,
   },
   avatar: {
     width: 56,

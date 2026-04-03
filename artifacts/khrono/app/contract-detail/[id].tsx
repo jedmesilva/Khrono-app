@@ -182,6 +182,16 @@ export default function ContractDetailScreen() {
               </Text>
             </View>
           </View>
+          {contract.person.profileId && (
+            <Pressable
+              onPress={() => router.push(`/user-profile/${contract.person.profileId}` as any)}
+              style={styles.verPerfilBtn}
+            >
+              <Feather name="user" size={11} color="#444" />
+              <Text style={styles.verPerfilText}>ver perfil</Text>
+              <Feather name="chevron-right" size={11} color="#333" />
+            </Pressable>
+          )}
         </View>
 
         {/* Cronômetro / Timer — somente ativo */}
@@ -638,6 +648,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
+  },
+  verPerfilBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#161616",
+  },
+  verPerfilText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#444",
+    flex: 1,
   },
   avatar: {
     width: 52,
