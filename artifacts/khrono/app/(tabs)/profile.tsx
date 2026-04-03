@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import { LocationSheet, LocationMode } from "@/components/LocationSheet";
+import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
 import Colors from "@/constants/colors";
 import {
   MY_PROFILE,
@@ -208,6 +208,7 @@ export default function ProfileScreen() {
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
   const [locationMode, setLocationMode] = useState<LocationMode>("realtime");
   const [fixedAddress, setFixedAddress] = useState("Belo Horizonte, MG");
+  const [serviceRadius, setServiceRadius] = useState(5000);
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
   const verifiedSkillsCount = MY_PROFILE.skills.filter((s) => s.verified !== null).length;
@@ -383,7 +384,9 @@ export default function ProfileScreen() {
               </View>
             </View>
             <Text style={styles.locationAddress}>
-              {locationMode === "realtime" ? `${fixedAddress} · GPS ativo` : fixedAddress}
+              {locationMode === "realtime" ? "GPS ativo" : fixedAddress}
+              {" · raio "}
+              {formatRadius(serviceRadius)}
             </Text>
           </View>
           <Feather name="chevron-right" size={16} color="#2a2a2a" />
@@ -505,9 +508,11 @@ export default function ProfileScreen() {
         onClose={() => setLocationSheetOpen(false)}
         mode={locationMode}
         fixedAddress={fixedAddress}
-        onSave={(mode, address) => {
+        serviceRadius={serviceRadius}
+        onSave={(mode, address, radius) => {
           setLocationMode(mode);
           if (mode === "fixed") setFixedAddress(address);
+          setServiceRadius(radius);
         }}
       />
     </View>

@@ -1,4 +1,5 @@
 export type VerificationType = "documentation" | "community" | "pending";
+export type LocationMode = "realtime" | "fixed";
 
 export interface Skill {
   id: string;
@@ -61,6 +62,9 @@ export interface ProviderProfile {
   rating: number;
   avaliacoes: number;
   distancia: number;
+  locationMode: LocationMode;
+  serviceRadius: number;
+  fixedAddress: string;
   skills: Skill[];
   tools: Tool[];
   services: Service[];
@@ -76,6 +80,9 @@ export const PROVIDERS: ProviderProfile[] = [
     rating: 4.8,
     avaliacoes: 42,
     distancia: 0.8,
+    locationMode: "fixed",
+    serviceRadius: 3000,
+    fixedAddress: "Savassi, BH",
     skills: [
       { id: "cm-s1", name: "Pintor", description: "Pintura residencial e comercial com acabamento de alta qualidade e materiais inclusos.", verified: { type: "documentation" as VerificationType }, isNew: false },
       { id: "cm-s2", name: "Gesseiro", description: "Aplicação de gesso, texturas e acabamentos decorativos em paredes e tetos.", verified: { type: "community" as VerificationType }, isNew: false },
@@ -137,6 +144,9 @@ export const PROVIDERS: ProviderProfile[] = [
     rating: 5.0,
     avaliacoes: 128,
     distancia: 2.1,
+    locationMode: "realtime",
+    serviceRadius: 8000,
+    fixedAddress: "",
     skills: [
       { id: "jr-s1", name: "Personal Trainer", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento físico.", verified: { type: "documentation" as VerificationType }, isNew: false },
       { id: "jr-s2", name: "Nutricionista", description: "Consultoria nutricional com planos alimentares personalizados.", verified: { type: "documentation" as VerificationType }, isNew: false },
@@ -196,6 +206,9 @@ export const PROVIDERS: ProviderProfile[] = [
     rating: 4.7,
     avaliacoes: 31,
     distancia: 3.4,
+    locationMode: "fixed",
+    serviceRadius: 1500,
+    fixedAddress: "Lourdes, BH",
     skills: [
       { id: "pa-s1", name: "Eletricista", description: "Instalações elétricas residenciais e comerciais, com certificação NR10.", verified: { type: "documentation" as VerificationType }, isNew: false },
     ],
@@ -251,6 +264,9 @@ export const PROVIDERS: ProviderProfile[] = [
     rating: 4.9,
     avaliacoes: 77,
     distancia: 0.5,
+    locationMode: "realtime",
+    serviceRadius: 2000,
+    fixedAddress: "",
     skills: [
       { id: "im-s1", name: "Cuidadora", description: "Cuidados com idosos e pessoas com necessidades especiais, com experiência em ambiente hospitalar.", verified: { type: "documentation" as VerificationType }, isNew: false },
     ],

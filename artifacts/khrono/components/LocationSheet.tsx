@@ -4,6 +4,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -16,6 +17,7 @@ import {
   View,
 } from "react-native";
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -25,16 +27,28 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
+import { LocationMode } from "@/constants/profile-data";
 
-export type LocationMode = "realtime" | "fixed";
+export type { LocationMode };
 
-type Props = {
-  visible: boolean;
-  onClose: () => void;
-  mode: LocationMode;
-  fixedAddress: string;
-  onSave: (mode: LocationMode, address: string) => void;
-};
+const LOG_MIN = Math.log(10);
+const LOG_MAX = Math.log(100000);
+const THUMB_SIZE = 24;
+
+function toSliderPos(meters: number): number {
+  return (Math.log(Math.max(10, Math.min(100000, meters))) - LOG_MIN) / (LOG_MAX - LOG_MIN);
+}
+
+function toMeters(pos: number): number {
+  return Math.round(Math.exp(LOG_MIN + Math.max(0, Math.min(1, pos)) * (LOG_MAX - LOG_MIN)));
+}
+
+export function formatRadius(meters: number): string {
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  const km = meters / 1000;
+  if (km >= 10) return `${Math.round(km)} km`;
+  return `${km.toFixed(1)} km`;
+}
 
 function PulsingDot() {
   const scale = useSharedValue(1);
@@ -88,18 +102,184 @@ const dot = StyleSheet.create({
   },
 });
 
-export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: Props) {
+function RadiusSlider({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const trackWidth = useSharedValue(0);
+  const thumbPos = useSharedValue(toSliderPos(value));
+  const startPos = useSharedValue(0);
+  const [displayMeters, setDisplayMeters] = useState(value);
+
+  useEffect(() => {
+    thumbPos.value = withTiming(toSliderPos(value), { duration: 200 });
+    setDisplayMeters(value);
+  }, [value]);
+
+  const updateDisplay = (meters: number) => {
+    setDisplayMeters(meters);
+  };
+
+  const gesture = Gesture.Pan()
+    .onBegin(() => {
+      startPos.value = thumbPos.value;
+    })
+    .onUpdate((e) => {
+      if (trackWidth.value === 0) return;
+      const next = Math.max(0, Math.min(1, startPos.value + e.translationX / trackWidth.value));
+      thumbPos.value = next;
+      runOnJS(updateDisplay)(toMeters(next));
+    })
+    .onEnd(() => {
+      runOnJS(onChange)(toMeters(thumbPos.value));
+    });
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: thumbPos.value * trackWidth.value,
+  }));
+
+  const thumbStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: thumbPos.value * (trackWidth.value - THUMB_SIZE) }],
+  }));
+
+  return (
+    <View style={sliderStyles.container}>
+      <View style={sliderStyles.labelRow}>
+        <Text style={sliderStyles.label}>Raio de atendimento</Text>
+        <View style={sliderStyles.valuePill}>
+          <Feather name="radio" size={10} color={Colors.accent} />
+          <Text style={sliderStyles.valueText}>{formatRadius(displayMeters)}</Text>
+        </View>
+      </View>
+
+      <GestureDetector gesture={gesture}>
+        <View
+          style={sliderStyles.track}
+          onLayout={(e) => {
+            trackWidth.value = e.nativeEvent.layout.width;
+          }}
+        >
+          <View style={sliderStyles.trackBg} />
+          <Animated.View style={[sliderStyles.trackFill, fillStyle]} />
+          <Animated.View style={[sliderStyles.thumb, thumbStyle]}>
+            <View style={sliderStyles.thumbInner} />
+          </Animated.View>
+        </View>
+      </GestureDetector>
+
+      <View style={sliderStyles.rangeRow}>
+        <Text style={sliderStyles.rangeText}>10 m</Text>
+        <Text style={sliderStyles.rangeText}>100 km</Text>
+      </View>
+    </View>
+  );
+}
+
+const sliderStyles = StyleSheet.create({
+  container: {
+    gap: 10,
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  label: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#ccc",
+  },
+  valuePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: Colors.accent + "15",
+    borderWidth: 1,
+    borderColor: Colors.accent + "30",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  valueText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 12,
+    color: Colors.accent,
+  },
+  track: {
+    height: 44,
+    justifyContent: "center",
+    position: "relative",
+  },
+  trackBg: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#1e1e1e",
+  },
+  trackFill: {
+    position: "absolute",
+    left: 0,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.accent,
+  },
+  thumb: {
+    position: "absolute",
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: "#0f0f0f",
+    borderWidth: 2,
+    borderColor: Colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+    top: (44 - THUMB_SIZE) / 2,
+  },
+  thumbInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.accent,
+  },
+  rangeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  rangeText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    color: "#333",
+  },
+});
+
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  mode: LocationMode;
+  fixedAddress: string;
+  serviceRadius: number;
+  onSave: (mode: LocationMode, address: string, radius: number) => void;
+};
+
+export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRadius, onSave }: Props) {
   const insets = useSafeAreaInsets();
   const ref = useRef<BottomSheetModal>(null);
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
+  const [radius, setRadius] = useState(serviceRadius);
 
-  const snapPoints = useMemo(() => ["72%"], []);
+  const snapPoints = useMemo(() => ["88%"], []);
 
   useEffect(() => {
     if (visible) {
       setSelectedMode(mode);
       setAddress(fixedAddress);
+      setRadius(serviceRadius);
       ref.current?.present();
     } else {
       ref.current?.dismiss();
@@ -121,7 +301,7 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
 
   const handleSave = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSave(selectedMode, selectedMode === "fixed" ? address : fixedAddress);
+    onSave(selectedMode, selectedMode === "fixed" ? address : fixedAddress, radius);
     onClose();
   };
 
@@ -131,7 +311,9 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
   };
 
   const hasChanges =
-    selectedMode !== mode || (selectedMode === "fixed" && address !== fixedAddress);
+    selectedMode !== mode ||
+    radius !== serviceRadius ||
+    (selectedMode === "fixed" && address !== fixedAddress);
 
   return (
     <BottomSheetModal
@@ -154,15 +336,12 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Title */}
           <Text style={styles.title}>Localização de serviço</Text>
           <Text style={styles.subtitle}>
             Define onde você está disponível para atender
           </Text>
 
-          {/* Mode options */}
           <View style={styles.optionsWrap}>
-            {/* Real-time option */}
             <Pressable
               style={[
                 styles.optionCard,
@@ -212,7 +391,6 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
               )}
             </Pressable>
 
-            {/* Fixed location option */}
             <Pressable
               style={[
                 styles.optionCard,
@@ -281,7 +459,10 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
             </Pressable>
           </View>
 
-          {/* Info box */}
+          <View style={styles.radiusWrap}>
+            <RadiusSlider value={radius} onChange={setRadius} />
+          </View>
+
           <View style={styles.infoBox}>
             <Feather name="info" size={13} color="#333" />
             <Text style={styles.infoText}>
@@ -289,7 +470,6 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, onSave }: 
             </Text>
           </View>
 
-          {/* Save button */}
           <Pressable
             style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}
             onPress={handleSave}
@@ -450,6 +630,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#333",
     lineHeight: 15,
+  },
+  radiusWrap: {
+    backgroundColor: "#0d0d0d",
+    borderWidth: 1,
+    borderColor: "#1a1a1a",
+    borderRadius: 18,
+    padding: 16,
   },
   infoBox: {
     flexDirection: "row",

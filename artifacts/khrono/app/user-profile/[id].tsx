@@ -9,12 +9,206 @@ import {
   Text,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { formatRadius } from "@/components/LocationSheet";
 import Colors from "@/constants/colors";
-import { PROVIDERS, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { PROVIDERS, VERIFICATION_LABELS, VerificationType, ProviderProfile } from "@/constants/profile-data";
 
+function PulsingDot({ size = 8 }: { size?: number }) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(0.6);
+
+  React.useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(withTiming(1.5, { duration: 900 }), withTiming(1, { duration: 900 })),
+      -1,
+      false
+    );
+    opacity.value = withRepeat(
+      withSequence(withTiming(0.1, { duration: 900 }), withTiming(0.6, { duration: 900 })),
+      -1,
+      false
+    );
+  }, []);
+
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <View style={{ width: size * 2.5, height: size * 2.5, alignItems: "center", justifyContent: "center" }}>
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            width: size * 2,
+            height: size * 2,
+            borderRadius: size,
+            backgroundColor: Colors.accentGreen + "40",
+          },
+          ringStyle,
+        ]}
+      />
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: Colors.accentGreen,
+        }}
+      />
+    </View>
+  );
+}
+
+function ServiceAreaCard({ provider }: { provider: ProviderProfile }) {
+  const isRealtime = provider.locationMode === "realtime";
+  const isAvailable = provider.distancia <= provider.serviceRadius / 1000;
+
+  return (
+    <View style={areaStyles.card}>
+      <View style={areaStyles.topRow}>
+        <View style={[areaStyles.iconWrap, isRealtime
+          ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "25" }
+          : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "25" },
+        ]}>
+          {isRealtime ? (
+            <PulsingDot size={7} />
+          ) : (
+            <Feather name="map-pin" size={14} color={Colors.accent} />
+          )}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={areaStyles.areaLabel}>Área de atendimento</Text>
+          <Text style={areaStyles.areaDesc}>
+            {isRealtime
+              ? "Localização em tempo real"
+              : provider.fixedAddress || "Localização fixa"
+            }
+            {" · raio "}
+            {formatRadius(provider.serviceRadius)}
+          </Text>
+        </View>
+
+        <View style={[
+          areaStyles.availBadge,
+          isAvailable
+            ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "30" }
+            : { backgroundColor: "#ff3b3015", borderColor: "#ff3b3030" },
+        ]}>
+          <View style={[
+            areaStyles.availDot,
+            { backgroundColor: isAvailable ? Colors.accentGreen : "#ff3b30" },
+          ]} />
+          <Text style={[
+            areaStyles.availText,
+            { color: isAvailable ? Colors.accentGreen : "#ff3b30" },
+          ]}>
+            {isAvailable ? "Disponível" : "Fora da área"}
+          </Text>
+        </View>
+      </View>
+
+      {!isAvailable && (
+        <View style={areaStyles.warningRow}>
+          <Feather name="alert-circle" size={11} color="#ff3b30" />
+          <Text style={areaStyles.warningText}>
+            Você está a {provider.distancia.toFixed(1)} km,{" "}
+            {isRealtime
+              ? "fora da localização atual deste profissional"
+              : `fora da área de atendimento em ${provider.fixedAddress || "localização fixa"}`
+            }{" "}
+            (raio {formatRadius(provider.serviceRadius)}).
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const areaStyles = StyleSheet.create({
+  card: {
+    backgroundColor: "#0a0a0a",
+    borderWidth: 1,
+    borderColor: "#161616",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 28,
+    gap: 10,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  areaLabel: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 12,
+    color: "#ccc",
+    marginBottom: 2,
+  },
+  areaDesc: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#555",
+  },
+  availBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    flexShrink: 0,
+  },
+  availDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+  },
+  availText: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 10,
+  },
+  warningRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 7,
+    backgroundColor: "#ff3b3010",
+    borderWidth: 1,
+    borderColor: "#ff3b3020",
+    borderRadius: 10,
+    padding: 10,
+  },
+  warningText: {
+    flex: 1,
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    color: "#ff3b30cc",
+    lineHeight: 15,
+  },
+});
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -90,6 +284,9 @@ export default function UserProfileScreen() {
             </View>
           </View>
         </View>
+
+        {/* Service area card */}
+        <ServiceAreaCard provider={provider} />
 
         {/* Services */}
         <Text style={styles.sectionLabel}>services</Text>
@@ -270,7 +467,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     alignItems: "center",
-    marginBottom: 28,
+    marginBottom: 14,
   },
   avatarWrap: {
     marginBottom: 16,
