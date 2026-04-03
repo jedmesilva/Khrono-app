@@ -20,6 +20,7 @@ import { useCards } from "@/context/CardsContext";
 import { ScheduleSheet } from "@/components/ScheduleSheet";
 import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
 import { PixPaymentModal } from "@/components/PixPaymentModal";
+import { ServiceSelectionSheet } from "@/components/ServiceSelectionSheet";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -59,6 +60,7 @@ export default function ContractConfirmScreen() {
   const [customAtivo, setCustomAtivo] = useState(false);
   const [customHoras, setCustomHoras] = useState(0);
   const [customMinutos, setCustomMinutos] = useState(30);
+  const [serviceSheetAberta, setServiceSheetAberta] = useState(false);
   const [scheduleSheetAberta, setScheduleSheetAberta] = useState(false);
   const [paymentSheetAberta, setPaymentSheetAberta] = useState(false);
   const [pixPaymentAberta, setPixPaymentAberta] = useState(false);
@@ -254,52 +256,48 @@ export default function ContractConfirmScreen() {
             )}
           </View>
 
-          {/* Services */}
+          {/* Service a contratar */}
           <Text style={styles.sectionLabel}>service a contratar</Text>
-          <View style={{ gap: 8, marginBottom: 20 }}>
-            {provider.services.map(s => {
-              const ativo = servico?.id === s.id;
-              const valor = (provider.valorBase * s.multiplicador).toFixed(0);
-              return (
-                <Pressable
-                  key={s.id}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setServicoselecionado(s);
-                  }}
-                  style={[styles.optionRow, ativo && styles.optionRowActive]}
-                >
-                  <View style={[styles.radio, ativo && styles.radioActive]}>
-                    {ativo && <View style={styles.radioInner} />}
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.optionLabel, ativo && { color: "#fff" }]}>{s.nome}</Text>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 }}>
-                      <Feather name="star" size={10} color={Colors.accent} />
-                      <Text style={styles.optionMeta}>{s.nota} · {s.avaliacoes} avaliações</Text>
-                    </View>
-                    {s.skill && (
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
-                        <Feather name="tool" size={9} color={Colors.accent + "99"} />
-                        <Text style={[styles.optionMeta, { color: Colors.accent + "99" }]}>{s.skill}</Text>
-                      </View>
-                    )}
-                    {s.tools && s.tools.length > 0 && (
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 }}>
-                        <Feather name="key" size={9} color={Colors.accentGreen + "99"} />
-                        <Text style={[styles.optionMeta, { color: Colors.accentGreen + "99" }]} numberOfLines={1}>
-                          {s.tools.join(", ")}
-                        </Text>
-                      </View>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setServiceSheetAberta(true);
+            }}
+            style={[styles.scheduleBtn, servico && styles.scheduleBtnActive]}
+          >
+            <View style={[styles.scheduleIcon, servico && styles.scheduleIconActive]}>
+              <Feather name="tool" size={16} color={servico ? Colors.accent : "#444"} />
+            </View>
+            <View style={{ flex: 1 }}>
+              {servico ? (
+                <>
+                  <Text style={[styles.scheduleLabel, { color: "#fff" }]}>{servico.nome}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+                    <Feather name="star" size={9} color={Colors.accent} />
+                    <Text style={styles.scheduleSub}>{servico.nota} · {servico.avaliacoes} avaliações</Text>
+                    {servico.skill && (
+                      <>
+                        <Text style={[styles.scheduleSub, { color: "#2a2a2a" }]}>·</Text>
+                        <Text style={[styles.scheduleSub, { color: Colors.accent + "88" }]}>{servico.skill}</Text>
+                      </>
                     )}
                   </View>
-                  <Text style={[styles.optionRate, ativo && { color: Colors.accent }]}>
-                    R${valor}/h
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.scheduleLabel}>Selecionar service</Text>
+                  <Text style={styles.scheduleSub}>{provider.services.length} disponíveis</Text>
+                </>
+              )}
+            </View>
+            {servico && (
+              <Text style={[styles.optionRate, { color: Colors.accent }]}>
+                R${(provider.valorBase * servico.multiplicador).toFixed(0)}/h
+              </Text>
+            )}
+            <Feather name="chevron-right" size={14} color="#333" />
+          </Pressable>
+          <View style={{ height: 20 }} />
 
           {/* Quando */}
           <Text style={styles.sectionLabel}>quando</Text>
@@ -528,6 +526,16 @@ export default function ContractConfirmScreen() {
           </Pressable>
         </ScrollView>
       )}
+
+      {/* ── SERVICE SELECTION SHEET ── */}
+      <ServiceSelectionSheet
+        visible={serviceSheetAberta}
+        onClose={() => setServiceSheetAberta(false)}
+        services={provider.services}
+        valorBase={provider.valorBase}
+        selectedId={servico?.id ?? null}
+        onSelect={(s) => setServicoselecionado(s)}
+      />
 
       {/* ── PAYMENT SHEET ── */}
       <PaymentSheet

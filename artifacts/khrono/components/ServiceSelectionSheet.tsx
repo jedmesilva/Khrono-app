@@ -1,0 +1,210 @@
+import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import React from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import Colors from "@/constants/colors";
+import { ProviderService } from "@/context/ConfirmationContext";
+
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  services: ProviderService[];
+  valorBase: number;
+  selectedId: number | null;
+  onSelect: (service: ProviderService) => void;
+};
+
+export function ServiceSelectionSheet({
+  visible,
+  onClose,
+  services,
+  valorBase,
+  selectedId,
+  onSelect,
+}: Props) {
+  const insets = useSafeAreaInsets();
+
+  function handleSelect(service: ProviderService) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onSelect(service);
+    onClose();
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay} />
+      </TouchableWithoutFeedback>
+
+      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <View style={styles.handle} />
+
+        <View style={styles.header}>
+          <Text style={styles.title}>Selecionar service</Text>
+          <Pressable onPress={onClose} hitSlop={12}>
+            <Feather name="x" size={18} color="#555" />
+          </Pressable>
+        </View>
+
+        <ScrollView
+          style={styles.list}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
+        >
+          {services.map((s) => {
+            const ativo = s.id === selectedId;
+            const valor = (valorBase * s.multiplicador).toFixed(0);
+            return (
+              <Pressable
+                key={s.id}
+                onPress={() => handleSelect(s)}
+                style={[styles.serviceRow, ativo && styles.serviceRowActive]}
+              >
+                <View style={[styles.radio, ativo && styles.radioActive]}>
+                  {ativo && <View style={styles.radioInner} />}
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.serviceName, ativo && { color: "#fff" }]}>{s.nome}</Text>
+
+                  <View style={styles.metaRow}>
+                    <Feather name="star" size={10} color={Colors.accent} />
+                    <Text style={styles.metaText}>{s.nota} · {s.avaliacoes} avaliações</Text>
+                  </View>
+
+                  {s.skill && (
+                    <View style={styles.metaRow}>
+                      <Feather name="tool" size={9} color={Colors.accent + "88"} />
+                      <Text style={[styles.metaText, { color: Colors.accent + "88" }]}>{s.skill}</Text>
+                    </View>
+                  )}
+
+                  {s.tools && s.tools.length > 0 && (
+                    <View style={styles.metaRow}>
+                      <Feather name="key" size={9} color={Colors.accentGreen + "88"} />
+                      <Text
+                        style={[styles.metaText, { color: Colors.accentGreen + "88" }]}
+                        numberOfLines={1}
+                      >
+                        {s.tools.join(", ")}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <Text style={[styles.serviceRate, ativo && { color: Colors.accent }]}>
+                  R${valor}/h
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+  sheet: {
+    backgroundColor: "#0d0d0d",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: "#1e1e1e",
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    maxHeight: "80%",
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#2a2a2a",
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  title: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 16,
+    color: "#fff",
+  },
+  list: {
+    flexGrow: 0,
+  },
+  serviceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#111",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    borderRadius: 16,
+    padding: 16,
+  },
+  serviceRowActive: {
+    backgroundColor: Colors.accent + "08",
+    borderColor: Colors.accent + "30",
+  },
+  radio: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: "#333",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  radioActive: {
+    borderColor: Colors.accent,
+  },
+  radioInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.accent,
+  },
+  serviceName: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#ccc",
+    marginBottom: 4,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 3,
+  },
+  metaText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    color: "#555",
+  },
+  serviceRate: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 14,
+    color: "#555",
+    flexShrink: 0,
+  },
+});
