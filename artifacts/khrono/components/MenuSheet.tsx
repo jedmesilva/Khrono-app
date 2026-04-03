@@ -64,13 +64,6 @@ export function MenuSheet({ visible, onClose }: Props) {
 
   const menuItems: MenuItem[] = [
     {
-      id: "docs",
-      icon: "file-text",
-      label: "Documentos",
-      sublabel: "RG, CPF, comprovantes",
-      onPress: () => { Haptics.selectionAsync(); onClose(); },
-    },
-    {
       id: "support",
       icon: "message-circle",
       label: "Suporte",
