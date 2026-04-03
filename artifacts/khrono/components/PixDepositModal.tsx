@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import {
@@ -29,6 +30,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<Step>("form");
   const [amount, setAmount] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
   const isValid = parsedAmount > 0;
@@ -47,6 +49,13 @@ export function PixDepositModal({ visible, onClose }: Props) {
   function handleDone() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setStep("success");
+  }
+
+  async function handleCopy() {
+    await Clipboard.setStringAsync(PIX_KEY);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -149,7 +158,20 @@ export function PixDepositModal({ visible, onClose }: Props) {
 
               <View style={styles.pixKeyBox}>
                 <Text style={styles.pixKeyLabel}>CHAVE PIX COPIA E COLA</Text>
-                <Text style={styles.pixKeyValue}>{PIX_KEY}</Text>
+                <View style={styles.pixKeyRow}>
+                  <Text style={styles.pixKeyValue} numberOfLines={1}>{PIX_KEY}</Text>
+                  <Pressable
+                    onPress={handleCopy}
+                    hitSlop={8}
+                    style={[styles.copyBtn, copied && styles.copyBtnCopied]}
+                  >
+                    <Feather
+                      name={copied ? "check" : "copy"}
+                      size={14}
+                      color={copied ? Colors.accentGreen : "#555"}
+                    />
+                  </Pressable>
+                </View>
               </View>
 
               <Pressable style={styles.confirmBtn} onPress={handleDone}>
@@ -323,10 +345,30 @@ const styles = StyleSheet.create({
     color: "#444",
     letterSpacing: 1.5,
   },
+  pixKeyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
   pixKeyValue: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
     color: Colors.accentGreen,
+    flex: 1,
+  },
+  copyBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: "#1a1a1a",
+    borderWidth: 1,
+    borderColor: "#2a2a2a",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  copyBtnCopied: {
+    borderColor: Colors.accentGreen + "40",
+    backgroundColor: Colors.accentGreen + "15",
   },
   successContainer: {
     alignItems: "center",
