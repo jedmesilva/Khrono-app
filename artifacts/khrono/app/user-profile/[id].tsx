@@ -15,21 +15,6 @@ import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
 import { PROVIDERS, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
-function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
-  return (
-    <View style={{ flexDirection: "row", gap: 2 }}>
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Feather
-          key={s}
-          name="star"
-          size={size}
-          color={Colors.accent}
-          style={{ opacity: s <= Math.round(rating) ? 1 : 0.2 }}
-        />
-      ))}
-    </View>
-  );
-}
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -86,12 +71,6 @@ export default function UserProfileScreen() {
             </View>
           </View>
           <Text style={styles.profileName}>{provider.name}</Text>
-          <View style={styles.ratingRow}>
-            <StarRow rating={provider.rating} size={13} />
-            <Text style={styles.ratingText}>
-              {provider.rating.toFixed(1)} · {provider.avaliacoes} avaliações
-            </Text>
-          </View>
 
           {/* Stats */}
           <View style={styles.statsRow}>
@@ -101,13 +80,13 @@ export default function UserProfileScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{provider.distancia} km</Text>
-              <Text style={styles.statLabel}>distância</Text>
+              <Text style={styles.statValue}>{provider.services.length}</Text>
+              <Text style={styles.statLabel}>services</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{provider.since}</Text>
-              <Text style={styles.statLabel}>membro desde</Text>
+              <Text style={styles.statValue}>{provider.distancia} km</Text>
+              <Text style={styles.statLabel}>distância</Text>
             </View>
           </View>
         </View>
@@ -317,17 +296,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginBottom: 8,
     textAlign: "center",
-  },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 20,
-  },
-  ratingText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#555",
   },
   statsRow: {
     flexDirection: "row",
