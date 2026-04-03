@@ -39,7 +39,7 @@ export function MenuSheet({ visible, onClose }: Props) {
   const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
 
-  const snapPoints = useMemo(() => ["68%"], []);
+  const snapPoints = useMemo(() => ["58%"], []);
 
   useEffect(() => {
     if (visible) {
@@ -79,12 +79,6 @@ export function MenuSheet({ visible, onClose }: Props) {
       icon: "message-circle",
       label: "Suporte",
       sublabel: "Tire suas dúvidas",
-      onPress: () => { Haptics.selectionAsync(); onClose(); },
-    },
-    {
-      id: "terms",
-      icon: "shield",
-      label: "Privacidade e termos",
       onPress: () => { Haptics.selectionAsync(); onClose(); },
     },
     {
@@ -187,7 +181,6 @@ export function MenuSheet({ visible, onClose }: Props) {
             ))}
           </View>
 
-          <Text style={styles.version}>Khrono v1.0.0</Text>
         </BottomSheetScrollView>
       </BottomSheetModal>
 
@@ -325,14 +318,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#333",
     marginTop: 2,
-  },
-  version: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#222",
-    letterSpacing: 0.5,
-    textAlign: "center",
-    marginTop: 16,
-    marginBottom: 4,
   },
 });
