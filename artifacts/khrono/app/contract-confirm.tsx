@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
 import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
+import { ScheduleSheet } from "@/components/ScheduleSheet";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -54,7 +55,7 @@ export default function ContractConfirmScreen() {
   const [customAtivo, setCustomAtivo] = useState(false);
   const [customHoras, setCustomHoras] = useState(0);
   const [customMinutos, setCustomMinutos] = useState(30);
-  const [agendamentoAberto, setAgendamentoAberto] = useState(false);
+  const [scheduleSheetAberta, setScheduleSheetAberta] = useState(false);
   const [agendado, setAgendado] = useState(false);
   const [agendaHora, setAgendaHora] = useState(8);
   const [agendaMinuto, setAgendaMinuto] = useState(0);
@@ -126,16 +127,6 @@ export default function ContractConfirmScreen() {
     const isAmanha = agendaData.toDateString() === amanha.toDateString();
     const diaLabel = isHoje ? "Hoje" : isAmanha ? "Amanhã" : `${agendaData.getDate()} ${MESES[agendaData.getMonth()]}`;
     return `${diaLabel} às ${String(agendaHora).padStart(2, "0")}:${String(agendaMinuto).padStart(2, "0")}`;
-  };
-
-  const gerarDias = () => {
-    const dias = [];
-    for (let i = 0; i < 14; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      dias.push(d);
-    }
-    return dias;
   };
 
   const confirmar = () => {
@@ -259,7 +250,10 @@ export default function ContractConfirmScreen() {
           {/* Quando */}
           <Text style={styles.sectionLabel}>quando</Text>
           <Pressable
-            onPress={() => setAgendamentoAberto(a => !a)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setScheduleSheetAberta(true);
+            }}
             style={[styles.scheduleBtn, agendado && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, agendado && styles.scheduleIconActive]}>
@@ -273,74 +267,8 @@ export default function ContractConfirmScreen() {
                 {agendado ? "agendado" : "iniciar imediatamente"}
               </Text>
             </View>
-            <Feather name={agendamentoAberto ? "chevron-up" : "chevron-down"} size={14} color="#333" />
+            <Feather name="chevron-right" size={14} color="#333" />
           </Pressable>
-
-          {agendamentoAberto && (
-            <View style={styles.schedulePicker}>
-              <Text style={styles.pickerLabel}>data</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                <View style={{ flexDirection: "row", gap: 8, paddingBottom: 4 }}>
-                  {gerarDias().map((d, i) => {
-                    const ativo = d.toDateString() === agendaData.toDateString();
-                    const isHoje = d.toDateString() === new Date().toDateString();
-                    return (
-                      <Pressable
-                        key={i}
-                        onPress={() => { setAgendaData(d); setAgendado(true); }}
-                        style={[styles.dayChip, ativo && styles.dayChipActive]}
-                      >
-                        <Text style={[styles.dayChipWeekday, ativo && { color: "#fff" }]}>
-                          {isHoje ? "hoje" : DIAS_SEMANA[d.getDay()]}
-                        </Text>
-                        <Text style={[styles.dayChipNum, ativo && { color: "#fff" }]}>
-                          {d.getDate()}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </ScrollView>
-
-              <Text style={styles.pickerLabel}>horário</Text>
-              <View style={styles.timePicker}>
-                <View style={styles.timeUnit}>
-                  <Pressable style={styles.timeBtn} onPress={() => setAgendaHora(h => h === 0 ? 23 : h - 1)}>
-                    <Text style={styles.timeBtnText}>−</Text>
-                  </Pressable>
-                  <Text style={styles.timeValue}>{String(agendaHora).padStart(2, "0")}</Text>
-                  <Pressable style={styles.timeBtn} onPress={() => setAgendaHora(h => h === 23 ? 0 : h + 1)}>
-                    <Text style={styles.timeBtnText}>+</Text>
-                  </Pressable>
-                </View>
-                <Text style={styles.timeSep}>:</Text>
-                <View style={styles.timeUnit}>
-                  <Pressable style={styles.timeBtn} onPress={() => setAgendaMinuto(m => m === 0 ? 45 : m - 15)}>
-                    <Text style={styles.timeBtnText}>−</Text>
-                  </Pressable>
-                  <Text style={styles.timeValue}>{String(agendaMinuto).padStart(2, "0")}</Text>
-                  <Pressable style={styles.timeBtn} onPress={() => setAgendaMinuto(m => m === 45 ? 0 : m + 15)}>
-                    <Text style={styles.timeBtnText}>+</Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
-                <Pressable
-                  onPress={() => { setAgendado(true); setAgendamentoAberto(false); }}
-                  style={styles.scheduleConfirmBtn}
-                >
-                  <Text style={styles.scheduleConfirmBtnText}>Confirmar</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => { setAgendado(false); setAgendamentoAberto(false); }}
-                  style={styles.scheduleNowBtn}
-                >
-                  <Text style={styles.scheduleNowBtnText}>Agora</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
 
           {/* Tipo de contrato */}
           <Text style={[styles.sectionLabel, { marginTop: 20 }]}>tipo de contrato</Text>
@@ -471,6 +399,22 @@ export default function ContractConfirmScreen() {
           </Pressable>
         </ScrollView>
       )}
+
+      {/* ── SCHEDULE SHEET ── */}
+      <ScheduleSheet
+        visible={scheduleSheetAberta}
+        onClose={() => setScheduleSheetAberta(false)}
+        initialDate={agendaData}
+        initialHora={agendaHora}
+        initialMinuto={agendaMinuto}
+        agendado={agendado}
+        onConfirm={(data, hora, minuto, isAgendado) => {
+          setAgendaData(data);
+          setAgendaHora(hora);
+          setAgendaMinuto(minuto);
+          setAgendado(isAgendado);
+        }}
+      />
 
       {/* ── AGUARDANDO ── */}
       {etapa === "aguardando" && (
