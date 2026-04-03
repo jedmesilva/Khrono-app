@@ -67,10 +67,10 @@ export default function ContractDetailScreen() {
   const [confirmEncerrar, setConfirmEncerrar] = useState(false);
 
   useEffect(() => {
-    if (!contract || contract.status !== "active") return;
+    if (!contract || contract.status !== "active" || contract.agendado) return;
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [contract?.status]);
+  }, [contract?.status, contract?.agendado]);
 
   if (!contract) {
     return (
@@ -91,20 +91,21 @@ export default function ContractDetailScreen() {
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
   const isActive = contract.status === "active";
+  const isScheduled = isActive && !!contract.agendado;
   const cor = isHiring ? Colors.accent : Colors.accentGreen;
 
-  const elapsed = now - contract.startedAt;
-  const tempoDecorrido = isActive ? elapsed : (contract.endedAt! - contract.startedAt);
+  const elapsed = isScheduled ? 0 : isActive ? now - contract.startedAt : (contract.endedAt! - contract.startedAt);
+  const tempoDecorrido = elapsed;
   const valorHora = contract.ratePerHour;
 
   const valorAcumulado = isTimer && contract.duracaoTotal
     ? ((contract.duracaoTotal / 1000 / 3600) * valorHora).toFixed(2)
     : ((tempoDecorrido / 1000 / 3600) * valorHora).toFixed(2);
 
-  const restante = isTimer && isActive && contract.duracaoTotal
+  const restante = isTimer && isActive && !isScheduled && contract.duracaoTotal
     ? Math.max(0, contract.duracaoTotal - elapsed)
     : null;
-  const progresso = isTimer && isActive && contract.duracaoTotal
+  const progresso = isTimer && isActive && !isScheduled && contract.duracaoTotal
     ? Math.min(1, elapsed / contract.duracaoTotal)
     : null;
 
@@ -148,9 +149,9 @@ export default function ContractDetailScreen() {
         {/* Status badge + ID */}
         <View style={styles.statusRow}>
           <View style={[styles.statusBadge, isActive ? styles.statusBadgeActive : styles.statusBadgeEnded]}>
-            <View style={[styles.statusDot, { backgroundColor: isActive ? Colors.accentGreen : "#444" }]} />
-            <Text style={[styles.statusText, { color: isActive ? Colors.accentGreen : "#555" }]}>
-              {isActive ? "em andamento" : "encerrado"}
+            <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? Colors.accentGreen : "#444" }]} />
+            <Text style={[styles.statusText, { color: isScheduled ? cor : isActive ? Colors.accentGreen : "#555" }]}>
+              {isScheduled ? "agendado" : isActive ? "em andamento" : "encerrado"}
             </Text>
           </View>
           <Text style={styles.contratoId}>{contratoId}</Text>
@@ -186,7 +187,25 @@ export default function ContractDetailScreen() {
         {/* Cronômetro / Timer — somente ativo */}
         {isActive && (
           <View style={[styles.card, { borderColor: cor + "20", alignItems: "center", marginBottom: 12 }]}>
-            {isTimer ? (
+            {isScheduled ? (
+              <>
+                <Feather name="calendar" size={28} color={cor + "60"} style={{ marginBottom: 8 }} />
+                <Text style={styles.timerLabel}>aguardando início</Text>
+                {contract.agendadoLabel && (
+                  <Text style={[styles.timerValue, { fontSize: 18, color: cor }]}>
+                    {contract.agendadoLabel}
+                  </Text>
+                )}
+                {isTimer && contract.duracaoTotal && (
+                  <>
+                    <Text style={[styles.timerAmount, { color: cor, marginTop: 8 }]}>
+                      R${valorAcumulado}
+                    </Text>
+                    <Text style={styles.timerAmountLabel}>valor total fixo</Text>
+                  </>
+                )}
+              </>
+            ) : isTimer ? (
               <>
                 <Text style={styles.timerLabel}>tempo restante</Text>
                 <Text style={[styles.timerValue, (restante ?? 0) < 600000 && { color: "#ff4444" }]}>

@@ -37,14 +37,14 @@ export default function HomeScreen() {
   const now = Date.now();
 
   const totalPagar = activeContracts
-    .filter((c) => c.role === "hiring")
+    .filter((c) => c.role === "hiring" && !c.agendado)
     .reduce((sum, c) => {
       const hours = (now - c.startedAt) / 1000 / 3600;
       return sum + hours * c.ratePerHour;
     }, 0);
 
   const totalReceber = activeContracts
-    .filter((c) => c.role === "hired")
+    .filter((c) => c.role === "hired" && !c.agendado)
     .reduce((sum, c) => {
       const hours = (now - c.startedAt) / 1000 / 3600;
       return sum + hours * c.ratePerHour;

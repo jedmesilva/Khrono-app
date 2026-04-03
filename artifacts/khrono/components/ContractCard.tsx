@@ -52,16 +52,18 @@ function PulseIndicator({ color }: { color: string }) {
 
 export function ContractCard({ contract, onStop, onPress }: Props) {
   const [now, setNow] = useState(Date.now());
+  const isScheduled = !!contract.agendado;
 
   useEffect(() => {
+    if (isScheduled) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [isScheduled]);
 
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
   const accentColor = isHiring ? Colors.accent : Colors.accentGreen;
-  const elapsed = now - contract.startedAt;
+  const elapsed = isScheduled ? 0 : now - contract.startedAt;
 
   const restante = isTimer && contract.duracaoTotal
     ? Math.max(0, contract.duracaoTotal - elapsed)
@@ -69,7 +71,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
   const progresso = isTimer && contract.duracaoTotal
     ? Math.min(1, elapsed / contract.duracaoTotal)
     : null;
-  const quaseAcabando = isTimer && restante !== null && restante < 1000 * 60 * 10;
+  const quaseAcabando = !isScheduled && isTimer && restante !== null && restante < 1000 * 60 * 10;
   const alertColor = "#ff4444";
 
   const stopScale = useRef(new Animated.Value(1)).current;
@@ -106,14 +108,18 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
             },
           ]}
         >
-          <PulseIndicator color={displayColor} />
+          {isScheduled ? (
+            <Feather name="calendar" size={8} color={accentColor} />
+          ) : (
+            <PulseIndicator color={displayColor} />
+          )}
           <Text style={[styles.roleText, { color: accentColor }]}>
             {isHiring ? "VOCÊ CONTRATOU" : "VOCÊ FOI CONTRATADO"}
           </Text>
         </View>
         <View style={styles.tipoBadge}>
           <Text style={styles.tipoText}>
-            {isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
+            {isScheduled ? "AGENDADO" : isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
           </Text>
         </View>
       </View>
@@ -136,10 +142,32 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
         </View>
       </View>
 
-      {/* Timer mode: progress bar + countdown */}
-      {isTimer && contract.duracaoTotal ? (
+      {/* Scheduled state: show awaiting info */}
+      {isScheduled ? (
+        <View style={styles.scheduledBlock}>
+          <Feather name="clock" size={14} color={accentColor + "80"} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.metaLabel}>AGUARDANDO INÍCIO</Text>
+            {contract.agendadoLabel ? (
+              <Text style={[styles.scheduledLabel, { color: accentColor }]}>
+                {contract.agendadoLabel}
+              </Text>
+            ) : (
+              <Text style={styles.scheduledLabel}>horário a confirmar</Text>
+            )}
+          </View>
+          {isTimer && contract.duracaoTotal && (
+            <View style={{ alignItems: "flex-end" }}>
+              <Text style={styles.metaLabel}>VALOR TOTAL</Text>
+              <Text style={[styles.valueText, { color: accentColor }]}>
+                R${formatValue(contract.duracaoTotal, contract.ratePerHour)}
+              </Text>
+            </View>
+          )}
+        </View>
+      ) : isTimer && contract.duracaoTotal ? (
+        /* Timer mode: progress bar + countdown */
         <View>
-          {/* Progress bar */}
           <View style={styles.progressTrack}>
             <View
               style={[
@@ -151,7 +179,6 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
               ]}
             />
           </View>
-
           <View style={styles.timerRow}>
             <View>
               <Text style={styles.metaLabel}>RESTANTE</Text>
@@ -323,6 +350,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     letterSpacing: 1,
     lineHeight: 26,
+  },
+  scheduledBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
+    paddingVertical: 4,
+  },
+  scheduledLabel: {
+    fontFamily: "DMMono_500Medium",
+    fontSize: 14,
+    color: "#555",
+    marginTop: 2,
   },
   rateRow: {
     marginBottom: 16,
