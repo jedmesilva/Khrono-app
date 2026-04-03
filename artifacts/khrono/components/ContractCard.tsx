@@ -119,7 +119,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
         </View>
         <View style={styles.tipoBadge}>
           <Text style={styles.tipoText}>
-            {isScheduled ? "AGENDADO" : isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
+            {isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
           </Text>
         </View>
       </View>
@@ -142,31 +142,8 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
         </View>
       </View>
 
-      {/* Scheduled state: show awaiting info */}
-      {isScheduled ? (
-        <View style={styles.scheduledBlock}>
-          <Feather name="clock" size={14} color={accentColor + "80"} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.metaLabel}>AGUARDANDO INÍCIO</Text>
-            {contract.agendadoLabel ? (
-              <Text style={[styles.scheduledLabel, { color: accentColor }]}>
-                {contract.agendadoLabel}
-              </Text>
-            ) : (
-              <Text style={styles.scheduledLabel}>horário a confirmar</Text>
-            )}
-          </View>
-          {isTimer && contract.duracaoTotal && (
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.metaLabel}>VALOR TOTAL</Text>
-              <Text style={[styles.valueText, { color: accentColor }]}>
-                R${formatValue(contract.duracaoTotal, contract.ratePerHour)}
-              </Text>
-            </View>
-          )}
-        </View>
-      ) : isTimer && contract.duracaoTotal ? (
-        /* Timer mode: progress bar + countdown */
+      {/* Timer mode: progress bar + countdown */}
+      {isTimer && contract.duracaoTotal ? (
         <View>
           <View style={styles.progressTrack}>
             <View
@@ -207,6 +184,16 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
               R${formatValue(elapsed, contract.ratePerHour)}
             </Text>
           </View>
+        </View>
+      )}
+
+      {/* Scheduled label */}
+      {isScheduled && (
+        <View style={styles.scheduledRow}>
+          <Feather name="calendar" size={10} color={accentColor + "80"} />
+          <Text style={[styles.scheduledText, { color: accentColor + "99" }]}>
+            {contract.agendadoLabel ? `Inicia em ${contract.agendadoLabel}` : "Agendado"}
+          </Text>
         </View>
       )}
 
@@ -351,18 +338,17 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     lineHeight: 26,
   },
-  scheduledBlock: {
+  scheduledRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 6,
     marginBottom: 10,
-    paddingVertical: 4,
+    marginTop: -4,
   },
-  scheduledLabel: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 14,
-    color: "#555",
-    marginTop: 2,
+  scheduledText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    letterSpacing: 0.3,
   },
   rateRow: {
     marginBottom: 16,

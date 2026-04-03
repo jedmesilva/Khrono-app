@@ -187,36 +187,18 @@ export default function ContractDetailScreen() {
         {/* Cronômetro / Timer — somente ativo */}
         {isActive && (
           <View style={[styles.card, { borderColor: cor + "20", alignItems: "center", marginBottom: 12 }]}>
-            {isScheduled ? (
-              <>
-                <Feather name="calendar" size={28} color={cor + "60"} style={{ marginBottom: 8 }} />
-                <Text style={styles.timerLabel}>aguardando início</Text>
-                {contract.agendadoLabel && (
-                  <Text style={[styles.timerValue, { fontSize: 18, color: cor }]}>
-                    {contract.agendadoLabel}
-                  </Text>
-                )}
-                {isTimer && contract.duracaoTotal && (
-                  <>
-                    <Text style={[styles.timerAmount, { color: cor, marginTop: 8 }]}>
-                      R${valorAcumulado}
-                    </Text>
-                    <Text style={styles.timerAmountLabel}>valor total fixo</Text>
-                  </>
-                )}
-              </>
-            ) : isTimer ? (
+            {isTimer ? (
               <>
                 <Text style={styles.timerLabel}>tempo restante</Text>
-                <Text style={[styles.timerValue, (restante ?? 0) < 600000 && { color: "#ff4444" }]}>
-                  {formatTimer(Math.floor((restante ?? 0) / 1000))}
+                <Text style={[styles.timerValue, !isScheduled && (restante ?? 0) < 600000 && { color: "#ff4444" }]}>
+                  {formatTimer(Math.floor((restante ?? contract.duracaoTotal ?? 0) / 1000))}
                 </Text>
                 <View style={styles.progressBarWrap}>
                   <View style={[
                     styles.progressFill,
                     {
                       width: `${Math.round((progresso ?? 0) * 100)}%` as any,
-                      backgroundColor: (restante ?? 0) < 600000 ? "#ff4444" : cor,
+                      backgroundColor: !isScheduled && (restante ?? 0) < 600000 ? "#ff4444" : cor,
                     }
                   ]} />
                 </View>
@@ -230,6 +212,14 @@ export default function ContractDetailScreen() {
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
                 <Text style={styles.timerAmountLabel}>acumulado</Text>
               </>
+            )}
+            {isScheduled && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10 }}>
+                <Feather name="calendar" size={11} color={cor + "80"} />
+                <Text style={{ fontFamily: "DMMono_400Regular", fontSize: 11, color: cor + "99" }}>
+                  {contract.agendadoLabel ? `Inicia em ${contract.agendadoLabel}` : "Agendado"}
+                </Text>
+              </View>
             )}
           </View>
         )}
