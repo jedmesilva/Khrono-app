@@ -232,9 +232,19 @@ export default function ContractConfirmScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.providerName}>{provider.name}</Text>
-                <View style={styles.providerMeta}>
-                  <Feather name="map-pin" size={11} color="#444" />
-                  <Text style={[styles.metaText, { color: "#555" }]}>{provider.distancia} km</Text>
+                <View style={styles.infoChipsRow}>
+                  <View style={styles.infoChip}>
+                    <Feather name="briefcase" size={10} color="#555" />
+                    <Text style={styles.infoChipText}>{provider.totalContracts ?? 0} contratos</Text>
+                  </View>
+                  <View style={styles.infoChip}>
+                    <Feather name="tool" size={10} color="#555" />
+                    <Text style={styles.infoChipText}>{provider.services.length} {provider.services.length === 1 ? "service" : "services"}</Text>
+                  </View>
+                  <View style={styles.infoChip}>
+                    <Feather name="map-pin" size={10} color="#555" />
+                    <Text style={styles.infoChipText}>{provider.distancia} km</Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -756,15 +766,27 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_700Bold",
     marginBottom: 4,
   },
-  providerMeta: {
+  infoChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 4,
+  },
+  infoChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 5,
+    backgroundColor: "#111",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
   },
-  metaText: {
-    color: "#666",
-    fontSize: 11,
+  infoChipText: {
     fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#555",
   },
   rateValue: {
     color: Colors.accent,
