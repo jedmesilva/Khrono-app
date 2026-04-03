@@ -16,7 +16,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
 import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
+import { useCards } from "@/context/CardsContext";
 import { ScheduleSheet } from "@/components/ScheduleSheet";
+import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
+import { PixPaymentModal } from "@/components/PixPaymentModal";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -46,6 +49,7 @@ export default function ContractConfirmScreen() {
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
   const { startContract, endContract } = useContracts();
+  const { cards } = useCards();
 
   // ── ALL HOOKS MUST BE BEFORE ANY CONDITIONAL RETURN ──
   const [etapa, setEtapa] = useState<Etapa>("confirmacao");
@@ -56,6 +60,10 @@ export default function ContractConfirmScreen() {
   const [customHoras, setCustomHoras] = useState(0);
   const [customMinutos, setCustomMinutos] = useState(30);
   const [scheduleSheetAberta, setScheduleSheetAberta] = useState(false);
+  const [paymentSheetAberta, setPaymentSheetAberta] = useState(false);
+  const [pixPaymentAberta, setPixPaymentAberta] = useState(false);
+  const [metodoPagamento, setMetodoPagamento] = useState<PaymentMethod | null>(null);
+  const [cartaoSelecionadoId, setCartaoSelecionadoId] = useState<string | null>(null);
   const [agendado, setAgendado] = useState(false);
   const [agendaHora, setAgendaHora] = useState(8);
   const [agendaMinuto, setAgendaMinuto] = useState(0);
@@ -130,8 +138,13 @@ export default function ContractConfirmScreen() {
   };
 
   const confirmar = () => {
+    if (!metodoPagamento) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setEtapa("aguardando");
+    if (metodoPagamento === "pix") {
+      setPixPaymentAberta(true);
+    } else {
+      setEtapa("aguardando");
+    }
   };
 
   const aceitar = () => {
@@ -391,14 +404,114 @@ export default function ContractConfirmScreen() {
             )}
           </View>
 
-          <Pressable onPress={confirmar} style={styles.confirmBtn}>
-            <Text style={styles.confirmBtnText}>Confirmar e enviar solicitação</Text>
+          {/* Forma de pagamento */}
+          <Text style={[styles.sectionLabel, { marginTop: 20 }]}>forma de pagamento</Text>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setPaymentSheetAberta(true);
+            }}
+            style={[
+              styles.scheduleBtn,
+              metodoPagamento && styles.scheduleBtnActive,
+              metodoPagamento === "pix" && { borderColor: Colors.accentGreen + "35", backgroundColor: Colors.accentGreen + "08" },
+              metodoPagamento === "dinheiro" && { borderColor: "#ffffff18", backgroundColor: "#ffffff05" },
+            ]}
+          >
+            <View style={[
+              styles.scheduleIcon,
+              metodoPagamento && metodoPagamento !== "pix" && metodoPagamento !== "dinheiro" && styles.scheduleIconActive,
+              metodoPagamento === "pix" && { borderColor: Colors.accentGreen + "40", backgroundColor: Colors.accentGreen + "10" },
+              metodoPagamento === "dinheiro" && { borderColor: "#ffffff20", backgroundColor: "#ffffff08" },
+            ]}>
+              <Feather
+                name={
+                  metodoPagamento === "cartao" ? "credit-card"
+                  : metodoPagamento === "pix" ? "zap"
+                  : metodoPagamento === "dinheiro" ? "dollar-sign"
+                  : "credit-card"
+                }
+                size={16}
+                color={
+                  metodoPagamento === "cartao" ? Colors.accent
+                  : metodoPagamento === "pix" ? Colors.accentGreen
+                  : metodoPagamento === "dinheiro" ? "#aaa"
+                  : "#444"
+                }
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              {metodoPagamento === null && (
+                <>
+                  <Text style={styles.scheduleLabel}>Selecionar método</Text>
+                  <Text style={styles.scheduleSub}>obrigatório para confirmar</Text>
+                </>
+              )}
+              {metodoPagamento === "cartao" && (() => {
+                const cartao = cards.find(c => c.id === cartaoSelecionadoId);
+                return (
+                  <>
+                    <Text style={[styles.scheduleLabel, { color: "#fff" }]}>
+                      {cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : "Cartão"}
+                    </Text>
+                    <Text style={styles.scheduleSub}>cartão de crédito/débito</Text>
+                  </>
+                );
+              })()}
+              {metodoPagamento === "pix" && (
+                <>
+                  <Text style={[styles.scheduleLabel, { color: Colors.accentGreen }]}>Pix</Text>
+                  <Text style={styles.scheduleSub}>QR Code gerado ao confirmar</Text>
+                </>
+              )}
+              {metodoPagamento === "dinheiro" && (
+                <>
+                  <Text style={[styles.scheduleLabel, { color: "#ccc" }]}>Dinheiro</Text>
+                  <Text style={styles.scheduleSub}>pague diretamente ao prestador</Text>
+                </>
+              )}
+            </View>
+            <Feather name="chevron-right" size={14} color="#333" />
+          </Pressable>
+
+          <Pressable
+            onPress={metodoPagamento ? confirmar : undefined}
+            style={[styles.confirmBtn, !metodoPagamento && styles.confirmBtnDisabled]}
+          >
+            <Text style={[styles.confirmBtnText, !metodoPagamento && { color: "#333" }]}>
+              {metodoPagamento === "pix" ? "Confirmar e gerar Pix" : "Confirmar e enviar solicitação"}
+            </Text>
           </Pressable>
           <Pressable onPress={goBack} style={styles.cancelBtn}>
             <Text style={styles.cancelBtnText}>Cancelar</Text>
           </Pressable>
         </ScrollView>
       )}
+
+      {/* ── PAYMENT SHEET ── */}
+      <PaymentSheet
+        visible={paymentSheetAberta}
+        onClose={() => setPaymentSheetAberta(false)}
+        initialMethod={metodoPagamento}
+        initialCardId={cartaoSelecionadoId}
+        onConfirm={(method, cardId) => {
+          setMetodoPagamento(method);
+          setCartaoSelecionadoId(cardId);
+        }}
+      />
+
+      {/* ── PIX PAYMENT MODAL ── */}
+      <PixPaymentModal
+        visible={pixPaymentAberta}
+        onClose={() => setPixPaymentAberta(false)}
+        onConfirm={() => {
+          setPixPaymentAberta(false);
+          setEtapa("aguardando");
+        }}
+        providerName={provider.name}
+        amount={tipoContrato === "definido" ? Number(valorTotal ?? 0) : valorHora}
+        tipoContrato={tipoContrato}
+      />
 
       {/* ── SCHEDULE SHEET ── */}
       <ScheduleSheet
@@ -984,6 +1097,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     fontFamily: "Sora_700Bold",
+  },
+  confirmBtnDisabled: {
+    backgroundColor: "#111",
+    borderWidth: 1,
+    borderColor: "#1e1e1e",
   },
   cancelBtn: {
     borderWidth: 1,
