@@ -64,6 +64,17 @@ export function MenuSheet({ visible, onClose }: Props) {
 
   const menuItems: MenuItem[] = [
     {
+      id: "history",
+      icon: "clock",
+      label: "Histórico",
+      sublabel: "Contratos encerrados",
+      onPress: () => {
+        Haptics.selectionAsync();
+        onClose();
+        setTimeout(() => router.push("/history"), 300);
+      },
+    },
+    {
       id: "support",
       icon: "message-circle",
       label: "Suporte",
