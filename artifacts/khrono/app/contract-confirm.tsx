@@ -1,4 +1,4 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
 import { useContracts } from "@/context/ContractsContext";
-import { useConfirmation, ProviderSkill } from "@/context/ConfirmationContext";
+import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -50,8 +50,7 @@ export default function ContractConfirmScreen() {
   const [etapa, setEtapa] = useState<Etapa>("confirmacao");
   const [tipoContrato, setTipoContrato] = useState<"aberto" | "definido">("aberto");
   const [duracaoIdx, setDuracaoIdx] = useState(1);
-  const [skillSelecionada, setSkillSelecionada] = useState<ProviderSkill | null>(null);
-  const [toolsSelecionadas, setToolsSelecionadas] = useState<number[]>([]);
+  const [servicoSelecionado, setServicoselecionado] = useState<ProviderService | null>(null);
   const [customAtivo, setCustomAtivo] = useState(false);
   const [customHoras, setCustomHoras] = useState(0);
   const [customMinutos, setCustomMinutos] = useState(30);
@@ -74,8 +73,8 @@ export default function ContractConfirmScreen() {
       router.back();
       return;
     }
-    if (!skillSelecionada && pendingProvider.skills.length > 0) {
-      setSkillSelecionada(pendingProvider.skills[0]);
+    if (!servicoSelecionado && pendingProvider.services.length > 0) {
+      setServicoselecionado(pendingProvider.services[0]);
     }
   }, [pendingProvider]);
 
@@ -103,11 +102,11 @@ export default function ContractConfirmScreen() {
   // ── CONDITIONAL RENDER AFTER ALL HOOKS ──
   if (!pendingProvider) return null;
   const provider = pendingProvider;
-  const skill = skillSelecionada ?? provider.skills[0];
+  const servico = servicoSelecionado ?? provider.services[0];
 
   const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
 
-  const valorHora = provider.valorBase * (skill?.multiplicador ?? 1);
+  const valorHora = provider.valorBase * (servico?.multiplicador ?? 1);
   const duracaoSelecionada = DURACOES[duracaoIdx];
   const duracaoMs = customAtivo
     ? (customHoras * 60 + customMinutos) * 60 * 1000
@@ -139,13 +138,6 @@ export default function ContractConfirmScreen() {
     return dias;
   };
 
-  const toggleTool = (id: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setToolsSelecionadas(prev =>
-      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-    );
-  };
-
   const confirmar = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setEtapa("aguardando");
@@ -153,9 +145,6 @@ export default function ContractConfirmScreen() {
 
   const aceitar = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    const selectedTools = provider.tools
-      .filter(t => toolsSelecionadas.includes(t.id))
-      .map(t => ({ id: t.id, nome: t.nome, tipo: t.tipo }));
     const id = startContract({
       role: "hiring",
       tipo: tipoContrato === "aberto" ? "cronometro" : "timer",
@@ -163,13 +152,12 @@ export default function ContractConfirmScreen() {
       person: {
         name: provider.name,
         initials: provider.initials,
-        skill: skill?.nome ?? "",
+        skill: servico?.nome ?? "",
         nota: provider.nota,
         avaliacoes: provider.avaliacoes,
         distancia: provider.distancia,
       },
       ratePerHour: valorHora,
-      tools: selectedTools,
     });
     setActiveContractId(id);
     router.replace(`/contract-detail/${id}` as any);
@@ -235,71 +223,38 @@ export default function ContractConfirmScreen() {
             </View>
           </View>
 
-          {/* Skills */}
-          <Text style={styles.sectionLabel}>skill a contratar</Text>
+          {/* Services */}
+          <Text style={styles.sectionLabel}>service a contratar</Text>
           <View style={{ gap: 8, marginBottom: 20 }}>
-            {provider.skills.map(s => {
-              const ativa = skill?.id === s.id;
+            {provider.services.map(s => {
+              const ativo = servico?.id === s.id;
               const valor = (provider.valorBase * s.multiplicador).toFixed(0);
               return (
                 <Pressable
                   key={s.id}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setSkillSelecionada(s);
+                    setServicoselecionado(s);
                   }}
-                  style={[styles.optionRow, ativa && styles.optionRowActive]}
+                  style={[styles.optionRow, ativo && styles.optionRowActive]}
                 >
-                  <View style={[styles.radio, ativa && styles.radioActive]}>
-                    {ativa && <View style={styles.radioInner} />}
+                  <View style={[styles.radio, ativo && styles.radioActive]}>
+                    {ativo && <View style={styles.radioInner} />}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.optionLabel, ativa && { color: "#fff" }]}>{s.nome}</Text>
+                    <Text style={[styles.optionLabel, ativo && { color: "#fff" }]}>{s.nome}</Text>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 }}>
                       <Feather name="star" size={10} color={Colors.accent} />
                       <Text style={styles.optionMeta}>{s.nota} · {s.avaliacoes} avaliações</Text>
                     </View>
                   </View>
-                  <Text style={[styles.optionRate, ativa && { color: Colors.accent }]}>
+                  <Text style={[styles.optionRate, ativo && { color: Colors.accent }]}>
                     R${valor}/h
                   </Text>
                 </Pressable>
               );
             })}
           </View>
-
-          {/* Tools */}
-          {provider.tools.length > 0 && (
-            <>
-              <Text style={styles.sectionLabel}>tools disponíveis</Text>
-              <View style={{ gap: 8, marginBottom: 20 }}>
-                {provider.tools.map(t => {
-                  const sel = toolsSelecionadas.includes(t.id);
-                  return (
-                    <Pressable
-                      key={t.id}
-                      onPress={() => toggleTool(t.id)}
-                      style={[styles.toolRow, sel && styles.toolRowActive]}
-                    >
-                      <View style={[styles.toolIcon, sel && styles.toolIconActive]}>
-                        {t.tipo === "Veículo"
-                          ? <MaterialCommunityIcons name="car-outline" size={18} color={sel ? Colors.accentGreen : "#444"} />
-                          : <Feather name="tool" size={16} color={sel ? Colors.accentGreen : "#444"} />
-                        }
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.toolName, sel && { color: "#fff" }]}>{t.nome}</Text>
-                        <Text style={styles.toolType}>{t.tipo}</Text>
-                      </View>
-                      <View style={[styles.checkbox, sel && styles.checkboxActive]}>
-                        {sel && <Feather name="check" size={10} color="#000" />}
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </>
-          )}
 
           {/* Quando */}
           <Text style={styles.sectionLabel}>quando</Text>
@@ -497,7 +452,7 @@ export default function ContractConfirmScreen() {
                 {tipoContrato === "definido" ? `R$${valorTotal}` : `R$${valorHora.toFixed(0)}/h`}
               </Text>
               <Text style={styles.valueSummaryMeta} numberOfLines={1}>
-                {skill?.nome} · {agendado ? formatAgendamento() : "Agora"}
+                {servico?.nome} · {agendado ? formatAgendamento() : "Agora"}
               </Text>
             </View>
             {tipoContrato === "definido" && (
@@ -530,7 +485,7 @@ export default function ContractConfirmScreen() {
           <Text style={styles.waitTitle}>Aguardando confirmação</Text>
           <Text style={styles.waitSub}>{provider.name} está sendo notificado</Text>
           <Text style={styles.waitMeta}>
-            {skill?.nome} · {tipoContrato === "definido"
+            {servico?.nome} · {tipoContrato === "definido"
               ? `${duracaoLabel} · R$${valorTotal}`
               : `Tempo em aberto · R$${valorHora.toFixed(0)}/h`}
           </Text>
@@ -572,7 +527,7 @@ export default function ContractConfirmScreen() {
             </View>
             <View>
               <Text style={styles.providerName}>{provider.name}</Text>
-              <Text style={styles.activeSkillText}>{skill?.nome}</Text>
+              <Text style={styles.activeSkillText}>{servico?.nome}</Text>
             </View>
           </View>
 

@@ -45,12 +45,9 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 42,
     distancia: 0.8,
     valorBase: 45,
-    skills: [
-      { id: 1, nome: "Pintor Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8 },
-      { id: 2, nome: "Gesseiro", multiplicador: 0.9, avaliacoes: 8, nota: 4.5 },
-    ],
-    tools: [
-      { id: 1, nome: "Kit de Tintas Profissional", tipo: "Equipamento", disponivel: true },
+    services: [
+      { id: 1, nome: "Pintura Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8 },
+      { id: 2, nome: "Gessaria", multiplicador: 0.9, avaliacoes: 8, nota: 4.5 },
     ],
   },
   "5678": {
@@ -60,12 +57,9 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 128,
     distancia: 2.1,
     valorBase: 80,
-    skills: [
-      { id: 1, nome: "Personal Trainer", multiplicador: 1.0, avaliacoes: 128, nota: 5.0 },
-      { id: 2, nome: "Nutricionista", multiplicador: 1.2, avaliacoes: 34, nota: 4.9 },
-    ],
-    tools: [
-      { id: 1, nome: "Kit Musculação Portátil", tipo: "Equipamento", disponivel: true },
+    services: [
+      { id: 1, nome: "Personal Training", multiplicador: 1.0, avaliacoes: 128, nota: 5.0 },
+      { id: 2, nome: "Consultoria Nutricional", multiplicador: 1.2, avaliacoes: 34, nota: 4.9 },
     ],
   },
   "9012": {
@@ -75,12 +69,9 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 31,
     distancia: 3.4,
     valorBase: 60,
-    skills: [
-      { id: 1, nome: "Eletricista", multiplicador: 1.0, avaliacoes: 31, nota: 4.7 },
-    ],
-    tools: [
-      { id: 1, nome: "Multímetro Digital", tipo: "Equipamento", disponivel: true },
-      { id: 2, nome: "Kit de Ferramentas", tipo: "Equipamento", disponivel: true },
+    services: [
+      { id: 1, nome: "Instalação Elétrica", multiplicador: 1.0, avaliacoes: 31, nota: 4.7 },
+      { id: 2, nome: "Manutenção Elétrica", multiplicador: 0.9, avaliacoes: 12, nota: 4.6 },
     ],
   },
   "4321": {
@@ -90,11 +81,10 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 77,
     distancia: 0.5,
     valorBase: 40,
-    skills: [
-      { id: 1, nome: "Cuidadora de Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9 },
-      { id: 2, nome: "Enfermeira Auxiliar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8 },
+    services: [
+      { id: 1, nome: "Cuidados com Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9 },
+      { id: 2, nome: "Acompanhamento Hospitalar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8 },
     ],
-    tools: [],
   },
   "1257": {
     name: "Jedme Silva",
@@ -103,12 +93,9 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 19,
     distancia: 1.8,
     valorBase: 50,
-    skills: [
-      { id: 1, nome: "Montador de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6 },
-    ],
-    tools: [
-      { id: 1, nome: "Furadeira Profissional", tipo: "Equipamento", disponivel: true },
-      { id: 2, nome: "Kit Allen + Chaves", tipo: "Equipamento", disponivel: true },
+    services: [
+      { id: 1, nome: "Montagem de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6 },
+      { id: 2, nome: "Desmontagem e Transporte", multiplicador: 0.85, avaliacoes: 7, nota: 4.4 },
     ],
   },
 };
@@ -172,7 +159,7 @@ function PincodeContent({
             <Text style={sub.userAvatarText}>{found.initials}</Text>
           </View>
           <Text style={sub.userName}>{found.name}</Text>
-          <Text style={sub.userSkill}>{found.skills[0]?.nome}</Text>
+          <Text style={sub.userSkill}>{found.services[0]?.nome}</Text>
           <View style={sub.rateBadge}>
             <Text style={sub.rateText}>R${found.valorBase}/h</Text>
           </View>

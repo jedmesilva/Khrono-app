@@ -1,18 +1,11 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type ProviderSkill = {
+export type ProviderService = {
   id: number;
   nome: string;
   multiplicador: number;
   avaliacoes: number;
   nota: number;
-};
-
-export type ProviderTool = {
-  id: number;
-  nome: string;
-  tipo: string;
-  disponivel: boolean;
 };
 
 export type ProviderData = {
@@ -22,8 +15,7 @@ export type ProviderData = {
   avaliacoes: number;
   distancia: number;
   valorBase: number;
-  skills: ProviderSkill[];
-  tools: ProviderTool[];
+  services: ProviderService[];
 };
 
 type ConfirmationContextType = {
