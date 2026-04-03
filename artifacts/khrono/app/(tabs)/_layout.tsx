@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { HireSheet } from "@/components/HireSheet";
 import { HireSheetProvider, useHireSheet } from "@/context/HireSheetContext";
 
@@ -38,19 +39,20 @@ function TabLayoutInner() {
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
   const { isOpen, closeSheet } = useHireSheet();
+  const { colors, isDark } = useTheme();
 
   return (
     <>
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: Colors.accent,
-          tabBarInactiveTintColor: Colors.tabIconDefault,
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.tabIconDefault,
           tabBarStyle: {
             position: "absolute",
-            backgroundColor: isIOS ? "transparent" : "#0a0a0a",
+            backgroundColor: isIOS ? "transparent" : colors.card,
             borderTopWidth: 1,
-            borderTopColor: "#111",
+            borderTopColor: colors.surface,
             elevation: 0,
             paddingBottom: isWeb ? 0 : safeAreaInsets.bottom,
             ...(isWeb ? { height: 84 } : {}),
@@ -59,14 +61,14 @@ function TabLayoutInner() {
             isIOS ? (
               <BlurView
                 intensity={80}
-                tint="dark"
+                tint={isDark ? "dark" : "light"}
                 style={StyleSheet.absoluteFill}
               />
             ) : isWeb ? (
               <View
                 style={[
                   StyleSheet.absoluteFill,
-                  { backgroundColor: "#0a0a0a" },
+                  { backgroundColor: colors.card },
                 ]}
               />
             ) : null,

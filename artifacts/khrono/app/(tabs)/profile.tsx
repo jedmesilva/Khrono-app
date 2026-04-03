@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import {
   MY_PROFILE,
   Skill,
@@ -85,6 +86,7 @@ function SkillsListView({ onBack, onSelectSkill, onVerifiedPress, onAdd }: {
   onVerifiedPress: (type: VerificationType) => void;
   onAdd: () => void;
 }) {
+  const { colors } = useTheme();
   const verifiedCount = MY_PROFILE.skills.filter((s) => s.verified !== null).length;
 
   return (
@@ -94,26 +96,26 @@ function SkillsListView({ onBack, onSelectSkill, onVerifiedPress, onAdd }: {
           <Feather name="arrow-left" size={18} color={Colors.accent} />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Text style={styles.subTitle}>Skills</Text>
-          <Text style={styles.subMeta}>
+          <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
+          <Text style={[styles.subMeta, { color: colors.textMuted }]}>
             {MY_PROFILE.skills.length} skills · {verifiedCount} verificadas
           </Text>
         </View>
-        <Pressable style={styles.addBtn} onPress={onAdd}>
-          <Feather name="plus" size={11} color="#555" />
-          <Text style={styles.addBtnText}>adicionar</Text>
+        <Pressable style={[styles.addBtn, { borderColor: colors.surfaceBorder }]} onPress={onAdd}>
+          <Feather name="plus" size={11} color={colors.textSecondary} />
+          <Text style={[styles.addBtnText, { color: colors.textSecondary }]}>adicionar</Text>
         </Pressable>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
         {MY_PROFILE.skills.map((skill) => (
-          <Pressable key={skill.id} style={styles.listCard} onPress={() => onSelectSkill(skill)}>
-            <View style={[styles.listIcon, { borderColor: skill.isNew ? "#1e1e1e" : Colors.accent + "20" }]}>
-              <Feather name="tool" size={18} color={skill.isNew ? "#444" : Colors.accent} />
+          <Pressable key={skill.id} style={[styles.listCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => onSelectSkill(skill)}>
+            <View style={[styles.listIcon, { backgroundColor: colors.menuIconBg, borderColor: skill.isNew ? colors.cardBorder : Colors.accent + "20" }]}>
+              <Feather name="tool" size={18} color={skill.isNew ? colors.textMuted : Colors.accent} />
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.nameWithBadge}>
-                <Text style={[styles.listCardName, { flex: 1 }]} numberOfLines={1}>{skill.name}</Text>
+                <Text style={[styles.listCardName, { flex: 1, color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
                 {skill.verified && (
                   <VerifiedBadge
                     type={skill.verified.type}
@@ -122,12 +124,12 @@ function SkillsListView({ onBack, onSelectSkill, onVerifiedPress, onAdd }: {
                 )}
               </View>
               {skill.description ? (
-                <Text style={styles.listCardSub} numberOfLines={1} ellipsizeMode="tail">
+                <Text style={[styles.listCardSub, { color: colors.textMuted }]} numberOfLines={1} ellipsizeMode="tail">
                   {skill.description}
                 </Text>
               ) : null}
             </View>
-            <Feather name="chevron-right" size={16} color="#2a2a2a" />
+            <Feather name="chevron-right" size={16} color={colors.chevron} />
           </Pressable>
         ))}
       </ScrollView>
@@ -202,6 +204,7 @@ function ToolsListView({ onBack, onVerifiedPress, onAdd }: {
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
+  const { colors } = useTheme();
   const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -233,7 +236,7 @@ export default function ProfileScreen() {
 
   if (view === "skill_detail" && selectedSkill) {
     return (
-      <View style={[styles.container, { backgroundColor: Colors.background, paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
         <SkillDetailView
           skill={selectedSkill}
           onBack={() => { setSelectedSkill(null); setView("skills"); }}
@@ -252,7 +255,7 @@ export default function ProfileScreen() {
 
   if (view === "skills") {
     return (
-      <View style={[styles.container, { backgroundColor: Colors.background, paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
         <SkillsListView
           onBack={() => setView("main")}
           onSelectSkill={(skill) => { setSelectedSkill(skill); setView("skill_detail"); }}
@@ -272,7 +275,7 @@ export default function ProfileScreen() {
 
   if (view === "tools") {
     return (
-      <View style={[styles.container, { backgroundColor: Colors.background, paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
         <ToolsListView
           onBack={() => setView("main")}
           onVerifiedPress={handleVerifiedPress}
@@ -290,7 +293,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
@@ -305,10 +308,10 @@ export default function ProfileScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>
+          <Text style={[styles.logo, { color: colors.text }]}>
             K<Text style={{ color: Colors.accent }}>r</Text>ono
           </Text>
-          <Text style={styles.headerSub}>perfil</Text>
+          <Text style={[styles.headerSub, { color: colors.textMuted }]}>perfil</Text>
         </View>
 
         {/* Avatar + Info */}
@@ -318,7 +321,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.profileInfo}>
             <View style={styles.nameWithBadge}>
-              <Text style={styles.profileName}>{MY_PROFILE.name}</Text>
+              <Text style={[styles.profileName, { color: colors.text }]}>{MY_PROFILE.name}</Text>
               {hasVerified && (
                 <VerifiedBadge
                   type="documentation"
@@ -327,33 +330,33 @@ export default function ProfileScreen() {
               )}
             </View>
             <View style={styles.locationRow}>
-              <Feather name="map-pin" size={11} color="#555" />
-              <Text style={styles.locationText}>{MY_PROFILE.location}</Text>
+              <Feather name="map-pin" size={11} color={colors.textMuted} />
+              <Text style={[styles.locationText, { color: colors.textMuted }]}>{MY_PROFILE.location}</Text>
             </View>
-            <Text style={styles.sinceText}>membro desde {MY_PROFILE.since}</Text>
+            <Text style={[styles.sinceText, { color: colors.textDim }]}>membro desde {MY_PROFILE.since}</Text>
           </View>
         </View>
 
         {/* Stats */}
-        <View style={styles.statsCard}>
+        <View style={[styles.statsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{MY_PROFILE.totalContracts}</Text>
-            <Text style={styles.statLabel}>CONTRATOS</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{MY_PROFILE.totalContracts}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>CONTRATOS</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{MY_PROFILE.services.length}</Text>
-            <Text style={styles.statLabel}>SERVICES</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{MY_PROFILE.services.length}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>SERVICES</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{avgRating.toFixed(1)}</Text>
-            <Text style={styles.statLabel}>AVALIAÇÃO</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{avgRating.toFixed(1)}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>AVALIAÇÃO</Text>
           </View>
         </View>
 
         {/* Location card */}
-        <Pressable style={styles.locationCard} onPress={() => setLocationSheetOpen(true)}>
+        <Pressable style={[styles.locationCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setLocationSheetOpen(true)}>
           <View style={[
             styles.locationIconWrap,
             locationMode === "realtime"
@@ -368,7 +371,7 @@ export default function ProfileScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <View style={styles.locationTopRow}>
-              <Text style={styles.locationLabel}>Localização de serviço</Text>
+              <Text style={[styles.locationLabel, { color: colors.text }]}>Localização de serviço</Text>
               <View style={[
                 styles.locationModeBadge,
                 locationMode === "realtime"
@@ -383,54 +386,54 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             </View>
-            <Text style={styles.locationAddress}>
+            <Text style={[styles.locationAddress, { color: colors.textSecondary }]}>
               {locationMode === "realtime" ? "GPS ativo" : fixedAddress}
               {" · raio "}
               {formatRadius(serviceRadius)}
             </Text>
           </View>
-          <Feather name="chevron-right" size={16} color="#2a2a2a" />
+          <Feather name="chevron-right" size={16} color={colors.chevron} />
         </Pressable>
 
         {/* Skills + Tools compact cards */}
         <View style={styles.compactRow}>
-          <Pressable style={styles.compactCard} onPress={() => setView("skills")}>
-            <View style={[styles.compactIcon, { borderColor: Colors.accent + "20" }]}>
+          <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("skills")}>
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: Colors.accent + "20" }]}>
               <Feather name="tool" size={16} color={Colors.accent} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.compactTitle}>Skills</Text>
-              <Text style={styles.compactMeta}>
+              <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
+              <Text style={[styles.compactMeta, { color: colors.textDim }]}>
                 {MY_PROFILE.skills.length} · {verifiedSkillsCount} verificadas
               </Text>
             </View>
-            <Feather name="chevron-right" size={14} color="#2a2a2a" />
+            <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
 
-          <Pressable style={styles.compactCard} onPress={() => setView("tools")}>
-            <View style={[styles.compactIcon, { borderColor: Colors.accentGreen + "20" }]}>
+          <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("tools")}>
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: Colors.accentGreen + "20" }]}>
               <Feather name="box" size={16} color={Colors.accentGreen} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.compactTitle}>Tools</Text>
-              <Text style={styles.compactMeta}>
+              <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
+              <Text style={[styles.compactMeta, { color: colors.textDim }]}>
                 {MY_PROFILE.tools.length} · {verifiedToolsCount} verificadas
               </Text>
             </View>
-            <Feather name="chevron-right" size={14} color="#2a2a2a" />
+            <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
         </View>
 
         {/* Services */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Services</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Services</Text>
             <Pressable
-              style={styles.addBtn}
+              style={[styles.addBtn, { borderColor: colors.surfaceBorder }]}
               onPress={() => setDialog({ title: "Em breve", message: "Criação de services em breve." })}
             >
-              <Feather name="plus" size={11} color="#555" />
-              <Text style={styles.addBtnText}>adicionar</Text>
+              <Feather name="plus" size={11} color={colors.textSecondary} />
+              <Text style={[styles.addBtnText, { color: colors.textSecondary }]}>adicionar</Text>
             </Pressable>
           </View>
 
@@ -442,12 +445,12 @@ export default function ProfileScreen() {
               return (
                 <Pressable
                   key={sv.id}
-                  style={styles.serviceCard}
+                  style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                   onPress={() => router.push(`/service/${sv.id}`)}
                 >
                   {/* Service name + rate */}
                   <View style={styles.serviceTopRow}>
-                    <Text style={styles.serviceName}>{sv.name}</Text>
+                    <Text style={[styles.serviceName, { color: colors.text }]}>{sv.name}</Text>
                     <Text style={styles.serviceRate}>R${sv.hourlyRate}/h</Text>
                   </View>
 

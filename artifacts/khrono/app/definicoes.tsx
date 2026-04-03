@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type ToggleRowProps = {
   icon: keyof typeof Feather.glyphMap;
@@ -31,54 +32,71 @@ type LinkRowProps = {
   danger?: boolean;
 };
 
-function SectionHeader({ title }: { title: string }) {
-  return <Text style={styles.sectionHeader}>{title}</Text>;
+function SectionHeader({ title, colors }: { title: string; colors: typeof Colors }) {
+  return (
+    <Text style={[staticStyles.sectionHeader, { color: colors.textDim }]}>
+      {title}
+    </Text>
+  );
 }
 
-function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen }: ToggleRowProps) {
-  const color = accentGreen ? Colors.accentGreen : Colors.accent;
+function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen, colors }: ToggleRowProps & { colors: typeof Colors }) {
+  const color = accentGreen ? colors.accentGreen : colors.accent;
   return (
-    <View style={styles.row}>
-      <View style={[styles.iconWrap, { backgroundColor: color + "12", borderColor: color + "25" }]}>
+    <View style={staticStyles.row}>
+      <View style={[staticStyles.iconWrap, { backgroundColor: color + "12", borderColor: color + "25" }]}>
         <Feather name={icon} size={15} color={color} />
       </View>
-      <View style={styles.rowTexts}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        {sublabel && <Text style={styles.rowSublabel}>{sublabel}</Text>}
+      <View style={staticStyles.rowTexts}>
+        <Text style={[staticStyles.rowLabel, { color: colors.text }]}>{label}</Text>
+        {sublabel && (
+          <Text style={[staticStyles.rowSublabel, { color: colors.textDim }]}>
+            {sublabel}
+          </Text>
+        )}
       </View>
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: "#1e1e1e", true: color + "55" }}
-        thumbColor={value ? color : "#333"}
-        ios_backgroundColor="#1e1e1e"
+        trackColor={{ false: colors.surfaceBorder, true: color + "55" }}
+        thumbColor={value ? color : colors.textMuted}
+        ios_backgroundColor={colors.surfaceBorder}
       />
     </View>
   );
 }
 
-function LinkRow({ icon, label, sublabel, onPress, danger }: LinkRowProps) {
-  const color = danger ? "#ff3b30" : "#555";
+function LinkRow({ icon, label, sublabel, onPress, danger, colors }: LinkRowProps & { colors: typeof Colors }) {
+  const color = danger ? "#ff3b30" : colors.textSecondary;
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [
+        staticStyles.row,
+        pressed && { backgroundColor: colors.rowPressed },
+      ]}
       onPress={onPress}
     >
       <View
         style={[
-          styles.iconWrap,
+          staticStyles.iconWrap,
           danger
             ? { backgroundColor: "#ff3b3012", borderColor: "#ff3b3025" }
-            : { backgroundColor: "#161616", borderColor: "#1e1e1e" },
+            : { backgroundColor: colors.menuIconBg, borderColor: colors.surfaceBorder },
         ]}
       >
         <Feather name={icon} size={15} color={color} />
       </View>
-      <View style={styles.rowTexts}>
-        <Text style={[styles.rowLabel, danger && { color: "#ff3b30" }]}>{label}</Text>
-        {sublabel && <Text style={styles.rowSublabel}>{sublabel}</Text>}
+      <View style={staticStyles.rowTexts}>
+        <Text style={[staticStyles.rowLabel, danger ? { color: "#ff3b30" } : { color: colors.text }]}>
+          {label}
+        </Text>
+        {sublabel && (
+          <Text style={[staticStyles.rowSublabel, { color: colors.textDim }]}>
+            {sublabel}
+          </Text>
+        )}
       </View>
-      {!danger && <Feather name="chevron-right" size={14} color="#2a2a2a" />}
+      {!danger && <Feather name="chevron-right" size={14} color={colors.chevron} />}
     </Pressable>
   );
 }
@@ -87,59 +105,76 @@ export default function DefinicoesScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
+  const { colors, isDark, toggleTheme } = useTheme();
 
   const [notifPush, setNotifPush] = useState(true);
   const [notifContratos, setNotifContratos] = useState(true);
   const [notifAgenda, setNotifAgenda] = useState(false);
   const [biometria, setBiometria] = useState(false);
   const [haptics, setHaptics] = useState(true);
-  const [modoEscuro, setModoEscuro] = useState(true);
+
+  const sectionStyle = useMemo(
+    () => ({
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.cardBorder,
+      borderRadius: 18,
+      overflow: "hidden" as const,
+      marginBottom: 20,
+    }),
+    [colors]
+  );
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+    <View style={[staticStyles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 32, 48) }]}
+        contentContainerStyle={[staticStyles.content, { paddingBottom: Math.max(insets.bottom + 32, 48) }]}
       >
         {/* Header */}
-        <View style={styles.headerRow}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={Colors.accent} />
+        <View style={staticStyles.headerRow}>
+          <Pressable style={staticStyles.backBtn} onPress={() => router.back()}>
+            <Feather name="arrow-left" size={18} color={colors.accent} />
           </Pressable>
-          <Text style={styles.screenLabel}>definições</Text>
+          <Text style={[staticStyles.screenLabel, { color: colors.textMuted }]}>
+            definições
+          </Text>
         </View>
 
         {/* Notificações */}
-        <SectionHeader title="NOTIFICAÇÕES" />
-        <View style={styles.section}>
+        <SectionHeader title="NOTIFICAÇÕES" colors={colors} />
+        <View style={sectionStyle}>
           <ToggleRow
             icon="bell"
             label="Notificações push"
             sublabel="Receber alertas no dispositivo"
             value={notifPush}
             onValueChange={setNotifPush}
+            colors={colors}
           />
-          <View style={styles.rowDivider} />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
           <ToggleRow
             icon="file-text"
             label="Novos contratos"
             sublabel="Quando alguém te contratar"
             value={notifContratos}
             onValueChange={setNotifContratos}
+            colors={colors}
           />
-          <View style={styles.rowDivider} />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
           <ToggleRow
             icon="calendar"
             label="Lembretes de agenda"
             sublabel="Antes de um serviço agendado iniciar"
             value={notifAgenda}
             onValueChange={setNotifAgenda}
+            colors={colors}
           />
         </View>
 
         {/* Segurança */}
-        <SectionHeader title="SEGURANÇA" />
-        <View style={styles.section}>
+        <SectionHeader title="SEGURANÇA" colors={colors} />
+        <View style={sectionStyle}>
           <ToggleRow
             icon="shield"
             label="Autenticação biométrica"
@@ -147,73 +182,78 @@ export default function DefinicoesScreen() {
             value={biometria}
             onValueChange={setBiometria}
             accentGreen
+            colors={colors}
           />
         </View>
 
         {/* Preferências */}
-        <SectionHeader title="PREFERÊNCIAS" />
-        <View style={styles.section}>
+        <SectionHeader title="PREFERÊNCIAS" colors={colors} />
+        <View style={sectionStyle}>
           <ToggleRow
             icon="smartphone"
             label="Vibração"
             sublabel="Feedback tátil nas interações"
             value={haptics}
             onValueChange={setHaptics}
+            colors={colors}
           />
-          <View style={styles.rowDivider} />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
           <ToggleRow
             icon="moon"
             label="Tema escuro"
-            sublabel="Sempre ativo nesta versão"
-            value={modoEscuro}
-            onValueChange={() => {}}
+            sublabel={isDark ? "Tema escuro ativado" : "Tema claro ativado"}
+            value={isDark}
+            onValueChange={toggleTheme}
             accentGreen
+            colors={colors}
           />
         </View>
 
         {/* Suporte */}
-        <SectionHeader title="SUPORTE" />
-        <View style={styles.section}>
+        <SectionHeader title="SUPORTE" colors={colors} />
+        <View style={sectionStyle}>
           <LinkRow
             icon="message-circle"
             label="Central de ajuda"
             sublabel="Tire suas dúvidas"
             onPress={() => {}}
+            colors={colors}
           />
-          <View style={styles.rowDivider} />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
           <LinkRow
             icon="lock"
             label="Privacidade e termos"
             onPress={() => {}}
+            colors={colors}
           />
-          <View style={styles.rowDivider} />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
           <LinkRow
             icon="star"
             label="Avaliar o Khrono"
             sublabel="Sua opinião importa muito"
             onPress={() => {}}
+            colors={colors}
           />
         </View>
 
         {/* Sobre */}
-        <SectionHeader title="SOBRE" />
-        <View style={[styles.section, styles.aboutSection]}>
-          <View style={styles.aboutLogoWrap}>
-            <Text style={styles.aboutLogo}>K</Text>
+        <SectionHeader title="SOBRE" colors={colors} />
+        <View style={[sectionStyle, staticStyles.aboutSection]}>
+          <View style={staticStyles.aboutLogoWrap}>
+            <Text style={staticStyles.aboutLogo}>K</Text>
           </View>
-          <Text style={styles.aboutName}>Khrono</Text>
-          <Text style={styles.aboutVersion}>Versão 1.0.0</Text>
-          <Text style={styles.aboutTagline}>Desenvolvido no Brasil</Text>
+          <Text style={[staticStyles.aboutName, { color: colors.text }]}>Khrono</Text>
+          <Text style={[staticStyles.aboutVersion, { color: colors.textDim }]}>Versão 1.0.0</Text>
+          <Text style={[staticStyles.aboutTagline, { color: colors.textDim }]}>Desenvolvido no Brasil</Text>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const staticStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -231,26 +271,16 @@ const styles = StyleSheet.create({
   screenLabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#444",
     letterSpacing: 1.5,
     textTransform: "uppercase",
   },
   sectionHeader: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: "#333",
     letterSpacing: 2,
     textTransform: "uppercase",
     marginBottom: 8,
     marginLeft: 4,
-  },
-  section: {
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#161616",
-    borderRadius: 18,
-    overflow: "hidden",
-    marginBottom: 20,
   },
   row: {
     flexDirection: "row",
@@ -259,12 +289,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  rowPressed: {
-    backgroundColor: "#111",
-  },
   rowDivider: {
     height: 1,
-    backgroundColor: "#111",
     marginLeft: 66,
   },
   iconWrap: {
@@ -282,12 +308,10 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontFamily: "Sora_400Regular",
     fontSize: 14,
-    color: "#d0d0d0",
   },
   rowSublabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#333",
     marginTop: 2,
     lineHeight: 14,
   },
@@ -300,9 +324,9 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 15,
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1.5,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
@@ -310,23 +334,20 @@ const styles = StyleSheet.create({
   aboutLogo: {
     fontFamily: "Sora_700Bold",
     fontSize: 24,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   aboutName: {
     fontFamily: "Sora_700Bold",
     fontSize: 16,
-    color: "#fff",
   },
   aboutVersion: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#333",
     marginTop: 2,
   },
   aboutTagline: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#222",
     marginTop: 4,
   },
 });

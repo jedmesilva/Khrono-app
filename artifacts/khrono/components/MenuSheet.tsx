@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog } from "@/components/AppDialog";
 import Colors from "@/constants/colors";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 type MenuItem = {
   id: string;
@@ -36,10 +37,27 @@ type Props = {
 export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const { logout } = useAuth();
+  const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
 
   const snapPoints = useMemo(() => ["58%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
 
   useEffect(() => {
     if (visible) {
@@ -111,71 +129,74 @@ export function MenuSheet({ visible, onClose }: Props) {
         snapPoints={snapPoints}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        backgroundStyle={styles.sheetBackground}
-        handleIndicatorStyle={styles.handle}
+        backgroundStyle={sheetBgStyle}
+        handleIndicatorStyle={handleStyle}
         onDismiss={onClose}
       >
         <BottomSheetScrollView
-          contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          contentContainerStyle={[staticStyles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
           showsVerticalScrollIndicator={false}
         >
-          {/* User info row — clicável para ir à tela de conta */}
+          {/* User info row */}
           <Pressable
-            style={({ pressed }) => [styles.userRow, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [staticStyles.userRow, pressed && { opacity: 0.7 }]}
             onPress={() => {
               Haptics.selectionAsync();
               onClose();
               setTimeout(() => router.push("/conta"), 300);
             }}
           >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>EU</Text>
+            <View style={[staticStyles.avatar, { backgroundColor: colors.menuIconBg, borderColor: colors.chevron }]}>
+              <Text style={[staticStyles.avatarText, { color: colors.textMuted }]}>EU</Text>
             </View>
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>Minha conta</Text>
-              <Text style={styles.userSub}>ID #K-00142</Text>
+            <View style={staticStyles.userInfo}>
+              <Text style={[staticStyles.userName, { color: colors.text }]}>Minha conta</Text>
+              <Text style={[staticStyles.userSub, { color: colors.textDim }]}>ID #K-00142</Text>
             </View>
-            <View style={styles.verifiedBadge}>
+            <View style={staticStyles.verifiedBadge}>
               <Feather name="check" size={10} color={Colors.accentGreen} />
-              <Text style={styles.verifiedText}>verificado</Text>
+              <Text style={staticStyles.verifiedText}>verificado</Text>
             </View>
           </Pressable>
 
-          <View style={styles.divider} />
+          <View style={[staticStyles.divider, { backgroundColor: colors.divider }]} />
 
           {/* Menu items */}
-          <View style={styles.itemsContainer}>
+          <View style={staticStyles.itemsContainer}>
             {menuItems.map((item) => (
               <Pressable
                 key={item.id}
                 style={({ pressed }) => [
-                  styles.menuItem,
-                  pressed && styles.menuItemPressed,
+                  staticStyles.menuItem,
+                  pressed && { backgroundColor: colors.rowPressed },
                 ]}
                 onPress={item.onPress}
               >
                 <View
                   style={[
-                    styles.menuIconWrap,
+                    staticStyles.menuIconWrap,
+                    { backgroundColor: colors.menuIconBg },
                     item.danger && { backgroundColor: "#ff3b3015" },
                   ]}
                 >
                   <Feather
                     name={item.icon}
                     size={16}
-                    color={item.danger ? "#ff3b30" : "#555"}
+                    color={item.danger ? "#ff3b30" : colors.textSecondary}
                   />
                 </View>
-                <View style={styles.menuTextWrap}>
-                  <Text style={[styles.menuLabel, item.danger && { color: "#ff3b30" }]}>
+                <View style={staticStyles.menuTextWrap}>
+                  <Text style={[staticStyles.menuLabel, { color: colors.text }, item.danger && { color: "#ff3b30" }]}>
                     {item.label}
                   </Text>
                   {item.sublabel && (
-                    <Text style={styles.menuSublabel}>{item.sublabel}</Text>
+                    <Text style={[staticStyles.menuSublabel, { color: colors.textDim }]}>
+                      {item.sublabel}
+                    </Text>
                   )}
                 </View>
                 {!item.danger && (
-                  <Feather name="chevron-right" size={14} color="#2a2a2a" />
+                  <Feather name="chevron-right" size={14} color={colors.chevron} />
                 )}
               </Pressable>
             ))}
@@ -206,19 +227,7 @@ export function MenuSheet({ visible, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  sheetBackground: {
-    backgroundColor: "#0d0d0d",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
-    borderColor: "#1a1a1a",
-  },
-  handle: {
-    backgroundColor: "#2a2a2a",
-    width: 36,
-    height: 4,
-  },
+const staticStyles = StyleSheet.create({
   content: {
     paddingTop: 8,
   },
@@ -233,16 +242,13 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: "#161616",
     borderWidth: 1,
-    borderColor: "#2a2a2a",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 12,
-    color: "#444",
   },
   userInfo: {
     flex: 1,
@@ -250,12 +256,10 @@ const styles = StyleSheet.create({
   userName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 15,
-    color: "#fff",
   },
   userSub: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#333",
     marginTop: 2,
     letterSpacing: 0.5,
   },
@@ -263,9 +267,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: Colors.accentGreen + "12",
+    backgroundColor: "#00e5a012",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -273,12 +277,11 @@ const styles = StyleSheet.create({
   verifiedText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     letterSpacing: 0.3,
   },
   divider: {
     height: 1,
-    backgroundColor: "#141414",
     marginHorizontal: 20,
     marginBottom: 8,
   },
@@ -293,14 +296,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 12,
   },
-  menuItemPressed: {
-    backgroundColor: "#111",
-  },
   menuIconWrap: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#161616",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -311,12 +310,10 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontFamily: "Sora_400Regular",
     fontSize: 14,
-    color: "#ccc",
   },
   menuSublabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#333",
     marginTop: 2,
   },
 });

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
 
 type Props = {
@@ -53,6 +54,7 @@ function PulseIndicator({ color }: { color: string }) {
 
 export function ContractCard({ contract, onStop, onPress }: Props) {
   const [now, setNow] = useState(Date.now());
+  const { colors, isDark } = useTheme();
   const isScheduled = !!contract.agendado;
 
   useEffect(() => {
@@ -87,14 +89,21 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
 
   const displayColor = quaseAcabando ? alertColor : accentColor;
 
+  const cardBg = isDark
+    ? isHiring ? "#0a0a0a" : "#060f1a"
+    : isHiring ? colors.card : "#f0f6ff";
+  const cardBorder = isDark
+    ? isHiring ? "#1e1e1e" : "#0d1f35"
+    : isHiring ? colors.cardBorder : "#c5d8f0";
+
   return (
     <Pressable
       onPress={onPress}
       style={[
         styles.card,
         {
-          backgroundColor: isHiring ? "#0a0a0a" : "#060f1a",
-          borderColor: isHiring ? "#1e1e1e" : "#0d1f35",
+          backgroundColor: cardBg,
+          borderColor: cardBorder,
         },
       ]}
     >
@@ -118,8 +127,8 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
             {isHiring ? "VOCÊ CONTRATOU" : "VOCÊ FOI CONTRATADO"}
           </Text>
         </View>
-        <View style={styles.tipoBadge}>
-          <Text style={styles.tipoText}>
+        <View style={[styles.tipoBadge, { borderColor: colors.text + "10", backgroundColor: colors.text + "05" }]}>
+          <Text style={[styles.tipoText, { color: colors.textSecondary }]}>
             {isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
           </Text>
         </View>
@@ -138,15 +147,15 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
           </Text>
         </View>
         <View style={styles.personInfo}>
-          <Text style={styles.personName}>{contract.person.name}</Text>
-          <Text style={styles.personSkill}>{contract.person.skill}</Text>
+          <Text style={[styles.personName, { color: colors.text }]}>{contract.person.name}</Text>
+          <Text style={[styles.personSkill, { color: colors.textSecondary }]}>{contract.person.skill}</Text>
         </View>
       </View>
 
       {/* Timer mode: progress bar + countdown */}
       {isTimer && contract.duracaoTotal ? (
         <View>
-          <View style={styles.progressTrack}>
+          <View style={[styles.progressTrack, { backgroundColor: colors.surfaceBorder }]}>
             <View
               style={[
                 styles.progressFill,
@@ -159,13 +168,13 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
           </View>
           <View style={styles.timerRow}>
             <View>
-              <Text style={styles.metaLabel}>RESTANTE</Text>
-              <Text style={[styles.timerText, { color: quaseAcabando ? alertColor : "#fff" }]}>
+              <Text style={[styles.metaLabel, { color: colors.textMuted }]}>RESTANTE</Text>
+              <Text style={[styles.timerText, { color: quaseAcabando ? alertColor : colors.text }]}>
                 {formatElapsed(restante ?? 0)}
               </Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.metaLabel}>VALOR TOTAL</Text>
+              <Text style={[styles.metaLabel, { color: colors.textMuted }]}>VALOR TOTAL</Text>
               <Text style={[styles.valueText, { color: displayColor }]}>
                 R${formatValue(contract.duracaoTotal, contract.ratePerHour)}
               </Text>
@@ -176,11 +185,11 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
         /* Cronometro mode: elapsed + accumulated value + status pill */
         <View style={styles.timerRow}>
           <View>
-            <Text style={styles.metaLabel}>TEMPO</Text>
-            <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
+            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>TEMPO</Text>
+            <Text style={[styles.timerText, { color: colors.text }]}>{formatElapsed(elapsed)}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.metaLabel}>{isHiring ? "PAGANDO" : "RECEBENDO"}</Text>
+            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{isHiring ? "PAGANDO" : "RECEBENDO"}</Text>
             <Text style={[styles.valueText, { color: displayColor }]}>
               R${formatValue(elapsed, contract.ratePerHour)}
             </Text>
@@ -200,7 +209,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
 
       {/* Rate */}
       <View style={styles.rateRow}>
-        <Text style={styles.rateText}>R${contract.ratePerHour}/h</Text>
+        <Text style={[styles.rateText, { color: colors.textDim }]}>R${contract.ratePerHour}/h</Text>
       </View>
 
       {/* Stop button */}
@@ -246,11 +255,9 @@ const styles = StyleSheet.create({
   },
   tipoBadge: {
     borderWidth: 1,
-    borderColor: "#ffffff10",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: "#ffffff05",
   },
   pulse: {
     width: 6,
@@ -266,7 +273,6 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
     letterSpacing: 1,
-    color: "#555",
   },
   personRow: {
     flexDirection: "row",
@@ -293,17 +299,14 @@ const styles = StyleSheet.create({
   personName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 15,
-    color: "#fff",
   },
   personSkill: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#666",
     marginTop: 2,
   },
   progressTrack: {
     height: 4,
-    backgroundColor: "#1a1a1a",
     borderRadius: 4,
     overflow: "hidden",
     marginBottom: 14,
@@ -321,7 +324,6 @@ const styles = StyleSheet.create({
   metaLabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: "#444",
     letterSpacing: 1.5,
     marginBottom: 4,
     textTransform: "uppercase",
@@ -329,7 +331,6 @@ const styles = StyleSheet.create({
   timerText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 30,
-    color: "#fff",
     letterSpacing: 2,
     lineHeight: 34,
   },
@@ -357,7 +358,6 @@ const styles = StyleSheet.create({
   rateText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#333",
     letterSpacing: 0.5,
   },
   stopBtn: {

@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 export type AppDialogButton = {
   text: string;
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export function AppDialog({ visible, title, message, buttons, onDismiss }: Props) {
+  const { colors } = useTheme();
   const btns = buttons && buttons.length > 0 ? buttons : [{ text: "OK" }];
 
   return (
@@ -35,18 +37,23 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
       onRequestClose={onDismiss}
     >
       <View style={styles.overlay}>
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.sheetBg, borderColor: colors.sheetBorder }]}>
           <View style={styles.body}>
-            <Text style={styles.title}>{title}</Text>
-            {message ? <Text style={styles.message}>{message}</Text> : null}
+            <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+            {message ? (
+              <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
+            ) : null}
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.divider }]} />
           <View style={styles.btnRow}>
             {btns.map((btn, i) => (
               <React.Fragment key={i}>
-                {i > 0 && <View style={styles.btnSep} />}
+                {i > 0 && <View style={[styles.btnSep, { backgroundColor: colors.divider }]} />}
                 <Pressable
-                  style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
+                  style={({ pressed }) => [
+                    styles.btn,
+                    pressed && { backgroundColor: colors.rowPressed },
+                  ]}
                   onPress={() => {
                     btn.onPress?.();
                     onDismiss();
@@ -55,7 +62,9 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
                   <Text
                     style={[
                       styles.btnText,
-                      btn.style === "cancel" ? styles.btnTextCancel : styles.btnTextAccent,
+                      btn.style === "cancel"
+                        ? { color: colors.textSecondary }
+                        : { color: Colors.accent },
                     ]}
                   >
                     {btn.text}
@@ -73,17 +82,15 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.82)",
+    backgroundColor: "rgba(0,0,0,0.72)",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 32,
   },
   card: {
     width: "100%",
-    backgroundColor: "#0f0f0f",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#1e1e1e",
     overflow: "hidden",
   },
   body: {
@@ -95,18 +102,15 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 17,
-    color: "#fff",
     letterSpacing: -0.3,
   },
   message: {
     fontFamily: "DMMono_400Regular",
     fontSize: 13,
-    color: "#666",
     lineHeight: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: "#1a1a1a",
   },
   btnRow: {
     flexDirection: "row",
@@ -117,22 +121,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  btnPressed: {
-    backgroundColor: "#161616",
-  },
   btnSep: {
     width: 1,
-    backgroundColor: "#1a1a1a",
   },
   btnText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
     letterSpacing: 0.5,
-  },
-  btnTextAccent: {
-    color: Colors.accent,
-  },
-  btnTextCancel: {
-    color: "#555",
   },
 });

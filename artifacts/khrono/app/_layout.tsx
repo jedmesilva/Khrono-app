@@ -23,6 +23,7 @@ import { CardsProvider } from "@/context/CardsContext";
 import { ContractsProvider } from "@/context/ContractsContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { DocumentsProvider } from "@/context/DocumentsContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -123,19 +124,21 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <AuthProvider>
-                <ContractsProvider>
-                  <CardsProvider>
-                    <ConfirmationProvider>
-                      <DocumentsProvider>
-                        <RootLayoutNav />
-                      </DocumentsProvider>
-                    </ConfirmationProvider>
-                  </CardsProvider>
-                </ContractsProvider>
-              </AuthProvider>
-            </BottomSheetModalProvider>
+            <ThemeProvider>
+              <BottomSheetModalProvider>
+                <AuthProvider>
+                  <ContractsProvider>
+                    <CardsProvider>
+                      <ConfirmationProvider>
+                        <DocumentsProvider>
+                          <RootLayoutNav />
+                        </DocumentsProvider>
+                      </ConfirmationProvider>
+                    </CardsProvider>
+                  </ContractsProvider>
+                </AuthProvider>
+              </BottomSheetModalProvider>
+            </ThemeProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
       </ErrorBoundary>

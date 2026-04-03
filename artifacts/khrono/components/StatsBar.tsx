@@ -1,6 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { useTheme } from "@/context/ThemeContext";
+
 export type StatItem = {
   label: string;
   value: string | number;
@@ -14,17 +16,27 @@ type Props = {
 };
 
 export function StatsBar({ items, style }: Props) {
+  const { colors } = useTheme();
+
   return (
-    <View style={[styles.container, style]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, borderColor: colors.cardBorder },
+        style,
+      ]}
+    >
       {items.map((item, index) => (
         <React.Fragment key={item.label}>
           <View style={[styles.item, { alignItems: item.align ?? "flex-start" }]}>
-            <Text style={styles.label}>{item.label}</Text>
-            <Text style={[styles.value, item.color ? { color: item.color } : undefined]}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{item.label}</Text>
+            <Text style={[styles.value, { color: colors.text }, item.color ? { color: item.color } : undefined]}>
               {item.value}
             </Text>
           </View>
-          {index < items.length - 1 && <View style={styles.divider} />}
+          {index < items.length - 1 && (
+            <View style={[styles.divider, { backgroundColor: colors.cardBorder }]} />
+          )}
         </React.Fragment>
       ))}
     </View>
@@ -33,9 +45,7 @@ export function StatsBar({ items, style }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#0a0a0a",
     borderWidth: 1,
-    borderColor: "#1a1a1a",
     borderRadius: 16,
     padding: 14,
     flexDirection: "row",
@@ -48,7 +58,6 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: "#555",
     letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: 4,
@@ -56,12 +65,10 @@ const styles = StyleSheet.create({
   value: {
     fontFamily: "DMMono_500Medium",
     fontSize: 17,
-    color: "#fff",
   },
   divider: {
     width: 1,
     height: 30,
-    backgroundColor: "#1a1a1a",
     marginHorizontal: 10,
   },
 });

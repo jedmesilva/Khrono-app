@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
 
 type Props = {
@@ -21,23 +22,34 @@ function formatDuration(startedAt: number, endedAt?: number) {
 }
 
 export function HistoryCard({ contract, onPress }: Props) {
+  const { colors } = useTheme();
   const isHiring = contract.role === "hiring";
   const accentColor = isHiring ? Colors.accent : Colors.accentGreen;
 
   return (
-    <Pressable onPress={onPress} style={styles.card}>
-      <View style={[styles.avatar, { backgroundColor: "#161616" }]}>
-        <Text style={styles.avatarText}>{contract.person.initials}</Text>
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.card,
+        { backgroundColor: colors.card, borderColor: colors.cardBorder },
+      ]}
+    >
+      <View style={[styles.avatar, { backgroundColor: colors.menuIconBg }]}>
+        <Text style={[styles.avatarText, { color: colors.textSecondary }]}>
+          {contract.person.initials}
+        </Text>
       </View>
       <View style={styles.info}>
-        <Text style={styles.name}>{contract.person.name}</Text>
-        <Text style={styles.skill}>
+        <Text style={[styles.name, { color: colors.textSecondary }]}>{contract.person.name}</Text>
+        <Text style={[styles.skill, { color: colors.textDim }]}>
           {contract.person.skill} · {formatDuration(contract.startedAt, contract.endedAt)}
         </Text>
       </View>
       <View style={styles.right}>
-        <Text style={styles.amount}>R${contract.totalAmount?.toFixed(0)}</Text>
-        <Text style={[styles.roleTag, { color: isHiring ? "#555" : Colors.accentGreen + "99" }]}>
+        <Text style={[styles.amount, { color: colors.textSecondary }]}>
+          R${contract.totalAmount?.toFixed(0)}
+        </Text>
+        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : Colors.accentGreen + "99" }]}>
           {isHiring ? "pago" : "recebido"}
         </Text>
       </View>
@@ -47,9 +59,7 @@ export function HistoryCard({ contract, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#0a0a0a",
     borderWidth: 1,
-    borderColor: "#161616",
     borderRadius: 14,
     padding: 14,
     flexDirection: "row",
@@ -67,7 +77,6 @@ const styles = StyleSheet.create({
   avatarText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 11,
-    color: "#555",
   },
   info: {
     flex: 1,
@@ -75,12 +84,10 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: "Sora_400Regular",
     fontSize: 12,
-    color: "#666",
   },
   skill: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: "#333",
     marginTop: 2,
   },
   right: {
@@ -89,7 +96,6 @@ const styles = StyleSheet.create({
   amount: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
-    color: "#555",
   },
   roleTag: {
     fontFamily: "DMMono_400Regular",

@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type Notification = {
   id: string;
@@ -71,10 +72,27 @@ type Props = {
 
 export function NotificationsSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
   const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
 
   const snapPoints = useMemo(() => ["75%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
 
   useEffect(() => {
     if (visible) {
@@ -103,45 +121,47 @@ export function NotificationsSheet({ visible, onClose }: Props) {
       snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={styles.sheetBackground}
-      handleIndicatorStyle={styles.handle}
+      backgroundStyle={sheetBgStyle}
+      handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={staticStyles.header}>
         <View>
-          <Text style={styles.title}>Notificações</Text>
+          <Text style={[staticStyles.title, { color: colors.text }]}>Notificações</Text>
           {unreadCount > 0 && (
-            <Text style={styles.unreadLabel}>{unreadCount} não lidas</Text>
+            <Text style={staticStyles.unreadLabel}>{unreadCount} não lidas</Text>
           )}
         </View>
         <Pressable onPress={onClose} hitSlop={12}>
-          <Feather name="x" size={18} color="#555" />
+          <Feather name="x" size={18} color={colors.textSecondary} />
         </Pressable>
       </View>
 
       <BottomSheetScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.list, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        contentContainerStyle={[staticStyles.list, { paddingBottom: Math.max(insets.bottom, 24) }]}
       >
         {MOCK_NOTIFICATIONS.map((n, i) => (
           <View key={n.id}>
-            <View style={[styles.item, n.read && styles.itemRead]}>
-              <View style={[styles.iconWrap, { backgroundColor: n.iconColor + "18" }]}>
+            <View style={[staticStyles.item, n.read && staticStyles.itemRead]}>
+              <View style={[staticStyles.iconWrap, { backgroundColor: n.iconColor + "18" }]}>
                 <Feather name={n.icon} size={16} color={n.iconColor} />
               </View>
-              <View style={styles.itemContent}>
-                <View style={styles.itemTop}>
-                  <Text style={[styles.itemTitle, n.read && styles.itemTitleRead]}>
+              <View style={staticStyles.itemContent}>
+                <View style={staticStyles.itemTop}>
+                  <Text style={[staticStyles.itemTitle, { color: colors.text }, n.read && { color: colors.textSecondary }]}>
                     {n.title}
                   </Text>
-                  <Text style={styles.itemTime}>{n.time}</Text>
+                  <Text style={[staticStyles.itemTime, { color: colors.textDim }]}>{n.time}</Text>
                 </View>
-                <Text style={styles.itemBody}>{n.body}</Text>
+                <Text style={[staticStyles.itemBody, { color: colors.textSecondary }]}>{n.body}</Text>
               </View>
-              {!n.read && <View style={styles.dot} />}
+              {!n.read && <View style={staticStyles.dot} />}
             </View>
-            {i < MOCK_NOTIFICATIONS.length - 1 && <View style={styles.divider} />}
+            {i < MOCK_NOTIFICATIONS.length - 1 && (
+              <View style={[staticStyles.divider, { backgroundColor: colors.divider }]} />
+            )}
           </View>
         ))}
       </BottomSheetScrollView>
@@ -149,19 +169,7 @@ export function NotificationsSheet({ visible, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  sheetBackground: {
-    backgroundColor: "#0d0d0d",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
-    borderColor: "#1a1a1a",
-  },
-  handle: {
-    backgroundColor: "#2a2a2a",
-    width: 36,
-    height: 4,
-  },
+const staticStyles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -173,12 +181,11 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 18,
-    color: "#fff",
   },
   unreadLabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
-    color: Colors.accent,
+    color: "#ff6b35",
     marginTop: 2,
     letterSpacing: 0.3,
   },
@@ -216,36 +223,29 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: "#fff",
     flex: 1,
-  },
-  itemTitleRead: {
-    color: "#666",
   },
   itemTime: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: "#333",
     letterSpacing: 0.3,
     marginLeft: 8,
   },
   itemBody: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: "#555",
     lineHeight: 17,
   },
   dot: {
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     marginTop: 6,
     flexShrink: 0,
   },
   divider: {
     height: 1,
-    backgroundColor: "#141414",
     marginHorizontal: 4,
   },
 });

@@ -26,6 +26,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { LocationMode } from "@/constants/profile-data";
 
 export type { LocationMode };
@@ -273,6 +274,7 @@ export function LocationSheet({
 }: Props) {
   const insets = useSafeAreaInsets();
   const ref = useRef<BottomSheetModal>(null);
+  const { colors } = useTheme();
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
   const [radius, setRadius] = useState(serviceRadius);
@@ -325,8 +327,8 @@ export function LocationSheet({
       snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={styles.sheetBackground}
-      handleIndicatorStyle={styles.handle}
+      backgroundStyle={{ backgroundColor: colors.sheetBg, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderTopWidth: 1, borderColor: colors.sheetBorder }}
+      handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
       onDismiss={onClose}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
@@ -343,8 +345,8 @@ export function LocationSheet({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>Localização de serviço</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.text }]}>Localização de serviço</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Define onde você está disponível para atender
           </Text>
 
@@ -353,6 +355,7 @@ export function LocationSheet({
             <Pressable
               style={[
                 styles.optionCard,
+                { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
                 selectedMode === "realtime" && styles.optionCardActive,
               ]}
               onPress={() => handleSelectMode("realtime")}
@@ -370,8 +373,8 @@ export function LocationSheet({
                   <PulsingDot />
                 </View>
                 <View style={styles.optionTexts}>
-                  <Text style={styles.optionLabel}>Tempo real</Text>
-                  <Text style={styles.optionDesc}>
+                  <Text style={[styles.optionLabel, { color: colors.text }]}>Tempo real</Text>
+                  <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
                     Usa sua localização GPS atual
                   </Text>
                 </View>
@@ -407,6 +410,7 @@ export function LocationSheet({
             <Pressable
               style={[
                 styles.optionCard,
+                { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
                 selectedMode === "fixed" && styles.optionCardActiveBlue,
               ]}
               onPress={() => handleSelectMode("fixed")}
@@ -428,8 +432,8 @@ export function LocationSheet({
                   />
                 </View>
                 <View style={styles.optionTexts}>
-                  <Text style={styles.optionLabel}>Localização fixa</Text>
-                  <Text style={styles.optionDesc}>
+                  <Text style={[styles.optionLabel, { color: colors.text }]}>Localização fixa</Text>
+                  <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
                     Atende somente em uma região definida
                   </Text>
                 </View>
@@ -452,24 +456,24 @@ export function LocationSheet({
 
               {selectedMode === "fixed" && (
                 <View style={styles.addressWrap}>
-                  <View style={styles.addressInputRow}>
-                    <Feather name="search" size={14} color="#444" />
+                  <View style={[styles.addressInputRow, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+                    <Feather name="search" size={14} color={colors.textMuted} />
                     <TextInput
                       value={address}
                       onChangeText={setAddress}
                       placeholder="Ex: Belo Horizonte, MG"
-                      placeholderTextColor="#2a2a2a"
-                      style={styles.addressInput}
+                      placeholderTextColor={colors.textDim}
+                      style={[styles.addressInput, { color: colors.text }]}
                       autoCapitalize="words"
                       returnKeyType="done"
                     />
                     {address.length > 0 && (
                       <Pressable onPress={() => setAddress("")}>
-                        <Feather name="x" size={13} color="#333" />
+                        <Feather name="x" size={13} color={colors.textMuted} />
                       </Pressable>
                     )}
                   </View>
-                  <Text style={styles.addressHint}>
+                  <Text style={[styles.addressHint, { color: colors.textMuted }]}>
                     Informe a cidade ou bairro onde você atende
                   </Text>
                 </View>
@@ -478,14 +482,14 @@ export function LocationSheet({
           </View>
 
           {/* Radius slider */}
-          <View style={styles.radiusWrap}>
+          <View style={[styles.radiusWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
             <RadiusSlider value={radius} onChange={setRadius} />
           </View>
 
           {/* Info box */}
-          <View style={styles.infoBox}>
-            <Feather name="info" size={13} color="#333" />
-            <Text style={styles.infoText}>
+          <View style={[styles.infoBox, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+            <Feather name="info" size={13} color={colors.textMuted} />
+            <Text style={[styles.infoText, { color: colors.textMuted }]}>
               Clientes só verão sua localização aproximada, nunca o endereço
               exato.
             </Text>
