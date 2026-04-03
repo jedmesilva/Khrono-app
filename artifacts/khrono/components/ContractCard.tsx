@@ -26,6 +26,7 @@ function formatElapsed(ms: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+
 function formatValue(ms: number, rate: number) {
   const hours = ms / 1000 / 3600;
   return (hours * rate).toFixed(2);
@@ -172,16 +173,21 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
           </View>
         </View>
       ) : (
-        /* Cronometro mode: elapsed + accumulated */
+        /* Cronometro mode: elapsed + status */
         <View style={styles.timerRow}>
           <View>
             <Text style={styles.metaLabel}>TEMPO</Text>
             <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
           </View>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.metaLabel}>ACUMULADO</Text>
-            <Text style={[styles.valueText, { color: accentColor }]}>
-              R${formatValue(elapsed, contract.ratePerHour)}
+          <View
+            style={[
+              styles.statusPill,
+              { backgroundColor: accentColor + "12", borderColor: accentColor + "30" },
+            ]}
+          >
+            <PulseIndicator color={accentColor} />
+            <Text style={[styles.statusPillText, { color: accentColor }]}>
+              {isHiring ? "Pagando" : "Recebendo"}
             </Text>
           </View>
         </View>
@@ -373,5 +379,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1,
     textTransform: "uppercase",
+  },
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    alignSelf: "flex-end",
+  },
+  statusPillText: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
   },
 });
