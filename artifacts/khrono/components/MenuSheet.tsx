@@ -16,7 +16,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
-import Colors from "@/constants/colors";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -154,7 +153,7 @@ export function MenuSheet({ visible, onClose }: Props) {
               <Text style={[staticStyles.userSub, { color: colors.textDim }]}>ID #K-00142</Text>
             </View>
             <View style={staticStyles.verifiedBadge}>
-              <Feather name="check" size={10} color={Colors.accentGreen} />
+              <Feather name="check" size={10} color={"#00e5a0"} />
               <Text style={staticStyles.verifiedText}>verificado</Text>
             </View>
           </Pressable>

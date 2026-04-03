@@ -25,7 +25,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import { LocationMode } from "@/constants/profile-data";
 
@@ -87,9 +86,9 @@ const dot = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: Colors.accentGreen + "40",
+    backgroundColor: "#00e5a040",
   },
-  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.accentGreen },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#00e5a0" },
 });
 
 function RadiusSlider({
@@ -150,7 +149,7 @@ function RadiusSlider({
       <View style={sliderStyles.labelRow}>
         <Text style={sliderStyles.label}>Raio de atendimento</Text>
         <View style={sliderStyles.valuePill}>
-          <Feather name="radio" size={10} color={Colors.accent} />
+          <Feather name="radio" size={10} color={"#ff6b35"} />
           <Text style={sliderStyles.valueText}>{formatRadius(displayMeters)}</Text>
         </View>
       </View>
@@ -194,9 +193,9 @@ const sliderStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -204,7 +203,7 @@ const sliderStyles = StyleSheet.create({
   valueText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 12,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   track: {
     height: 44,
@@ -224,7 +223,7 @@ const sliderStyles = StyleSheet.create({
     left: 0,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   thumb: {
     position: "absolute",
@@ -233,7 +232,7 @@ const sliderStyles = StyleSheet.create({
     borderRadius: THUMB_SIZE / 2,
     backgroundColor: "#0f0f0f",
     borderWidth: 2,
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
     alignItems: "center",
     justifyContent: "center",
     top: (44 - THUMB_SIZE) / 2,
@@ -242,7 +241,7 @@ const sliderStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   rangeRow: {
     flexDirection: "row",
@@ -365,8 +364,8 @@ export function LocationSheet({
                   style={[
                     styles.optionIconWrap,
                     selectedMode === "realtime" && {
-                      backgroundColor: Colors.accentGreen + "18",
-                      borderColor: Colors.accentGreen + "30",
+                      backgroundColor: "#00e5a018",
+                      borderColor: "#00e5a030",
                     },
                   ]}
                 >
@@ -396,7 +395,7 @@ export function LocationSheet({
                     <Feather
                       name="navigation"
                       size={11}
-                      color={Colors.accentGreen}
+                      color={"#00e5a0"}
                     />
                     <Text style={styles.realtimeText}>
                       Belo Horizonte, MG · atualizado agora
@@ -420,15 +419,15 @@ export function LocationSheet({
                   style={[
                     styles.optionIconWrap,
                     selectedMode === "fixed" && {
-                      backgroundColor: Colors.accent + "18",
-                      borderColor: Colors.accent + "30",
+                      backgroundColor: "#ff6b3518",
+                      borderColor: "#ff6b3530",
                     },
                   ]}
                 >
                   <Feather
                     name="map-pin"
                     size={20}
-                    color={selectedMode === "fixed" ? Colors.accent : "#444"}
+                    color={selectedMode === "fixed" ? "#ff6b35" : "#444"}
                   />
                 </View>
                 <View style={styles.optionTexts}>
@@ -447,7 +446,7 @@ export function LocationSheet({
                     <View
                       style={[
                         styles.radioInner,
-                        { backgroundColor: Colors.accent },
+                        { backgroundColor: "#ff6b35" },
                       ]}
                     />
                   )}
@@ -543,12 +542,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   optionCardActive: {
-    borderColor: Colors.accentGreen + "40",
-    backgroundColor: Colors.accentGreen + "06",
+    borderColor: "#00e5a040",
+    backgroundColor: "#00e5a006",
   },
   optionCardActiveBlue: {
-    borderColor: Colors.accent + "40",
-    backgroundColor: Colors.accent + "06",
+    borderColor: "#ff6b3540",
+    backgroundColor: "#ff6b3506",
   },
   optionTop: { flexDirection: "row", alignItems: "center", gap: 14 },
   optionIconWrap: {
@@ -585,29 +584,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  radioActive: { borderColor: Colors.accentGreen },
-  radioActiveBlue: { borderColor: Colors.accent },
+  radioActive: { borderColor: "#00e5a0" },
+  radioActiveBlue: { borderColor: "#ff6b35" },
   radioInner: {
     width: 9,
     height: 9,
     borderRadius: 5,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
   },
   realtimeInfo: {
     paddingTop: 4,
     borderTopWidth: 1,
-    borderTopColor: Colors.accentGreen + "15",
+    borderTopColor: "#00e5a015",
   },
   realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   realtimeText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: Colors.accentGreen + "aa",
+    color: "#00e5a0aa",
   },
   addressWrap: {
     paddingTop: 4,
     borderTopWidth: 1,
-    borderTopColor: Colors.accent + "15",
+    borderTopColor: "#ff6b3515",
     gap: 8,
   },
   addressInputRow: {
@@ -658,7 +657,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   saveBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     padding: 16,
     flexDirection: "row",

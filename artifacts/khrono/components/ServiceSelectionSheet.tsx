@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { ProviderService } from "@/context/ConfirmationContext";
 
 type Props = {
@@ -32,6 +32,7 @@ export function ServiceSelectionSheet({
   selectedId,
   onSelect,
 }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   function handleSelect(service: ProviderService) {
@@ -78,22 +79,22 @@ export function ServiceSelectionSheet({
                   <Text style={[styles.serviceName, ativo && { color: "#fff" }]}>{s.nome}</Text>
 
                   <View style={styles.metaRow}>
-                    <Feather name="star" size={10} color={Colors.accent} />
+                    <Feather name="star" size={10} color={"#ff6b35"} />
                     <Text style={styles.metaText}>{s.nota} · {s.avaliacoes} avaliações</Text>
                   </View>
 
                   {s.skill && (
                     <View style={styles.metaRow}>
-                      <Feather name="tool" size={9} color={Colors.accent + "88"} />
-                      <Text style={[styles.metaText, { color: Colors.accent + "88" }]}>{s.skill}</Text>
+                      <Feather name="tool" size={9} color={"#ff6b3588"} />
+                      <Text style={[styles.metaText, { color: "#ff6b3588" }]}>{s.skill}</Text>
                     </View>
                   )}
 
                   {s.tools && s.tools.length > 0 && (
                     <View style={styles.metaRow}>
-                      <Feather name="key" size={9} color={Colors.accentGreen + "88"} />
+                      <Feather name="key" size={9} color={"#00e5a088"} />
                       <Text
-                        style={[styles.metaText, { color: Colors.accentGreen + "88" }]}
+                        style={[styles.metaText, { color: "#00e5a088" }]}
                         numberOfLines={1}
                       >
                         {s.tools.join(", ")}
@@ -102,7 +103,7 @@ export function ServiceSelectionSheet({
                   )}
                 </View>
 
-                <Text style={[styles.serviceRate, ativo && { color: Colors.accent }]}>
+                <Text style={[styles.serviceRate, ativo && { color: "#ff6b35" }]}>
                   R${valor}/h
                 </Text>
               </Pressable>
@@ -162,8 +163,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   serviceRowActive: {
-    backgroundColor: Colors.accent + "08",
-    borderColor: Colors.accent + "30",
+    backgroundColor: "#ff6b3508",
+    borderColor: "#ff6b3530",
   },
   radio: {
     width: 18,
@@ -176,13 +177,13 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   radioActive: {
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
   },
   radioInner: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   serviceName: {
     fontFamily: "Sora_600SemiBold",

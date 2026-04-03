@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 
 type Notification = {
@@ -30,7 +29,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: "1",
     icon: "check-circle",
-    iconColor: Colors.accentGreen,
+    iconColor: "#00e5a0",
     title: "Contrato encerrado",
     body: "Seu contrato com Rafael Lima foi encerrado. Total: R$120,00",
     time: "2h atrás",
@@ -39,7 +38,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: "2",
     icon: "user-check",
-    iconColor: Colors.accent,
+    iconColor: "#ff6b35",
     title: "Nova contratação",
     body: "Bruno Souza te contratou para Consultoria de Redes Sociais.",
     time: "5h atrás",
@@ -48,7 +47,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: "3",
     icon: "dollar-sign",
-    iconColor: Colors.accentGreen,
+    iconColor: "#00e5a0",
     title: "Pagamento recebido",
     body: "R$75,00 creditados pelo contrato com Ana Pereira.",
     time: "ontem",

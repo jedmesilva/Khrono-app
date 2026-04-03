@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 
 function formatTimer(s: number) {
@@ -51,6 +51,7 @@ function Linha({ label, valor, corValor }: { label: string; valor: string; corVa
 }
 
 export default function ContractDetailScreen() {
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -74,12 +75,12 @@ export default function ContractDetailScreen() {
 
   if (!contract) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-            <Feather name="arrow-left" size={20} color={Colors.accent} />
+            <Feather name="arrow-left" size={20} color={"#ff6b35"} />
           </Pressable>
-          <Text style={styles.headerTitle}>K<Text style={{ color: Colors.accent }}>r</Text>ono</Text>
+          <Text style={styles.headerTitle}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
         </View>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: "#444", fontFamily: "DMMono_400Regular", fontSize: 12 }}>Contrato não encontrado</Text>
@@ -92,7 +93,7 @@ export default function ContractDetailScreen() {
   const isTimer = contract.tipo === "timer";
   const isActive = contract.status === "active";
   const isScheduled = isActive && !!contract.agendado;
-  const cor = isHiring ? Colors.accent : Colors.accentGreen;
+  const cor = isHiring ? "#ff6b35" : "#00e5a0";
 
   const elapsed = isScheduled ? 0 : isActive ? now - contract.startedAt : (contract.endedAt! - contract.startedAt);
   const tempoDecorrido = elapsed;
@@ -123,14 +124,14 @@ export default function ContractDetailScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { justifyContent: "space-between" }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-            <Feather name="arrow-left" size={20} color={Colors.accent} />
+            <Feather name="arrow-left" size={20} color={"#ff6b35"} />
           </Pressable>
-          <Text style={styles.headerTitle}>K<Text style={{ color: Colors.accent }}>r</Text>ono</Text>
+          <Text style={styles.headerTitle}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
         </View>
         <Pressable
           onPress={() => router.replace("/(tabs)" as any)}
@@ -149,8 +150,8 @@ export default function ContractDetailScreen() {
         {/* Status badge + ID */}
         <View style={styles.statusRow}>
           <View style={[styles.statusBadge, isActive ? styles.statusBadgeActive : styles.statusBadgeEnded]}>
-            <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? Colors.accentGreen : "#444" }]} />
-            <Text style={[styles.statusText, { color: isScheduled ? cor : isActive ? Colors.accentGreen : "#555" }]}>
+            <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? "#00e5a0" : "#444" }]} />
+            <Text style={[styles.statusText, { color: isScheduled ? cor : isActive ? "#00e5a0" : "#555" }]}>
               {isScheduled ? "agendado" : isActive ? "em andamento" : "encerrado"}
             </Text>
           </View>
@@ -166,7 +167,7 @@ export default function ContractDetailScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.pessoaNome}>{contract.person.name}</Text>
               <View style={styles.pessoaMeta}>
-                <Feather name="star" size={11} color={Colors.accent} />
+                <Feather name="star" size={11} color={"#ff6b35"} />
                 <Text style={styles.metaText}>
                   {contract.person.nota ?? "—"} ({contract.person.avaliacoes ?? "—"})
                 </Text>
@@ -247,7 +248,7 @@ export default function ContractDetailScreen() {
                   <Text style={styles.servicoNome}>{contract.servico.nome}</Text>
                   {contract.servico.nota != null && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="star" size={10} color={Colors.accent} />
+                      <Feather name="star" size={10} color={"#ff6b35"} />
                       <Text style={styles.servicoMetaText}>
                         {contract.servico.nota} · {contract.servico.avaliacoes} avaliações
                       </Text>
@@ -255,16 +256,16 @@ export default function ContractDetailScreen() {
                   )}
                   {contract.servico.skill && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="tool" size={9} color={Colors.accent + "99"} />
-                      <Text style={[styles.servicoMetaText, { color: Colors.accent + "99" }]}>
+                      <Feather name="tool" size={9} color={"#ff6b3599"} />
+                      <Text style={[styles.servicoMetaText, { color: "#ff6b3599" }]}>
                         {contract.servico.skill}
                       </Text>
                     </View>
                   )}
                   {contract.servico.tools && contract.servico.tools.length > 0 && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="key" size={9} color={Colors.accentGreen + "99"} />
-                      <Text style={[styles.servicoMetaText, { color: Colors.accentGreen + "99" }]} numberOfLines={1}>
+                      <Feather name="key" size={9} color={"#00e5a099"} />
+                      <Text style={[styles.servicoMetaText, { color: "#00e5a099" }]} numberOfLines={1}>
                         {contract.servico.tools.join(", ")}
                       </Text>
                     </View>
@@ -317,10 +318,10 @@ export default function ContractDetailScreen() {
               <View style={[
                 styles.pagamentoIconWrap,
                 contract.paymentMethod === "pix"
-                  ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "30" }
+                  ? { backgroundColor: "#00e5a015", borderColor: "#00e5a030" }
                   : contract.paymentMethod === "dinheiro"
                   ? { backgroundColor: "#ffffff08", borderColor: "#ffffff15" }
-                  : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "30" },
+                  : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" },
               ]}>
                 <Feather
                   name={
@@ -330,9 +331,9 @@ export default function ContractDetailScreen() {
                   }
                   size={15}
                   color={
-                    contract.paymentMethod === "pix" ? Colors.accentGreen
+                    contract.paymentMethod === "pix" ? "#00e5a0"
                     : contract.paymentMethod === "dinheiro" ? "#aaa"
-                    : Colors.accent
+                    : "#ff6b35"
                   }
                 />
               </View>
@@ -341,7 +342,7 @@ export default function ContractDetailScreen() {
                   styles.pagamentoLabel,
                   {
                     color:
-                      contract.paymentMethod === "pix" ? Colors.accentGreen
+                      contract.paymentMethod === "pix" ? "#00e5a0"
                       : contract.paymentMethod === "dinheiro" ? "#aaa"
                       : "#fff",
                   },
@@ -389,7 +390,7 @@ export default function ContractDetailScreen() {
 
         {/* Avaliação pendente */}
         {!isActive && isHiring && !avaliacaoEnviada && (
-          <View style={[styles.card, { borderColor: Colors.accent + "30", marginBottom: 12 }]}>
+          <View style={[styles.card, { borderColor: "#ff6b3530", marginBottom: 12 }]}>
             <Text style={styles.avaliacaoTitulo}>Avaliação pendente</Text>
             <Text style={styles.avaliacaoSub}>Como foi sua experiência com {contract.person.name}?</Text>
             <View style={styles.starsRow}>
@@ -402,7 +403,7 @@ export default function ContractDetailScreen() {
                   <MaterialCommunityIcons
                     name={n <= notaSelecionada ? "star" : "star-outline"}
                     size={32}
-                    color={Colors.accent}
+                    color={"#ff6b35"}
                   />
                 </Pressable>
               ))}
@@ -420,9 +421,9 @@ export default function ContractDetailScreen() {
         )}
 
         {avaliacaoEnviada && (
-          <View style={[styles.card, { borderColor: Colors.accentGreen + "30", flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }]}>
-            <Feather name="check-circle" size={16} color={Colors.accentGreen} />
-            <Text style={{ color: Colors.accentGreen, fontSize: 13, fontFamily: "Sora_600SemiBold" }}>
+          <View style={[styles.card, { borderColor: "#00e5a030", flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }]}>
+            <Feather name="check-circle" size={16} color={"#00e5a0"} />
+            <Text style={{ color: "#00e5a0", fontSize: 13, fontFamily: "Sora_600SemiBold" }}>
               Avaliação enviada!
             </Text>
           </View>
@@ -440,7 +441,7 @@ export default function ContractDetailScreen() {
             onPress={() => router.back()}
             style={styles.contratarNovBtn}
           >
-            <Feather name="rotate-ccw" size={15} color={Colors.accent} />
+            <Feather name="rotate-ccw" size={15} color={"#ff6b35"} />
             <Text style={styles.contratarNovText}>Contratar novamente</Text>
           </Pressable>
         )}
@@ -485,19 +486,19 @@ export default function ContractDetailScreen() {
               <View style={{ gap: 10, marginBottom: 20 }}>
                 {[
                   {
-                    icon: <Feather name="file-text" size={20} color={Colors.accent} />,
+                    icon: <Feather name="file-text" size={20} color={"#ff6b35"} />,
                     label: "Perguntas frequentes",
                     desc: "Respostas para as dúvidas mais comuns",
                     onPress: () => setFaqExpandido(f => !f),
                   },
                   {
-                    icon: <MaterialCommunityIcons name="robot-outline" size={20} color={Colors.accent} />,
+                    icon: <MaterialCommunityIcons name="robot-outline" size={20} color={"#ff6b35"} />,
                     label: "Falar com a AI",
                     desc: "Assistente inteligente com contexto do contrato",
                     onPress: () => {},
                   },
                   {
-                    icon: <Feather name="message-circle" size={20} color={Colors.accent} />,
+                    icon: <Feather name="message-circle" size={20} color={"#ff6b35"} />,
                     label: "Falar com suporte humano",
                     desc: "Para casos que precisam de atenção especial",
                     onPress: () => {},
@@ -506,7 +507,7 @@ export default function ContractDetailScreen() {
                   <Pressable
                     key={op.label}
                     onPress={op.onPress}
-                    style={({ pressed }) => [styles.supportOption, pressed && { borderColor: Colors.accent + "30" }]}
+                    style={({ pressed }) => [styles.supportOption, pressed && { borderColor: "#ff6b3530" }]}
                   >
                     <View style={styles.supportOptionIcon}>
                       {op.icon}
@@ -573,7 +574,6 @@ export default function ContractDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -616,8 +616,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   statusBadgeActive: {
-    backgroundColor: Colors.accentGreen + "10",
-    borderColor: Colors.accentGreen + "25",
+    backgroundColor: "#00e5a010",
+    borderColor: "#00e5a025",
   },
   statusBadgeEnded: {
     backgroundColor: "#ffffff08",
@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   avaliacaoTitulo: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 12,
     fontWeight: "700",
     fontFamily: "Sora_700Bold",
@@ -885,7 +885,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   avaliacaoBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 12,
     padding: 13,
     alignItems: "center",
@@ -901,23 +901,23 @@ const styles = StyleSheet.create({
   },
   encerrarBtn: {
     borderWidth: 1,
-    borderColor: Colors.accent + "40",
+    borderColor: "#ff6b3540",
     borderRadius: 14,
     padding: 15,
     alignItems: "center",
     marginBottom: 10,
   },
   encerrarBtnText: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 12,
     fontFamily: "DMMono_400Regular",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
   contratarNovBtn: {
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     borderRadius: 14,
     padding: 15,
     alignItems: "center",
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   contratarNovText: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 13,
     fontWeight: "600",
     fontFamily: "Sora_600SemiBold",
@@ -1003,9 +1003,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1,
-    borderColor: Colors.accent + "25",
+    borderColor: "#ff6b3525",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,

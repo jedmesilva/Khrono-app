@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type Props = {
   visible: boolean;
@@ -29,6 +29,7 @@ function buildPixKey(name: string) {
 }
 
 export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amount, tipoContrato }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [copied, setCopied] = useState(false);
 
@@ -75,12 +76,12 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
                   key={i}
                   style={[
                     styles.qrCell,
-                    i % 2 === 0 && { backgroundColor: Colors.accentGreen + "80" },
+                    i % 2 === 0 && { backgroundColor: "#00e5a080" },
                   ]}
                 />
               ))}
             </View>
-            <Feather name="zap" size={26} color={Colors.accentGreen} style={styles.qrIcon} />
+            <Feather name="zap" size={26} color={"#00e5a0"} style={styles.qrIcon} />
           </View>
 
           <Text style={styles.providerName}>{providerName}</Text>
@@ -114,7 +115,7 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
               <Feather
                 name={copied ? "check" : "copy"}
                 size={14}
-                color={copied ? Colors.accentGreen : "#555"}
+                color={copied ? "#00e5a0" : "#555"}
               />
             </Pressable>
           </View>
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     height: 148,
     backgroundColor: "#111",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
   amountValue: {
     fontFamily: "DMMono_500Medium",
     fontSize: 26,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     letterSpacing: 1,
   },
   amountNote: {
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
   pixKeyValue: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     flex: 1,
   },
   copyBtn: {
@@ -266,15 +267,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   copyBtnCopied: {
-    borderColor: Colors.accentGreen + "40",
-    backgroundColor: Colors.accentGreen + "15",
+    borderColor: "#00e5a040",
+    backgroundColor: "#00e5a015",
   },
   confirmBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 14,
     paddingVertical: 16,
     marginBottom: 10,

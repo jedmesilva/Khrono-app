@@ -10,11 +10,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type Step = "guide" | "capturing" | "done";
 
 export default function VerificacaoFacialScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -27,11 +28,11 @@ export default function VerificacaoFacialScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPadding + 16 }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <Text style={styles.headerTitle}>Reconhecimento facial</Text>
         <View style={{ width: 26 }} />
@@ -82,7 +83,7 @@ export default function VerificacaoFacialScreen() {
           <>
             <View style={styles.ovalWrap}>
               <View style={[styles.oval, styles.ovalActive]}>
-                <Feather name="user" size={72} color={Colors.accent + "30"} />
+                <Feather name="user" size={72} color={"#ff6b3530"} />
               </View>
             </View>
             <Text style={styles.title}>Analisando...</Text>
@@ -94,7 +95,7 @@ export default function VerificacaoFacialScreen() {
           <>
             <View style={styles.successIconWrap}>
               <View style={styles.successIcon}>
-                <Feather name="check" size={40} color={Colors.accentGreen} />
+                <Feather name="check" size={40} color={"#00e5a0"} />
               </View>
             </View>
             <Text style={styles.title}>Verificação enviada!</Text>
@@ -179,36 +180,36 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a0a0a",
   },
   ovalActive: {
-    borderColor: Colors.accent + "60",
+    borderColor: "#ff6b3560",
     borderStyle: "solid",
-    backgroundColor: Colors.accent + "08",
+    backgroundColor: "#ff6b3508",
   },
   ovalCornerTL: {
     position: "absolute", top: 0, left: 0,
     width: 20, height: 20,
     borderTopWidth: 2, borderLeftWidth: 2,
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
     borderTopLeftRadius: 6,
   },
   ovalCornerTR: {
     position: "absolute", top: 0, right: 0,
     width: 20, height: 20,
     borderTopWidth: 2, borderRightWidth: 2,
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
     borderTopRightRadius: 6,
   },
   ovalCornerBL: {
     position: "absolute", bottom: 0, left: 0,
     width: 20, height: 20,
     borderBottomWidth: 2, borderLeftWidth: 2,
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
     borderBottomLeftRadius: 6,
   },
   ovalCornerBR: {
     position: "absolute", bottom: 0, right: 0,
     width: 20, height: 20,
     borderBottomWidth: 2, borderRightWidth: 2,
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
     borderBottomRightRadius: 6,
   },
 
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     paddingHorizontal: 28,
     paddingVertical: 14,
@@ -261,9 +262,9 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: Colors.accentGreen + "10",
+    backgroundColor: "#00e5a010",
     borderWidth: 2,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     alignItems: "center",
     justifyContent: "center",
   },

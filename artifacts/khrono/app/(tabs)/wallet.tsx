@@ -15,7 +15,7 @@ import { AppDialog } from "@/components/AppDialog";
 import { HistoryCard } from "@/components/HistoryCard";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { useCards } from "@/context/CardsContext";
 import { useContracts } from "@/context/ContractsContext";
 
@@ -41,6 +41,7 @@ function BandeiraTag({ bandeira }: { bandeira: CardBandeira }) {
 }
 
 export default function WalletScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const { history } = useContracts();
@@ -73,7 +74,7 @@ export default function WalletScreen() {
     showBalance ? `R$ ${val.toFixed(2).replace(".", ",")}` : "R$ ••••••";
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
@@ -88,7 +89,7 @@ export default function WalletScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>
-            K<Text style={{ color: Colors.accent }}>r</Text>ono
+            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
           </Text>
           <Text style={styles.subtitle}>carteira</Text>
         </View>
@@ -114,15 +115,15 @@ export default function WalletScreen() {
 
           {/* Stats */}
           <View style={styles.statsRow}>
-            <View style={[styles.statChip, { borderColor: Colors.accent + "25", backgroundColor: Colors.accent + "10" }]}>
-              <Text style={[styles.statChipLabel, { color: Colors.accent }]}>PAGO</Text>
-              <Text style={[styles.statChipValue, { color: Colors.accent }]}>
+            <View style={[styles.statChip, { borderColor: "#ff6b3525", backgroundColor: "#ff6b3510" }]}>
+              <Text style={[styles.statChipLabel, { color: "#ff6b35" }]}>PAGO</Text>
+              <Text style={[styles.statChipValue, { color: "#ff6b35" }]}>
                 {showBalance ? `R$ ${totalPaid.toFixed(2)}` : "••••"}
               </Text>
             </View>
-            <View style={[styles.statChip, { borderColor: Colors.accentGreen + "25", backgroundColor: Colors.accentGreen + "10" }]}>
-              <Text style={[styles.statChipLabel, { color: Colors.accentGreen }]}>RECEBIDO</Text>
-              <Text style={[styles.statChipValue, { color: Colors.accentGreen }]}>
+            <View style={[styles.statChip, { borderColor: "#00e5a025", backgroundColor: "#00e5a010" }]}>
+              <Text style={[styles.statChipLabel, { color: "#00e5a0" }]}>RECEBIDO</Text>
+              <Text style={[styles.statChipValue, { color: "#00e5a0" }]}>
                 {showBalance ? `R$ ${totalReceived.toFixed(2)}` : "••••"}
               </Text>
             </View>
@@ -134,13 +135,13 @@ export default function WalletScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { borderColor: Colors.accentGreen + "25" },
-              pressed && { backgroundColor: Colors.accentGreen + "12" },
+              { borderColor: "#00e5a025" },
+              pressed && { backgroundColor: "#00e5a012" },
             ]}
             onPress={() => setDepositModalVisible(true)}
           >
-            <Feather name="arrow-down-left" size={18} color={Colors.accentGreen} />
-            <Text style={[styles.actionBtnText, { color: Colors.accentGreen }]}>
+            <Feather name="arrow-down-left" size={18} color={"#00e5a0"} />
+            <Text style={[styles.actionBtnText, { color: "#00e5a0" }]}>
               Depositar
             </Text>
           </Pressable>
@@ -148,13 +149,13 @@ export default function WalletScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { borderColor: Colors.accent + "25" },
-              pressed && { backgroundColor: Colors.accent + "12" },
+              { borderColor: "#ff6b3525" },
+              pressed && { backgroundColor: "#ff6b3512" },
             ]}
             onPress={() => setWithdrawModalVisible(true)}
           >
-            <Feather name="arrow-up-right" size={18} color={Colors.accent} />
-            <Text style={[styles.actionBtnText, { color: Colors.accent }]}>
+            <Feather name="arrow-up-right" size={18} color={"#ff6b35"} />
+            <Text style={[styles.actionBtnText, { color: "#ff6b35" }]}>
               Sacar
             </Text>
           </Pressable>
@@ -179,8 +180,8 @@ export default function WalletScreen() {
               style={[
                 styles.cardItem,
                 card.padrao && {
-                  borderColor: Colors.accent + "35",
-                  backgroundColor: Colors.accent + "05",
+                  borderColor: "#ff6b3535",
+                  backgroundColor: "#ff6b3505",
                 },
               ]}
             >
@@ -488,9 +489,9 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   defaultBadge: {
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1,
-    borderColor: Colors.accent + "25",
+    borderColor: "#ff6b3525",
     borderRadius: 20,
     paddingHorizontal: 7,
     paddingVertical: 1,
@@ -498,7 +499,7 @@ const styles = StyleSheet.create({
   defaultBadgeText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   cardValidade: {
     fontFamily: "DMMono_400Regular",
@@ -556,8 +557,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   filterChipActive: {
-    backgroundColor: Colors.accent,
-    borderColor: Colors.accent,
+    backgroundColor: "#ff6b35",
+    borderColor: "#ff6b35",
   },
   filterChipText: {
     fontFamily: "DMMono_400Regular",

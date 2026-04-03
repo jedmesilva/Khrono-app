@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const SKILL_SUGGESTIONS = [
   "Eletricista",
@@ -37,6 +37,7 @@ const TOTAL_STEPS = 2;
 type Step = 1 | 2 | "done";
 
 export default function CadastroSkillScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -78,14 +79,14 @@ export default function CadastroSkillScreen() {
 
   if (step === "done") {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <View style={styles.doneWrap}>
           <View style={styles.doneIcon}>
-            <Feather name="check" size={32} color={Colors.accent} />
+            <Feather name="check" size={32} color={"#ff6b35"} />
           </View>
           <Text style={styles.doneTitle}>Skill adicionada!</Text>
           <Text style={styles.doneSub}>
-            <Text style={{ color: Colors.accent }}>{skillName}</Text> foi cadastrada no seu perfil.
+            <Text style={{ color: "#ff6b35" }}>{skillName}</Text> foi cadastrada no seu perfil.
           </Text>
           <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
             <Text style={styles.primaryBtnText}>Ver perfil</Text>
@@ -96,11 +97,11 @@ export default function CadastroSkillScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+    <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={() => (step === 1 ? router.back() : setStep(1))}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={styles.stepIndicator}>
@@ -166,7 +167,7 @@ export default function CadastroSkillScreen() {
                     style={styles.suggestionItem}
                     onPress={() => handleSelectSuggestion(s)}
                   >
-                    <Feather name="tool" size={13} color={Colors.accent} />
+                    <Feather name="tool" size={13} color={"#ff6b35"} />
                     <Text style={styles.suggestionText}>{s}</Text>
                   </Pressable>
                 ))}
@@ -188,7 +189,7 @@ export default function CadastroSkillScreen() {
           <>
             <Text style={styles.stepTitle}>Descreva sua skill</Text>
             <Text style={styles.stepSub}>
-              Conte brevemente o que você faz com <Text style={{ color: Colors.accent }}>{skillName}</Text>.
+              Conte brevemente o que você faz com <Text style={{ color: "#ff6b35" }}>{skillName}</Text>.
               Isso é opcional.
             </Text>
 
@@ -236,7 +237,6 @@ export default function CadastroSkillScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 2,
   },
 
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   chip: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
-    borderColor: Colors.accent + "25",
+    borderColor: "#ff6b3525",
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   chipText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 12,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
 
   suggestionList: {
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   primaryBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
@@ -427,9 +427,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,

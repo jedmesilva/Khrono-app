@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
 
@@ -24,7 +23,7 @@ function formatDuration(startedAt: number, endedAt?: number) {
 export function HistoryCard({ contract, onPress }: Props) {
   const { colors } = useTheme();
   const isHiring = contract.role === "hiring";
-  const accentColor = isHiring ? Colors.accent : Colors.accentGreen;
+  const accentColor = isHiring ? "#ff6b35" : "#00e5a0";
 
   return (
     <Pressable
@@ -49,7 +48,7 @@ export function HistoryCard({ contract, onPress }: Props) {
         <Text style={[styles.amount, { color: colors.textSecondary }]}>
           R${contract.totalAmount?.toFixed(0)}
         </Text>
-        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : Colors.accentGreen + "99" }]}>
+        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : "#00e5a099" }]}>
           {isHiring ? "pago" : "recebido"}
         </Text>
       </View>

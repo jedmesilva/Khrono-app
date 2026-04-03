@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const EXPLORE_USERS = [
   {
@@ -81,6 +81,7 @@ const CATEGORIES = [
 ];
 
 export default function ExploreScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const [search, setSearch] = useState("");
@@ -97,7 +98,7 @@ export default function ExploreScreen() {
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
@@ -112,7 +113,7 @@ export default function ExploreScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.logo}>
-            K<Text style={{ color: Colors.accent }}>r</Text>ono
+            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
           </Text>
           <Text style={styles.subtitle}>explorar</Text>
         </View>
@@ -188,7 +189,7 @@ export default function ExploreScreen() {
                       styles.availDot,
                       {
                         backgroundColor: u.available
-                          ? Colors.accentGreen
+                          ? "#00e5a0"
                           : "#333",
                       },
                     ]}
@@ -223,7 +224,7 @@ export default function ExploreScreen() {
               {/* Footer */}
               <View style={styles.cardFooter}>
                 <View style={styles.ratingRow}>
-                  <Feather name="star" size={11} color={Colors.accent} />
+                  <Feather name="star" size={11} color={"#ff6b35"} />
                   <Text style={styles.ratingText}>
                     {u.rating} · {u.reviews} avaliações
                   </Text>
@@ -301,8 +302,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   catChipActive: {
-    backgroundColor: Colors.accent + "20",
-    borderColor: Colors.accent + "50",
+    backgroundColor: "#ff6b3520",
+    borderColor: "#ff6b3550",
   },
   catLabel: {
     fontFamily: "DMMono_400Regular",
@@ -335,16 +336,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.accent + "18",
+    backgroundColor: "#ff6b3518",
     borderWidth: 1.5,
-    borderColor: Colors.accent + "35",
+    borderColor: "#ff6b3535",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   availDot: {
     position: "absolute",
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
   rateText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 16,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   rateUnit: {
     fontFamily: "DMMono_400Regular",
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   hireBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 8,

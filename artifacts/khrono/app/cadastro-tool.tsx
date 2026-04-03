@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const TOOL_TYPES = [
   {
@@ -62,6 +62,7 @@ const TOTAL_STEPS = 3;
 type Step = 1 | 2 | 3 | "done";
 
 export default function CadastroToolScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -108,18 +109,18 @@ export default function CadastroToolScreen() {
 
   if (step === "done") {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <View style={styles.doneWrap}>
           <View style={styles.doneIcon}>
-            <Feather name="check" size={32} color={Colors.accentGreen} />
+            <Feather name="check" size={32} color={"#00e5a0"} />
           </View>
           <Text style={styles.doneTitle}>Tool adicionada!</Text>
           <Text style={styles.doneSub}>
-            <Text style={{ color: Colors.accentGreen }}>{toolName}</Text> foi cadastrada no seu perfil
+            <Text style={{ color: "#00e5a0" }}>{toolName}</Text> foi cadastrada no seu perfil
             como {available ? "disponível" : "indisponível"}.
           </Text>
           <Pressable style={styles.secondaryBtn} onPress={() => { setStep(1); setToolType(""); setToolName(""); setQuery(""); setDetails(""); setAvailable(true); }}>
-            <Feather name="plus" size={14} color={Colors.accentGreen} />
+            <Feather name="plus" size={14} color={"#00e5a0"} />
             <Text style={styles.secondaryBtnText}>Adicionar outra tool</Text>
           </Pressable>
           <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
@@ -131,11 +132,11 @@ export default function CadastroToolScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+    <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color={Colors.accentGreen} />
+          <Feather name="arrow-left" size={18} color={"#00e5a0"} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={styles.stepIndicator}>
@@ -173,13 +174,13 @@ export default function CadastroToolScreen() {
                   <View style={[
                     styles.typeIcon,
                     toolType === t.id
-                      ? { backgroundColor: Colors.accentGreen + "20", borderColor: Colors.accentGreen + "40" }
+                      ? { backgroundColor: "#00e5a020", borderColor: "#00e5a040" }
                       : { backgroundColor: "#161616", borderColor: "#1e1e1e" },
                   ]}>
                     <Feather
                       name={t.icon}
                       size={22}
-                      color={toolType === t.id ? Colors.accentGreen : "#444"}
+                      color={toolType === t.id ? "#00e5a0" : "#444"}
                     />
                   </View>
                   <Text style={[
@@ -191,7 +192,7 @@ export default function CadastroToolScreen() {
                   <Text style={styles.typeDescription}>{t.description}</Text>
                   {toolType === t.id && (
                     <View style={styles.typeCheck}>
-                      <Feather name="check" size={11} color={Colors.accentGreen} />
+                      <Feather name="check" size={11} color={"#00e5a0"} />
                     </View>
                   )}
                 </Pressable>
@@ -250,7 +251,7 @@ export default function CadastroToolScreen() {
                     style={styles.suggestionItem}
                     onPress={() => handleSelectSuggestion(s)}
                   >
-                    <Feather name="box" size={13} color={Colors.accentGreen} />
+                    <Feather name="box" size={13} color={"#00e5a0"} />
                     <Text style={styles.suggestionText}>{s}</Text>
                   </Pressable>
                 ))}
@@ -273,7 +274,7 @@ export default function CadastroToolScreen() {
             <Text style={styles.stepTitle}>Detalhes</Text>
             <Text style={styles.stepSub}>
               Adicione informações extras sobre{" "}
-              <Text style={{ color: Colors.accentGreen }}>{toolName}</Text> e defina a disponibilidade.
+              <Text style={{ color: "#00e5a0" }}>{toolName}</Text> e defina a disponibilidade.
             </Text>
 
             <TextInput
@@ -299,8 +300,8 @@ export default function CadastroToolScreen() {
               <Switch
                 value={available}
                 onValueChange={setAvailable}
-                trackColor={{ false: "#1e1e1e", true: Colors.accentGreen + "60" }}
-                thumbColor={available ? Colors.accentGreen : "#444"}
+                trackColor={{ false: "#1e1e1e", true: "#00e5a060" }}
+                thumbColor={available ? "#00e5a0" : "#444"}
               />
             </View>
           </>
@@ -336,7 +337,6 @@ export default function CadastroToolScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 2,
   },
 
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   typeCardSelected: {
-    borderColor: Colors.accentGreen + "40",
-    backgroundColor: Colors.accentGreen + "08",
+    borderColor: "#00e5a040",
+    backgroundColor: "#00e5a008",
   },
   typeIcon: {
     width: 48,
@@ -432,9 +432,9 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: Colors.accentGreen + "20",
+    backgroundColor: "#00e5a020",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "40",
+    borderColor: "#00e5a040",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   chip: {
     backgroundColor: "#0a0a0a",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "25",
+    borderColor: "#00e5a025",
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
   chipText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 12,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
 
   suggestionList: {
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#0e0e0e",
   },
   primaryBtn: {
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
@@ -583,9 +583,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: Colors.accentGreen + "12",
+    backgroundColor: "#00e5a012",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 24,
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 14,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
 
   doneWrap: {
@@ -609,9 +609,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,

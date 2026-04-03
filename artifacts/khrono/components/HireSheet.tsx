@@ -32,7 +32,6 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import Colors from "@/constants/colors";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
 
@@ -294,7 +293,7 @@ function QrcodeContent({
           { bottom: 16, left: 16, borderBottomWidth: 3, borderLeftWidth: 3 },
           { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3 },
         ].map((s, i) => (
-          <View key={i} style={[sub.corner, { borderColor: Colors.accent }, s]} />
+          <View key={i} style={[sub.corner, { borderColor: "#ff6b35" }, s]} />
         ))}
         <Animated.View style={[sub.scanLine, scanLineStyle]} />
         <Text style={[sub.viewfinderLabel, { color: colors.textDim }]}>câmera indisponível em preview</Text>
@@ -342,7 +341,7 @@ function NfcContent({ colors }: { colors: ColorPalette }) {
       height: size,
       borderRadius: size / 2,
       borderWidth: 1.5,
-      borderColor: Colors.accent,
+      borderColor: "#ff6b35",
       transform: [{ scale: interpolate(val.value, [0, 1], [0.75, 1.55], Extrapolation.CLAMP) }],
       opacity: interpolate(val.value, [0, 0.4, 1], [0.75, 0.3, 0], Extrapolation.CLAMP),
     }));
@@ -361,7 +360,7 @@ function NfcContent({ colors }: { colors: ColorPalette }) {
         <Animated.View style={ring2Style} />
         <Animated.View style={ring1Style} />
         <View style={sub.nfcIcon}>
-          <Feather name="wifi" size={24} color={Colors.accent} />
+          <Feather name="wifi" size={24} color={"#ff6b35"} />
         </View>
       </View>
 
@@ -507,22 +506,22 @@ export function HireSheet({ open, onClose }: Props) {
 
   const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
     {
-      icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={Colors.accent} />,
+      icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={"#ff6b35"} />,
       label: "QRCODE",
       method: "QRCODE",
     },
     {
-      icon: <Feather name="wifi" size={22} color={Colors.accent} />,
+      icon: <Feather name="wifi" size={22} color={"#ff6b35"} />,
       label: "APROXIMAÇÃO",
       method: "NFC",
     },
     {
-      icon: <Feather name="hash" size={22} color={Colors.accent} />,
+      icon: <Feather name="hash" size={22} color={"#ff6b35"} />,
       label: "PINCODE",
       method: "PINCODE",
     },
     {
-      icon: <Feather name="link" size={22} color={Colors.accent} />,
+      icon: <Feather name="link" size={22} color={"#ff6b35"} />,
       label: "LINK",
       method: "LINK",
     },
@@ -539,19 +538,19 @@ export function HireSheet({ open, onClose }: Props) {
       label: "Gerar QRCODE",
       desc: "Mostre o QR Code para ser escaneado",
       pin: null,
-      icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={Colors.accentGreen} />,
+      icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={"#00e5a0"} />,
     },
     {
       label: "Compartilhar LINK",
       desc: "Copie e compartilhe o link de contratação",
       pin: null,
-      icon: <Feather name="link" size={24} color={Colors.accentGreen} />,
+      icon: <Feather name="link" size={24} color={"#00e5a0"} />,
     },
     {
       label: "Iniciar APROXIMAÇÃO",
       desc: "Ative o NFC e aproxime os dois dispositivos",
       pin: null,
-      icon: <Feather name="wifi" size={24} color={Colors.accentGreen} />,
+      icon: <Feather name="wifi" size={24} color={"#00e5a0"} />,
     },
   ];
 
@@ -587,7 +586,7 @@ export function HireSheet({ open, onClose }: Props) {
             }
           >
             <View style={styles.aiIconWrap}>
-              <Feather name="zap" size={20} color={Colors.accent} />
+              <Feather name="zap" size={20} color={"#ff6b35"} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.aiTitle, { color: colors.text }]}>Descrever o que preciso</Text>
@@ -595,7 +594,7 @@ export function HireSheet({ open, onClose }: Props) {
                 A IA entende sua necessidade e encontra a pessoa certa para você
               </Text>
             </View>
-            <Feather name="chevron-right" size={16} color={Colors.accent + "80"} />
+            <Feather name="chevron-right" size={16} color={"#ff6b3580"} />
           </Pressable>
 
           {/* Divider */}
@@ -639,7 +638,7 @@ export function HireSheet({ open, onClose }: Props) {
               <Text
                 style={[
                   styles.toggleLabel,
-                  { color: disponivel ? Colors.accentGreen : colors.textMuted },
+                  { color: disponivel ? "#00e5a0" : colors.textMuted },
                 ]}
               >
                 {disponivel ? "Disponível" : "Indisponível"}
@@ -647,7 +646,7 @@ export function HireSheet({ open, onClose }: Props) {
               <View
                 style={[
                   styles.toggle,
-                  { backgroundColor: disponivel ? Colors.accentGreen : colors.surfaceBorder },
+                  { backgroundColor: disponivel ? "#00e5a0" : colors.surfaceBorder },
                 ]}
               >
                 <View style={[styles.toggleThumb, { backgroundColor: colors.sheetBg }]} />
@@ -720,7 +719,7 @@ export function HireSheet({ open, onClose }: Props) {
             {/* Header */}
             <View style={styles.sheetHeaderRow}>
               <Pressable onPress={() => setSubMode(null)} style={styles.backBtn}>
-                <Feather name="arrow-left" size={18} color={Colors.accent} />
+                <Feather name="arrow-left" size={18} color={"#ff6b35"} />
               </Pressable>
               <Text style={[styles.sheetHeaderLabel, { color: colors.text }]}>
                 {subMode ? subTitles[subMode] : ""}
@@ -783,9 +782,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   aiCard: {
-    backgroundColor: Colors.accent + "0a",
+    backgroundColor: "#ff6b350a",
     borderWidth: 1,
-    borderColor: Colors.accent + "28",
+    borderColor: "#ff6b3528",
     borderRadius: 18,
     padding: 16,
     flexDirection: "row",
@@ -797,9 +796,9 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 13,
-    backgroundColor: Colors.accent + "18",
+    backgroundColor: "#ff6b3518",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -840,8 +839,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   hireItemPressed: {
-    backgroundColor: Colors.accent + "10",
-    borderColor: Colors.accent + "40",
+    backgroundColor: "#ff6b3510",
+    borderColor: "#ff6b3540",
   },
   hireLabel: {
     fontFamily: "DMMono_400Regular",
@@ -892,8 +891,8 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   availRowPressed: {
-    backgroundColor: Colors.accentGreen + "08",
-    borderColor: Colors.accentGreen + "22",
+    backgroundColor: "#00e5a008",
+    borderColor: "#00e5a022",
   },
   availIcon: {
     width: 52,
@@ -906,7 +905,7 @@ const styles = StyleSheet.create({
   pinDisplay: {
     fontFamily: "DMMono_500Medium",
     fontSize: 15,
-    color: Colors.accent,
+    color: "#ff6b35",
     fontWeight: "800",
     letterSpacing: 2,
   },
@@ -947,9 +946,9 @@ const sub = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: Colors.accentGreen + "20",
+    backgroundColor: "#00e5a020",
     borderWidth: 2,
-    borderColor: Colors.accentGreen + "40",
+    borderColor: "#00e5a040",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -957,7 +956,7 @@ const sub = StyleSheet.create({
   userAvatarText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 20,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     fontWeight: "700",
   },
   userName: {
@@ -991,7 +990,7 @@ const sub = StyleSheet.create({
     marginBottom: 20,
   },
   primaryBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     padding: 16,
     alignItems: "center",
@@ -1033,11 +1032,11 @@ const sub = StyleSheet.create({
     justifyContent: "center",
   },
   pinDigitFilled: {
-    borderColor: Colors.accent + "60",
-    backgroundColor: Colors.accent + "10",
+    borderColor: "#ff6b3560",
+    backgroundColor: "#ff6b3510",
   },
   pinDigitText: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 20,
     fontFamily: "DMMono_500Medium",
   },
@@ -1062,8 +1061,8 @@ const sub = StyleSheet.create({
     borderColor: "transparent",
   },
   keypadBtnPressed: {
-    backgroundColor: Colors.accent + "15",
-    borderColor: Colors.accent + "30",
+    backgroundColor: "#ff6b3515",
+    borderColor: "#ff6b3530",
   },
   keypadBtnText: {
     fontFamily: "DMMono_500Medium",
@@ -1090,7 +1089,7 @@ const sub = StyleSheet.create({
     left: "10%",
     right: "10%",
     height: 2,
-    backgroundColor: Colors.accent + "80",
+    backgroundColor: "#ff6b3580",
     borderRadius: 1,
   },
   viewfinderLabel: {
@@ -1111,9 +1110,9 @@ const sub = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1128,7 +1127,7 @@ const sub = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   statusText: {
     fontFamily: "DMMono_400Regular",

@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
 
@@ -65,7 +64,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
 
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
-  const accentColor = isHiring ? Colors.accent : Colors.accentGreen;
+  const accentColor = isHiring ? "#ff6b35" : "#00e5a0";
   const elapsed = isScheduled ? 0 : now - contract.startedAt;
 
   const restante = isTimer && contract.duracaoTotal

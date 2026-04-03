@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { formatRadius } from "@/components/LocationSheet";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { PROVIDERS, VERIFICATION_LABELS, VerificationType, ProviderProfile } from "@/constants/profile-data";
 
 function PulsingDot({ size = 8 }: { size?: number }) {
@@ -54,7 +54,7 @@ function PulsingDot({ size = 8 }: { size?: number }) {
             width: size * 2,
             height: size * 2,
             borderRadius: size,
-            backgroundColor: Colors.accentGreen + "40",
+            backgroundColor: "#00e5a040",
           },
           ringStyle,
         ]}
@@ -64,7 +64,7 @@ function PulsingDot({ size = 8 }: { size?: number }) {
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: Colors.accentGreen,
+          backgroundColor: "#00e5a0",
         }}
       />
     </View>
@@ -79,13 +79,13 @@ function ServiceAreaCard({ provider }: { provider: ProviderProfile }) {
     <View style={areaStyles.card}>
       <View style={areaStyles.topRow}>
         <View style={[areaStyles.iconWrap, isRealtime
-          ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "25" }
-          : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "25" },
+          ? { backgroundColor: "#00e5a015", borderColor: "#00e5a025" }
+          : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" },
         ]}>
           {isRealtime ? (
             <PulsingDot size={7} />
           ) : (
-            <Feather name="map-pin" size={14} color={Colors.accent} />
+            <Feather name="map-pin" size={14} color={"#ff6b35"} />
           )}
         </View>
 
@@ -104,16 +104,16 @@ function ServiceAreaCard({ provider }: { provider: ProviderProfile }) {
         <View style={[
           areaStyles.availBadge,
           isAvailable
-            ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "30" }
+            ? { backgroundColor: "#00e5a015", borderColor: "#00e5a030" }
             : { backgroundColor: "#ff3b3015", borderColor: "#ff3b3030" },
         ]}>
           <View style={[
             areaStyles.availDot,
-            { backgroundColor: isAvailable ? Colors.accentGreen : "#ff3b30" },
+            { backgroundColor: isAvailable ? "#00e5a0" : "#ff3b30" },
           ]} />
           <Text style={[
             areaStyles.availText,
-            { color: isAvailable ? Colors.accentGreen : "#ff3b30" },
+            { color: isAvailable ? "#00e5a0" : "#ff3b30" },
           ]}>
             {isAvailable ? "Disponível" : "Fora da área"}
           </Text>
@@ -211,6 +211,7 @@ const areaStyles = StyleSheet.create({
 });
 
 export default function UserProfileScreen() {
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
@@ -222,9 +223,9 @@ export default function UserProfileScreen() {
 
   if (!provider) {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <Text style={styles.errorText}>Perfil não encontrado.</Text>
       </View>
@@ -244,7 +245,7 @@ export default function UserProfileScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+    <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
@@ -252,7 +253,7 @@ export default function UserProfileScreen() {
         {/* Header row */}
         <View style={styles.headerRow}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={Colors.accent} />
+            <Feather name="arrow-left" size={18} color={"#ff6b35"} />
           </Pressable>
           <Text style={styles.screenLabel}>perfil</Text>
         </View>
@@ -308,7 +309,7 @@ export default function UserProfileScreen() {
                     <View style={styles.serviceMeta}>
                       {!service.isNew ? (
                         <>
-                          <Feather name="star" size={10} color={Colors.accent} />
+                          <Feather name="star" size={10} color={"#ff6b35"} />
                           <Text style={styles.serviceMetaText}>
                             {service.rating.toFixed(1)} · {service.reviews} avaliações
                           </Text>
@@ -330,14 +331,14 @@ export default function UserProfileScreen() {
                 <View style={styles.serviceComposition}>
                   {skill && (
                     <View style={styles.compositionChip}>
-                      <Feather name="star" size={9} color={Colors.accent} />
+                      <Feather name="star" size={9} color={"#ff6b35"} />
                       <Text style={styles.compositionChipText}>{skill.name}</Text>
                     </View>
                   )}
                   {tools.map((tool) => (
                     <View key={tool.id} style={[styles.compositionChip, styles.compositionChipGreen]}>
-                      <Feather name="key" size={9} color={Colors.accentGreen} />
-                      <Text style={[styles.compositionChipText, { color: Colors.accentGreen + "cc" }]}>
+                      <Feather name="key" size={9} color={"#00e5a0"} />
+                      <Text style={[styles.compositionChipText, { color: "#00e5a0cc" }]}>
                         {tool.name}
                       </Text>
                     </View>
@@ -355,7 +356,7 @@ export default function UserProfileScreen() {
             <View key={skill.id} style={styles.skillCard}>
               <View style={styles.skillHeader}>
                 <View style={styles.skillIconWrap}>
-                  <Feather name="star" size={13} color={Colors.accent} />
+                  <Feather name="star" size={13} color={"#ff6b35"} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.skillNameRow}>
@@ -391,7 +392,7 @@ export default function UserProfileScreen() {
                 <Feather
                   name={tool.icon === "truck" ? "truck" : tool.icon === "tool" ? "tool" : "box"}
                   size={14}
-                  color={Colors.accentGreen}
+                  color={"#00e5a0"}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -410,7 +411,7 @@ export default function UserProfileScreen() {
                 <Text style={styles.toolType}>{tool.type}</Text>
                 <Text style={styles.toolDetails}>{tool.details}</Text>
               </View>
-              <View style={[styles.availDot, { backgroundColor: tool.available ? Colors.accentGreen : "#333" }]} />
+              <View style={[styles.availDot, { backgroundColor: tool.available ? "#00e5a0" : "#333" }]} />
             </View>
           ))}
         </View>
@@ -429,7 +430,6 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -476,16 +476,16 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderWidth: 2,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
     fontFamily: "Sora_700Bold",
     fontSize: 24,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   profileName: {
     fontFamily: "Sora_700Bold",
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   serviceRate: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   serviceComposition: {
     flexDirection: "row",
@@ -582,21 +582,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: Colors.accent + "10",
+    backgroundColor: "#ff6b3510",
     borderWidth: 1,
-    borderColor: Colors.accent + "20",
+    borderColor: "#ff6b3520",
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
   compositionChipGreen: {
-    backgroundColor: Colors.accentGreen + "10",
-    borderColor: Colors.accentGreen + "20",
+    backgroundColor: "#00e5a010",
+    borderColor: "#00e5a020",
   },
   compositionChipText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: Colors.accent + "cc",
+    color: "#ff6b35cc",
   },
 
   skillCard: {
@@ -616,8 +616,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.accent + "25",
-    backgroundColor: Colors.accent + "10",
+    borderColor: "#ff6b3525",
+    backgroundColor: "#ff6b3510",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
   skillName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: Colors.accent + "dd",
+    color: "#ff6b35dd",
   },
   skillDesc: {
     fontFamily: "Sora_400Regular",
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   newBadge: {
     backgroundColor: "#1a2a1a",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 20,
     paddingHorizontal: 7,
     paddingVertical: 2,
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
   newBadgeText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
   verifiedBadge: {
     flexDirection: "row",
@@ -685,8 +685,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "25",
-    backgroundColor: Colors.accentGreen + "10",
+    borderColor: "#00e5a025",
+    backgroundColor: "#00e5a010",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
   toolName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: Colors.accentGreen + "dd",
+    color: "#00e5a0dd",
   },
   toolType: {
     fontFamily: "DMMono_400Regular",

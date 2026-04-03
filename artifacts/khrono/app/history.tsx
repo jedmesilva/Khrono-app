@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HistoryCard } from "@/components/HistoryCard";
 import { StatsBar } from "@/components/StatsBar";
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 
@@ -58,9 +57,9 @@ export default function HistoryScreen() {
         <StatsBar
           style={styles.statsRow}
           items={[
-            { label: "PAGO", value: `R$${totalPaid.toFixed(2)}`, color: Colors.accent },
+            { label: "PAGO", value: `R$${totalPaid.toFixed(2)}`, color: "#ff6b35" },
             { label: "CONTRATOS", value: history.length, align: "center" },
-            { label: "RECEBIDO", value: `R$${totalReceived.toFixed(2)}`, color: Colors.accentGreen, align: "flex-end" },
+            { label: "RECEBIDO", value: `R$${totalReceived.toFixed(2)}`, color: "#00e5a0", align: "flex-end" },
           ]}
         />
       )}
@@ -157,8 +156,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   filterBtnActive: {
-    borderColor: Colors.accent,
-    backgroundColor: Colors.accent + "15",
+    borderColor: "#ff6b35",
+    backgroundColor: "#ff6b3515",
   },
   filterText: {
     fontFamily: "DMMono_400Regular",
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   filterTextActive: {
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   list: {
     paddingHorizontal: 20,

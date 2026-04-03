@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { type CardBandeira, useCards } from "@/context/CardsContext";
 
 type Step = "form" | "success";
@@ -43,6 +43,7 @@ function formatExpiry(raw: string) {
 }
 
 export function AddCardModal({ visible, onClose }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { addCard } = useCards();
 
@@ -218,7 +219,7 @@ export function AddCardModal({ visible, onClose }: Props) {
           {step === "success" && (
             <View style={styles.successContainer}>
               <View style={styles.successIcon}>
-                <Feather name="check" size={32} color={Colors.accentGreen} />
+                <Feather name="check" size={32} color={"#00e5a0"} />
               </View>
               <Text style={styles.successTitle}>Cartão adicionado!</Text>
               <Text style={styles.successSub}>
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
   cardPreview: {
     backgroundColor: "#111",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     borderRadius: 18,
     padding: 20,
     marginBottom: 24,
@@ -291,14 +292,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 24,
     borderRadius: 5,
-    backgroundColor: Colors.accent + "30",
+    backgroundColor: "#ff6b3530",
     borderWidth: 1,
-    borderColor: Colors.accent + "50",
+    borderColor: "#ff6b3550",
   },
   cardBandeiraText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 12,
-    color: Colors.accent,
+    color: "#ff6b35",
     letterSpacing: 1,
   },
   cardNumPreview: {
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 20,
     marginBottom: 8,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 14,
     paddingVertical: 16,
   },
@@ -374,9 +375,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "40",
+    borderColor: "#00e5a040",
     alignItems: "center",
     justifyContent: "center",
   },

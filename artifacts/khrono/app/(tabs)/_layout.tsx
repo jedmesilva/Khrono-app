@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import { HireSheet } from "@/components/HireSheet";
 import { HireSheetProvider, useHireSheet } from "@/context/HireSheetContext";
@@ -154,10 +153,10 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: Colors.accent,
+    shadowColor: "#ff6b35",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 16,

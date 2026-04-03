@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { MY_PROFILE, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
 type ExpandedCard = "rating" | "reviews" | "contracts" | null;
@@ -25,7 +25,7 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
           key={s}
           name="star"
           size={size}
-          color={Colors.accent}
+          color={"#ff6b35"}
           style={{ opacity: s <= rating ? 1 : 0.2 }}
         />
       ))}
@@ -34,6 +34,7 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
 }
 
 export default function ServiceDetailScreen() {
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
@@ -46,9 +47,9 @@ export default function ServiceDetailScreen() {
 
   if (!service) {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <Text style={styles.errorText}>Service não encontrado.</Text>
       </View>
@@ -75,12 +76,12 @@ export default function ServiceDetailScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20 }]}>
+    <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {/* Back header */}
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={Colors.accent} />
+            <Feather name="arrow-left" size={18} color={"#ff6b35"} />
           </Pressable>
           <View style={{ flex: 1 }}>
             <Text style={styles.serviceTitle}>{service.name}</Text>
@@ -94,8 +95,8 @@ export default function ServiceDetailScreen() {
 
           {skill && (
             <View style={styles.compositionRow}>
-              <View style={[styles.compIcon, { borderColor: Colors.accent + "25", backgroundColor: Colors.accent + "10" }]}>
-                <Feather name="star" size={13} color={Colors.accent} />
+              <View style={[styles.compIcon, { borderColor: "#ff6b3525", backgroundColor: "#ff6b3510" }]}>
+                <Feather name="star" size={13} color={"#ff6b35"} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.compLabel}>Skill</Text>
@@ -114,8 +115,8 @@ export default function ServiceDetailScreen() {
 
           {tools.length > 0 && (
             <View style={[styles.compositionRow, { marginTop: 12 }]}>
-              <View style={[styles.compIcon, { borderColor: Colors.accentGreen + "25", backgroundColor: Colors.accentGreen + "10" }]}>
-                <Feather name="key" size={13} color={Colors.accentGreen} />
+              <View style={[styles.compIcon, { borderColor: "#00e5a025", backgroundColor: "#00e5a010" }]}>
+                <Feather name="key" size={13} color={"#00e5a0"} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.compLabel}>Tools</Text>
@@ -261,7 +262,6 @@ export default function ServiceDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   serviceRate: {
     fontFamily: "DMMono_500Medium",
     fontSize: 14,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   errorText: {
     fontFamily: "Sora_400Regular",
@@ -345,12 +345,12 @@ const styles = StyleSheet.create({
   compSkillName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: Colors.accent + "dd",
+    color: "#ff6b35dd",
   },
   compToolName: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: Colors.accentGreen + "dd",
+    color: "#00e5a0dd",
   },
   compEmptyText: {
     fontFamily: "DMMono_400Regular",
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   contractValue: {
     fontFamily: "DMMono_500Medium",
     fontSize: 12,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
   contractMeta: {
     fontFamily: "DMMono_400Regular",

@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import {
   MY_PROFILE,
@@ -44,7 +43,7 @@ function SkillDetailView({ skill, onBack, onVerifiedPress }: {
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
@@ -93,7 +92,7 @@ function SkillsListView({ onBack, onSelectSkill, onVerifiedPress, onAdd }: {
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
@@ -110,8 +109,8 @@ function SkillsListView({ onBack, onSelectSkill, onVerifiedPress, onAdd }: {
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
         {MY_PROFILE.skills.map((skill) => (
           <Pressable key={skill.id} style={[styles.listCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => onSelectSkill(skill)}>
-            <View style={[styles.listIcon, { backgroundColor: colors.menuIconBg, borderColor: skill.isNew ? colors.cardBorder : Colors.accent + "20" }]}>
-              <Feather name="tool" size={18} color={skill.isNew ? colors.textMuted : Colors.accent} />
+            <View style={[styles.listIcon, { backgroundColor: colors.menuIconBg, borderColor: skill.isNew ? colors.cardBorder : "#ff6b3520" }]}>
+              <Feather name="tool" size={18} color={skill.isNew ? colors.textMuted : "#ff6b35"} />
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.nameWithBadge}>
@@ -148,7 +147,7 @@ function ToolsListView({ onBack, onVerifiedPress, onAdd }: {
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color={Colors.accent} />
+          <Feather name="arrow-left" size={18} color={"#ff6b35"} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={styles.subTitle}>Tools</Text>
@@ -165,8 +164,8 @@ function ToolsListView({ onBack, onVerifiedPress, onAdd }: {
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
         {MY_PROFILE.tools.map((tool) => (
           <View key={tool.id} style={[styles.listCard, { opacity: tool.available ? 1 : 0.55 }]}>
-            <View style={[styles.listIcon, { borderColor: tool.available ? Colors.accentGreen + "20" : "#1e1e1e" }]}>
-              <Feather name={tool.icon} size={18} color={tool.available ? Colors.accentGreen : "#444"} />
+            <View style={[styles.listIcon, { borderColor: tool.available ? "#00e5a020" : "#1e1e1e" }]}>
+              <Feather name={tool.icon} size={18} color={tool.available ? "#00e5a0" : "#444"} />
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.nameWithBadge}>
@@ -183,11 +182,11 @@ function ToolsListView({ onBack, onVerifiedPress, onAdd }: {
                 <View style={[
                   styles.availBadge,
                   {
-                    backgroundColor: tool.available ? Colors.accentGreen + "15" : "#1e1e1e",
-                    borderColor: tool.available ? Colors.accentGreen + "25" : "#2a2a2a",
+                    backgroundColor: tool.available ? "#00e5a015" : "#1e1e1e",
+                    borderColor: tool.available ? "#00e5a025" : "#2a2a2a",
                   },
                 ]}>
-                  <Text style={[styles.availBadgeText, { color: tool.available ? Colors.accentGreen : "#444" }]}>
+                  <Text style={[styles.availBadgeText, { color: tool.available ? "#00e5a0" : "#444" }]}>
                     {tool.available ? "disponível" : "indisponível"}
                   </Text>
                 </View>
@@ -309,7 +308,7 @@ export default function ProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: Colors.accent }}>r</Text>ono
+            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
           </Text>
           <Text style={[styles.headerSub, { color: colors.textMuted }]}>perfil</Text>
         </View>
@@ -360,13 +359,13 @@ export default function ProfileScreen() {
           <View style={[
             styles.locationIconWrap,
             locationMode === "realtime"
-              ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "30" }
-              : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "30" },
+              ? { backgroundColor: "#00e5a015", borderColor: "#00e5a030" }
+              : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" },
           ]}>
             <Feather
               name={locationMode === "realtime" ? "navigation" : "map-pin"}
               size={18}
-              color={locationMode === "realtime" ? Colors.accentGreen : Colors.accent}
+              color={locationMode === "realtime" ? "#00e5a0" : "#ff6b35"}
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -375,12 +374,12 @@ export default function ProfileScreen() {
               <View style={[
                 styles.locationModeBadge,
                 locationMode === "realtime"
-                  ? { backgroundColor: Colors.accentGreen + "15", borderColor: Colors.accentGreen + "25" }
-                  : { backgroundColor: Colors.accent + "15", borderColor: Colors.accent + "25" },
+                  ? { backgroundColor: "#00e5a015", borderColor: "#00e5a025" }
+                  : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" },
               ]}>
                 <Text style={[
                   styles.locationModeBadgeText,
-                  { color: locationMode === "realtime" ? Colors.accentGreen : Colors.accent },
+                  { color: locationMode === "realtime" ? "#00e5a0" : "#ff6b35" },
                 ]}>
                   {locationMode === "realtime" ? "Tempo real" : "Fixa"}
                 </Text>
@@ -398,8 +397,8 @@ export default function ProfileScreen() {
         {/* Skills + Tools compact cards */}
         <View style={styles.compactRow}>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("skills")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: Colors.accent + "20" }]}>
-              <Feather name="tool" size={16} color={Colors.accent} />
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#ff6b3520" }]}>
+              <Feather name="tool" size={16} color={"#ff6b35"} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
@@ -411,8 +410,8 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("tools")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: Colors.accentGreen + "20" }]}>
-              <Feather name="box" size={16} color={Colors.accentGreen} />
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#00e5a020" }]}>
+              <Feather name="box" size={16} color={"#00e5a0"} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
@@ -458,7 +457,7 @@ export default function ProfileScreen() {
                   <View style={styles.compositionRow}>
                     {skill && (
                       <View style={styles.compositionItem}>
-                        <Feather name="star" size={10} color={Colors.accent} />
+                        <Feather name="star" size={10} color={"#ff6b35"} />
                         <Text style={styles.compositionSkill} numberOfLines={1}>{skill.name}</Text>
                         {skill.verified && (
                           <View style={styles.compVerifiedDot} />
@@ -467,7 +466,7 @@ export default function ProfileScreen() {
                     )}
                     {tools.length > 0 && (
                       <View style={styles.compositionItem}>
-                        <Feather name="key" size={10} color={Colors.accentGreen} />
+                        <Feather name="key" size={10} color={"#00e5a0"} />
                         <Text style={styles.compositionTool} numberOfLines={1}>
                           {tools.map((t) => t.name).join(", ")}
                         </Text>
@@ -478,7 +477,7 @@ export default function ProfileScreen() {
                   {/* Rating */}
                   {!sv.isNew ? (
                     <View style={styles.serviceRatingRow}>
-                      <Feather name="star" size={10} color={Colors.accent} />
+                      <Feather name="star" size={10} color={"#ff6b35"} />
                       <Text style={styles.serviceRatingText}>
                         {sv.rating} · {sv.reviews} avaliações · {sv.contracts} contratos
                       </Text>
@@ -559,7 +558,7 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: "#161616",
     borderWidth: 2,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -567,7 +566,7 @@ const styles = StyleSheet.create({
   avatarLargeText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 22,
-    color: Colors.accent,
+    color: "#ff6b35",
     fontWeight: "700",
   },
   profileInfo: { flex: 1, paddingTop: 4 },
@@ -790,7 +789,7 @@ const styles = StyleSheet.create({
   serviceRate: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
-    color: Colors.accent,
+    color: "#ff6b35",
     flexShrink: 0,
   },
   compositionRow: {
@@ -805,13 +804,13 @@ const styles = StyleSheet.create({
   compositionSkill: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: Colors.accent + "cc",
+    color: "#ff6b35cc",
     flex: 1,
   },
   compositionTool: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: Colors.accentGreen + "cc",
+    color: "#00e5a0cc",
     flex: 1,
   },
   compVerifiedDot: {
@@ -833,9 +832,9 @@ const styles = StyleSheet.create({
   },
   newBadgeWrap: { flexDirection: "row" },
   newBadge: {
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "25",
+    borderColor: "#00e5a025",
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -843,7 +842,7 @@ const styles = StyleSheet.create({
   newBadgeText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
 
   subContainer: { flex: 1 },

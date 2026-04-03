@@ -7,7 +7,6 @@ import {
   View,
 } from "react-native";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 
 export type AppDialogButton = {
@@ -64,7 +63,7 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
                       styles.btnText,
                       btn.style === "cancel"
                         ? { color: colors.textSecondary }
-                        : { color: Colors.accent },
+                        : { color: "#ff6b35" },
                     ]}
                   >
                     {btn.text}

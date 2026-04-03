@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { DocFile, DocType, useDocuments } from "@/context/DocumentsContext";
 
 type DocConfig = {
@@ -58,6 +58,7 @@ const DOC_CONFIG: Record<DocType, DocConfig> = {
 const DOC_TYPES: DocType[] = ["RG", "CNH", "Passaporte"];
 
 export default function EnvioDocumentoScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -111,7 +112,7 @@ export default function EnvioDocumentoScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
@@ -124,7 +125,7 @@ export default function EnvioDocumentoScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={Colors.accent} />
+            <Feather name="arrow-left" size={18} color={"#ff6b35"} />
           </Pressable>
           <Text style={styles.headerTitle}>Enviar documento</Text>
           <View style={{ width: 26 }} />
@@ -163,7 +164,7 @@ export default function EnvioDocumentoScreen() {
             {files.map((file, index) => (
               <View key={index} style={styles.fileItem}>
                 <View style={styles.fileIconWrap}>
-                  <Feather name={getFileIcon(file.mimeType)} size={15} color={Colors.accent} />
+                  <Feather name={getFileIcon(file.mimeType)} size={15} color={"#ff6b35"} />
                 </View>
                 <Text style={styles.fileName} numberOfLines={1} ellipsizeMode="middle">
                   {file.name}
@@ -208,7 +209,7 @@ export default function EnvioDocumentoScreen() {
       </ScrollView>
 
       {/* Botão de envio fixo */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 16, backgroundColor: colors.background }]}>
         <Pressable
           style={[styles.submitBtn, (files.length === 0 || submitting) && styles.submitBtnDisabled]}
           disabled={files.length === 0 || submitting}
@@ -272,14 +273,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a0a0a",
   },
   chipActive: {
-    borderColor: Colors.accent + "60",
-    backgroundColor: Colors.accent + "10",
+    borderColor: "#ff6b3560",
+    backgroundColor: "#ff6b3510",
   },
   chipDot: {
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   chipLabel: {
     fontFamily: "Sora_600SemiBold",
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 8,
-    backgroundColor: Colors.accent + "10",
+    backgroundColor: "#ff6b3510",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     marginTop: 6,
     flexShrink: 0,
   },
@@ -395,14 +396,13 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: "#111",
-    backgroundColor: Colors.background,
   },
   submitBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     paddingVertical: 15,
   },

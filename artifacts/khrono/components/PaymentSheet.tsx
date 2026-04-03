@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { useCards } from "@/context/CardsContext";
 
 export type PaymentMethod = "cartao" | "pix" | "dinheiro";
@@ -25,12 +25,13 @@ type Props = {
 };
 
 const METHOD_CONFIG = {
-  cartao: { icon: "credit-card" as const, label: "Cartão", sub: "Débito ou crédito", color: Colors.accent },
-  pix:    { icon: "zap" as const,         label: "Pix",    sub: "QR Code ou copia e cola", color: Colors.accentGreen },
+  cartao: { icon: "credit-card" as const, label: "Cartão", sub: "Débito ou crédito", color: "#ff6b35" },
+  pix:    { icon: "zap" as const,         label: "Pix",    sub: "QR Code ou copia e cola", color: "#00e5a0" },
   dinheiro: { icon: "dollar-sign" as const, label: "Dinheiro", sub: "Pague diretamente ao prestador", color: "#aaa" },
 };
 
 export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, onConfirm }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { cards } = useCards();
   const [method, setMethod] = useState<PaymentMethod | null>(initialMethod);
@@ -83,11 +84,11 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           onPress={() => selectMethod("cartao")}
           style={[styles.methodRow, method === "cartao" && styles.methodRowActive]}
         >
-          <View style={[styles.methodIcon, method === "cartao" && { borderColor: Colors.accent + "40", backgroundColor: Colors.accent + "10" }]}>
-            <Feather name="credit-card" size={18} color={method === "cartao" ? Colors.accent : "#444"} />
+          <View style={[styles.methodIcon, method === "cartao" && { borderColor: "#ff6b3540", backgroundColor: "#ff6b3510" }]}>
+            <Feather name="credit-card" size={18} color={method === "cartao" ? "#ff6b35" : "#444"} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "cartao" && { color: Colors.accent }]}>Cartão</Text>
+            <Text style={[styles.methodLabel, method === "cartao" && { color: "#ff6b35" }]}>Cartão</Text>
             <Text style={styles.methodSub}>Débito ou crédito</Text>
           </View>
           <View style={[styles.radio, method === "cartao" && styles.radioActive]}>
@@ -145,11 +146,11 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           onPress={() => selectMethod("pix")}
           style={[styles.methodRow, method === "pix" && styles.methodRowPixActive]}
         >
-          <View style={[styles.methodIcon, method === "pix" && { borderColor: Colors.accentGreen + "40", backgroundColor: Colors.accentGreen + "10" }]}>
-            <Feather name="zap" size={18} color={method === "pix" ? Colors.accentGreen : "#444"} />
+          <View style={[styles.methodIcon, method === "pix" && { borderColor: "#00e5a040", backgroundColor: "#00e5a010" }]}>
+            <Feather name="zap" size={18} color={method === "pix" ? "#00e5a0" : "#444"} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "pix" && { color: Colors.accentGreen }]}>Pix</Text>
+            <Text style={[styles.methodLabel, method === "pix" && { color: "#00e5a0" }]}>Pix</Text>
             <Text style={styles.methodSub}>QR Code ou copia e cola gerados na hora</Text>
           </View>
           <View style={[styles.radio, method === "pix" && styles.radioPixActive]}>
@@ -236,12 +237,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a0a0a",
   },
   methodRowActive: {
-    borderColor: Colors.accent + "35",
-    backgroundColor: Colors.accent + "08",
+    borderColor: "#ff6b3535",
+    backgroundColor: "#ff6b3508",
   },
   methodRowPixActive: {
-    borderColor: Colors.accentGreen + "35",
-    backgroundColor: Colors.accentGreen + "08",
+    borderColor: "#00e5a035",
+    backgroundColor: "#00e5a008",
   },
   methodRowDinheiroActive: {
     borderColor: "#ffffff18",
@@ -278,10 +279,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   radioActive: {
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
   },
   radioPixActive: {
-    borderColor: Colors.accentGreen,
+    borderColor: "#00e5a0",
   },
   radioDinheiroActive: {
     borderColor: "#666",
@@ -290,13 +291,13 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   radioInnerGreen: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
   },
   radioInnerGray: {
     width: 8,
@@ -337,8 +338,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#0a0a0a",
   },
   cardRowActive: {
-    borderColor: Colors.accent + "40",
-    backgroundColor: Colors.accent + "08",
+    borderColor: "#ff6b3540",
+    backgroundColor: "#ff6b3508",
   },
   cardBandeira: {
     paddingHorizontal: 6,
@@ -363,17 +364,17 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   padraoTag: {
-    backgroundColor: Colors.accent + "15",
+    backgroundColor: "#ff6b3515",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
   },
   padraoText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   confirmBtn: {
     flexDirection: "row",
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     marginTop: 8,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     paddingVertical: 16,
   },

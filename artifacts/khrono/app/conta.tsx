@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { DocStatus, useDocuments } from "@/context/DocumentsContext";
 import { supabase } from "@/lib/supabase";
@@ -27,14 +27,14 @@ type EditingField = "nome" | "email" | "telefone" | "cpf" | "nascimento" | null;
 
 const STATUS_COLORS: Record<VerifStatus, { bg: string; border: string; text: string; label: string }> = {
   none:     { bg: "#111",                    border: "#1e1e1e",              text: "#444",           label: "Não enviado" },
-  pending:  { bg: Colors.accent + "12",      border: Colors.accent + "30",   text: Colors.accent,    label: "Em análise"  },
-  approved: { bg: Colors.accentGreen + "12", border: Colors.accentGreen + "30", text: Colors.accentGreen, label: "Aprovado" },
+  pending:  { bg: "#ff6b3512",      border: "#ff6b3530",   text: "#ff6b35",    label: "Em análise"  },
+  approved: { bg: "#00e5a012", border: "#00e5a030", text: "#00e5a0", label: "Aprovado" },
   rejected: { bg: "#ff3b3015",              border: "#ff3b3030",            text: "#ff3b30",        label: "Reprovado"  },
 };
 
 const DOC_STATUS_COLORS: Record<DocStatus, { bg: string; border: string; text: string; label: string }> = {
-  analise:    { bg: Colors.accent + "12",      border: Colors.accent + "30",        text: Colors.accent,      label: "Em análise"  },
-  verificado: { bg: Colors.accentGreen + "12", border: Colors.accentGreen + "30",   text: Colors.accentGreen, label: "Verificado"  },
+  analise:    { bg: "#ff6b3512",      border: "#ff6b3530",        text: "#ff6b35",      label: "Em análise"  },
+  verificado: { bg: "#00e5a012", border: "#00e5a030",   text: "#00e5a0", label: "Verificado"  },
   invalido:   { bg: "#ff3b3015",               border: "#ff3b3030",                 text: "#ff3b30",          label: "Inválido"    },
 };
 
@@ -67,6 +67,7 @@ function Toast({ visible, message, translateY }: { visible: boolean; message: st
 }
 
 export default function ContaScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -276,7 +277,7 @@ export default function ContaScreen() {
   const faceNeedsAction = faceStatus === "none" || faceStatus === "rejected";
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Toast visible={toastVisible} message={toastMsg} translateY={toastAnim} />
 
       <ScrollView
@@ -291,7 +292,7 @@ export default function ContaScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={Colors.accent} />
+            <Feather name="arrow-left" size={18} color={"#ff6b35"} />
           </Pressable>
           <Text style={styles.headerTitle}>Minha conta</Text>
           <View style={{ width: 26 }} />
@@ -307,7 +308,7 @@ export default function ContaScreen() {
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}
-            <View style={styles.avatarEditBadge}>
+            <View style={[styles.avatarEditBadge, { borderColor: colors.background }]}>
               <Feather name="camera" size={11} color="#fff" />
             </View>
           </Pressable>
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     zIndex: 999,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -647,7 +648,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     backgroundColor: "#161616",
     borderWidth: 2,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -656,12 +657,12 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 2,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
   },
   avatarText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 24,
-    color: Colors.accent,
+    color: "#ff6b35",
     fontWeight: "700",
   },
   avatarEditBadge: {
@@ -671,11 +672,10 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: Colors.background,
   },
   avatarName: {
     fontFamily: "Sora_600SemiBold",
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   avatarSaveText: {
     fontFamily: "Sora_600SemiBold",
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
   },
   fieldRowEditing: {
     backgroundColor: "#111",
-    borderBottomColor: Colors.accent + "20",
+    borderBottomColor: "#ff6b3520",
   },
   fieldMeta: { flex: 1 },
   fieldLabel: {
@@ -790,7 +790,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   saveBtnText: {
     fontFamily: "Sora_600SemiBold",
@@ -976,7 +976,7 @@ const styles = StyleSheet.create({
   },
   changePwdBtn: {
     marginTop: 16,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 10,
     paddingVertical: 11,
     alignItems: "center",
@@ -1015,9 +1015,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   twoFaActiveBadge: {
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -1025,7 +1025,7 @@ const styles = StyleSheet.create({
   twoFaActiveBadgeText: {
     fontFamily: "DMMono_500Medium",
     fontSize: 10,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
   twoFaDivider: { height: 1, backgroundColor: "#141414", marginVertical: 10 },
   configureBtn: {

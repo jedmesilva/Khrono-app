@@ -18,7 +18,6 @@ import { HistoryCard } from "@/components/HistoryCard";
 import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 
@@ -83,7 +82,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: Colors.accent }}>r</Text>ono
+            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
           </Text>
           <View style={styles.headerActions}>
             <Pressable
@@ -121,9 +120,9 @@ export default function HomeScreen() {
           <StatsBar
             style={styles.summaryBar}
             items={[
-              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: Colors.accent },
+              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: "#ff6b35" },
               { label: "ATIVOS", value: activeContracts.length, align: "center" },
-              { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: Colors.accentGreen, align: "flex-end" },
+              { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: "#00e5a0", align: "flex-end" },
             ]}
           />
         )}
@@ -230,7 +229,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
   sectionLink: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: Colors.accent,
+    color: "#ff6b35",
     letterSpacing: 0.5,
   },
   contractList: {

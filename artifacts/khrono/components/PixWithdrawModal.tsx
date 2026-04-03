@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type KeyType = "cpf" | "email" | "phone" | "random";
 
@@ -34,6 +34,7 @@ type Props = {
 type Step = "form" | "confirm" | "success";
 
 export function PixWithdrawModal({ visible, balance, onClose }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<Step>("form");
   const [amount, setAmount] = useState("");
@@ -218,7 +219,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
           {step === "success" && (
             <View style={styles.successContainer}>
               <View style={styles.successIcon}>
-                <Feather name="check" size={32} color={Colors.accentGreen} />
+                <Feather name="check" size={32} color={"#00e5a0"} />
               </View>
               <Text style={styles.successTitle}>Pix enviado!</Text>
               <Text style={styles.successSub}>
@@ -323,8 +324,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   keyTypeBtnActive: {
-    borderColor: Colors.accentGreen,
-    backgroundColor: Colors.accentGreen + "15",
+    borderColor: "#00e5a0",
+    backgroundColor: "#00e5a015",
   },
   keyTypeTxt: {
     fontFamily: "DMMono_400Regular",
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     color: "#444",
   },
   keyTypeTxtActive: {
-    color: Colors.accentGreen,
+    color: "#00e5a0",
   },
   keyInput: {
     backgroundColor: "#111",
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     marginTop: 20,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 14,
     paddingVertical: 16,
   },
@@ -411,9 +412,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "40",
+    borderColor: "#00e5a040",
     alignItems: "center",
     justifyContent: "center",
   },

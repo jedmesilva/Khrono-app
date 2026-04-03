@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
 import { useTheme } from "@/context/ThemeContext";
 
 type ToggleRowProps = {

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
 import { useCards } from "@/context/CardsContext";
@@ -46,6 +46,7 @@ function formatTimer(s: number) {
 type Etapa = "confirmacao" | "aguardando" | "ativo";
 
 export default function ContractConfirmScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
@@ -199,7 +200,7 @@ export default function ContractConfirmScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -207,10 +208,10 @@ export default function ContractConfirmScreen() {
           style={styles.backBtn}
           hitSlop={12}
         >
-          <Feather name="arrow-left" size={20} color={Colors.accent} />
+          <Feather name="arrow-left" size={20} color={"#ff6b35"} />
         </Pressable>
         <Text style={styles.headerTitle}>
-          K<Text style={{ color: Colors.accent }}>r</Text>ono
+          K<Text style={{ color: "#ff6b35" }}>r</Text>ono
         </Text>
       </View>
 
@@ -253,9 +254,9 @@ export default function ContractConfirmScreen() {
                 onPress={() => router.push(`/user-profile/${provider.profileId}` as any)}
                 style={styles.verPerfilBtn}
               >
-                <Feather name="user" size={11} color={Colors.accent + "99"} />
+                <Feather name="user" size={11} color={"#ff6b3599"} />
                 <Text style={styles.verPerfilText}>ver perfil completo</Text>
-                <Feather name="chevron-right" size={11} color={Colors.accent + "60"} />
+                <Feather name="chevron-right" size={11} color={"#ff6b3560"} />
               </Pressable>
             )}
           </View>
@@ -270,19 +271,19 @@ export default function ContractConfirmScreen() {
             style={[styles.scheduleBtn, servico && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, servico && styles.scheduleIconActive]}>
-              <Feather name="tool" size={16} color={servico ? Colors.accent : "#444"} />
+              <Feather name="tool" size={16} color={servico ? "#ff6b35" : "#444"} />
             </View>
             <View style={{ flex: 1 }}>
               {servico ? (
                 <>
                   <Text style={[styles.scheduleLabel, { color: "#fff" }]}>{servico.nome}</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-                    <Feather name="star" size={9} color={Colors.accent} />
+                    <Feather name="star" size={9} color={"#ff6b35"} />
                     <Text style={styles.scheduleSub}>{servico.nota} · {servico.avaliacoes} avaliações</Text>
                     {servico.skill && (
                       <>
                         <Text style={[styles.scheduleSub, { color: "#2a2a2a" }]}>·</Text>
-                        <Text style={[styles.scheduleSub, { color: Colors.accent + "88" }]}>{servico.skill}</Text>
+                        <Text style={[styles.scheduleSub, { color: "#ff6b3588" }]}>{servico.skill}</Text>
                       </>
                     )}
                   </View>
@@ -295,7 +296,7 @@ export default function ContractConfirmScreen() {
               )}
             </View>
             {servico && (
-              <Text style={[styles.optionRate, { color: Colors.accent }]}>
+              <Text style={[styles.optionRate, { color: "#ff6b35" }]}>
                 R${(provider.valorBase * servico.multiplicador).toFixed(0)}/h
               </Text>
             )}
@@ -313,7 +314,7 @@ export default function ContractConfirmScreen() {
             style={[styles.scheduleBtn, agendado && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, agendado && styles.scheduleIconActive]}>
-              <Feather name="calendar" size={16} color={agendado ? Colors.accent : "#444"} />
+              <Feather name="calendar" size={16} color={agendado ? "#ff6b35" : "#444"} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.scheduleLabel, agendado && { color: "#fff" }]}>
@@ -380,11 +381,11 @@ export default function ContractConfirmScreen() {
                 onPress={() => setCustomAtivo(c => !c)}
                 style={[styles.customChip, customAtivo && styles.customChipActive]}
               >
-                <Text style={[styles.customChipText, customAtivo && { color: Colors.accent }]}>
+                <Text style={[styles.customChipText, customAtivo && { color: "#ff6b35" }]}>
                   Personalizado
                 </Text>
                 {customAtivo && (
-                  <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: "DMMono_400Regular" }}>
+                  <Text style={{ color: "#ff6b35", fontSize: 12, fontFamily: "DMMono_400Regular" }}>
                     {customHoras === 0 && customMinutos === 0
                       ? "defina abaixo"
                       : `${customHoras > 0 ? customHoras + "h " : ""}${customMinutos > 0 ? customMinutos + "min" : ""}`}
@@ -457,14 +458,14 @@ export default function ContractConfirmScreen() {
             style={[
               styles.scheduleBtn,
               metodoPagamento && styles.scheduleBtnActive,
-              metodoPagamento === "pix" && { borderColor: Colors.accentGreen + "35", backgroundColor: Colors.accentGreen + "08" },
+              metodoPagamento === "pix" && { borderColor: "#00e5a035", backgroundColor: "#00e5a008" },
               metodoPagamento === "dinheiro" && { borderColor: "#ffffff18", backgroundColor: "#ffffff05" },
             ]}
           >
             <View style={[
               styles.scheduleIcon,
               metodoPagamento && metodoPagamento !== "pix" && metodoPagamento !== "dinheiro" && styles.scheduleIconActive,
-              metodoPagamento === "pix" && { borderColor: Colors.accentGreen + "40", backgroundColor: Colors.accentGreen + "10" },
+              metodoPagamento === "pix" && { borderColor: "#00e5a040", backgroundColor: "#00e5a010" },
               metodoPagamento === "dinheiro" && { borderColor: "#ffffff20", backgroundColor: "#ffffff08" },
             ]}>
               <Feather
@@ -476,8 +477,8 @@ export default function ContractConfirmScreen() {
                 }
                 size={16}
                 color={
-                  metodoPagamento === "cartao" ? Colors.accent
-                  : metodoPagamento === "pix" ? Colors.accentGreen
+                  metodoPagamento === "cartao" ? "#ff6b35"
+                  : metodoPagamento === "pix" ? "#00e5a0"
                   : metodoPagamento === "dinheiro" ? "#aaa"
                   : "#444"
                 }
@@ -503,7 +504,7 @@ export default function ContractConfirmScreen() {
               })()}
               {metodoPagamento === "pix" && (
                 <>
-                  <Text style={[styles.scheduleLabel, { color: Colors.accentGreen }]}>Pix</Text>
+                  <Text style={[styles.scheduleLabel, { color: "#00e5a0" }]}>Pix</Text>
                   <Text style={styles.scheduleSub}>QR Code gerado ao confirmar</Text>
                 </>
               )}
@@ -604,7 +605,7 @@ export default function ContractConfirmScreen() {
             <Text style={styles.simLabel}>simular resposta do prestador:</Text>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Pressable onPress={aceitar} style={styles.simAcceptBtn}>
-                <Feather name="check" size={14} color={Colors.accentGreen} />
+                <Feather name="check" size={14} color={"#00e5a0"} />
                 <Text style={styles.simAcceptText}>Aceitar</Text>
               </Pressable>
               <Pressable onPress={() => setEtapa("confirmacao")} style={styles.simRejectBtn}>
@@ -632,7 +633,7 @@ export default function ContractConfirmScreen() {
           </View>
 
           <View style={styles.activeProviderRow}>
-            <View style={[styles.avatar, { borderColor: Colors.accentGreen }]}>
+            <View style={[styles.avatar, { borderColor: "#00e5a0" }]}>
               <Text style={styles.avatarText}>{provider.initials}</Text>
             </View>
             <View>
@@ -661,7 +662,7 @@ export default function ContractConfirmScreen() {
                   styles.progressFill,
                   {
                     width: `${Math.round((progresso ?? 0) * 100)}%` as any,
-                    backgroundColor: (timerRestante ?? 0) < 600 ? "#ff4444" : Colors.accent,
+                    backgroundColor: (timerRestante ?? 0) < 600 ? "#ff4444" : "#ff6b35",
                   }
                 ]} />
               </View>
@@ -682,7 +683,6 @@ export default function ContractConfirmScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -739,22 +739,22 @@ const styles = StyleSheet.create({
   verPerfilText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-    color: Colors.accent + "99",
+    color: "#ff6b3599",
     flex: 1,
   },
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.accentGreen + "20",
+    backgroundColor: "#00e5a020",
     borderWidth: 2,
-    borderColor: Colors.accentGreen + "40",
+    borderColor: "#00e5a040",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   avatarText: {
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     fontSize: 18,
     fontWeight: "700",
     fontFamily: "DMMono_500Medium",
@@ -789,7 +789,7 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   rateValue: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 18,
     fontWeight: "700",
     fontFamily: "DMMono_500Medium",
@@ -812,8 +812,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   optionRowActive: {
-    backgroundColor: Colors.accent + "15",
-    borderColor: Colors.accent + "50",
+    backgroundColor: "#ff6b3515",
+    borderColor: "#ff6b3550",
   },
   radio: {
     width: 18,
@@ -826,13 +826,13 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   radioActive: {
-    borderColor: Colors.accent,
+    borderColor: "#ff6b35",
   },
   radioInner: {
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
   },
   optionLabel: {
     color: "#666",
@@ -862,8 +862,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   toolRowActive: {
-    backgroundColor: Colors.accentGreen + "08",
-    borderColor: Colors.accentGreen + "30",
+    backgroundColor: "#00e5a008",
+    borderColor: "#00e5a030",
   },
   toolIcon: {
     width: 36,
@@ -877,8 +877,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   toolIconActive: {
-    backgroundColor: Colors.accentGreen + "15",
-    borderColor: Colors.accentGreen + "30",
+    backgroundColor: "#00e5a015",
+    borderColor: "#00e5a030",
   },
   toolName: {
     color: "#666",
@@ -903,8 +903,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   checkboxActive: {
-    backgroundColor: Colors.accentGreen,
-    borderColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
+    borderColor: "#00e5a0",
   },
   scheduleBtn: {
     backgroundColor: "#0a0a0a",
@@ -918,8 +918,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   scheduleBtnActive: {
-    backgroundColor: Colors.accent + "15",
-    borderColor: Colors.accent + "50",
+    backgroundColor: "#ff6b3515",
+    borderColor: "#ff6b3550",
   },
   scheduleIcon: {
     width: 36,
@@ -933,8 +933,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   scheduleIconActive: {
-    backgroundColor: Colors.accent + "20",
-    borderColor: Colors.accent + "30",
+    backgroundColor: "#ff6b3520",
+    borderColor: "#ff6b3530",
   },
   scheduleLabel: {
     color: "#666",
@@ -976,8 +976,8 @@ const styles = StyleSheet.create({
     minWidth: 52,
   },
   dayChipActive: {
-    backgroundColor: Colors.accent,
-    borderColor: Colors.accent,
+    backgroundColor: "#ff6b35",
+    borderColor: "#ff6b35",
   },
   dayChipWeekday: {
     color: "#444",
@@ -1033,7 +1033,7 @@ const styles = StyleSheet.create({
   },
   scheduleConfirmBtn: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
@@ -1065,8 +1065,8 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   contractTypeBtnActive: {
-    backgroundColor: Colors.accent + "15",
-    borderColor: Colors.accent + "50",
+    backgroundColor: "#ff6b3515",
+    borderColor: "#ff6b3550",
   },
   contractTypeTop: {
     flexDirection: "row",
@@ -1100,8 +1100,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   durChipActive: {
-    backgroundColor: Colors.accent,
-    borderColor: Colors.accent,
+    backgroundColor: "#ff6b35",
+    borderColor: "#ff6b35",
   },
   durChipText: {
     color: "#555",
@@ -1120,8 +1120,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   customChipActive: {
-    backgroundColor: Colors.accent + "15",
-    borderColor: Colors.accent + "50",
+    backgroundColor: "#ff6b3515",
+    borderColor: "#ff6b3550",
   },
   customChipText: {
     color: "#555",
@@ -1148,7 +1148,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   valueSummaryAmount: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 24,
     fontWeight: "700",
     fontFamily: "DMMono_500Medium",
@@ -1166,7 +1166,7 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_500Medium",
   },
   confirmBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#ff6b35",
     borderRadius: 14,
     padding: 16,
     alignItems: "center",
@@ -1215,7 +1215,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: "transparent",
-    borderTopColor: Colors.accent,
+    borderTopColor: "#ff6b35",
   },
   spinnerAvatar: {
     width: 84,
@@ -1226,7 +1226,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   spinnerAvatarText: {
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     fontSize: 22,
     fontWeight: "700",
     fontFamily: "DMMono_500Medium",
@@ -1271,9 +1271,9 @@ const styles = StyleSheet.create({
   },
   simAcceptBtn: {
     flex: 1,
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 10,
     padding: 12,
     flexDirection: "row",
@@ -1282,7 +1282,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   simAcceptText: {
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     fontSize: 13,
     fontWeight: "600",
     fontFamily: "Sora_600SemiBold",
@@ -1307,9 +1307,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: Colors.accentGreen + "10",
+    backgroundColor: "#00e5a010",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "25",
+    borderColor: "#00e5a025",
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
@@ -1320,10 +1320,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
   },
   activeBadgeText: {
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     fontSize: 11,
     fontFamily: "DMMono_400Regular",
     letterSpacing: 1,
@@ -1361,7 +1361,7 @@ const styles = StyleSheet.create({
     lineHeight: 60,
   },
   timerAmount: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 22,
     fontWeight: "700",
     fontFamily: "DMMono_500Medium",
@@ -1388,13 +1388,13 @@ const styles = StyleSheet.create({
   },
   endBtn: {
     borderWidth: 1,
-    borderColor: Colors.accent + "40",
+    borderColor: "#ff6b3540",
     borderRadius: 14,
     padding: 16,
     alignItems: "center",
   },
   endBtnText: {
-    color: Colors.accent,
+    color: "#ff6b35",
     fontSize: 13,
     fontFamily: "DMMono_400Regular",
     letterSpacing: 1,

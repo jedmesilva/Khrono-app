@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -46,6 +46,7 @@ export function ScheduleSheet({
   agendado,
   onConfirm,
 }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   const [data, setData] = useState(initialDate);
@@ -129,7 +130,7 @@ export function ScheduleSheet({
           style={[styles.optionRow, !isAgendado && styles.optionRowActive]}
         >
           <View style={[styles.optionIcon, !isAgendado && styles.optionIconActive]}>
-            <Feather name="zap" size={18} color={!isAgendado ? Colors.accent : "#444"} />
+            <Feather name="zap" size={18} color={!isAgendado ? "#ff6b35" : "#444"} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.optionLabel, !isAgendado && styles.optionLabelActive]}>
@@ -138,7 +139,7 @@ export function ScheduleSheet({
             <Text style={styles.optionSub}>Iniciar imediatamente</Text>
           </View>
           {!isAgendado && (
-            <Feather name="check" size={16} color={Colors.accent} />
+            <Feather name="check" size={16} color={"#ff6b35"} />
           )}
         </Pressable>
 
@@ -150,11 +151,11 @@ export function ScheduleSheet({
           style={[styles.optionRow, isAgendado && picker === "date" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="calendar" size={18} color={isAgendado ? Colors.accent : "#444"} />
+            <Feather name="calendar" size={18} color={isAgendado ? "#ff6b35" : "#444"} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Dia</Text>
-            <Text style={[styles.optionSub, isAgendado && { color: Colors.accent }]}>
+            <Text style={[styles.optionSub, isAgendado && { color: "#ff6b35" }]}>
               {isAgendado ? formatDataLabel(data) : "Selecionar data"}
             </Text>
           </View>
@@ -167,11 +168,11 @@ export function ScheduleSheet({
           style={[styles.optionRow, isAgendado && picker === "time" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="clock" size={18} color={isAgendado ? Colors.accent : "#444"} />
+            <Feather name="clock" size={18} color={isAgendado ? "#ff6b35" : "#444"} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Horário</Text>
-            <Text style={[styles.optionSub, isAgendado && { color: Colors.accent }]}>
+            <Text style={[styles.optionSub, isAgendado && { color: "#ff6b35" }]}>
               {isAgendado
                 ? `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`
                 : "Selecionar horário"}
@@ -270,9 +271,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   optionRowActive: {
-    backgroundColor: Colors.accent + "10",
+    backgroundColor: "#ff6b3510",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#ff6b3530",
   },
   optionRowFocused: {
     backgroundColor: "#1a1a1a",
@@ -288,8 +289,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   optionIconActive: {
-    borderColor: Colors.accent + "40",
-    backgroundColor: Colors.accent + "10",
+    borderColor: "#ff6b3540",
+    backgroundColor: "#ff6b3510",
   },
   optionLabel: {
     fontFamily: "Sora_600SemiBold",
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   optionLabelActive: {
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   optionSub: {
     fontFamily: "DMMono_400Regular",
@@ -337,13 +338,13 @@ const styles = StyleSheet.create({
   pickerDoneBtn: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: Colors.accent + "20",
+    backgroundColor: "#ff6b3520",
     borderRadius: 8,
   },
   pickerDoneText: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: Colors.accent,
+    color: "#ff6b35",
   },
   picker: {
     backgroundColor: "transparent",
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     marginTop: 12,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 14,
     paddingVertical: 16,
   },

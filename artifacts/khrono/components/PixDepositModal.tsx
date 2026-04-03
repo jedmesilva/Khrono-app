@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Colors from "@/constants/colors";
+import { useTheme } from "@/context/ThemeContext";
 
 type Step = "form" | "qr" | "success";
 
@@ -27,6 +27,7 @@ type Props = {
 const PIX_KEY = "khrono@app.com.br";
 
 export function PixDepositModal({ visible, onClose }: Props) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<Step>("form");
   const [amount, setAmount] = useState("");
@@ -135,7 +136,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
                         key={i}
                         style={[
                           styles.qrCell,
-                          i % 2 === 0 && { backgroundColor: Colors.accentGreen + "80" },
+                          i % 2 === 0 && { backgroundColor: "#00e5a080" },
                         ]}
                       />
                     ))}
@@ -143,7 +144,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
                   <Feather
                     name="zap"
                     size={28}
-                    color={Colors.accentGreen}
+                    color={"#00e5a0"}
                     style={styles.qrIcon}
                   />
                 </View>
@@ -168,7 +169,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
                     <Feather
                       name={copied ? "check" : "copy"}
                       size={14}
-                      color={copied ? Colors.accentGreen : "#555"}
+                      color={copied ? "#00e5a0" : "#555"}
                     />
                   </Pressable>
                 </View>
@@ -184,7 +185,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
           {step === "success" && (
             <View style={styles.successContainer}>
               <View style={styles.successIcon}>
-                <Feather name="check" size={32} color={Colors.accentGreen} />
+                <Feather name="check" size={32} color={"#00e5a0"} />
               </View>
               <Text style={styles.successTitle}>Depósito em análise</Text>
               <Text style={styles.successSub}>
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     marginTop: 20,
-    backgroundColor: Colors.accentGreen,
+    backgroundColor: "#00e5a0",
     borderRadius: 14,
     paddingVertical: 16,
   },
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
     height: 160,
     backgroundColor: "#111",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "30",
+    borderColor: "#00e5a030",
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
   pixKeyValue: {
     fontFamily: "DMMono_500Medium",
     fontSize: 13,
-    color: Colors.accentGreen,
+    color: "#00e5a0",
     flex: 1,
   },
   copyBtn: {
@@ -367,8 +368,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   copyBtnCopied: {
-    borderColor: Colors.accentGreen + "40",
-    backgroundColor: Colors.accentGreen + "15",
+    borderColor: "#00e5a040",
+    backgroundColor: "#00e5a015",
   },
   successContainer: {
     alignItems: "center",
@@ -379,9 +380,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.accentGreen + "15",
+    backgroundColor: "#00e5a015",
     borderWidth: 1,
-    borderColor: Colors.accentGreen + "40",
+    borderColor: "#00e5a040",
     alignItems: "center",
     justifyContent: "center",
   },
