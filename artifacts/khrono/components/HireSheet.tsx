@@ -45,6 +45,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 42,
     distancia: 0.8,
     valorBase: 45,
+    totalContracts: 87,
     profileId: "p-1234",
     services: [
       { id: 1, nome: "Pintura Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8, skill: "Pintor", tools: ["Rolo 23cm", "Escada 6m"] },
@@ -58,6 +59,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 128,
     distancia: 2.1,
     valorBase: 80,
+    totalContracts: 152,
     profileId: "p-5678",
     services: [
       { id: 1, nome: "Personal Training", multiplicador: 1.0, avaliacoes: 128, nota: 5.0, skill: "Personal Trainer", tools: ["Kit de Treino"] },
@@ -71,6 +73,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 31,
     distancia: 3.4,
     valorBase: 60,
+    totalContracts: 45,
     profileId: "p-9012",
     services: [
       { id: 1, nome: "Instalação Elétrica", multiplicador: 1.0, avaliacoes: 31, nota: 4.7, skill: "Eletricista", tools: ["Alicate Amperímetro", "Kit Cabos"] },
@@ -84,6 +87,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 77,
     distancia: 0.5,
     valorBase: 40,
+    totalContracts: 94,
     profileId: "p-4321",
     services: [
       { id: 1, nome: "Cuidados com Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9, skill: "Cuidadora" },
@@ -97,6 +101,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     avaliacoes: 19,
     distancia: 1.8,
     valorBase: 50,
+    totalContracts: 43,
     profileId: "p-1257",
     services: [
       { id: 1, nome: "Montagem de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6, skill: "Montador de Móveis", tools: ["Honda Civic 2019", "Kit Furadeira Bosch"] },
@@ -164,9 +169,15 @@ function PincodeContent({
             <Text style={sub.userAvatarText}>{found.initials}</Text>
           </View>
           <Text style={sub.userName}>{found.name}</Text>
-          <Text style={sub.userSkill}>{found.services[0]?.nome}</Text>
-          <View style={sub.rateBadge}>
-            <Text style={sub.rateText}>R${found.valorBase}/h</Text>
+          <View style={sub.infoChipsRow}>
+            <View style={sub.infoChip}>
+              <Feather name="briefcase" size={10} color="#555" />
+              <Text style={sub.infoChipText}>{found.totalContracts ?? 0} contratos</Text>
+            </View>
+            <View style={sub.infoChip}>
+              <Feather name="tool" size={10} color="#555" />
+              <Text style={sub.infoChipText}>{found.services.length} {found.services.length === 1 ? "service" : "services"}</Text>
+            </View>
           </View>
         </View>
         <Text style={sub.confirmDesc}>
@@ -927,25 +938,26 @@ const sub = StyleSheet.create({
     color: "#fff",
     marginBottom: 4,
   },
-  userSkill: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#555",
-    marginBottom: 12,
+  infoChipsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 4,
   },
-  rateBadge: {
-    backgroundColor: Colors.accent + "15",
+  infoChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#111",
     borderWidth: 1,
-    borderColor: Colors.accent + "30",
+    borderColor: "#1e1e1e",
     borderRadius: 20,
     paddingVertical: 5,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
   },
-  rateText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 14,
-    color: Colors.accent,
-    fontWeight: "700",
+  infoChipText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#555",
   },
   confirmDesc: {
     fontFamily: "DMMono_400Regular",

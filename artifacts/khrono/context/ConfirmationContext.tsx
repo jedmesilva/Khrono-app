@@ -17,6 +17,7 @@ export type ProviderData = {
   avaliacoes: number;
   distancia: number;
   valorBase: number;
+  totalContracts?: number;
   services: ProviderService[];
   profileId?: string;
 };
