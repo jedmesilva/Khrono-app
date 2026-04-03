@@ -4,11 +4,11 @@ import {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
+  PanResponder,
   Platform,
   Pressable,
   StyleSheet,
@@ -17,7 +17,6 @@ import {
   View,
 } from "react-native";
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -81,12 +80,7 @@ function PulsingDot() {
 }
 
 const dot = StyleSheet.create({
-  wrap: {
-    width: 20,
-    height: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  wrap: { width: 20, height: 20, alignItems: "center", justifyContent: "center" },
   ring: {
     position: "absolute",
     width: 18,
@@ -94,12 +88,7 @@ const dot = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: Colors.accentGreen + "40",
   },
-  core: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.accentGreen,
-  },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.accentGreen },
 });
 
 function RadiusSlider({
@@ -109,41 +98,51 @@ function RadiusSlider({
   value: number;
   onChange: (v: number) => void;
 }) {
-  const trackWidth = useSharedValue(0);
-  const thumbPos = useSharedValue(toSliderPos(value));
-  const startPos = useSharedValue(0);
-  const [displayMeters, setDisplayMeters] = useState(value);
+  const widthRef = useRef(0);
+  const [trackWidth, setTrackWidth] = useState(0);
+  const startPosRef = useRef(0);
+  const currentPosRef = useRef(toSliderPos(value));
+  const [displayPos, setDisplayPos] = useState(toSliderPos(value));
 
   useEffect(() => {
-    thumbPos.value = withTiming(toSliderPos(value), { duration: 200 });
-    setDisplayMeters(value);
+    const pos = toSliderPos(value);
+    currentPosRef.current = pos;
+    setDisplayPos(pos);
   }, [value]);
 
-  const updateDisplay = (meters: number) => {
-    setDisplayMeters(meters);
-  };
-
-  const gesture = Gesture.Pan()
-    .onBegin(() => {
-      startPos.value = thumbPos.value;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gs) =>
+        Math.abs(gs.dx) > Math.abs(gs.dy),
+      onPanResponderGrant: () => {
+        startPosRef.current = currentPosRef.current;
+      },
+      onPanResponderMove: (_, gs) => {
+        if (widthRef.current === 0) return;
+        const newPos = Math.max(
+          0,
+          Math.min(1, startPosRef.current + gs.dx / widthRef.current)
+        );
+        currentPosRef.current = newPos;
+        setDisplayPos(newPos);
+      },
+      onPanResponderRelease: (_, gs) => {
+        if (widthRef.current === 0) return;
+        const newPos = Math.max(
+          0,
+          Math.min(1, startPosRef.current + gs.dx / widthRef.current)
+        );
+        currentPosRef.current = newPos;
+        setDisplayPos(newPos);
+        onChange(toMeters(newPos));
+      },
+      onPanResponderTerminate: () => {},
     })
-    .onUpdate((e) => {
-      if (trackWidth.value === 0) return;
-      const next = Math.max(0, Math.min(1, startPos.value + e.translationX / trackWidth.value));
-      thumbPos.value = next;
-      runOnJS(updateDisplay)(toMeters(next));
-    })
-    .onEnd(() => {
-      runOnJS(onChange)(toMeters(thumbPos.value));
-    });
+  ).current;
 
-  const fillStyle = useAnimatedStyle(() => ({
-    width: thumbPos.value * trackWidth.value,
-  }));
-
-  const thumbStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: thumbPos.value * (trackWidth.value - THUMB_SIZE) }],
-  }));
+  const displayMeters = toMeters(displayPos);
+  const thumbLeft = displayPos * Math.max(0, trackWidth - THUMB_SIZE);
 
   return (
     <View style={sliderStyles.container}>
@@ -155,20 +154,20 @@ function RadiusSlider({
         </View>
       </View>
 
-      <GestureDetector gesture={gesture}>
-        <View
-          style={sliderStyles.track}
-          onLayout={(e) => {
-            trackWidth.value = e.nativeEvent.layout.width;
-          }}
-        >
-          <View style={sliderStyles.trackBg} />
-          <Animated.View style={[sliderStyles.trackFill, fillStyle]} />
-          <Animated.View style={[sliderStyles.thumb, thumbStyle]}>
-            <View style={sliderStyles.thumbInner} />
-          </Animated.View>
+      <View
+        style={sliderStyles.track}
+        onLayout={(e) => {
+          widthRef.current = e.nativeEvent.layout.width;
+          setTrackWidth(e.nativeEvent.layout.width);
+        }}
+        {...panResponder.panHandlers}
+      >
+        <View style={sliderStyles.trackBg} />
+        <View style={[sliderStyles.trackFill, { width: `${displayPos * 100}%` as any }]} />
+        <View style={[sliderStyles.thumb, { left: thumbLeft }]}>
+          <View style={sliderStyles.thumbInner} />
         </View>
-      </GestureDetector>
+      </View>
 
       <View style={sliderStyles.rangeRow}>
         <Text style={sliderStyles.rangeText}>10 m</Text>
@@ -179,9 +178,7 @@ function RadiusSlider({
 }
 
 const sliderStyles = StyleSheet.create({
-  container: {
-    gap: 10,
-  },
+  container: { gap: 10 },
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -266,7 +263,14 @@ type Props = {
   onSave: (mode: LocationMode, address: string, radius: number) => void;
 };
 
-export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRadius, onSave }: Props) {
+export function LocationSheet({
+  visible,
+  onClose,
+  mode,
+  fixedAddress,
+  serviceRadius,
+  onSave,
+}: Props) {
   const insets = useSafeAreaInsets();
   const ref = useRef<BottomSheetModal>(null);
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
@@ -332,7 +336,10 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRad
         style={{ flex: 1 }}
       >
         <BottomSheetScrollView
-          contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: Math.max(insets.bottom, 24) },
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -342,6 +349,7 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRad
           </Text>
 
           <View style={styles.optionsWrap}>
+            {/* Real-time option */}
             <Pressable
               style={[
                 styles.optionCard,
@@ -382,7 +390,11 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRad
               {selectedMode === "realtime" && (
                 <View style={styles.realtimeInfo}>
                   <View style={styles.realtimeRow}>
-                    <Feather name="navigation" size={11} color={Colors.accentGreen} />
+                    <Feather
+                      name="navigation"
+                      size={11}
+                      color={Colors.accentGreen}
+                    />
                     <Text style={styles.realtimeText}>
                       Belo Horizonte, MG · atualizado agora
                     </Text>
@@ -391,6 +403,7 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRad
               )}
             </Pressable>
 
+            {/* Fixed location option */}
             <Pressable
               style={[
                 styles.optionCard,
@@ -427,7 +440,12 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRad
                   ]}
                 >
                   {selectedMode === "fixed" && (
-                    <View style={[styles.radioInner, { backgroundColor: Colors.accent }]} />
+                    <View
+                      style={[
+                        styles.radioInner,
+                        { backgroundColor: Colors.accent },
+                      ]}
+                    />
                   )}
                 </View>
               </View>
@@ -459,17 +477,21 @@ export function LocationSheet({ visible, onClose, mode, fixedAddress, serviceRad
             </Pressable>
           </View>
 
+          {/* Radius slider */}
           <View style={styles.radiusWrap}>
             <RadiusSlider value={radius} onChange={setRadius} />
           </View>
 
+          {/* Info box */}
           <View style={styles.infoBox}>
             <Feather name="info" size={13} color="#333" />
             <Text style={styles.infoText}>
-              Clientes só verão sua localização aproximada, nunca o endereço exato.
+              Clientes só verão sua localização aproximada, nunca o endereço
+              exato.
             </Text>
           </View>
 
+          {/* Save button */}
           <Pressable
             style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}
             onPress={handleSave}
@@ -492,16 +514,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: "#1e1e1e",
   },
-  handle: {
-    backgroundColor: "#2a2a2a",
-    width: 36,
-    height: 4,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    gap: 14,
-  },
+  handle: { backgroundColor: "#2a2a2a", width: 36, height: 4 },
+  content: { paddingHorizontal: 20, paddingTop: 8, gap: 14 },
   title: {
     fontFamily: "Sora_700Bold",
     fontSize: 18,
@@ -515,9 +529,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 4,
   },
-  optionsWrap: {
-    gap: 10,
-  },
+  optionsWrap: { gap: 10 },
   optionCard: {
     backgroundColor: "#0d0d0d",
     borderWidth: 1,
@@ -534,11 +546,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.accent + "40",
     backgroundColor: Colors.accent + "06",
   },
-  optionTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
+  optionTop: { flexDirection: "row", alignItems: "center", gap: 14 },
   optionIconWrap: {
     width: 46,
     height: 46,
@@ -550,9 +558,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  optionTexts: {
-    flex: 1,
-  },
+  optionTexts: { flex: 1 },
   optionLabel: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 14,
@@ -575,12 +581,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-  radioActive: {
-    borderColor: Colors.accentGreen,
-  },
-  radioActiveBlue: {
-    borderColor: Colors.accent,
-  },
+  radioActive: { borderColor: Colors.accentGreen },
+  radioActiveBlue: { borderColor: Colors.accent },
   radioInner: {
     width: 9,
     height: 9,
@@ -592,11 +594,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: Colors.accentGreen + "15",
   },
-  realtimeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
+  realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   realtimeText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
@@ -665,12 +663,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 4,
   },
-  saveBtnDisabled: {
-    opacity: 0.35,
-  },
-  saveBtnText: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 15,
-    color: "#fff",
-  },
+  saveBtnDisabled: { opacity: 0.35 },
+  saveBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
 });
