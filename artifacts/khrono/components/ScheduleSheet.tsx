@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   Platform,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from "@/context/ThemeContext";
+import { ColorPalette, useTheme } from "@/context/ThemeContext";
 
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -48,6 +48,7 @@ export function ScheduleSheet({
 }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [data, setData] = useState(initialDate);
   const [hora, setHora] = useState(initialHora);
@@ -116,21 +117,19 @@ export function ScheduleSheet({
       <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
         <View style={styles.handle} />
 
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Agendar para</Text>
           <Pressable onPress={onClose} hitSlop={12}>
-            <Feather name="x" size={18} color="#555" />
+            <Feather name="x" size={18} color={colors.textSecondary} />
           </Pressable>
         </View>
 
-        {/* Agora option */}
         <Pressable
           onPress={handleAgoraPress}
           style={[styles.optionRow, !isAgendado && styles.optionRowActive]}
         >
           <View style={[styles.optionIcon, !isAgendado && styles.optionIconActive]}>
-            <Feather name="zap" size={18} color={!isAgendado ? "#ff6b35" : "#444"} />
+            <Feather name="zap" size={18} color={!isAgendado ? "#ff6b35" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.optionLabel, !isAgendado && styles.optionLabelActive]}>
@@ -145,13 +144,12 @@ export function ScheduleSheet({
 
         <View style={styles.divider} />
 
-        {/* Dia option */}
         <Pressable
           onPress={() => openPicker("date")}
           style={[styles.optionRow, isAgendado && picker === "date" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="calendar" size={18} color={isAgendado ? "#ff6b35" : "#444"} />
+            <Feather name="calendar" size={18} color={isAgendado ? "#ff6b35" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Dia</Text>
@@ -159,16 +157,15 @@ export function ScheduleSheet({
               {isAgendado ? formatDataLabel(data) : "Selecionar data"}
             </Text>
           </View>
-          <Feather name="chevron-right" size={16} color="#333" />
+          <Feather name="chevron-right" size={16} color={colors.textDim} />
         </Pressable>
 
-        {/* Horário option */}
         <Pressable
           onPress={() => openPicker("time")}
           style={[styles.optionRow, isAgendado && picker === "time" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="clock" size={18} color={isAgendado ? "#ff6b35" : "#444"} />
+            <Feather name="clock" size={18} color={isAgendado ? "#ff6b35" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Horário</Text>
@@ -178,10 +175,9 @@ export function ScheduleSheet({
                 : "Selecionar horário"}
             </Text>
           </View>
-          <Feather name="chevron-right" size={16} color="#333" />
+          <Feather name="chevron-right" size={16} color={colors.textDim} />
         </Pressable>
 
-        {/* Native picker — iOS inline, Android opens automatically as dialog */}
         {picker !== null && (
           <View style={styles.pickerWrap}>
             {Platform.OS === "ios" && (
@@ -210,7 +206,6 @@ export function ScheduleSheet({
           </View>
         )}
 
-        {/* Confirm button */}
         <Pressable onPress={handleConfirm} style={styles.confirmBtn}>
           <Feather name="check" size={16} color="#000" />
           <Text style={styles.confirmText}>
@@ -224,144 +219,146 @@ export function ScheduleSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-  },
-  sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#0d0d0d",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderColor: "#1a1a1a",
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  title: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 16,
-    color: "#fff",
-  },
-  optionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    marginBottom: 6,
-  },
-  optionRowActive: {
-    backgroundColor: "#ff6b3510",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-  },
-  optionRowFocused: {
-    backgroundColor: "#1a1a1a",
-  },
-  optionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  optionIconActive: {
-    borderColor: "#ff6b3540",
-    backgroundColor: "#ff6b3510",
-  },
-  optionLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 2,
-  },
-  optionLabelActive: {
-    color: "#ff6b35",
-  },
-  optionSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#1a1a1a",
-    marginVertical: 6,
-    marginHorizontal: 12,
-  },
-  pickerWrap: {
-    marginTop: 4,
-    marginBottom: 8,
-    backgroundColor: "#111",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    overflow: "hidden",
-  },
-  pickerHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  pickerHeaderLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#444",
-    letterSpacing: 1,
-  },
-  pickerDoneBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: "#ff6b3520",
-    borderRadius: 8,
-  },
-  pickerDoneText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ff6b35",
-  },
-  picker: {
-    backgroundColor: "transparent",
-  },
-  confirmBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 12,
-    backgroundColor: "#00e5a0",
-    borderRadius: 14,
-    paddingVertical: 16,
-  },
-  confirmText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#000",
-  },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(0,0,0,0.7)",
+    },
+    sheet: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    },
+    handle: {
+      width: 36,
+      height: 4,
+      backgroundColor: colors.handleColor,
+      borderRadius: 2,
+      alignSelf: "center",
+      marginBottom: 20,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 20,
+    },
+    title: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 16,
+      color: colors.text,
+    },
+    optionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+      paddingVertical: 14,
+      paddingHorizontal: 12,
+      borderRadius: 14,
+      marginBottom: 6,
+    },
+    optionRowActive: {
+      backgroundColor: "#ff6b3510",
+      borderWidth: 1,
+      borderColor: "#ff6b3530",
+    },
+    optionRowFocused: {
+      backgroundColor: colors.cardBorder,
+    },
+    optionIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    optionIconActive: {
+      borderColor: "#ff6b3540",
+      backgroundColor: "#ff6b3510",
+    },
+    optionLabel: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 14,
+      color: colors.text,
+      marginBottom: 2,
+    },
+    optionLabelActive: {
+      color: "#ff6b35",
+    },
+    optionSub: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: colors.textMuted,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.sheetBorder,
+      marginVertical: 6,
+      marginHorizontal: 12,
+    },
+    pickerWrap: {
+      marginTop: 4,
+      marginBottom: 8,
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      overflow: "hidden",
+    },
+    pickerHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 4,
+    },
+    pickerHeaderLabel: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: colors.textMuted,
+      letterSpacing: 1,
+    },
+    pickerDoneBtn: {
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      backgroundColor: "#ff6b3520",
+      borderRadius: 8,
+    },
+    pickerDoneText: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 13,
+      color: "#ff6b35",
+    },
+    picker: {
+      backgroundColor: "transparent",
+    },
+    confirmBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 12,
+      backgroundColor: "#00e5a0",
+      borderRadius: 14,
+      paddingVertical: 16,
+    },
+    confirmText: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 14,
+      color: "#000",
+    },
+  });
+}

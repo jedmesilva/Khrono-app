@@ -25,7 +25,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from "@/context/ThemeContext";
+import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { LocationMode } from "@/constants/profile-data";
 
 export type { LocationMode };
@@ -98,6 +98,9 @@ function RadiusSlider({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const { colors } = useTheme();
+  const sliderStyles = useMemo(() => createSliderStyles(colors), [colors]);
+
   const widthRef = useRef(0);
   const [trackWidth, setTrackWidth] = useState(0);
   const startPosRef = useRef(0);
@@ -177,82 +180,84 @@ function RadiusSlider({
   );
 }
 
-const sliderStyles = StyleSheet.create({
-  container: { gap: 10 },
-  labelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  label: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ccc",
-  },
-  valuePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  valueText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 12,
-    color: "#ff6b35",
-  },
-  track: {
-    height: 44,
-    justifyContent: "center",
-    position: "relative",
-  },
-  trackBg: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#1e1e1e",
-  },
-  trackFill: {
-    position: "absolute",
-    left: 0,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#ff6b35",
-  },
-  thumb: {
-    position: "absolute",
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
-    backgroundColor: "#0f0f0f",
-    borderWidth: 2,
-    borderColor: "#ff6b35",
-    alignItems: "center",
-    justifyContent: "center",
-    top: (44 - THUMB_SIZE) / 2,
-  },
-  thumbInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ff6b35",
-  },
-  rangeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  rangeText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
-  },
-});
+function createSliderStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    container: { gap: 10 },
+    labelRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    label: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+    valuePill: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      backgroundColor: "#ff6b3515",
+      borderWidth: 1,
+      borderColor: "#ff6b3530",
+      borderRadius: 20,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    valueText: {
+      fontFamily: "DMMono_500Medium",
+      fontSize: 12,
+      color: "#ff6b35",
+    },
+    track: {
+      height: 44,
+      justifyContent: "center",
+      position: "relative",
+    },
+    trackBg: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.surfaceBorder,
+    },
+    trackFill: {
+      position: "absolute",
+      left: 0,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: "#ff6b35",
+    },
+    thumb: {
+      position: "absolute",
+      width: THUMB_SIZE,
+      height: THUMB_SIZE,
+      borderRadius: THUMB_SIZE / 2,
+      backgroundColor: colors.card,
+      borderWidth: 2,
+      borderColor: "#ff6b35",
+      alignItems: "center",
+      justifyContent: "center",
+      top: (44 - THUMB_SIZE) / 2,
+    },
+    thumbInner: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: "#ff6b35",
+    },
+    rangeRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    rangeText: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 10,
+      color: colors.textDim,
+    },
+  });
+}
 
 type Props = {
   visible: boolean;
@@ -274,6 +279,7 @@ export function LocationSheet({
   const insets = useSafeAreaInsets();
   const ref = useRef<BottomSheetModal>(null);
   const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
   const [radius, setRadius] = useState(serviceRadius);
@@ -427,7 +433,7 @@ export function LocationSheet({
                   <Feather
                     name="map-pin"
                     size={20}
-                    color={selectedMode === "fixed" ? "#ff6b35" : "#444"}
+                    color={selectedMode === "fixed" ? "#ff6b35" : colors.textMuted}
                   />
                 </View>
                 <View style={styles.optionTexts}>
@@ -509,163 +515,157 @@ export function LocationSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  sheetBackground: {
-    backgroundColor: "#0f0f0f",
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    borderTopWidth: 1,
-    borderColor: "#1e1e1e",
-  },
-  handle: { backgroundColor: "#2a2a2a", width: 36, height: 4 },
-  content: { paddingHorizontal: 20, paddingTop: 8, gap: 14 },
-  title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 18,
-    color: "#fff",
-    marginBottom: 2,
-  },
-  subtitle: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#555",
-    lineHeight: 18,
-    marginBottom: 4,
-  },
-  optionsWrap: { gap: 10 },
-  optionCard: {
-    backgroundColor: "#0d0d0d",
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 18,
-    padding: 16,
-    gap: 12,
-  },
-  optionCardActive: {
-    borderColor: "#00e5a040",
-    backgroundColor: "#00e5a006",
-  },
-  optionCardActiveBlue: {
-    borderColor: "#ff6b3540",
-    backgroundColor: "#ff6b3506",
-  },
-  optionTop: { flexDirection: "row", alignItems: "center", gap: 14 },
-  optionIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 13,
-    backgroundColor: "#161616",
-    borderWidth: 1,
-    borderColor: "#2a2a2a",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  optionTexts: { flex: 1 },
-  optionLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 3,
-  },
-  optionDesc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#555",
-    lineHeight: 16,
-  },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#2a2a2a",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  radioActive: { borderColor: "#00e5a0" },
-  radioActiveBlue: { borderColor: "#ff6b35" },
-  radioInner: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: "#00e5a0",
-  },
-  realtimeInfo: {
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: "#00e5a015",
-  },
-  realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  realtimeText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#00e5a0aa",
-  },
-  addressWrap: {
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: "#ff6b3515",
-    gap: 8,
-  },
-  addressInputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  addressInput: {
-    flex: 1,
-    fontFamily: "DMMono_400Regular",
-    fontSize: 13,
-    color: "#fff",
-  },
-  addressHint: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
-    lineHeight: 15,
-  },
-  radiusWrap: {
-    backgroundColor: "#0d0d0d",
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 18,
-    padding: 16,
-  },
-  infoBox: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    backgroundColor: "#0a0a0a",
-    borderWidth: 1,
-    borderColor: "#1a1a1a",
-    borderRadius: 12,
-    padding: 12,
-  },
-  infoText: {
-    flex: 1,
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#333",
-    lineHeight: 16,
-  },
-  saveBtn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 14,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 4,
-  },
-  saveBtnDisabled: { opacity: 0.35 },
-  saveBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    content: { paddingHorizontal: 20, paddingTop: 8, gap: 14 },
+    title: {
+      fontFamily: "Sora_700Bold",
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: 2,
+    },
+    subtitle: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 12,
+      color: colors.textSecondary,
+      lineHeight: 18,
+      marginBottom: 4,
+    },
+    optionsWrap: { gap: 10 },
+    optionCard: {
+      backgroundColor: colors.inputBg,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      borderRadius: 18,
+      padding: 16,
+      gap: 12,
+    },
+    optionCardActive: {
+      borderColor: "#00e5a040",
+      backgroundColor: "#00e5a006",
+    },
+    optionCardActiveBlue: {
+      borderColor: "#ff6b3540",
+      backgroundColor: "#ff6b3506",
+    },
+    optionTop: { flexDirection: "row", alignItems: "center", gap: 14 },
+    optionIconWrap: {
+      width: 46,
+      height: 46,
+      borderRadius: 13,
+      backgroundColor: colors.menuIconBg,
+      borderWidth: 1,
+      borderColor: colors.chevron,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    optionTexts: { flex: 1 },
+    optionLabel: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 14,
+      color: colors.text,
+      marginBottom: 3,
+    },
+    optionDesc: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: colors.textSecondary,
+      lineHeight: 16,
+    },
+    radio: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      borderColor: colors.chevron,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    radioActive: { borderColor: "#00e5a0" },
+    radioActiveBlue: { borderColor: "#ff6b35" },
+    radioInner: {
+      width: 9,
+      height: 9,
+      borderRadius: 5,
+      backgroundColor: "#00e5a0",
+    },
+    realtimeInfo: {
+      paddingTop: 4,
+      borderTopWidth: 1,
+      borderTopColor: "#00e5a015",
+    },
+    realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+    realtimeText: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: "#00e5a0aa",
+    },
+    addressWrap: {
+      paddingTop: 4,
+      borderTopWidth: 1,
+      borderTopColor: "#ff6b3515",
+      gap: 8,
+    },
+    addressInputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: colors.inputBg,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+    },
+    addressInput: {
+      flex: 1,
+      fontFamily: "DMMono_400Regular",
+      fontSize: 13,
+      color: colors.text,
+    },
+    addressHint: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 10,
+      color: colors.textMuted,
+      lineHeight: 15,
+    },
+    radiusWrap: {
+      backgroundColor: colors.inputBg,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      borderRadius: 18,
+      padding: 16,
+    },
+    infoBox: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+      backgroundColor: colors.inputBg,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+      borderRadius: 12,
+      padding: 12,
+    },
+    infoText: {
+      flex: 1,
+      fontFamily: "DMMono_400Regular",
+      fontSize: 11,
+      color: colors.textMuted,
+      lineHeight: 16,
+    },
+    saveBtn: {
+      backgroundColor: "#ff6b35",
+      borderRadius: 14,
+      padding: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 4,
+    },
+    saveBtnDisabled: { opacity: 0.35 },
+    saveBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
+  });
+}

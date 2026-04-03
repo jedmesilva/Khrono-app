@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from "@/context/ThemeContext";
+import { ColorPalette, useTheme } from "@/context/ThemeContext";
 
 type KeyType = "cpf" | "email" | "phone" | "random";
 
@@ -36,6 +36,8 @@ type Step = "form" | "confirm" | "success";
 export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const [step, setStep] = useState<Step>("form");
   const [amount, setAmount] = useState("");
   const [keyType, setKeyType] = useState<KeyType>("cpf");
@@ -86,7 +88,6 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             { paddingBottom: Math.max(insets.bottom, 24) },
           ]}
         >
-          {/* Handle */}
           <View style={styles.handle} />
 
           {step === "form" && (
@@ -94,11 +95,10 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
               <View style={styles.sheetHeader}>
                 <Text style={styles.sheetTitle}>Sacar via Pix</Text>
                 <Pressable onPress={handleClose} hitSlop={12}>
-                  <Feather name="x" size={18} color="#555" />
+                  <Feather name="x" size={18} color={colors.textSecondary} />
                 </Pressable>
               </View>
 
-              {/* Amount */}
               <Text style={styles.fieldLabel}>VALOR</Text>
               <View style={styles.amountRow}>
                 <Text style={styles.currencyPrefix}>R$</Text>
@@ -107,18 +107,16 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
                   value={amount}
                   onChangeText={setAmount}
                   placeholder="0,00"
-                  placeholderTextColor="#333"
+                  placeholderTextColor={colors.textDim}
                   keyboardType="decimal-pad"
                   returnKeyType="done"
                 />
               </View>
 
-              {/* Balance hint */}
               <Text style={styles.balanceHint}>
                 Saldo disponível: R$ {balance.toFixed(2)}
               </Text>
 
-              {/* Key type selector */}
               <Text style={[styles.fieldLabel, { marginTop: 20 }]}>
                 TIPO DE CHAVE
               </Text>
@@ -144,7 +142,6 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
                 ))}
               </View>
 
-              {/* Pix key input */}
               <Text style={[styles.fieldLabel, { marginTop: 16 }]}>
                 CHAVE PIX
               </Text>
@@ -153,7 +150,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
                 value={pixKey}
                 onChangeText={setPixKey}
                 placeholder={placeholder}
-                placeholderTextColor="#333"
+                placeholderTextColor={colors.textDim}
                 autoCapitalize="none"
                 keyboardType={
                   keyType === "phone" || keyType === "cpf"
@@ -176,11 +173,11 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             <>
               <View style={styles.sheetHeader}>
                 <Pressable onPress={() => setStep("form")} hitSlop={12}>
-                  <Feather name="arrow-left" size={18} color="#555" />
+                  <Feather name="arrow-left" size={18} color={colors.textSecondary} />
                 </Pressable>
                 <Text style={styles.sheetTitle}>Confirmar saque</Text>
                 <Pressable onPress={handleClose} hitSlop={12}>
-                  <Feather name="x" size={18} color="#555" />
+                  <Feather name="x" size={18} color={colors.textSecondary} />
                 </Pressable>
               </View>
 
@@ -237,211 +234,213 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-  },
-  kavWrapper: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  sheet: {
-    backgroundColor: "#0d0d0d",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderColor: "#1a1a1a",
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  sheetTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 16,
-    color: "#fff",
-  },
-  fieldLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#444",
-    letterSpacing: 1.5,
-    marginBottom: 8,
-  },
-  amountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-  },
-  currencyPrefix: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 18,
-    color: "#555",
-    marginRight: 8,
-  },
-  amountInput: {
-    flex: 1,
-    fontFamily: "DMMono_500Medium",
-    fontSize: 28,
-    color: "#fff",
-    paddingVertical: 16,
-  },
-  balanceHint: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
-    marginTop: 6,
-    marginLeft: 4,
-  },
-  keyTypeRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  keyTypeBtn: {
-    flex: 1,
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    backgroundColor: "#111",
-    alignItems: "center",
-  },
-  keyTypeBtnActive: {
-    borderColor: "#00e5a0",
-    backgroundColor: "#00e5a015",
-  },
-  keyTypeTxt: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#444",
-  },
-  keyTypeTxtActive: {
-    color: "#00e5a0",
-  },
-  keyInput: {
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontFamily: "DMMono_400Regular",
-    fontSize: 14,
-    color: "#fff",
-  },
-  confirmBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 20,
-    backgroundColor: "#00e5a0",
-    borderRadius: 14,
-    paddingVertical: 16,
-  },
-  confirmBtnDisabled: {
-    backgroundColor: "#1a1a1a",
-  },
-  confirmBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-    color: "#000",
-  },
-  confirmCard: {
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 16,
-    padding: 20,
-    gap: 0,
-  },
-  confirmRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-  confirmDivider: {
-    height: 1,
-    backgroundColor: "#1a1a1a",
-  },
-  confirmLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#444",
-    letterSpacing: 1.5,
-  },
-  confirmValue: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 13,
-    color: "#fff",
-    maxWidth: 200,
-    textAlign: "right",
-  },
-  confirmNote: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#333",
-    textAlign: "center",
-    marginTop: 16,
-    lineHeight: 16,
-  },
-  successContainer: {
-    alignItems: "center",
-    paddingVertical: 32,
-    gap: 16,
-  },
-  successIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#00e5a015",
-    borderWidth: 1,
-    borderColor: "#00e5a040",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  successTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 22,
-    color: "#fff",
-  },
-  successSub: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    color: "#555",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  doneBtn: {
-    marginTop: 8,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-  },
-  doneBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    color: "#888",
-  },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(0,0,0,0.7)",
+    },
+    kavWrapper: {
+      flex: 1,
+      justifyContent: "flex-end",
+    },
+    sheet: {
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    },
+    handle: {
+      width: 36,
+      height: 4,
+      backgroundColor: colors.handleColor,
+      borderRadius: 2,
+      alignSelf: "center",
+      marginBottom: 20,
+    },
+    sheetHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 24,
+    },
+    sheetTitle: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 16,
+      color: colors.text,
+    },
+    fieldLabel: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 9,
+      color: colors.textMuted,
+      letterSpacing: 1.5,
+      marginBottom: 8,
+    },
+    amountRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+    },
+    currencyPrefix: {
+      fontFamily: "DMMono_500Medium",
+      fontSize: 18,
+      color: colors.textSecondary,
+      marginRight: 8,
+    },
+    amountInput: {
+      flex: 1,
+      fontFamily: "DMMono_500Medium",
+      fontSize: 28,
+      color: colors.text,
+      paddingVertical: 16,
+    },
+    balanceHint: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 10,
+      color: colors.textDim,
+      marginTop: 6,
+      marginLeft: 4,
+    },
+    keyTypeRow: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    keyTypeBtn: {
+      flex: 1,
+      paddingVertical: 9,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      backgroundColor: colors.surface,
+      alignItems: "center",
+    },
+    keyTypeBtnActive: {
+      borderColor: "#00e5a0",
+      backgroundColor: "#00e5a015",
+    },
+    keyTypeTxt: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 10,
+      color: colors.textMuted,
+    },
+    keyTypeTxtActive: {
+      color: "#00e5a0",
+    },
+    keyInput: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontFamily: "DMMono_400Regular",
+      fontSize: 14,
+      color: colors.text,
+    },
+    confirmBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 20,
+      backgroundColor: "#00e5a0",
+      borderRadius: 14,
+      paddingVertical: 16,
+    },
+    confirmBtnDisabled: {
+      backgroundColor: colors.cardBorder,
+    },
+    confirmBtnText: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 15,
+      color: "#000",
+    },
+    confirmCard: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 16,
+      padding: 20,
+      gap: 0,
+    },
+    confirmRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 12,
+    },
+    confirmDivider: {
+      height: 1,
+      backgroundColor: colors.sheetBorder,
+    },
+    confirmLabel: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 9,
+      color: colors.textMuted,
+      letterSpacing: 1.5,
+    },
+    confirmValue: {
+      fontFamily: "DMMono_500Medium",
+      fontSize: 13,
+      color: colors.text,
+      maxWidth: 200,
+      textAlign: "right",
+    },
+    confirmNote: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 10,
+      color: colors.textDim,
+      textAlign: "center",
+      marginTop: 16,
+      lineHeight: 16,
+    },
+    successContainer: {
+      alignItems: "center",
+      paddingVertical: 32,
+      gap: 16,
+    },
+    successIcon: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: "#00e5a015",
+      borderWidth: 1,
+      borderColor: "#00e5a040",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    successTitle: {
+      fontFamily: "Sora_700Bold",
+      fontSize: 22,
+      color: colors.text,
+    },
+    successSub: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 12,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+    doneBtn: {
+      marginTop: 8,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 14,
+      paddingVertical: 14,
+      paddingHorizontal: 40,
+    },
+    doneBtnText: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+  });
+}

@@ -16,7 +16,7 @@ export default function SkillDetailScreen() {
       <Pressable style={styles.back} onPress={() => router.back()}>
         <Feather name="arrow-left" size={18} color={"#ff6b35"} />
       </Pressable>
-      <Text style={styles.title}>Skill {id}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Skill {id}</Text>
     </View>
   );
 }
@@ -24,5 +24,5 @@ export default function SkillDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   back: { marginBottom: 20 },
-  title: { fontFamily: "Sora_700Bold", fontSize: 20, color: "#fff" },
+  title: { fontFamily: "Sora_700Bold", fontSize: 20 },
 });

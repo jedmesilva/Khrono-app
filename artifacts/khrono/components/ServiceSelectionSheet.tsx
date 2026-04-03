@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Modal,
   Pressable,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from "@/context/ThemeContext";
+import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderService } from "@/context/ConfirmationContext";
 
 type Props = {
@@ -34,6 +34,7 @@ export function ServiceSelectionSheet({
 }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   function handleSelect(service: ProviderService) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -53,7 +54,7 @@ export function ServiceSelectionSheet({
         <View style={styles.header}>
           <Text style={styles.title}>Selecionar service</Text>
           <Pressable onPress={onClose} hitSlop={12}>
-            <Feather name="x" size={18} color="#555" />
+            <Feather name="x" size={18} color={colors.textSecondary} />
           </Pressable>
         </View>
 
@@ -76,7 +77,7 @@ export function ServiceSelectionSheet({
                 </View>
 
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.serviceName, ativo && { color: "#fff" }]}>{s.nome}</Text>
+                  <Text style={[styles.serviceName, ativo && { color: colors.text }]}>{s.nome}</Text>
 
                   <View style={styles.metaRow}>
                     <Feather name="star" size={10} color={"#ff6b35"} />
@@ -115,97 +116,99 @@ export function ServiceSelectionSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
-  },
-  sheet: {
-    backgroundColor: "#0d0d0d",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
-    borderColor: "#1e1e1e",
-    paddingTop: 12,
-    paddingHorizontal: 20,
-    maxHeight: "80%",
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#2a2a2a",
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 16,
-    color: "#fff",
-  },
-  list: {
-    flexGrow: 0,
-  },
-  serviceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    backgroundColor: "#111",
-    borderWidth: 1,
-    borderColor: "#1e1e1e",
-    borderRadius: 16,
-    padding: 16,
-  },
-  serviceRowActive: {
-    backgroundColor: "#ff6b3508",
-    borderColor: "#ff6b3530",
-  },
-  radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
-    borderColor: "#333",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  radioActive: {
-    borderColor: "#ff6b35",
-  },
-  radioInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ff6b35",
-  },
-  serviceName: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    color: "#ccc",
-    marginBottom: 4,
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 3,
-  },
-  metaText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    color: "#555",
-  },
-  serviceRate: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 14,
-    color: "#555",
-    flexShrink: 0,
-  },
-});
+function createStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.6)",
+    },
+    sheet: {
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.surfaceBorder,
+      paddingTop: 12,
+      paddingHorizontal: 20,
+      maxHeight: "80%",
+    },
+    handle: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.handleColor,
+      alignSelf: "center",
+      marginBottom: 20,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 16,
+    },
+    title: {
+      fontFamily: "Sora_700Bold",
+      fontSize: 16,
+      color: colors.text,
+    },
+    list: {
+      flexGrow: 0,
+    },
+    serviceRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 16,
+      padding: 16,
+    },
+    serviceRowActive: {
+      backgroundColor: "#ff6b3508",
+      borderColor: "#ff6b3530",
+    },
+    radio: {
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      borderWidth: 2,
+      borderColor: colors.textDim,
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+    },
+    radioActive: {
+      borderColor: "#ff6b35",
+    },
+    radioInner: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: "#ff6b35",
+    },
+    serviceName: {
+      fontFamily: "Sora_600SemiBold",
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    metaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 3,
+    },
+    metaText: {
+      fontFamily: "DMMono_400Regular",
+      fontSize: 10,
+      color: colors.textSecondary,
+    },
+    serviceRate: {
+      fontFamily: "DMMono_500Medium",
+      fontSize: 14,
+      color: colors.textSecondary,
+      flexShrink: 0,
+    },
+  });
+}
