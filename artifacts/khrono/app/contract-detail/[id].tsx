@@ -247,9 +247,10 @@ export default function ContractDetailScreen() {
         <View style={[styles.card, { marginBottom: 12 }]}>
           <Text style={styles.cardSectionLabel}>detalhes</Text>
           <View style={{ gap: 12 }}>
-            <Linha label="Skill" valor={contract.person.skill} />
             <Linha label="Tipo" valor={isTimer ? "Tempo definido" : "Tempo em aberto"} />
-            <Linha label="Valor/hora" valor={`R$${valorHora.toFixed(0)}/h`} corValor={cor} />
+            {!contract.servico && (
+              <Linha label="Valor/hora" valor={`R$${valorHora.toFixed(0)}/h`} corValor={cor} />
+            )}
             {contract.agendado && contract.agendadoLabel && (
               <Linha label="Agendado para" valor={contract.agendadoLabel} />
             )}
