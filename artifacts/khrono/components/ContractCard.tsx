@@ -179,24 +179,11 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
             <Text style={styles.metaLabel}>TEMPO</Text>
             <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
           </View>
-          <View style={{ alignItems: "flex-end", gap: 6 }}>
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.metaLabel}>ACUMULADO</Text>
-              <Text style={[styles.valueText, { color: displayColor }]}>
-                R${formatValue(elapsed, contract.ratePerHour)}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.statusPill,
-                { backgroundColor: accentColor + "12", borderColor: accentColor + "30" },
-              ]}
-            >
-              <PulseIndicator color={accentColor} />
-              <Text style={[styles.statusPillText, { color: accentColor }]}>
-                {isHiring ? "Pagando" : "Recebendo"}
-              </Text>
-            </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.metaLabel}>{isHiring ? "PAGANDO" : "RECEBENDO"}</Text>
+            <Text style={[styles.valueText, { color: displayColor }]}>
+              R${formatValue(elapsed, contract.ratePerHour)}
+            </Text>
           </View>
         </View>
       )}
