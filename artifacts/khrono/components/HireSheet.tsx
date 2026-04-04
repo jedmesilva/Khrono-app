@@ -640,7 +640,7 @@ export function HireSheet({ open, onClose }: Props) {
                   setDisponivel(val);
                 }}
                 trackColor={{ false: colors.surfaceBorder, true: "#00e5a0" }}
-                thumbColor={colors.sheetBg}
+                thumbColor={colors.text}
                 ios_backgroundColor={colors.surfaceBorder}
               />
             </View>
