@@ -23,6 +23,7 @@ import { CardsProvider } from "@/context/CardsContext";
 import { ContractsProvider } from "@/context/ContractsContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { DocumentsProvider } from "@/context/DocumentsContext";
+import { ServicesProvider } from "@/context/ServicesContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -131,7 +132,9 @@ export default function RootLayout() {
                     <CardsProvider>
                       <ConfirmationProvider>
                         <DocumentsProvider>
-                          <RootLayoutNav />
+                          <ServicesProvider>
+                            <RootLayoutNav />
+                          </ServicesProvider>
                         </DocumentsProvider>
                       </ConfirmationProvider>
                     </CardsProvider>

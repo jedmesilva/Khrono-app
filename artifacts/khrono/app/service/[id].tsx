@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
 import { MY_PROFILE, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
@@ -30,6 +31,7 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
 
 export default function ServiceDetailScreen() {
   const { colors } = useTheme();
+  const { isActive, toggleActive } = useServices();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
@@ -51,6 +53,7 @@ export default function ServiceDetailScreen() {
     );
   }
 
+  const active = isActive(service.id);
   const skill = MY_PROFILE.skills.find((s) => s.id === service.skillId);
   const tools = MY_PROFILE.tools.filter((t) => service.toolIds.includes(t.id));
 
@@ -73,9 +76,22 @@ export default function ServiceDetailScreen() {
             <Feather name="arrow-left" size={18} color="#ff6b35" />
           </Pressable>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.serviceTitle, { color: colors.text }]}>{service.name}</Text>
-            <Text style={styles.serviceRate}>R${service.hourlyRate}/h</Text>
+            <Text style={[styles.serviceTitle, { color: active ? colors.text : colors.textDim }]}>{service.name}</Text>
+            <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${service.hourlyRate}/h</Text>
           </View>
+          <Pressable
+            onPress={() => toggleActive(service.id)}
+            style={[
+              styles.toggleBtn,
+              { borderColor: active ? "#ff6b3540" : colors.surfaceBorder },
+              active && { backgroundColor: "#ff6b3510" },
+            ]}
+          >
+            <View style={[styles.toggleDot, { backgroundColor: active ? "#ff6b35" : colors.textDim }]} />
+            <Text style={[styles.toggleText, { color: active ? "#ff6b35" : colors.textDim }]}>
+              {active ? "ATIVO" : "INATIVO"}
+            </Text>
+          </Pressable>
         </View>
 
         {/* Composition */}
@@ -205,7 +221,10 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "flex-start", gap: 14, marginBottom: 24 },
   backBtn: { padding: 4, marginTop: 2, flexShrink: 0 },
   serviceTitle: { fontFamily: "Sora_700Bold", fontSize: 20, marginBottom: 4 },
-  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 14, color: "#ff6b35" },
+  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 14 },
+  toggleBtn: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6, flexShrink: 0, marginTop: 2 },
+  toggleDot: { width: 6, height: 6, borderRadius: 3 },
+  toggleText: { fontFamily: "DMMono_500Medium", fontSize: 9, letterSpacing: 1 },
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
   card: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 16 },
   cardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 },

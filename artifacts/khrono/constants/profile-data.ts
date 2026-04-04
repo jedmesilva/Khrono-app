@@ -43,6 +43,7 @@ export interface Service {
   contracts: number;
   hourlyRate: number;
   isNew: boolean;
+  active: boolean;
   reviewsList: Review[];
   contractsList: ContractRecord[];
 }
@@ -103,6 +104,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 61,
         hourlyRate: 45,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Roberto Lima", rating: 5, text: "Trabalho impecável, pintura perfeita e no prazo.", date: "12/01/2025" },
           { author: "Carla Souza", rating: 5, text: "Muito profissional, deixou tudo limpinho depois.", date: "03/01/2025" },
@@ -124,6 +126,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 10,
         hourlyRate: 40,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Fernanda Costa", rating: 5, text: "Textura ficou linda, recomendo muito!", date: "05/11/2024" },
           { author: "Paulo Ferreira", rating: 4, text: "Bom serviço, pontual e caprichoso.", date: "20/10/2024" },
@@ -165,6 +168,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 140,
         hourlyRate: 80,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Ana Beatriz", rating: 5, text: "Melhor personal que já tive, resultados incríveis!", date: "10/01/2025" },
           { author: "Thiago Melo", rating: 5, text: "Super dedicada e atenciosa, recomendo demais.", date: "02/01/2025" },
@@ -186,6 +190,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 38,
         hourlyRate: 96,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Renata Silva", rating: 5, text: "Plano alimentar completíssimo, emagreci 8kg!", date: "08/12/2024" },
           { author: "Diego Castro", rating: 5, text: "Muito profissional e explicativa.", date: "25/11/2024" },
@@ -227,6 +232,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 34,
         hourlyRate: 60,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Gustavo Ramos", rating: 5, text: "Serviço excelente, tudo organizado e seguro.", date: "15/01/2025" },
           { author: "Simone Alves", rating: 4, text: "Resolveu o problema rapidamente.", date: "28/12/2024" },
@@ -246,6 +252,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 14,
         hourlyRate: 54,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Helena Vieira", rating: 5, text: "Achou o problema rápido, muito competente.", date: "10/12/2024" },
         ],
@@ -284,6 +291,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 83,
         hourlyRate: 40,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Família Souza", rating: 5, text: "Cuidou da minha mãe com carinho e dedicação.", date: "14/01/2025" },
           { author: "Família Rocha", rating: 5, text: "Muito atenciosa, meu pai adorou.", date: "05/01/2025" },
@@ -305,6 +313,7 @@ export const PROVIDERS: ProviderProfile[] = [
         contracts: 25,
         hourlyRate: 52,
         isNew: false,
+        active: true,
         reviewsList: [
           { author: "Família Lima", rating: 5, text: "Ficou com meu pai durante a cirurgia, tranquilizador.", date: "02/01/2025" },
           { author: "Família Ferreira", rating: 5, text: "Profissional incrível, muito calma e segura.", date: "10/12/2024" },
@@ -391,6 +400,7 @@ export const MY_PROFILE = {
       contracts: 31,
       hourlyRate: 80,
       isNew: false,
+      active: true,
       reviewsList: [
         {
           author: "Bruno Souza",
@@ -427,6 +437,7 @@ export const MY_PROFILE = {
       contracts: 12,
       hourlyRate: 60,
       isNew: false,
+      active: false,
       reviewsList: [
         {
           author: "Mariana Costa",
@@ -456,6 +467,7 @@ export const MY_PROFILE = {
       contracts: 0,
       hourlyRate: 70,
       isNew: true,
+      active: true,
       reviewsList: [],
       contractsList: [],
     },

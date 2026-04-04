@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
 import {
   MY_PROFILE,
@@ -182,6 +183,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const { colors } = useTheme();
+  const { isActive } = useServices();
   const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -341,11 +343,17 @@ export default function ProfileScreen() {
             {MY_PROFILE.services.map((sv) => {
               const skill = MY_PROFILE.skills.find((s) => s.id === sv.skillId);
               const tools = MY_PROFILE.tools.filter((t) => sv.toolIds.includes(t.id));
+              const active = isActive(sv.id);
               return (
-                <Pressable key={sv.id} style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push(`/service/${sv.id}`)}>
+                <Pressable key={sv.id} style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: active ? 1 : 0.45 }]} onPress={() => router.push(`/service/${sv.id}`)}>
                   <View style={styles.serviceTopRow}>
                     <Text style={[styles.serviceName, { color: colors.text }]}>{sv.name}</Text>
-                    <Text style={styles.serviceRate}>R${sv.hourlyRate}/h</Text>
+                    {!active && (
+                      <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
+                        <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>
+                      </View>
+                    )}
+                    <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
                   </View>
                   <View style={styles.compositionRow}>
                     {skill && (
@@ -438,9 +446,11 @@ const styles = StyleSheet.create({
   addBtnText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
   list: { gap: 10 },
   serviceCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  inactiveBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  inactiveBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1 },
   serviceTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 },
   serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, flex: 1, marginRight: 8 },
-  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, color: "#ff6b35", flexShrink: 0 },
+  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, flexShrink: 0 },
   compositionRow: { gap: 6, marginBottom: 10 },
   compositionItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   compositionSkill: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff6b35cc", flex: 1 },
