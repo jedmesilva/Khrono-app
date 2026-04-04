@@ -21,10 +21,9 @@ type Props = {
   visible: boolean;
   pinCode: string;
   onClose: () => void;
-  onEndSession: () => void;
 };
 
-export function PincodeSheet({ visible, pinCode, onClose, onEndSession }: Props) {
+export function PincodeSheet({ visible, pinCode, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
@@ -72,11 +71,6 @@ export function PincodeSheet({ visible, pinCode, onClose, onEndSession }: Props)
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleEndSession = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onEndSession();
   };
 
   const digits = pinCode.split("");
@@ -142,21 +136,6 @@ export function PincodeSheet({ visible, pinCode, onClose, onEndSession }: Props)
           </Text>
         </Pressable>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.endBtn,
-            { borderColor: colors.surfaceBorder },
-            pressed && { opacity: 0.7 },
-          ]}
-          onPress={handleEndSession}
-        >
-          <Feather name="slash" size={14} color={colors.textSecondary} />
-          <Text style={[styles.endBtnText, { color: colors.textSecondary }]}>Encerrar sessão</Text>
-        </Pressable>
-
-        <Text style={[styles.endHint, { color: colors.textDim }]}>
-          Ao encerrar, você ficará indisponível e um novo PIN será gerado na próxima sessão
-        </Text>
       </BottomSheetView>
     </BottomSheetModal>
   );
@@ -262,32 +241,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
     paddingVertical: 14,
-    marginBottom: 10,
   },
   copyBtnText: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-  },
-  endBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 13,
-    marginBottom: 12,
-  },
-  endBtnText: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-  },
-  endHint: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 10,
-    textAlign: "center",
-    letterSpacing: 0.2,
-    marginBottom: 4,
-    lineHeight: 15,
   },
 });

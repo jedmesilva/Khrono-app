@@ -901,7 +901,6 @@ export function HireSheet({ open, onClose }: Props) {
           visible={pincodeSheetOpen}
           pinCode={sessionPin}
           onClose={() => setPincodeSheetOpen(false)}
-          onEndSession={endSession}
         />
       )}
     </>
