@@ -168,6 +168,8 @@ export default function ContractConfirmScreen() {
         avaliacoes: provider.avaliacoes,
         distancia: provider.distancia,
         profileId: provider.profileId,
+        totalContracts: provider.totalContracts,
+        totalServices: provider.services.length,
       },
       servico: servico
         ? {

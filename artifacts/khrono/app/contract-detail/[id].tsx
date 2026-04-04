@@ -157,11 +157,25 @@ export default function ContractDetailScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.pessoaNome, { color: colors.text }]}>{contract.person.name}</Text>
-              <View style={styles.pessoaMeta}>
-                <Feather name="map-pin" size={11} color={colors.textMuted} />
-                <Text style={[styles.metaText, { color: colors.textMuted }]}>
-                  {contract.person.distancia != null ? `${contract.person.distancia} km` : "—"}
-                </Text>
+              <View style={styles.infoChipsRow}>
+                {contract.person.totalContracts != null && (
+                  <View style={styles.infoChip}>
+                    <Feather name="briefcase" size={10} color={colors.textSecondary} />
+                    <Text style={[styles.infoChipText, { color: colors.textSecondary }]}>{contract.person.totalContracts} contratos</Text>
+                  </View>
+                )}
+                {contract.person.totalServices != null && (
+                  <View style={styles.infoChip}>
+                    <Feather name="tool" size={10} color={colors.textSecondary} />
+                    <Text style={[styles.infoChipText, { color: colors.textSecondary }]}>{contract.person.totalServices} {contract.person.totalServices === 1 ? "service" : "services"}</Text>
+                  </View>
+                )}
+                {contract.person.distancia != null && (
+                  <View style={styles.infoChip}>
+                    <Feather name="map-pin" size={10} color={colors.textSecondary} />
+                    <Text style={[styles.infoChipText, { color: colors.textSecondary }]}>{contract.person.distancia} km</Text>
+                  </View>
+                )}
               </View>
             </View>
             <View style={[styles.roleBadge, { backgroundColor: cor + "15", borderColor: cor + "30" }]}>
@@ -175,9 +189,9 @@ export default function ContractDetailScreen() {
               onPress={() => router.push(`/user-profile/${contract.person.profileId}` as any)}
               style={[styles.verPerfilBtn, { borderTopColor: colors.surface }]}
             >
-              <Feather name="user" size={11} color={colors.textMuted} />
-              <Text style={[styles.verPerfilText, { color: colors.textMuted }]}>ver perfil</Text>
-              <Feather name="chevron-right" size={11} color={colors.textDim} />
+              <Feather name="user" size={11} color={"#ff6b3599"} />
+              <Text style={styles.verPerfilText}>ver perfil completo</Text>
+              <Feather name="chevron-right" size={11} color={"#ff6b3560"} />
             </Pressable>
           )}
         </View>
@@ -484,12 +498,13 @@ const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 20, padding: 18 },
   pessoaRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   verPerfilBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 12, paddingTop: 10, borderTopWidth: 1 },
-  verPerfilText: { fontFamily: "DMMono_400Regular", fontSize: 11, flex: 1 },
+  verPerfilText: { fontFamily: "DMMono_400Regular", fontSize: 11, flex: 1, color: "#ff6b3599" },
   avatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   avatarText: { fontSize: 16, fontFamily: "DMMono_500Medium" },
-  pessoaNome: { fontSize: 15, fontFamily: "Sora_700Bold", marginBottom: 4 },
-  pessoaMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
-  metaText: { fontSize: 11, fontFamily: "DMMono_400Regular" },
+  pessoaNome: { fontSize: 15, fontFamily: "Sora_700Bold", marginBottom: 6 },
+  infoChipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  infoChip: { flexDirection: "row", alignItems: "center", gap: 4 },
+  infoChipText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
   roleBadge: { borderWidth: 1, borderRadius: 20, paddingVertical: 4, paddingHorizontal: 8 },
   roleText: { fontSize: 9, fontFamily: "DMMono_400Regular", letterSpacing: 0.5, textTransform: "uppercase" },
   timerLabel: { fontSize: 10, fontFamily: "DMMono_400Regular", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 },
