@@ -8,6 +8,7 @@ import {
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
@@ -103,6 +104,13 @@ export function AddCardModal({ visible, onClose }: Props) {
     }
   }, [visible]);
 
+  useEffect(() => {
+    const sub = Keyboard.addListener("keyboardDidHide", () => {
+      ref.current?.snapToIndex(0);
+    });
+    return () => sub.remove();
+  }, []);
+
   function handleClose() {
     ref.current?.dismiss();
     setStep("form");
@@ -132,8 +140,8 @@ export function AddCardModal({ visible, onClose }: Props) {
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
+      keyboardBehavior="extend"
+      keyboardBlurBehavior="none"
       android_keyboardInputMode="adjustResize"
     >
       <BottomSheetScrollView

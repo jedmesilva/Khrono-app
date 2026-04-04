@@ -9,6 +9,7 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
@@ -78,6 +79,13 @@ export function PixDepositModal({ visible, onClose }: Props) {
     }
   }, [visible]);
 
+  useEffect(() => {
+    const sub = Keyboard.addListener("keyboardDidHide", () => {
+      ref.current?.snapToIndex(0);
+    });
+    return () => sub.remove();
+  }, []);
+
   function handleClose() {
     ref.current?.dismiss();
     setStep("form");
@@ -110,8 +118,8 @@ export function PixDepositModal({ visible, onClose }: Props) {
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
+      keyboardBehavior="extend"
+      keyboardBlurBehavior="none"
       android_keyboardInputMode="adjustResize"
     >
       <BottomSheetScrollView
