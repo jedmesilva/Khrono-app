@@ -476,12 +476,19 @@ export default function ProfileScreen() {
                           <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
                         )}
                       </View>
-                      {!active && (
-                        <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
-                          <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>
-                        </View>
-                      )}
-                      <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                        {skill?.type && (
+                          <View style={styles.serviceCategoryBadge}>
+                            <Text style={styles.serviceCategoryBadgeText}>{skill.type}</Text>
+                          </View>
+                        )}
+                        {!active && (
+                          <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
+                            <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>
+                          </View>
+                        )}
+                        <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
+                      </View>
                     </View>
                     <View style={styles.compositionRow}>
                       {skill && (
@@ -579,6 +586,8 @@ const styles = StyleSheet.create({
   serviceTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 },
   serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, flexShrink: 1 },
   serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, flexShrink: 0 },
+  serviceCategoryBadge: { backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  serviceCategoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase", color: "#ff6b35" },
   compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
   compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10, color: "#ff6b35", maxWidth: 120 },
