@@ -117,8 +117,8 @@ export default function ServiceDetailScreen() {
 
           {tools.length > 0 && (
             <View style={[styles.compositionRow, { marginTop: 12 }]}>
-              <View style={[styles.compIcon, { borderColor: "#00e5a025", backgroundColor: "#00e5a010" }]}>
-                <Feather name="key" size={13} color="#00e5a0" />
+              <View style={[styles.compIcon, { borderColor: "#ff6b3525", backgroundColor: "#ff6b3510" }]}>
+                <Feather name="key" size={13} color="#ff6b35" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.compLabel, { color: colors.textMuted }]}>Tools</Text>
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   compLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
   compNameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
   compSkillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff6b35dd" },
-  compToolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#00e5a0dd" },
+  compToolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff6b35dd" },
   compEmptyText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
   performanceGrid: { gap: 10, marginBottom: 16 },
   perfCard: { borderWidth: 1, borderRadius: 16, padding: 16 },

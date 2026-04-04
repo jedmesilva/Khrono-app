@@ -357,17 +357,17 @@ export default function ProfileScreen() {
                   </View>
                   <View style={styles.compositionRow}>
                     {skill && (
-                      <View style={styles.compositionItem}>
-                        <Feather name="star" size={10} color="#ff6b35" />
-                        <Text style={styles.compositionSkill} numberOfLines={1}>{skill.name}</Text>
+                      <View style={styles.compositionChip}>
+                        <Feather name="star" size={9} color="#ff6b35" />
+                        <Text style={styles.compositionChipText} numberOfLines={1}>{skill.name}</Text>
                       </View>
                     )}
-                    {tools.length > 0 && (
-                      <View style={styles.compositionItem}>
-                        <Feather name="tool" size={10} color="#ff6b35" />
-                        <Text style={styles.compositionSkill} numberOfLines={1}>{tools.map((t) => t.name).join(", ")}</Text>
+                    {tools.map((t) => (
+                      <View key={t.id} style={styles.compositionChip}>
+                        <Feather name="tool" size={9} color="#ff6b35" />
+                        <Text style={styles.compositionChipText} numberOfLines={1}>{t.name}</Text>
                       </View>
-                    )}
+                    ))}
                   </View>
                   {!sv.isNew ? (
                     <View style={styles.serviceRatingRow}>
@@ -450,9 +450,9 @@ const styles = StyleSheet.create({
   serviceTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 },
   serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, flex: 1 },
   serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, flexShrink: 0 },
-  compositionRow: { gap: 6, marginBottom: 10 },
-  compositionItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  compositionSkill: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff6b35cc", flex: 1 },
+  compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
+  compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10, color: "#ff6b35", maxWidth: 120 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   serviceRatingText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
   newBadgeWrap: { flexDirection: "row" },
