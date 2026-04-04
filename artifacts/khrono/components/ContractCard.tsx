@@ -53,7 +53,7 @@ function PulseIndicator({ color }: { color: string }) {
 
 export function ContractCard({ contract, onStop, onPress }: Props) {
   const [now, setNow] = useState(Date.now());
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const isScheduled = !!contract.agendado;
 
   useEffect(() => {
@@ -88,21 +88,16 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
 
   const displayColor = quaseAcabando ? alertColor : accentColor;
 
-  const cardBg = isDark
-    ? isHiring ? "#0a0a0a" : "#060f1a"
-    : isHiring ? colors.card : "#f0f6ff";
-  const cardBorder = isDark
-    ? isHiring ? "#1e1e1e" : "#0d1f35"
-    : isHiring ? colors.cardBorder : "#c5d8f0";
-
   return (
     <Pressable
       onPress={onPress}
       style={[
         styles.card,
         {
-          backgroundColor: cardBg,
-          borderColor: cardBorder,
+          backgroundColor: colors.card,
+          borderColor: colors.cardBorder,
+          borderLeftColor: displayColor,
+          borderLeftWidth: 3,
         },
       ]}
     >
