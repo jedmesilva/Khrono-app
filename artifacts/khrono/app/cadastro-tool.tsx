@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { CadastroDone } from "@/components/CadastroDone";
 import { useTheme } from "@/context/ThemeContext";
 
 interface ToolTemplate {
@@ -135,25 +136,18 @@ export default function CadastroToolScreen() {
 
   if (step === "done") {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <View style={styles.doneWrap}>
-          <View style={styles.doneIcon}>
-            <Feather name="check" size={32} color="#ff6b35" />
-          </View>
-          <Text style={[styles.doneTitle, { color: colors.text }]}>Tool adicionada!</Text>
-          <Text style={[styles.doneSub, { color: colors.textSecondary }]}>
-            <Text style={{ color: "#ff6b35" }}>{toolName}</Text> foi cadastrada no seu perfil como{" "}
-            {available ? "disponível" : "indisponível"}.
-          </Text>
-          <Pressable style={styles.secondaryBtn} onPress={handleReset}>
-            <Feather name="plus" size={14} color="#ff6b35" />
-            <Text style={styles.secondaryBtnText}>Adicionar outra tool</Text>
-          </Pressable>
-          <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
-            <Text style={styles.primaryBtnText}>Ver perfil</Text>
-          </Pressable>
-        </View>
-      </View>
+      <CadastroDone
+        topPadding={topPadding}
+        title="Tool adicionada!"
+        subtitle={
+          <>
+            <Text style={{ color: "#ff6b35" }}>{toolName}</Text>
+            {` foi cadastrada no seu perfil como ${available ? "disponível" : "indisponível"}.`}
+          </>
+        }
+        secondaryAction={{ label: "Adicionar outra tool", icon: "plus", onPress: handleReset }}
+        onVerPerfil={() => router.back()}
+      />
     );
   }
 
@@ -467,10 +461,4 @@ const styles = StyleSheet.create({
   primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
-  secondaryBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3530", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, width: "100%", justifyContent: "center" },
-  secondaryBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#ff6b35" },
-  doneWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, gap: 16 },
-  doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530", alignItems: "center", justifyContent: "center", marginBottom: 8 },
-  doneTitle: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center" },
-  doneSub: { fontFamily: "Sora_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 12 },
 });

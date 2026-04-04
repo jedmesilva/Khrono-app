@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { CadastroDone } from "@/components/CadastroDone";
 import { useTheme } from "@/context/ThemeContext";
 import { MY_PROFILE, Skill, Tool } from "@/constants/profile-data";
 
@@ -222,20 +223,17 @@ export default function CadastroServiceScreen() {
 
   if (draft.step === "done") {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <View style={styles.doneWrap}>
-          <View style={styles.doneIcon}>
-            <Feather name="check" size={32} color="#ff6b35" />
-          </View>
-          <Text style={[styles.doneTitle, { color: colors.text }]}>Service criado!</Text>
-          <Text style={[styles.doneSub, { color: colors.textSecondary }]}>
-            <Text style={{ color: "#ff6b35" }}>{draft.serviceName}</Text> foi adicionado ao seu perfil.
-          </Text>
-          <Pressable style={styles.primaryBtn} onPress={() => { clearDraft(); router.back(); }}>
-            <Text style={styles.primaryBtnText}>Ver perfil</Text>
-          </Pressable>
-        </View>
-      </View>
+      <CadastroDone
+        topPadding={topPadding}
+        title="Service criado!"
+        subtitle={
+          <>
+            <Text style={{ color: "#ff6b35" }}>{draft.serviceName}</Text>
+            {" foi adicionado ao seu perfil."}
+          </>
+        }
+        onVerPerfil={() => { clearDraft(); router.back(); }}
+      />
     );
   }
 
@@ -784,8 +782,4 @@ const styles = StyleSheet.create({
   primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
-  doneWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, gap: 16 },
-  doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530", alignItems: "center", justifyContent: "center", marginBottom: 8 },
-  doneTitle: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center" },
-  doneSub: { fontFamily: "Sora_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 12 },
 });
