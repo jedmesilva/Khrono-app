@@ -181,13 +181,16 @@ export default function ProfileScreen() {
     MY_PROFILE.services.filter((s) => s.rating > 0).reduce((sum, s) => sum + s.rating, 0) /
       (MY_PROFILE.services.filter((s) => s.rating > 0).length || 1);
 
-  function handleVerifiedPress(type: VerificationType) {
-    setDialog({
-      title: VERIFICATION_LABELS[type],
-      message: type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
-        : type === "community" ? "Verificado por avaliações da comunidade de usuários."
-        : "Verificação em análise pela equipe Krono.",
-    });
+  function handleVerifiedPress(type: VerificationType, context?: "service") {
+    const baseMessage = type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
+      : type === "community" ? "Verificado por avaliações da comunidade de usuários."
+      : "Verificação em análise pela equipe Krono.";
+    const message = context === "service"
+      ? type === "documentation" ? "Serviço verificado por documentação e histórico de contratos na plataforma Krono."
+        : type === "community" ? "Serviço verificado pela comunidade com base em avaliações e contratos."
+        : "Verificação do serviço em análise pela equipe Krono."
+      : baseMessage;
+    setDialog({ title: VERIFICATION_LABELS[type], message });
   }
 
   if (view === "skill_detail" && selectedSkill) {
@@ -327,7 +330,12 @@ export default function ProfileScreen() {
               return (
                 <Pressable key={sv.id} style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: active ? 1 : 0.45 }]} onPress={() => router.push(`/service/${sv.id}`)}>
                   <View style={styles.serviceTopRow}>
-                    <Text style={[styles.serviceName, { color: colors.text }]}>{sv.name}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+                      <Text style={[styles.serviceName, { color: colors.text }]}>{sv.name}</Text>
+                      {sv.verified && (
+                        <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
+                      )}
+                    </View>
                     {!active && (
                       <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
                         <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>

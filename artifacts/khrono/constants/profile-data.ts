@@ -44,6 +44,7 @@ export interface Service {
   hourlyRate: number;
   isNew: boolean;
   active: boolean;
+  verified: { type: VerificationType } | null;
   reviewsList: Review[];
   contractsList: ContractRecord[];
 }
@@ -105,6 +106,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 45,
         isNew: false,
         active: true,
+        verified: { type: "documentation" as VerificationType },
         reviewsList: [
           { author: "Roberto Lima", rating: 5, text: "Trabalho impecável, pintura perfeita e no prazo.", date: "12/01/2025" },
           { author: "Carla Souza", rating: 5, text: "Muito profissional, deixou tudo limpinho depois.", date: "03/01/2025" },
@@ -127,6 +129,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 40,
         isNew: false,
         active: true,
+        verified: { type: "community" as VerificationType },
         reviewsList: [
           { author: "Fernanda Costa", rating: 5, text: "Textura ficou linda, recomendo muito!", date: "05/11/2024" },
           { author: "Paulo Ferreira", rating: 4, text: "Bom serviço, pontual e caprichoso.", date: "20/10/2024" },
@@ -169,6 +172,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 80,
         isNew: false,
         active: true,
+        verified: { type: "documentation" as VerificationType },
         reviewsList: [
           { author: "Ana Beatriz", rating: 5, text: "Melhor personal que já tive, resultados incríveis!", date: "10/01/2025" },
           { author: "Thiago Melo", rating: 5, text: "Super dedicada e atenciosa, recomendo demais.", date: "02/01/2025" },
@@ -191,6 +195,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 96,
         isNew: false,
         active: true,
+        verified: { type: "documentation" as VerificationType },
         reviewsList: [
           { author: "Renata Silva", rating: 5, text: "Plano alimentar completíssimo, emagreci 8kg!", date: "08/12/2024" },
           { author: "Diego Castro", rating: 5, text: "Muito profissional e explicativa.", date: "25/11/2024" },
@@ -233,6 +238,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 60,
         isNew: false,
         active: true,
+        verified: { type: "documentation" as VerificationType },
         reviewsList: [
           { author: "Gustavo Ramos", rating: 5, text: "Serviço excelente, tudo organizado e seguro.", date: "15/01/2025" },
           { author: "Simone Alves", rating: 4, text: "Resolveu o problema rapidamente.", date: "28/12/2024" },
@@ -253,6 +259,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 54,
         isNew: false,
         active: true,
+        verified: null,
         reviewsList: [
           { author: "Helena Vieira", rating: 5, text: "Achou o problema rápido, muito competente.", date: "10/12/2024" },
         ],
@@ -292,6 +299,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 40,
         isNew: false,
         active: true,
+        verified: { type: "community" as VerificationType },
         reviewsList: [
           { author: "Família Souza", rating: 5, text: "Cuidou da minha mãe com carinho e dedicação.", date: "14/01/2025" },
           { author: "Família Rocha", rating: 5, text: "Muito atenciosa, meu pai adorou.", date: "05/01/2025" },
@@ -314,6 +322,7 @@ export const PROVIDERS: ProviderProfile[] = [
         hourlyRate: 52,
         isNew: false,
         active: true,
+        verified: { type: "documentation" as VerificationType },
         reviewsList: [
           { author: "Família Lima", rating: 5, text: "Ficou com meu pai durante a cirurgia, tranquilizador.", date: "02/01/2025" },
           { author: "Família Ferreira", rating: 5, text: "Profissional incrível, muito calma e segura.", date: "10/12/2024" },
@@ -401,6 +410,7 @@ export const MY_PROFILE = {
       hourlyRate: 80,
       isNew: false,
       active: true,
+      verified: { type: "documentation" as VerificationType },
       reviewsList: [
         {
           author: "Bruno Souza",
@@ -438,6 +448,7 @@ export const MY_PROFILE = {
       hourlyRate: 60,
       isNew: false,
       active: false,
+      verified: { type: "community" as VerificationType },
       reviewsList: [
         {
           author: "Mariana Costa",
@@ -468,6 +479,7 @@ export const MY_PROFILE = {
       hourlyRate: 70,
       isNew: true,
       active: true,
+      verified: null,
       reviewsList: [],
       contractsList: [],
     },

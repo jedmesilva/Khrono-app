@@ -55,13 +55,16 @@ export default function ProviderServiceScreen() {
   const skill = provider.skills.find((s) => s.id === service.skillId);
   const tools = provider.tools.filter((t) => service.toolIds.includes(t.id));
 
-  function handleVerifiedPress(type: VerificationType) {
-    setDialog({
-      title: VERIFICATION_LABELS[type],
-      message: type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
-        : type === "community" ? "Verificado por avaliações da comunidade de usuários."
-        : "Verificação em análise pela equipe Krono.",
-    });
+  function handleVerifiedPress(type: VerificationType, context?: "service") {
+    const baseMessage = type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
+      : type === "community" ? "Verificado por avaliações da comunidade de usuários."
+      : "Verificação em análise pela equipe Krono.";
+    const message = context === "service"
+      ? type === "documentation" ? "Serviço verificado por documentação e histórico de contratos na plataforma Krono."
+        : type === "community" ? "Serviço verificado pela comunidade com base em avaliações e contratos."
+        : "Verificação do serviço em análise pela equipe Krono."
+      : baseMessage;
+    setDialog({ title: VERIFICATION_LABELS[type], message });
   }
 
   function toggleCard(card: ExpandedCard) { setExpanded((prev) => (prev === card ? null : card)); }
@@ -74,7 +77,12 @@ export default function ProviderServiceScreen() {
             <Feather name="arrow-left" size={18} color="#ff6b35" />
           </Pressable>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.serviceTitle, { color: colors.text }]}>{service.name}</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Text style={[styles.serviceTitle, { color: colors.text }]}>{service.name}</Text>
+              {service.verified && (
+                <VerifiedBadge onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")} />
+              )}
+            </View>
             <Text style={styles.serviceRate}>R${service.hourlyRate}/h</Text>
           </View>
         </View>
