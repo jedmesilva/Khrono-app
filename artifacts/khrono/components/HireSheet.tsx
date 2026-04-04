@@ -3,6 +3,7 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -14,10 +15,10 @@ import React, {
   useState,
 } from "react";
 import {
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import Animated, {
@@ -388,7 +389,7 @@ function LinkContent({
 
       <View style={styles.linkRow}>
         <Feather name="link" size={16} color={colors.textMuted} />
-        <TextInput
+        <BottomSheetTextInput
           value={link}
           onChangeText={setLink}
           placeholder="krono.app/u/..."
@@ -396,6 +397,7 @@ function LinkContent({
           style={styles.linkInput}
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="done"
         />
         {link.length > 0 && (
           <Pressable onPress={() => setLink("")}>
@@ -478,6 +480,13 @@ export function HireSheet({ open, onClose }: Props) {
   const [dialog, setDialog] = useState<DialogState>(null);
 
   const subRef = useRef<BottomSheetModal>(null);
+
+  useEffect(() => {
+    const sub = Keyboard.addListener("keyboardDidHide", () => {
+      subRef.current?.snapToIndex(0);
+    });
+    return () => sub.remove();
+  }, []);
 
   const snapPoints = useMemo(() => ["88%"], []);
   const subSnapPoints = useMemo(() => ["80%"], []);
@@ -746,7 +755,7 @@ export function HireSheet({ open, onClose }: Props) {
         handleIndicatorStyle={handleStyle}
         onDismiss={() => setSubMode(null)}
         keyboardBehavior="extend"
-        keyboardBlurBehavior="restore"
+        keyboardBlurBehavior="none"
         android_keyboardInputMode="adjustResize"
       >
           <BottomSheetScrollView
