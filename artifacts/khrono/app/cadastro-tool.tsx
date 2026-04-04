@@ -130,7 +130,7 @@ export default function CadastroToolScreen() {
                   ]}>
                     <Feather name={t.icon} size={22} color={toolType === t.id ? "#ff6b35" : colors.textMuted} />
                   </View>
-                  <Text style={[styles.typeLabel, { color: colors.textSecondary }, toolType === t.id && styles.typeLabelSelected]}>{t.label}</Text>
+                  <Text style={[styles.typeLabel, { color: toolType === t.id ? colors.text : colors.textSecondary }]}>{t.label}</Text>
                   <Text style={[styles.typeDescription, { color: colors.textMuted }]}>{t.description}</Text>
                   {toolType === t.id && (
                     <View style={styles.typeCheck}>
@@ -269,10 +269,9 @@ const styles = StyleSheet.create({
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
   typeGrid: { gap: 10 },
   typeCard: { borderWidth: 1, borderRadius: 16, padding: 18, position: "relative" },
-  typeCardSelected: { borderColor: "#ff6b3540", backgroundColor: "#ff6b3508" },
+  typeCardSelected: { borderColor: "#ff6b35", borderWidth: 1.5 },
   typeIcon: { width: 48, height: 48, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center", marginBottom: 12 },
   typeLabel: { fontFamily: "Sora_700Bold", fontSize: 16, marginBottom: 4 },
-  typeLabelSelected: { color: "#fff" },
   typeDescription: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18 },
   typeCheck: {
     position: "absolute", top: 16, right: 16, width: 22, height: 22, borderRadius: 11,
