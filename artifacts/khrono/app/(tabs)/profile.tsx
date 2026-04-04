@@ -470,10 +470,12 @@ export default function ProfileScreen() {
                     <View style={[styles.serviceIconWrap, { backgroundColor: active ? "#ff6b3312" : colors.surface, borderColor: active ? "#ff6b3528" : colors.surfaceBorder }]}>
                       <Feather name="layers" size={15} color={active ? "#ff6b35" : colors.textMuted} />
                     </View>
-                    <Text style={[styles.serviceName, { color: colors.text, flex: 1 }]} numberOfLines={2}>{sv.name}</Text>
-                    {sv.verified && (
-                      <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
-                    )}
+                    <View style={styles.serviceNameInner}>
+                      <Text style={[styles.serviceName, { color: colors.text }]} numberOfLines={2}>{sv.name}</Text>
+                      {sv.verified && (
+                        <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
+                      )}
+                    </View>
                   </View>
 
                   {/* Linha 2: categoria + status + preço */}
@@ -593,7 +595,8 @@ const styles = StyleSheet.create({
   serviceCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "column", gap: 10 },
   serviceNameRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   serviceIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, lineHeight: 20 },
+  serviceNameInner: { flex: 1, flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
+  serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, lineHeight: 20, flexShrink: 1 },
   serviceBadgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   serviceBadgesLeft: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1 },
 
