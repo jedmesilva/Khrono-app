@@ -1,9 +1,13 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  BottomSheetModal,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -57,6 +61,34 @@ export default function ContractDetailScreen() {
   const [faqAberto, setFaqAberto] = useState<number | null>(null);
   const [faqExpandido, setFaqExpandido] = useState(false);
   const [confirmEncerrar, setConfirmEncerrar] = useState(false);
+
+  const suporteRef = useRef<BottomSheetModal>(null);
+  const suporteSnapPoints = useMemo(() => ["75%"], []);
+  const suporteSheetBg = useMemo(() => ({
+    backgroundColor: colors.sheetBg,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: colors.sheetBorder,
+  }), [colors]);
+  const suporteHandleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
+  const renderSuporteBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} pressBehavior="close" />
+    ),
+    []
+  );
+
+  useEffect(() => {
+    if (suporteAberto) {
+      suporteRef.current?.present();
+    } else {
+      suporteRef.current?.dismiss();
+    }
+  }, [suporteAberto]);
 
   useEffect(() => {
     if (!contract || contract.status !== "active" || contract.agendado) return;
@@ -397,77 +429,76 @@ export default function ContractDetailScreen() {
         </Pressable>
       </ScrollView>
 
-      {/* Support Modal */}
-      <Modal
-        visible={suporteAberto}
-        transparent
-        animationType="slide"
-        onRequestClose={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }}
+      {/* Support Sheet */}
+      <BottomSheetModal
+        ref={suporteRef}
+        snapPoints={suporteSnapPoints}
+        backgroundStyle={suporteSheetBg}
+        handleIndicatorStyle={suporteHandleStyle}
+        backdropComponent={renderSuporteBackdrop}
+        onDismiss={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }}
       >
-        <View style={styles.modalOverlay}>
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }} />
-          <View style={[styles.supportSheet, { backgroundColor: colors.sheetBg, borderColor: colors.sheetBorder, paddingBottom: insets.bottom + 24 }]}>
-            <View style={[styles.sheetHandle, { backgroundColor: colors.handleColor }]} />
-            <View style={styles.sheetHeader}>
-              <View>
-                <Text style={[styles.sheetTitle, { color: colors.text }]}>Ajuda</Text>
-                <Text style={[styles.sheetSubtitle, { color: colors.textMuted }]}>{contratoId}</Text>
-              </View>
-              <Pressable onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }} hitSlop={8}>
-                <Feather name="x" size={18} color={colors.textMuted} />
-              </Pressable>
+        <BottomSheetScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 4, paddingBottom: insets.bottom + 24 }}
+        >
+          <View style={styles.sheetHeader}>
+            <View>
+              <Text style={[styles.sheetTitle, { color: colors.text }]}>Ajuda</Text>
+              <Text style={[styles.sheetSubtitle, { color: colors.textMuted }]}>{contratoId}</Text>
             </View>
+            <Pressable onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }} hitSlop={8}>
+              <Feather name="x" size={18} color={colors.textMuted} />
+            </Pressable>
+          </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={{ gap: 10, marginBottom: 20 }}>
-                {[
-                  { icon: <Feather name="file-text" size={20} color="#ff6b35" />, label: "Perguntas frequentes", desc: "Respostas para as dúvidas mais comuns", onPress: () => setFaqExpandido(f => !f) },
-                  { icon: <MaterialCommunityIcons name="robot-outline" size={20} color="#ff6b35" />, label: "Falar com a AI", desc: "Assistente inteligente com contexto do contrato", onPress: () => {} },
-                  { icon: <Feather name="message-circle" size={20} color="#ff6b35" />, label: "Falar com suporte humano", desc: "Para casos que precisam de atenção especial", onPress: () => {} },
-                ].map(op => (
-                  <Pressable
-                    key={op.label}
-                    onPress={op.onPress}
-                    style={[styles.supportOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                  >
-                    <View style={[styles.supportOptionIcon, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" }]}>
-                      {op.icon}
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.supportOptionLabel, { color: colors.text }]}>{op.label}</Text>
-                      <Text style={[styles.supportOptionDesc, { color: colors.textSecondary }]}>{op.desc}</Text>
-                    </View>
-                    <Feather name="chevron-right" size={16} color={colors.chevron} />
-                  </Pressable>
+          <View style={{ gap: 10, marginBottom: 20 }}>
+            {[
+              { icon: <Feather name="file-text" size={20} color="#ff6b35" />, label: "Perguntas frequentes", desc: "Respostas para as dúvidas mais comuns", onPress: () => setFaqExpandido(f => !f) },
+              { icon: <MaterialCommunityIcons name="robot-outline" size={20} color="#ff6b35" />, label: "Falar com a AI", desc: "Assistente inteligente com contexto do contrato", onPress: () => {} },
+              { icon: <Feather name="message-circle" size={20} color="#ff6b35" />, label: "Falar com suporte humano", desc: "Para casos que precisam de atenção especial", onPress: () => {} },
+            ].map(op => (
+              <Pressable
+                key={op.label}
+                onPress={op.onPress}
+                style={[styles.supportOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+              >
+                <View style={[styles.supportOptionIcon, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" }]}>
+                  {op.icon}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.supportOptionLabel, { color: colors.text }]}>{op.label}</Text>
+                  <Text style={[styles.supportOptionDesc, { color: colors.textSecondary }]}>{op.desc}</Text>
+                </View>
+                <Feather name="chevron-right" size={16} color={colors.chevron} />
+              </Pressable>
+            ))}
+          </View>
+
+          {faqExpandido && (
+            <View>
+              <Text style={[styles.faqSectionLabel, { color: colors.textMuted }]}>perguntas frequentes</Text>
+              <View style={{ gap: 8 }}>
+                {FAQS.map((f, i) => (
+                  <View key={i} style={[styles.faqItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+                    <Pressable onPress={() => setFaqAberto(faqAberto === i ? null : i)} style={styles.faqQuestion}>
+                      <Text style={[styles.faqQuestionText, { color: colors.textSecondary }, faqAberto === i && { color: colors.text }]}>
+                        {f.q}
+                      </Text>
+                      <Feather name="chevron-right" size={14} color={colors.chevron} style={{ transform: [{ rotate: faqAberto === i ? "90deg" : "0deg" }] }} />
+                    </Pressable>
+                    {faqAberto === i && (
+                      <View style={[styles.faqAnswer, { borderTopColor: colors.surface }]}>
+                        <Text style={[styles.faqAnswerText, { color: colors.textSecondary }]}>{f.r}</Text>
+                      </View>
+                    )}
+                  </View>
                 ))}
               </View>
-
-              {faqExpandido && (
-                <View>
-                  <Text style={[styles.faqSectionLabel, { color: colors.textMuted }]}>perguntas frequentes</Text>
-                  <View style={{ gap: 8 }}>
-                    {FAQS.map((f, i) => (
-                      <View key={i} style={[styles.faqItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-                        <Pressable onPress={() => setFaqAberto(faqAberto === i ? null : i)} style={styles.faqQuestion}>
-                          <Text style={[styles.faqQuestionText, { color: colors.textSecondary }, faqAberto === i && { color: colors.text }]}>
-                            {f.q}
-                          </Text>
-                          <Feather name="chevron-right" size={14} color={colors.chevron} style={{ transform: [{ rotate: faqAberto === i ? "90deg" : "0deg" }] }} />
-                        </Pressable>
-                        {faqAberto === i && (
-                          <View style={[styles.faqAnswer, { borderTopColor: colors.surface }]}>
-                            <Text style={[styles.faqAnswerText, { color: colors.textSecondary }]}>{f.r}</Text>
-                          </View>
-                        )}
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+            </View>
+          )}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
 
       <AppDialog
         visible={confirmEncerrar}
@@ -542,9 +573,6 @@ const styles = StyleSheet.create({
   contratarNovText: { color: "#ff6b35", fontSize: 13, fontFamily: "Sora_600SemiBold" },
   suporteBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderRadius: 14, padding: 13, marginTop: 4 },
   suporteBtnText: { fontSize: 12, fontFamily: "DMMono_400Regular" },
-  modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" },
-  supportSheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, paddingHorizontal: 24, paddingTop: 16, maxHeight: "85%" },
-  sheetHandle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 20 },
   sheetHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 },
   sheetTitle: { fontSize: 16, fontFamily: "Sora_700Bold", marginBottom: 4 },
   sheetSubtitle: { fontSize: 11, fontFamily: "DMMono_400Regular" },
