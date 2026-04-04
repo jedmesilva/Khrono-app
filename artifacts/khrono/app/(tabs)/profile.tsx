@@ -437,6 +437,7 @@ const styles = StyleSheet.create({
   newBadgeWrap: { flexDirection: "row" },
   newBadge: { backgroundColor: "#00e5a015", borderWidth: 1, borderColor: "#00e5a025", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
   newBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#00e5a0" },
+  nameWithBadge: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
   subContainer: { flex: 1 },
   subHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, marginBottom: 20 },
   backBtn: { padding: 4 },

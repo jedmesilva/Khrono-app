@@ -9,7 +9,7 @@ interface VerifiedBadgeProps {
   onPress?: () => void;
 }
 
-export function VerifiedBadge({ variant = "full", onPress }: VerifiedBadgeProps) {
+export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
   const content = (
     <>
       <Feather name="check-circle" size={9} color="#00e5a0" />
