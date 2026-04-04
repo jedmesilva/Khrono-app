@@ -365,8 +365,8 @@ export default function ProfileScreen() {
                     )}
                     {tools.length > 0 && (
                       <View style={styles.compositionItem}>
-                        <Feather name="key" size={10} color="#00e5a0" />
-                        <Text style={styles.compositionTool} numberOfLines={1}>{tools.map((t) => t.name).join(", ")}</Text>
+                        <Feather name="tool" size={10} color="#ff6b35" />
+                        <Text style={styles.compositionSkill} numberOfLines={1}>{tools.map((t) => t.name).join(", ")}</Text>
                       </View>
                     )}
                   </View>
@@ -454,8 +454,7 @@ const styles = StyleSheet.create({
   compositionRow: { gap: 6, marginBottom: 10 },
   compositionItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   compositionSkill: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff6b35cc", flex: 1 },
-  compositionTool: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#00e5a0cc", flex: 1 },
-  compVerifiedDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#00e5a0", flexShrink: 0 },
+  compVerifiedDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#ff6b35", flexShrink: 0 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   serviceRatingText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
   newBadgeWrap: { flexDirection: "row" },
