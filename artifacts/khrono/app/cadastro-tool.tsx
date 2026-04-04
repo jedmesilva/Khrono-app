@@ -21,6 +21,7 @@ interface ToolTemplate {
   type: string;
   typeLabel: string;
   icon: "truck" | "tool" | "box";
+  description: string;
 }
 
 const TOOL_TYPES = [
@@ -30,27 +31,27 @@ const TOOL_TYPES = [
 ];
 
 const TOOL_TEMPLATES: ToolTemplate[] = [
-  { id: "tv01", name: "Carro", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tv02", name: "Moto", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tv03", name: "Van", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tv04", name: "Caminhão", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tv05", name: "Pickup", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tv06", name: "Bicicleta", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tv07", name: "Scooter", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
-  { id: "tf01", name: "Furadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "tf02", name: "Serra Circular", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "tf03", name: "Parafusadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "tf04", name: "Esmerilhadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "tf05", name: "Martelo", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "tf06", name: "Chave de Fenda", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "tf07", name: "Nível a Laser", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
-  { id: "te01", name: "Escada", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
-  { id: "te02", name: "Carrinho de Mudança", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
-  { id: "te03", name: "Betoneira", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
-  { id: "te04", name: "Compressor de Ar", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
-  { id: "te05", name: "Gerador", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
-  { id: "te06", name: "Andaime", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
-  { id: "te07", name: "Aspirador Industrial", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "tv01", name: "Carro", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Veículo de passeio para transporte de pessoas ou pequenas cargas." },
+  { id: "tv02", name: "Moto", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Motocicleta para deslocamentos rápidos e entregas ágeis." },
+  { id: "tv03", name: "Van", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Van para transporte de cargas médias, mudanças e grupos." },
+  { id: "tv04", name: "Caminhão", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Caminhão para transporte de cargas pesadas e mudanças de grande porte." },
+  { id: "tv05", name: "Pickup", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Caminhonete para transporte de cargas leves e materiais de construção." },
+  { id: "tv06", name: "Bicicleta", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Bicicleta para entregas locais e deslocamentos de curta distância." },
+  { id: "tv07", name: "Scooter", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Scooter elétrica ou a gasolina para entregas rápidas e mobilidade urbana." },
+  { id: "tf01", name: "Furadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Furadeira elétrica para perfuração em paredes, madeira e metal." },
+  { id: "tf02", name: "Serra Circular", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Serra circular para cortes precisos em madeira e outros materiais." },
+  { id: "tf03", name: "Parafusadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Parafusadeira elétrica para montagem e fixação rápida de peças." },
+  { id: "tf04", name: "Esmerilhadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Esmerilhadeira angular para corte, desbaste e polimento de metais." },
+  { id: "tf05", name: "Martelo", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Martelo para fixação, demolição leve e trabalhos manuais em geral." },
+  { id: "tf06", name: "Chave de Fenda", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Jogo de chaves de fenda para aperto e soltura de parafusos de diferentes tipos." },
+  { id: "tf07", name: "Nível a Laser", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Nível a laser para nivelamento e alinhamento preciso em instalações." },
+  { id: "te01", name: "Escada", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Escada extensível ou de degraus para trabalhos em altura." },
+  { id: "te02", name: "Carrinho de Mudança", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Carrinho plataforma para movimentação de móveis e caixas pesadas." },
+  { id: "te03", name: "Betoneira", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Betoneira elétrica para mistura de concreto e argamassa em obras." },
+  { id: "te04", name: "Compressor de Ar", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Compressor de ar para pintura a pistola, limpeza e ferramentas pneumáticas." },
+  { id: "te05", name: "Gerador", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Gerador de energia para uso em locais sem tomada ou em quedas de energia." },
+  { id: "te06", name: "Andaime", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Andaime tubular para trabalhos em fachadas, tetos e ambientes elevados." },
+  { id: "te07", name: "Aspirador Industrial", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Aspirador de alta potência para limpeza de obras, pós e resíduos pesados." },
 ];
 
 const TOTAL_STEPS = 2;
@@ -92,6 +93,7 @@ export default function CadastroToolScreen() {
   function handleSelectTemplate(t: ToolTemplate) {
     setToolName(t.name);
     setToolType(t.type);
+    setDetails(t.description);
     setStep(2);
   }
 
@@ -401,7 +403,12 @@ function ToolCard({ template, colors, onPress }: {
         <View style={[styles.templateIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3328" }]}>
           <Feather name={template.icon} size={16} color="#ff6b35" />
         </View>
-        <Text style={[styles.templateName, { color: colors.text, flex: 1 }]}>{template.name}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.templateName, { color: colors.text }]}>{template.name}</Text>
+          <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={1}>
+            {template.description}
+          </Text>
+        </View>
         <View style={[styles.categoryBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
           <Text style={[styles.categoryBadgeText, { color: colors.textMuted }]}>{template.typeLabel}</Text>
         </View>
@@ -431,7 +438,8 @@ const styles = StyleSheet.create({
   templateCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
   templateTopRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
   templateIconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  templateName: { fontFamily: "Sora_700Bold", fontSize: 15 },
+  templateName: { fontFamily: "Sora_700Bold", fontSize: 15, marginBottom: 2 },
+  templateDescription: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
   categoryBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
   categoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
   templateFooter: { alignItems: "flex-end" },
