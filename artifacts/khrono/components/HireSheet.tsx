@@ -14,8 +14,6 @@ import React, {
   useState,
 } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -747,13 +745,10 @@ export function HireSheet({ open, onClose }: Props) {
         backgroundStyle={subSheetBgStyle}
         handleIndicatorStyle={handleStyle}
         onDismiss={() => setSubMode(null)}
-        keyboardBehavior="interactive"
+        keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ flex: 1 }}
-        >
           <BottomSheetScrollView
             contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
             showsVerticalScrollIndicator={false}
@@ -784,7 +779,6 @@ export function HireSheet({ open, onClose }: Props) {
               <LinkContent onShowDialog={setDialog} colors={colors} />
             )}
           </BottomSheetScrollView>
-        </KeyboardAvoidingView>
       </BottomSheetModal>
 
       <AppDialog
