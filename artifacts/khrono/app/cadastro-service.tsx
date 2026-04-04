@@ -652,7 +652,7 @@ function SelectableSkillCard({ skill, selected, recommended, colors, onPress }: 
       </View>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Text style={[styles.selectableName, { color: selected ? colors.text : colors.textSecondary }]} numberOfLines={1}>{skill.name}</Text>
+          <Text style={[styles.selectableName, { color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
           {recommended && !selected && (
             <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" }]}>
               <Text style={styles.recommendedText}>recomendada</Text>
@@ -695,7 +695,7 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
       </View>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Text style={[styles.selectableName, { color: selected ? colors.text : colors.textSecondary }]} numberOfLines={1}>{tool.name}</Text>
+          <Text style={[styles.selectableName, { color: colors.text }]} numberOfLines={1}>{tool.name}</Text>
           {recommended && !selected && (
             <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3525" }]}>
               <Text style={[styles.recommendedText, { color: "#ff6b35" }]}>sugerida</Text>
