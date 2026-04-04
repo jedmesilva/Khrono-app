@@ -108,14 +108,6 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
             {isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
           </Text>
         </View>
-        {(contract.servico?.nome ?? contract.person.skill) ? (
-          <View style={[styles.servicoBadge, { borderColor: accentColor + "30", backgroundColor: accentColor + "0d" }]}>
-            <Feather name="briefcase" size={8} color={accentColor + "cc"} />
-            <Text style={[styles.servicoText, { color: accentColor }]}>
-              {contract.servico?.nome ?? contract.person.skill}
-            </Text>
-          </View>
-        ) : null}
       </View>
 
       {/* Person */}
@@ -132,6 +124,11 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
         </View>
         <View style={styles.personInfo}>
           <Text style={[styles.personName, { color: colors.text }]}>{contract.person.name}</Text>
+          {(contract.servico?.nome ?? contract.person.skill) ? (
+            <Text style={[styles.servicoLabel, { color: colors.textSecondary }]}>
+              {contract.servico?.nome ?? contract.person.skill}
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -283,20 +280,10 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_600SemiBold",
     fontSize: 15,
   },
-  servicoBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-  },
-  servicoText: {
+  servicoLabel: {
     fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
+    fontSize: 11,
+    marginTop: 2,
   },
   progressTrack: {
     height: 4,
