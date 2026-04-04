@@ -3,7 +3,6 @@ import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   Easing,
   KeyboardAvoidingView,
@@ -73,7 +72,7 @@ export default function LoginScreen() {
   }
 
   function handleForgotPassword() {
-    Alert.alert("Redefinir senha", "Enviamos um link de redefinição para o seu e-mail.", [{ text: "OK" }]);
+    router.push({ pathname: "/auth/codigo-recuperacao", params: { contact, type } });
   }
 
   const displayContact = type === "phone"
