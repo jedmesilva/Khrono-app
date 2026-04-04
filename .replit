@@ -12,28 +12,28 @@ expertMode = true
   args = ["-y", "@supabase/mcp-server-supabase@latest", "--access-token", "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb", "--project-ref", "hbekmqzdoxcsznykuxdj"]
 
   [workflows]
-  runButton = "Project"
+runButton = "Project"
 
   [[workflows.workflow]]
-  name = "Project"
-  mode = "parallel"
-  author = "agent"
+name = "Project"
+mode = "parallel"
+author = "agent"
 
-  [[workflows.workflow.tasks]]
-  task = "workflow.run"
-  args = "Start application"
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
 
   [[workflows.workflow]]
-  name = "Start application"
-  author = "agent"
-
-  [[workflows.workflow.tasks]]
-  task = "shell.exec"
-  args = "PORT=22861 pnpm --filter @workspace/khrono run dev"
-  waitForPort = 22861
+name = "Start application"
+author = "agent"
 
   [workflows.workflow.metadata]
-  outputType = "webview"
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=5000 pnpm --filter @workspace/khrono run dev"
+waitForPort = 5000
 
   [userenv]
 
@@ -42,6 +42,10 @@ expertMode = true
   EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
   SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
   SUPABASE_ACCESS_TOKEN = "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb"
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
 
 [[ports]]
 localPort = 22861
