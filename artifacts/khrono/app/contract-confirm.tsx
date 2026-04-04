@@ -132,6 +132,16 @@ export default function ContractConfirmScreen() {
   const timerRestante = tipoContrato === "definido" ? Math.max(0, duracaoMs / 1000 - segundos) : null;
   const progresso = tipoContrato === "definido" ? Math.min(1, segundos / (duracaoMs / 1000)) : null;
 
+  const labelValor = (() => {
+    const isCash = metodoPagamento === "dinheiro";
+    const isCardOrPix = metodoPagamento === "cartao" || metodoPagamento === "pix";
+    const isDefinido = tipoContrato === "definido";
+    if (isCash) return "a pagar";
+    if (isCardOrPix && isDefinido) return "pagando";
+    if (isCardOrPix && !isDefinido) return "a pagar";
+    return "pagando";
+  })();
+
   const formatAgendamento = () => {
     const hoje = new Date();
     const amanha = new Date();
@@ -653,7 +663,7 @@ export default function ContractConfirmScreen() {
               <Text style={styles.timerAmount}>
                 R${((segundos / 3600) * valorHora).toFixed(2)}
               </Text>
-              <Text style={styles.timerAmountLabel}>acumulado</Text>
+              <Text style={styles.timerAmountLabel}>{labelValor}</Text>
             </View>
           ) : (
             <View style={styles.timerWrap}>
@@ -671,7 +681,7 @@ export default function ContractConfirmScreen() {
                 ]} />
               </View>
               <Text style={styles.timerAmount}>R${valorTotal}</Text>
-              <Text style={styles.timerAmountLabel}>valor total fixo</Text>
+              <Text style={styles.timerAmountLabel}>{labelValor}</Text>
             </View>
           )}
 
