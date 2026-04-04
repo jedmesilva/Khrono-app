@@ -634,6 +634,7 @@ export default function CadastroServiceScreen() {
                 autoFocus
                 maxLength={6}
               />
+              <Text style={[styles.rateDecimals, { color: draft.hourlyRateInput ? colors.textSecondary : colors.textDim }]}>,00</Text>
               <Text style={[styles.rateUnit, { color: colors.textMuted }]}>/h</Text>
             </View>
 
@@ -900,6 +901,7 @@ const styles = StyleSheet.create({
   rateInputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1.5, borderRadius: 18, paddingHorizontal: 20, paddingVertical: 18, gap: 8, marginBottom: 28 },
   rateCurrency: { fontFamily: "Sora_700Bold", fontSize: 28 },
   rateInput: { flex: 1, fontFamily: "Sora_700Bold", fontSize: 44, textAlign: "center" },
+  rateDecimals: { fontFamily: "Sora_700Bold", fontSize: 28 },
   rateUnit: { fontFamily: "DMMono_400Regular", fontSize: 20 },
   presetsRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
   presetChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9 },
