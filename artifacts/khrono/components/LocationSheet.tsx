@@ -360,7 +360,6 @@ export function LocationSheet({
             <Pressable
               style={[
                 styles.optionCard,
-                { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
                 selectedMode === "realtime" && styles.optionCardActive,
               ]}
               onPress={() => handleSelectMode("realtime")}
@@ -415,7 +414,6 @@ export function LocationSheet({
             <Pressable
               style={[
                 styles.optionCard,
-                { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
                 selectedMode === "fixed" && styles.optionCardActiveBlue,
               ]}
               onPress={() => handleSelectMode("fixed")}
@@ -487,12 +485,12 @@ export function LocationSheet({
           </View>
 
           {/* Radius slider */}
-          <View style={[styles.radiusWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+          <View style={styles.radiusWrap}>
             <RadiusSlider value={radius} onChange={setRadius} />
           </View>
 
           {/* Info box */}
-          <View style={[styles.infoBox, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+          <View style={styles.infoBox}>
             <Feather name="info" size={13} color={colors.textMuted} />
             <Text style={[styles.infoText, { color: colors.textMuted }]}>
               Clientes só verão sua localização aproximada, nunca o endereço
@@ -533,9 +531,9 @@ function createStyles(colors: ColorPalette) {
     },
     optionsWrap: { gap: 10 },
     optionCard: {
-      backgroundColor: colors.inputBg,
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: colors.inputBorder,
+      borderColor: colors.cardBorder,
       borderRadius: 18,
       padding: 16,
       gap: 12,
@@ -632,9 +630,9 @@ function createStyles(colors: ColorPalette) {
       lineHeight: 15,
     },
     radiusWrap: {
-      backgroundColor: colors.inputBg,
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: colors.inputBorder,
+      borderColor: colors.cardBorder,
       borderRadius: 18,
       padding: 16,
     },
@@ -642,9 +640,9 @@ function createStyles(colors: ColorPalette) {
       flexDirection: "row",
       alignItems: "flex-start",
       gap: 8,
-      backgroundColor: colors.inputBg,
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: colors.inputBorder,
+      borderColor: colors.cardBorder,
       borderRadius: 12,
       padding: 12,
     },
