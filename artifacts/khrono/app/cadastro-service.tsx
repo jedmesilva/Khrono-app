@@ -595,15 +595,18 @@ function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
       <View style={styles.templateTopRow}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.templateName, { color: colors.text }]}>{template.name}</Text>
-          <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={1}>{template.description}</Text>
+          <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={2}>{template.description}</Text>
         </View>
-        <View style={[styles.categoryBadge, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528" }]}>
-          <Text style={[styles.categoryBadgeText, { color: "#ff6b35" }]}>{template.category}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <View style={[styles.categoryBadge, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528" }]}>
+            <Text style={[styles.categoryBadgeText, { color: "#ff6b35" }]}>{template.category}</Text>
+          </View>
+          <Feather name="chevron-right" size={14} color={colors.chevron} />
         </View>
       </View>
 
       {(template.skillName || template.toolNames.length > 0) && (
-        <View style={styles.compositionRow}>
+        <View style={[styles.compositionRow, { marginBottom: 0 }]}>
           {template.skillName && (
             <View style={[styles.compositionChip, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528", opacity: hasSkill ? 1 : 0.45 }]}>
               <Feather name="star" size={9} color="#ff6b35" />
@@ -621,10 +624,6 @@ function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
           })}
         </View>
       )}
-
-      <View style={styles.templateFooter}>
-        <Feather name="chevron-right" size={14} color={colors.chevron} />
-      </View>
     </Pressable>
   );
 }
@@ -748,7 +747,6 @@ const styles = StyleSheet.create({
   compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
   compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  templateFooter: { alignItems: "flex-end" },
   createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
   createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },
