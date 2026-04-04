@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   inactiveBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   inactiveBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1 },
   serviceTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 },
-  serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, flex: 1 },
+  serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, flexShrink: 1 },
   serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, flexShrink: 0 },
   compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
