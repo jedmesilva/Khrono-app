@@ -51,26 +51,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
-  async function applySession(session: Session) {
+  function applySession(session: Session) {
     const fallback = userFromSession(session);
     setUser(fallback);
     setIsAuthenticated(true);
 
-    const profile = await fetchProfile(session.user.id);
-    if (profile) setUser(profile);
+    fetchProfile(session.user.id)
+      .then((profile) => { if (profile) setUser(profile); })
+      .catch(() => {});
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        await applySession(session);
+        applySession(session);
       }
       setIsLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        await applySession(session);
+        applySession(session);
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -86,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) await applySession(session);
+    if (session) applySession(session);
   }, []);
 
   return (
