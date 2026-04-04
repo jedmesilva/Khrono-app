@@ -202,9 +202,9 @@ export default function UserProfileScreen() {
                     </View>
                   )}
                   {tools.map((tool) => (
-                    <View key={tool.id} style={[styles.compositionChip, styles.compositionChipGreen]}>
-                      <Feather name="key" size={9} color="#00e5a0" />
-                      <Text style={[styles.compositionChipText, { color: "#00e5a0cc" }]}>{tool.name}</Text>
+                    <View key={tool.id} style={styles.compositionChip}>
+                      <Feather name="tool" size={9} color="#ff6b35" />
+                      <Text style={styles.compositionChipText}>{tool.name}</Text>
                     </View>
                   ))}
                 </View>
@@ -297,7 +297,6 @@ const styles = StyleSheet.create({
   serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, color: "#ff6b35" },
   serviceComposition: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3510", borderWidth: 1, borderColor: "#ff6b3520", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  compositionChipGreen: { backgroundColor: "#00e5a010", borderColor: "#00e5a020" },
   compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#ff6b35cc" },
   skillCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
   skillHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
