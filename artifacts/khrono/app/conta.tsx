@@ -25,6 +25,49 @@ import { supabase } from "@/lib/supabase";
 type VerifStatus = "none" | "pending" | "approved" | "rejected";
 type EditingField = "nome" | "email" | "telefone" | "cpf" | "nascimento" | null;
 
+function formatCpf(raw: string): string {
+  const d = raw.replace(/\D/g, "");
+  if (d.length !== 11) return raw;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+function maskCpf(raw: string): string {
+  const d = raw.replace(/\D/g, "");
+  if (!d) return "";
+  return "•••.•••.•••-••";
+}
+
+function applyBirthDateMask(text: string): string {
+  const d = text.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
+function applyCpfMask(text: string): string {
+  const d = text.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+function isoToBr(iso: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  return iso;
+}
+
+function brToIso(br: string): string {
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(br)) {
+    const [d, m, y] = br.split("/");
+    return `${y}-${m}-${d}`;
+  }
+  return br;
+}
+
 const STATUS_COLORS: Record<VerifStatus, { bg: string; border: string; text: string; label: string }> = {
   none:     { bg: "transparent",    border: "transparent",     text: "transparent",   label: "Não enviado" },
   pending:  { bg: "#ff6b3512",      border: "#ff6b3530",       text: "#ff6b35",       label: "Em análise"  },
@@ -88,6 +131,7 @@ export default function ContaScreen() {
   const [confirmPwd, setConfirmPwd] = useState("");
   const [changingPwd, setChangingPwd] = useState(false);
 
+  const [showCpf, setShowCpf] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [pwdExpanded, setPwdExpanded] = useState(false);
 
@@ -107,7 +151,13 @@ export default function ContaScreen() {
         const formatted = digits.length === 11
           ? `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
           : digits;
-        setUserData({ nome: data.name ?? "", email: data.email ?? "", telefone: formatted, cpf: data.cpf ?? "", nascimento: data.birth_date ?? "" });
+        setUserData({
+          nome: data.name ?? "",
+          email: data.email ?? "",
+          telefone: formatted,
+          cpf: formatCpf(data.cpf ?? ""),
+          nascimento: isoToBr(data.birth_date ?? ""),
+        });
         if (data.profile_image_url) setProfileImage(data.profile_image_url);
       }
       setLoadingProfile(false);
@@ -126,14 +176,21 @@ export default function ContaScreen() {
     setSavingField(true);
     const dbField: Record<string, string> = { nome: "name", email: "email", telefone: "phone", cpf: "cpf", nascimento: "birth_date" };
     let valueToSave = draft;
+    let displayValue = draft;
     if (editing === "telefone") {
       const digits = draft.replace(/\D/g, "");
       valueToSave = digits ? `+55${digits}` : "";
+    } else if (editing === "cpf") {
+      valueToSave = draft.replace(/\D/g, "");
+      displayValue = formatCpf(draft);
+    } else if (editing === "nascimento") {
+      valueToSave = brToIso(draft);
+      displayValue = isoToBr(valueToSave) || draft;
     }
     const { error } = await supabase.from("profiles").update({ [dbField[editing]]: valueToSave }).eq("id", user.id);
     setSavingField(false);
     if (error) { Alert.alert("Erro", "Não foi possível salvar. Tente novamente."); return; }
-    setUserData((prev) => ({ ...prev, [editing]: draft }));
+    setUserData((prev) => ({ ...prev, [editing]: displayValue }));
     setEditing(null);
     await refreshUser();
     showToast("Alteração salva com sucesso");
@@ -236,9 +293,26 @@ export default function ContaScreen() {
           <View style={[styles.fieldList, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             {FIELDS.map((f) => {
               const isEditing = editing === f.key;
-              const displayValue = f.masked && editing !== f.key && userData[f.key]
-                ? "•••.•••.•••-••"
-                : (userData[f.key] || (loadingProfile ? "Carregando..." : "Não informado"));
+              const rawValue = userData[f.key];
+
+              let displayValue: string;
+              if (f.key === "cpf" && !isEditing) {
+                displayValue = rawValue
+                  ? (showCpf ? rawValue : maskCpf(rawValue))
+                  : (loadingProfile ? "Carregando..." : "Não informado");
+              } else {
+                displayValue = rawValue || (loadingProfile ? "Carregando..." : "Não informado");
+              }
+
+              function handleChangeText(text: string) {
+                if (f.key === "cpf") {
+                  setDraft(applyCpfMask(text));
+                } else if (f.key === "nascimento") {
+                  setDraft(applyBirthDateMask(text));
+                } else {
+                  setDraft(text);
+                }
+              }
 
               return (
                 <View key={f.key} style={[styles.fieldRow, { borderBottomColor: colors.surface }, isEditing && { backgroundColor: colors.inputBg, borderBottomColor: "#ff6b3520" }]}>
@@ -248,15 +322,15 @@ export default function ContaScreen() {
                       <TextInput
                         style={[styles.fieldInput, { color: colors.text }]}
                         value={draft}
-                        onChangeText={setDraft}
+                        onChangeText={handleChangeText}
                         placeholder={f.placeholder}
                         placeholderTextColor={colors.textDim}
                         autoCapitalize="none"
                         autoFocus
-                        keyboardType={f.key === "telefone" ? "phone-pad" : f.key === "nascimento" ? "numeric" : "default"}
+                        keyboardType={f.key === "telefone" || f.key === "cpf" || f.key === "nascimento" ? "numeric" : "default"}
                       />
                     ) : (
-                      <Text style={[styles.fieldValue, { color: colors.textSecondary }, !userData[f.key] && { color: colors.textDim }]}>
+                      <Text style={[styles.fieldValue, { color: colors.textSecondary }, !rawValue && { color: colors.textDim }]}>
                         {displayValue}
                       </Text>
                     )}
@@ -271,9 +345,16 @@ export default function ContaScreen() {
                       </Pressable>
                     </View>
                   ) : (
-                    <Pressable style={styles.editIconBtn} onPress={() => startEdit(f.key)}>
-                      <Feather name="edit-2" size={13} color={colors.textMuted} />
-                    </Pressable>
+                    <View style={styles.fieldActions}>
+                      {f.key === "cpf" && rawValue ? (
+                        <Pressable style={styles.eyeBtn} onPress={() => setShowCpf((v) => !v)} hitSlop={10}>
+                          <Feather name={showCpf ? "eye-off" : "eye"} size={14} color={colors.textMuted} />
+                        </Pressable>
+                      ) : null}
+                      <Pressable style={styles.editIconBtn} onPress={() => startEdit(f.key)}>
+                        <Feather name="edit-2" size={13} color={colors.textMuted} />
+                      </Pressable>
+                    </View>
                   )}
                 </View>
               );
@@ -500,6 +581,8 @@ const styles = StyleSheet.create({
   saveBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: "#ff6b35" },
   saveBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#fff" },
   editIconBtn: { padding: 6 },
+  fieldActions: { flexDirection: "row", alignItems: "center", gap: 4 },
+  eyeBtn: { padding: 6 },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
   statusBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 10, letterSpacing: 0.5 },
   verifBlock: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
