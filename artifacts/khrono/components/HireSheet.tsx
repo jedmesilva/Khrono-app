@@ -32,6 +32,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { PincodeSheet } from "@/components/PincodeSheet";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
 
@@ -478,6 +479,7 @@ export function HireSheet({ open, onClose }: Props) {
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [disponivel, setDisponivel] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
 
   const subRef = useRef<BottomSheetModal>(null);
 
@@ -716,10 +718,8 @@ export function HireSheet({ open, onClose }: Props) {
                 onPress={() => {
                   if (!disponivel) return;
                   if (opt.pin) {
-                    setDialog({
-                      title: "Seu PIN",
-                      message: `Informe o código  ${opt.pin}  para quem deseja te contratar.`,
-                    });
+                    Haptics.selectionAsync();
+                    setPincodeSheetOpen(true);
                   } else {
                     setDialog({
                       title: "Em breve",
@@ -796,6 +796,12 @@ export function HireSheet({ open, onClose }: Props) {
         message={dialog?.message}
         buttons={dialog?.buttons}
         onDismiss={() => setDialog(null)}
+      />
+
+      <PincodeSheet
+        visible={pincodeSheetOpen}
+        pinCode="1257"
+        onClose={() => setPincodeSheetOpen(false)}
       />
     </>
   );
