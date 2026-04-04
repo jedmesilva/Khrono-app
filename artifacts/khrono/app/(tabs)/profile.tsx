@@ -360,7 +360,6 @@ export default function ProfileScreen() {
                       <View style={styles.compositionItem}>
                         <Feather name="star" size={10} color="#ff6b35" />
                         <Text style={styles.compositionSkill} numberOfLines={1}>{skill.name}</Text>
-                        {skill.verified && <View style={styles.compVerifiedDot} />}
                       </View>
                     )}
                     {tools.length > 0 && (
@@ -454,7 +453,6 @@ const styles = StyleSheet.create({
   compositionRow: { gap: 6, marginBottom: 10 },
   compositionItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   compositionSkill: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff6b35cc", flex: 1 },
-  compVerifiedDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#ff6b35", flexShrink: 0 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   serviceRatingText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
   newBadgeWrap: { flexDirection: "row" },
