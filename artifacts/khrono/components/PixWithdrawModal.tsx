@@ -1,15 +1,16 @@
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import React, { useMemo, useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
+  BottomSheetModal,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+} from "@gorhom/bottom-sheet";
+import * as Haptics from "expo-haptics";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,6 +38,37 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const ref = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["75%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
 
   const [step, setStep] = useState<Step>("form");
   const [amount, setAmount] = useState("");
@@ -46,7 +78,16 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
   const isValid = parsedAmount > 0 && pixKey.trim().length > 3;
 
+  useEffect(() => {
+    if (visible) {
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [visible]);
+
   function handleClose() {
+    ref.current?.dismiss();
     setStep("form");
     setAmount("");
     setPixKey("");
@@ -67,199 +108,151 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   const placeholder = KEY_TYPES.find((k) => k.id === keyType)?.placeholder ?? "";
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={handleClose}
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={sheetBgStyle}
+      handleIndicatorStyle={handleStyle}
+      onDismiss={onClose}
+      keyboardBehavior="extend"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
-      <TouchableWithoutFeedback onPress={handleClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.kavWrapper}
-        pointerEvents="box-none"
+      <BottomSheetScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.sheet,
-            { paddingBottom: Math.max(insets.bottom, 24) },
-          ]}
-        >
-          <View style={styles.handle} />
-
-          {step === "form" && (
-            <>
-              <View style={styles.sheetHeader}>
-                <Text style={styles.sheetTitle}>Sacar via Pix</Text>
-                <Pressable onPress={handleClose} hitSlop={12}>
-                  <Feather name="x" size={18} color={colors.textSecondary} />
-                </Pressable>
-              </View>
-
-              <Text style={styles.fieldLabel}>VALOR</Text>
-              <View style={styles.amountRow}>
-                <Text style={styles.currencyPrefix}>R$</Text>
-                <TextInput
-                  style={styles.amountInput}
-                  value={amount}
-                  onChangeText={setAmount}
-                  placeholder="0,00"
-                  placeholderTextColor={colors.textDim}
-                  keyboardType="decimal-pad"
-                  returnKeyType="done"
-                />
-              </View>
-
-              <Text style={styles.balanceHint}>
-                Saldo disponível: R$ {balance.toFixed(2)}
-              </Text>
-
-              <Text style={[styles.fieldLabel, { marginTop: 20 }]}>
-                TIPO DE CHAVE
-              </Text>
-              <View style={styles.keyTypeRow}>
-                {KEY_TYPES.map((k) => (
-                  <Pressable
-                    key={k.id}
-                    style={[
-                      styles.keyTypeBtn,
-                      keyType === k.id && styles.keyTypeBtnActive,
-                    ]}
-                    onPress={() => setKeyType(k.id)}
-                  >
-                    <Text
-                      style={[
-                        styles.keyTypeTxt,
-                        keyType === k.id && styles.keyTypeTxtActive,
-                      ]}
-                    >
-                      {k.label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-
-              <Text style={[styles.fieldLabel, { marginTop: 16 }]}>
-                CHAVE PIX
-              </Text>
-              <TextInput
-                style={styles.keyInput}
-                value={pixKey}
-                onChangeText={setPixKey}
-                placeholder={placeholder}
-                placeholderTextColor={colors.textDim}
-                autoCapitalize="none"
-                keyboardType={
-                  keyType === "phone" || keyType === "cpf"
-                    ? "numeric"
-                    : "default"
-                }
-              />
-
-              <Pressable
-                style={[styles.confirmBtn, !isValid && styles.confirmBtnDisabled]}
-                onPress={isValid ? handleConfirm : undefined}
-              >
-                <Text style={styles.confirmBtnText}>Continuar</Text>
-                <Feather name="arrow-right" size={16} color="#000" />
-              </Pressable>
-            </>
-          )}
-
-          {step === "confirm" && (
-            <>
-              <View style={styles.sheetHeader}>
-                <Pressable onPress={() => setStep("form")} hitSlop={12}>
-                  <Feather name="arrow-left" size={18} color={colors.textSecondary} />
-                </Pressable>
-                <Text style={styles.sheetTitle}>Confirmar saque</Text>
-                <Pressable onPress={handleClose} hitSlop={12}>
-                  <Feather name="x" size={18} color={colors.textSecondary} />
-                </Pressable>
-              </View>
-
-              <View style={styles.confirmCard}>
-                <View style={styles.confirmRow}>
-                  <Text style={styles.confirmLabel}>VALOR</Text>
-                  <Text style={styles.confirmValue}>R$ {parsedAmount.toFixed(2)}</Text>
-                </View>
-                <View style={styles.confirmDivider} />
-                <View style={styles.confirmRow}>
-                  <Text style={styles.confirmLabel}>CHAVE PIX</Text>
-                  <Text style={styles.confirmValue} numberOfLines={1}>
-                    {pixKey}
-                  </Text>
-                </View>
-                <View style={styles.confirmDivider} />
-                <View style={styles.confirmRow}>
-                  <Text style={styles.confirmLabel}>TIPO</Text>
-                  <Text style={styles.confirmValue}>
-                    {KEY_TYPES.find((k) => k.id === keyType)?.label}
-                  </Text>
-                </View>
-              </View>
-
-              <Text style={styles.confirmNote}>
-                O valor será transferido em até 10 segundos após a confirmação.
-              </Text>
-
-              <Pressable style={styles.confirmBtn} onPress={handlePay}>
-                <Feather name="zap" size={16} color="#000" />
-                <Text style={styles.confirmBtnText}>Confirmar Pix</Text>
-              </Pressable>
-            </>
-          )}
-
-          {step === "success" && (
-            <View style={styles.successContainer}>
-              <View style={styles.successIcon}>
-                <Feather name="check" size={32} color={"#00e5a0"} />
-              </View>
-              <Text style={styles.successTitle}>Pix enviado!</Text>
-              <Text style={styles.successSub}>
-                R$ {parsedAmount.toFixed(2)} transferido para{"\n"}
-                {pixKey}
-              </Text>
-              <Pressable style={styles.doneBtn} onPress={handleClose}>
-                <Text style={styles.doneBtnText}>Concluir</Text>
+        {step === "form" && (
+          <>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>Sacar via Pix</Text>
+              <Pressable onPress={handleClose} hitSlop={12}>
+                <Feather name="x" size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
-          )}
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+
+            <Text style={styles.fieldLabel}>VALOR</Text>
+            <View style={styles.amountRow}>
+              <Text style={styles.currencyPrefix}>R$</Text>
+              <BottomSheetTextInput
+                style={styles.amountInput}
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="0,00"
+                placeholderTextColor={colors.textDim}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+              />
+            </View>
+
+            <Text style={styles.balanceHint}>
+              Saldo disponível: R$ {balance.toFixed(2)}
+            </Text>
+
+            <Text style={[styles.fieldLabel, { marginTop: 20 }]}>TIPO DE CHAVE</Text>
+            <View style={styles.keyTypeRow}>
+              {KEY_TYPES.map((k) => (
+                <Pressable
+                  key={k.id}
+                  style={[styles.keyTypeBtn, keyType === k.id && styles.keyTypeBtnActive]}
+                  onPress={() => setKeyType(k.id)}
+                >
+                  <Text style={[styles.keyTypeTxt, keyType === k.id && styles.keyTypeTxtActive]}>
+                    {k.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Text style={[styles.fieldLabel, { marginTop: 16 }]}>CHAVE PIX</Text>
+            <BottomSheetTextInput
+              style={styles.keyInput}
+              value={pixKey}
+              onChangeText={setPixKey}
+              placeholder={placeholder}
+              placeholderTextColor={colors.textDim}
+              autoCapitalize="none"
+              keyboardType={keyType === "phone" || keyType === "cpf" ? "numeric" : "default"}
+            />
+
+            <Pressable
+              style={[styles.confirmBtn, !isValid && styles.confirmBtnDisabled]}
+              onPress={isValid ? handleConfirm : undefined}
+            >
+              <Text style={styles.confirmBtnText}>Continuar</Text>
+              <Feather name="arrow-right" size={16} color="#000" />
+            </Pressable>
+          </>
+        )}
+
+        {step === "confirm" && (
+          <>
+            <View style={styles.sheetHeader}>
+              <Pressable onPress={() => setStep("form")} hitSlop={12}>
+                <Feather name="arrow-left" size={18} color={colors.textSecondary} />
+              </Pressable>
+              <Text style={styles.sheetTitle}>Confirmar saque</Text>
+              <Pressable onPress={handleClose} hitSlop={12}>
+                <Feather name="x" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            <View style={styles.confirmCard}>
+              <View style={styles.confirmRow}>
+                <Text style={styles.confirmLabel}>VALOR</Text>
+                <Text style={styles.confirmValue}>R$ {parsedAmount.toFixed(2)}</Text>
+              </View>
+              <View style={styles.confirmDivider} />
+              <View style={styles.confirmRow}>
+                <Text style={styles.confirmLabel}>CHAVE PIX</Text>
+                <Text style={styles.confirmValue} numberOfLines={1}>{pixKey}</Text>
+              </View>
+              <View style={styles.confirmDivider} />
+              <View style={styles.confirmRow}>
+                <Text style={styles.confirmLabel}>TIPO</Text>
+                <Text style={styles.confirmValue}>
+                  {KEY_TYPES.find((k) => k.id === keyType)?.label}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.confirmNote}>
+              O valor será transferido em até 10 segundos após a confirmação.
+            </Text>
+
+            <Pressable style={styles.confirmBtn} onPress={handlePay}>
+              <Feather name="zap" size={16} color="#000" />
+              <Text style={styles.confirmBtnText}>Confirmar Pix</Text>
+            </Pressable>
+          </>
+        )}
+
+        {step === "success" && (
+          <View style={styles.successContainer}>
+            <View style={styles.successIcon}>
+              <Feather name="check" size={32} color="#00e5a0" />
+            </View>
+            <Text style={styles.successTitle}>Pix enviado!</Text>
+            <Text style={styles.successSub}>
+              R$ {parsedAmount.toFixed(2)} transferido para{"\n"}{pixKey}
+            </Text>
+            <Pressable style={styles.doneBtn} onPress={handleClose}>
+              <Text style={styles.doneBtnText}>Concluir</Text>
+            </Pressable>
+          </View>
+        )}
+      </BottomSheetScrollView>
+    </BottomSheetModal>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0,0,0,0.7)",
-    },
-    kavWrapper: {
-      flex: 1,
-      justifyContent: "flex-end",
-    },
-    sheet: {
-      backgroundColor: colors.sheetBg,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
+    content: {
       paddingHorizontal: 24,
-      paddingTop: 12,
-      borderTopWidth: 1,
-      borderColor: colors.sheetBorder,
-    },
-    handle: {
-      width: 36,
-      height: 4,
-      backgroundColor: colors.handleColor,
-      borderRadius: 2,
-      alignSelf: "center",
-      marginBottom: 20,
+      paddingTop: 4,
     },
     sheetHeader: {
       flexDirection: "row",
@@ -368,7 +361,6 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.surfaceBorder,
       borderRadius: 16,
       padding: 20,
-      gap: 0,
     },
     confirmRow: {
       flexDirection: "row",
