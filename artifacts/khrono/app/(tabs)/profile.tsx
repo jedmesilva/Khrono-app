@@ -148,7 +148,7 @@ function ToolsListView({ colors, onBack, onVerifiedPress, onAdd }: {
             key={tool.id}
             name={tool.name}
             iconName={tool.icon}
-            description={tool.details}
+            description={`${tool.type} · ${tool.details}`}
             badge={tool.available ? "disponível" : "indisponível"}
             available={tool.available}
             verifiedBadge={tool.verified ? <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} /> : undefined}
