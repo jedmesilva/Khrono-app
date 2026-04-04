@@ -21,23 +21,14 @@ type Props = {
   visible: boolean;
   pinCode: string;
   onClose: () => void;
-  onRegenerate?: () => void;
+  onEndSession: () => void;
 };
 
-function generatePin(): string {
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
-
-export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props) {
+export function PincodeSheet({ visible, pinCode, onClose, onEndSession }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
   const [copied, setCopied] = useState(false);
-  const [currentPin, setCurrentPin] = useState(pinCode);
-
-  useEffect(() => {
-    setCurrentPin(pinCode);
-  }, [pinCode]);
 
   useEffect(() => {
     if (visible) {
@@ -77,20 +68,18 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
   );
 
   const handleCopy = async () => {
-    await Clipboard.setStringAsync(currentPin);
+    await Clipboard.setStringAsync(pinCode);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRegenerate = () => {
+  const handleEndSession = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const newPin = generatePin();
-    setCurrentPin(newPin);
-    onRegenerate?.();
+    onEndSession();
   };
 
-  const digits = currentPin.split("");
+  const digits = pinCode.split("");
 
   return (
     <BottomSheetModal
@@ -109,8 +98,13 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Meu PINCODE</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Compartilhe este código para ser contratado diretamente
+            Válido para uma única contratação nesta sessão
           </Text>
+        </View>
+
+        <View style={[styles.statusRow, { backgroundColor: "#00e5a010", borderColor: "#00e5a025" }]}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
 
         <View style={[styles.pinCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
@@ -126,7 +120,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
             ))}
           </View>
           <Text style={[styles.pinHint, { color: colors.textDim }]}>
-            Válido enquanto você estiver disponível
+            Este código expira após a primeira contratação
           </Text>
         </View>
 
@@ -149,15 +143,19 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
         </Pressable>
 
         <Pressable
-          style={({ pressed }) => [styles.regenBtn, pressed && { opacity: 0.8 }]}
-          onPress={handleRegenerate}
+          style={({ pressed }) => [
+            styles.endBtn,
+            { borderColor: colors.surfaceBorder },
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={handleEndSession}
         >
-          <Feather name="refresh-cw" size={15} color="#fff" />
-          <Text style={styles.regenBtnText}>Gerar novo PINCODE</Text>
+          <Feather name="slash" size={14} color={colors.textSecondary} />
+          <Text style={[styles.endBtnText, { color: colors.textSecondary }]}>Encerrar sessão</Text>
         </Pressable>
 
-        <Text style={[styles.regenWarning, { color: colors.textDim }]}>
-          Ao gerar um novo código, o anterior deixa de funcionar
+        <Text style={[styles.endHint, { color: colors.textDim }]}>
+          Ao encerrar, você ficará indisponível e um novo PIN será gerado na próxima sessão
         </Text>
       </BottomSheetView>
     </BottomSheetModal>
@@ -171,7 +169,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 16,
     gap: 8,
   },
   iconWrap: {
@@ -194,6 +192,28 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     textAlign: "center",
     lineHeight: 16,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#00e5a0",
+  },
+  statusText: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    color: "#00e5a0",
+    letterSpacing: 0.3,
   },
   pinCard: {
     borderWidth: 1,
@@ -232,6 +252,7 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
     letterSpacing: 0.2,
+    textAlign: "center",
   },
   copyBtn: {
     flexDirection: "row",
@@ -247,26 +268,26 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
   },
-  regenBtn: {
+  endBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#ff6b35",
+    borderWidth: 1,
     borderRadius: 14,
-    paddingVertical: 15,
+    paddingVertical: 13,
     marginBottom: 12,
   },
-  regenBtnText: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 14,
-    color: "#fff",
+  endBtnText: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
   },
-  regenWarning: {
+  endHint: {
     fontFamily: "DMMono_400Regular",
     fontSize: 10,
     textAlign: "center",
     letterSpacing: 0.2,
     marginBottom: 4,
+    lineHeight: 15,
   },
 });

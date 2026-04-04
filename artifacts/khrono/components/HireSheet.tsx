@@ -478,8 +478,23 @@ export function HireSheet({ open, onClose }: Props) {
   const { colors } = useTheme();
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [disponivel, setDisponivel] = useState(false);
+  const [sessionPin, setSessionPin] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
+
+  const generateSessionPin = () => String(Math.floor(1000 + Math.random() * 9000));
+
+  const startSession = () => {
+    const pin = generateSessionPin();
+    setSessionPin(pin);
+    setDisponivel(true);
+  };
+
+  const endSession = () => {
+    setDisponivel(false);
+    setSessionPin(null);
+    setPincodeSheetOpen(false);
+  };
 
   const subRef = useRef<BottomSheetModal>(null);
 
@@ -541,6 +556,7 @@ export function HireSheet({ open, onClose }: Props) {
     (provider: ProviderData) => {
       setPendingProvider(provider);
       subRef.current?.dismiss();
+      endSession();
       setTimeout(() => {
         onClose();
         router.push("/contract-confirm");
@@ -591,7 +607,7 @@ export function HireSheet({ open, onClose }: Props) {
     {
       label: "Meu PINCODE",
       desc: "Informe seu código para contratação direta",
-      pin: "1257",
+      pin: sessionPin,
       icon: null,
     },
     {
@@ -667,22 +683,15 @@ export function HireSheet({ open, onClose }: Props) {
                 onValueChange={(val) => {
                   if (!val) {
                     setDialog({
-                      title: "Ficar indisponível?",
-                      message: "Você não poderá receber novos contratos enquanto estiver indisponível.",
+                      title: "Encerrar sessão?",
+                      message: "Você ficará indisponível e o PINCODE atual será invalidado.",
                       buttons: [
-                        {
-                          text: "Cancelar",
-                          style: "cancel",
-                        },
-                        {
-                          text: "Confirmar",
-                          style: "destructive",
-                          onPress: () => setDisponivel(false),
-                        },
+                        { text: "Cancelar", style: "cancel" },
+                        { text: "Encerrar", style: "destructive", onPress: endSession },
                       ],
                     });
                   } else {
-                    setDisponivel(true);
+                    startSession();
                   }
                 }}
               />
@@ -702,7 +711,7 @@ export function HireSheet({ open, onClose }: Props) {
             />
             <Text style={[styles.availStatusMsg, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
               {disponivel
-                ? "Você está disponível e pode receber contratos."
+                ? `Sessão ativa · PINCODE ${sessionPin} gerado para esta sessão.`
                 : "Você está indisponível e não pode receber contratos."}
             </Text>
           </View>
@@ -798,11 +807,14 @@ export function HireSheet({ open, onClose }: Props) {
         onDismiss={() => setDialog(null)}
       />
 
-      <PincodeSheet
-        visible={pincodeSheetOpen}
-        pinCode="1257"
-        onClose={() => setPincodeSheetOpen(false)}
-      />
+      {sessionPin && (
+        <PincodeSheet
+          visible={pincodeSheetOpen}
+          pinCode={sessionPin}
+          onClose={() => setPincodeSheetOpen(false)}
+          onEndSession={endSession}
+        />
+      )}
     </>
   );
 }
