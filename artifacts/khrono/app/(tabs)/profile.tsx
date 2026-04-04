@@ -264,10 +264,6 @@ export default function ProfileScreen() {
   const verifiedToolsCount = MY_PROFILE.tools.filter((t) => t.verified !== null).length;
   const hasVerified = verifiedSkillsCount > 0 || verifiedToolsCount > 0;
 
-  const avgRating =
-    MY_PROFILE.services.filter((s) => s.rating > 0).reduce((sum, s) => sum + s.rating, 0) /
-      (MY_PROFILE.services.filter((s) => s.rating > 0).length || 1);
-
   function handleVerifiedPress(type: VerificationType, context?: "service") {
     const baseMessage = type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
       : type === "community" ? "Verificado por avaliações da comunidade de usuários."
@@ -395,11 +391,6 @@ export default function ProfileScreen() {
           <View style={styles.statItem}>
             <Text style={[styles.statValue, { color: colors.text }]}>{MY_PROFILE.services.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>SERVICES</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: colors.text }]}>{avgRating.toFixed(1)}</Text>
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>AVALIAÇÃO</Text>
           </View>
         </View>
 
