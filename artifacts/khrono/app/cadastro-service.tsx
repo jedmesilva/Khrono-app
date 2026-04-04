@@ -62,7 +62,7 @@ interface Draft {
   templateId: string | null;
   requiredSkillName: string | null;
   requiredToolNames: string[];
-  selectedSkillId: string | null;
+  selectedSkillIds: string[];
   selectedToolIds: string[];
 }
 
@@ -75,7 +75,7 @@ const EMPTY_DRAFT: Draft = {
   templateId: null,
   requiredSkillName: null,
   requiredToolNames: [],
-  selectedSkillId: null,
+  selectedSkillIds: [],
   selectedToolIds: [],
 };
 
@@ -145,9 +145,9 @@ export default function CadastroServiceScreen() {
       templateId: template.id,
       requiredSkillName: template.skillName,
       requiredToolNames: template.toolNames,
-      selectedSkillId: template.skillName
-        ? (userSkills.find((s) => normalize(s.name) === normalize(template.skillName!))?.id ?? null)
-        : null,
+      selectedSkillIds: template.skillName
+        ? userSkills.filter((s) => normalize(s.name) === normalize(template.skillName!)).map((s) => s.id)
+        : [],
       selectedToolIds: template.toolNames
         .map((tn) => userTools.find((t) => normalize(t.name).includes(normalize(tn)))?.id)
         .filter(Boolean) as string[],
@@ -164,7 +164,7 @@ export default function CadastroServiceScreen() {
       templateId: null,
       requiredSkillName: null,
       requiredToolNames: [],
-      selectedSkillId: null,
+      selectedSkillIds: [],
       selectedToolIds: [],
     });
   }
@@ -177,7 +177,9 @@ export default function CadastroServiceScreen() {
   function toggleSkill(skillId: string) {
     setDraft((prev) => ({
       ...prev,
-      selectedSkillId: prev.selectedSkillId === skillId ? null : skillId,
+      selectedSkillIds: prev.selectedSkillIds.includes(skillId)
+        ? prev.selectedSkillIds.filter((id) => id !== skillId)
+        : [...prev.selectedSkillIds, skillId],
     }));
   }
 
@@ -413,8 +415,8 @@ export default function CadastroServiceScreen() {
             <Text style={[styles.stepTitle, { color: colors.text }]}>Skills</Text>
             <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
               {draft.mode === "predefined" && draft.requiredSkillName
-                ? `Este service normalmente requer a skill "${draft.requiredSkillName}".`
-                : "Selecione a skill que compõe este service. Pode deixar em branco."}
+                ? `Este service normalmente inclui a skill "${draft.requiredSkillName}". Você pode selecionar mais de uma.`
+                : "Selecione as skills que compõem este service. Você pode escolher mais de uma ou deixar em branco."}
             </Text>
 
             {/* Required skill warning for predefined */}
@@ -440,7 +442,7 @@ export default function CadastroServiceScreen() {
             {/* Skill list */}
             <View style={styles.selectionList}>
               {userSkills.map((skill) => {
-                const isSelected = draft.selectedSkillId === skill.id;
+                const isSelected = draft.selectedSkillIds.includes(skill.id);
                 const isRecommended = draft.requiredSkillName
                   ? normalize(skill.name) === normalize(draft.requiredSkillName)
                   : false;
@@ -487,15 +489,15 @@ export default function CadastroServiceScreen() {
           >
             <View style={[styles.serviceNamePill, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
               <Text style={[styles.serviceNamePillText, { color: colors.text }]} numberOfLines={1}>{draft.serviceName}</Text>
-              {draft.selectedSkillId && (() => {
-                const sk = userSkills.find((s) => s.id === draft.selectedSkillId);
+              {draft.selectedSkillIds.map((sid) => {
+                const sk = userSkills.find((s) => s.id === sid);
                 return sk ? (
-                  <View style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
+                  <View key={sid} style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
                     <Feather name="star" size={9} color="#ff6b35" />
                     <Text style={styles.pillBadgeText}>{sk.name}</Text>
                   </View>
                 ) : null;
-              })()}
+              })}
             </View>
 
             <Text style={[styles.stepTitle, { color: colors.text }]}>Tools</Text>
