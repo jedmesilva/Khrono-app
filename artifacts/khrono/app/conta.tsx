@@ -1,10 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Animated,
   Image,
   Platform,
   Pressable,
@@ -17,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { Toast, useToast } from "@/components/Toast";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { DocStatus, useDocuments } from "@/context/DocumentsContext";
@@ -57,15 +57,6 @@ function StatusBadge({ status }: { status: VerifStatus }) {
   );
 }
 
-function Toast({ visible, message, translateY }: { visible: boolean; message: string; translateY: Animated.Value }) {
-  if (!visible) return null;
-  return (
-    <Animated.View style={[styles.toast, { transform: [{ translateY }] }]}>
-      <Feather name="check-circle" size={14} color="#fff" />
-      <Text style={styles.toastText}>{message}</Text>
-    </Animated.View>
-  );
-}
 
 export default function ContaScreen() {
   const { colors } = useTheme();
@@ -74,9 +65,7 @@ export default function ContaScreen() {
   const topPadding = isWeb ? insets.top + 67 : insets.top;
   const { user, refreshUser, logout } = useAuth();
 
-  const toastAnim = useRef(new Animated.Value(-80)).current;
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
+  const { toastState, show: showToast } = useToast();
 
   const [editing, setEditing] = useState<EditingField>(null);
   const [draft, setDraft] = useState("");
@@ -125,16 +114,6 @@ export default function ContaScreen() {
     }
     loadProfile();
   }, [user?.id]);
-
-  function showToast(msg: string) {
-    setToastMsg(msg);
-    setToastVisible(true);
-    Animated.sequence([
-      Animated.timing(toastAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.delay(2000),
-      Animated.timing(toastAnim, { toValue: -80, duration: 300, useNativeDriver: true }),
-    ]).start(() => setToastVisible(false));
-  }
 
   function startEdit(field: EditingField) {
     const val = field ? userData[field] : "";
@@ -202,7 +181,7 @@ export default function ContaScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Toast visible={toastVisible} message={toastMsg} translateY={toastAnim} />
+      <Toast visible={toastState.visible} message={toastState.message} type={toastState.type} />
 
       <ScrollView
         style={styles.scroll}
@@ -492,13 +471,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  toast: {
-    position: "absolute", top: 0, left: 20, right: 20, zIndex: 999,
-    backgroundColor: "#00e5a0", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
-    flexDirection: "row", alignItems: "center", gap: 10,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
-  },
-  toastText: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#fff", flex: 1 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 28 },
   backBtn: { padding: 4 },
   headerTitle: { fontFamily: "Sora_700Bold", fontSize: 16 },
