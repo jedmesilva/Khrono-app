@@ -796,7 +796,7 @@ export function HireSheet({ open, onClose }: Props) {
             />
             <Text style={[styles.availStatusMsg, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
               {disponivel
-                ? `Sessão ativa · PINCODE ${sessionPin} gerado para esta sessão.`
+                ? "Sessão ativa · disponível para contratações."
                 : "Você está indisponível e não pode receber contratos."}
             </Text>
           </View>
@@ -824,7 +824,7 @@ export function HireSheet({ open, onClose }: Props) {
               >
                 <View style={styles.availIcon}>
                   {opt.pin ? (
-                    <Text style={styles.pinDisplay}>{opt.pin}</Text>
+                    <Feather name="hash" size={24} color="#00e5a0" />
                   ) : (
                     opt.icon
                   )}
@@ -948,7 +948,6 @@ function createMainStyles(colors: ColorPalette) {
       alignItems: "center", justifyContent: "center", flexShrink: 0,
       backgroundColor: colors.menuIconBg,
     },
-    pinDisplay: { fontFamily: "DMMono_500Medium", fontSize: 15, color: "#ff6b35", fontWeight: "800", letterSpacing: 2 },
     availLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 3, color: colors.text },
     availDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 15, color: colors.textMuted },
   });
