@@ -18,29 +18,30 @@ interface SkillTemplate {
   id: string;
   name: string;
   category: string;
+  description: string;
 }
 
 const SKILL_TEMPLATES: SkillTemplate[] = [
-  { id: "s01", name: "Eletricista", category: "Construção" },
-  { id: "s02", name: "Encanador", category: "Construção" },
-  { id: "s03", name: "Pintor", category: "Construção" },
-  { id: "s04", name: "Montador de Móveis", category: "Construção" },
-  { id: "s05", name: "Marceneiro", category: "Construção" },
-  { id: "s06", name: "Pedreiro", category: "Construção" },
-  { id: "s07", name: "Gesseiro", category: "Construção" },
-  { id: "s08", name: "Personal Trainer", category: "Bem-estar" },
-  { id: "s09", name: "Nutricionista", category: "Bem-estar" },
-  { id: "s10", name: "Fisioterapeuta", category: "Bem-estar" },
-  { id: "s11", name: "Cuidador", category: "Cuidados" },
-  { id: "s12", name: "Babá", category: "Cuidados" },
-  { id: "s13", name: "Técnico em TI", category: "Tecnologia" },
-  { id: "s14", name: "Desenvolvedor Web", category: "Tecnologia" },
-  { id: "s15", name: "Designer de Interiores", category: "Arte" },
-  { id: "s16", name: "Motorista", category: "Transporte" },
-  { id: "s17", name: "Fotógrafo", category: "Arte" },
-  { id: "s18", name: "Cozinheiro", category: "Culinária" },
-  { id: "s19", name: "Jardineiro", category: "Jardinagem" },
-  { id: "s20", name: "Carregador / Mudanças", category: "Transporte" },
+  { id: "s01", name: "Eletricista", category: "Construção", description: "Instalação e manutenção de circuitos elétricos residenciais e comerciais." },
+  { id: "s02", name: "Encanador", category: "Construção", description: "Conserto e instalação de tubulações, torneiras e sistemas hidráulicos." },
+  { id: "s03", name: "Pintor", category: "Construção", description: "Pintura de paredes internas e externas com acabamento profissional." },
+  { id: "s04", name: "Montador de Móveis", category: "Construção", description: "Montagem e desmontagem de móveis de todos os tipos e marcas." },
+  { id: "s05", name: "Marceneiro", category: "Construção", description: "Fabricação e reparo de móveis e estruturas em madeira." },
+  { id: "s06", name: "Pedreiro", category: "Construção", description: "Construção, reforma e acabamento de alvenaria e estruturas." },
+  { id: "s07", name: "Gesseiro", category: "Construção", description: "Instalação de gesso, drywall, texturas e acabamentos decorativos." },
+  { id: "s08", name: "Personal Trainer", category: "Bem-estar", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento." },
+  { id: "s09", name: "Nutricionista", category: "Bem-estar", description: "Planos alimentares e orientação nutricional personalizada." },
+  { id: "s10", name: "Fisioterapeuta", category: "Bem-estar", description: "Atendimento fisioterapêutico residencial ou em clínica." },
+  { id: "s11", name: "Cuidador", category: "Cuidados", description: "Acompanhamento e cuidado com idosos ou pessoas com necessidades especiais." },
+  { id: "s12", name: "Babá", category: "Cuidados", description: "Cuidados e supervisão de crianças em residência." },
+  { id: "s13", name: "Técnico em TI", category: "Tecnologia", description: "Suporte técnico, instalação de softwares e manutenção de computadores." },
+  { id: "s14", name: "Desenvolvedor Web", category: "Tecnologia", description: "Criação e manutenção de sites e aplicações web." },
+  { id: "s15", name: "Designer de Interiores", category: "Arte", description: "Projetos de decoração e planejamento de ambientes residenciais e comerciais." },
+  { id: "s16", name: "Motorista", category: "Transporte", description: "Transporte particular com veículo próprio e condução segura." },
+  { id: "s17", name: "Fotógrafo", category: "Arte", description: "Cobertura fotográfica de eventos, ensaios e produções." },
+  { id: "s18", name: "Cozinheiro", category: "Culinária", description: "Preparo de refeições para eventos, residências ou empresas." },
+  { id: "s19", name: "Jardineiro", category: "Jardinagem", description: "Manutenção de jardins, poda de árvores e paisagismo." },
+  { id: "s20", name: "Carregador / Mudanças", category: "Transporte", description: "Transporte e mudança de móveis e pertences com cuidado." },
 ];
 
 const TOTAL_STEPS = 2;
@@ -79,6 +80,7 @@ export default function CadastroSkillScreen() {
 
   function handleSelectTemplate(t: SkillTemplate) {
     setSkillName(t.name);
+    setDescription(t.description);
     setStep(2);
   }
 
@@ -319,7 +321,12 @@ function SkillCard({ template, colors, onPress }: {
         <View style={[styles.templateIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3328" }]}>
           <Feather name="star" size={16} color="#ff6b35" />
         </View>
-        <Text style={[styles.templateName, { color: colors.text, flex: 1 }]}>{template.name}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.templateName, { color: colors.text }]}>{template.name}</Text>
+          <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={1}>
+            {template.description}
+          </Text>
+        </View>
         <View style={[styles.categoryBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
           <Text style={[styles.categoryBadgeText, { color: colors.textMuted }]}>{template.category}</Text>
         </View>
@@ -349,7 +356,8 @@ const styles = StyleSheet.create({
   templateCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
   templateTopRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
   templateIconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  templateName: { fontFamily: "Sora_700Bold", fontSize: 15 },
+  templateName: { fontFamily: "Sora_700Bold", fontSize: 15, marginBottom: 2 },
+  templateDescription: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
   categoryBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
   categoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
   templateFooter: { alignItems: "flex-end" },
