@@ -158,10 +158,6 @@ export default function ContractDetailScreen() {
             <View style={{ flex: 1 }}>
               <Text style={[styles.pessoaNome, { color: colors.text }]}>{contract.person.name}</Text>
               <View style={styles.pessoaMeta}>
-                <Feather name="star" size={11} color="#ff6b35" />
-                <Text style={[styles.metaText, { color: colors.textSecondary }]}>
-                  {contract.person.nota ?? "—"} ({contract.person.avaliacoes ?? "—"})
-                </Text>
                 <Feather name="map-pin" size={11} color={colors.textMuted} />
                 <Text style={[styles.metaText, { color: colors.textMuted }]}>
                   {contract.person.distancia != null ? `${contract.person.distancia} km` : "—"}
