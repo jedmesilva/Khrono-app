@@ -134,6 +134,7 @@ function PincodeContent({
 }) {
   const [pin, setPin] = useState("");
   const [found, setFound] = useState<ProviderData | null>(null);
+  const styles = useMemo(() => createSubStyles(colors), [colors]);
 
   const handleKey = (d: string) => {
     if (d === "del") {
@@ -166,36 +167,36 @@ function PincodeContent({
   if (found) {
     return (
       <View>
-        <Text style={[sub.title, { color: colors.text }]}>Prestador encontrado</Text>
-        <View style={[sub.userCard, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
-          <View style={sub.userAvatar}>
-            <Text style={sub.userAvatarText}>{found.initials}</Text>
+        <Text style={styles.title}>Prestador encontrado</Text>
+        <View style={styles.userCard}>
+          <View style={styles.userAvatar}>
+            <Text style={styles.userAvatarText}>{found.initials}</Text>
           </View>
-          <Text style={[sub.userName, { color: colors.text }]}>{found.name}</Text>
-          <View style={sub.infoChipsRow}>
-            <View style={[sub.infoChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+          <Text style={styles.userName}>{found.name}</Text>
+          <View style={styles.infoChipsRow}>
+            <View style={styles.infoChip}>
               <Feather name="briefcase" size={10} color={colors.textSecondary} />
-              <Text style={[sub.infoChipText, { color: colors.textSecondary }]}>{found.totalContracts ?? 0} contratos</Text>
+              <Text style={styles.infoChipText}>{found.totalContracts ?? 0} contratos</Text>
             </View>
-            <View style={[sub.infoChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <View style={styles.infoChip}>
               <Feather name="tool" size={10} color={colors.textSecondary} />
-              <Text style={[sub.infoChipText, { color: colors.textSecondary }]}>{found.services.length} {found.services.length === 1 ? "service" : "services"}</Text>
+              <Text style={styles.infoChipText}>{found.services.length} {found.services.length === 1 ? "service" : "services"}</Text>
             </View>
-            <View style={[sub.infoChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <View style={styles.infoChip}>
               <Feather name="map-pin" size={10} color={colors.textSecondary} />
-              <Text style={[sub.infoChipText, { color: colors.textSecondary }]}>{found.distancia} km</Text>
+              <Text style={styles.infoChipText}>{found.distancia} km</Text>
             </View>
           </View>
         </View>
-        <Text style={[sub.confirmDesc, { color: colors.textMuted }]}>
+        <Text style={styles.confirmDesc}>
           Confirme o prestador para definir os detalhes do contrato.
         </Text>
-        <Pressable style={sub.primaryBtn} onPress={handleContinue}>
+        <Pressable style={styles.primaryBtn} onPress={handleContinue}>
           <Feather name="arrow-right" size={16} color="#fff" />
-          <Text style={sub.primaryBtnText}>Configurar contrato</Text>
+          <Text style={styles.primaryBtnText}>Configurar contrato</Text>
         </Pressable>
-        <Pressable style={[sub.ghostBtn, { borderColor: colors.surfaceBorder }]} onPress={() => setFound(null)}>
-          <Text style={[sub.ghostBtnText, { color: colors.textSecondary }]}>Voltar</Text>
+        <Pressable style={styles.ghostBtn} onPress={() => setFound(null)}>
+          <Text style={styles.ghostBtnText}>Voltar</Text>
         </Pressable>
       </View>
     );
@@ -203,42 +204,37 @@ function PincodeContent({
 
   return (
     <View>
-      <Text style={[sub.title, { color: colors.text }]}>Inserir PINCODE</Text>
-      <Text style={[sub.desc, { color: colors.textSecondary }]}>Digite o código do prestador para iniciar o contrato</Text>
+      <Text style={styles.title}>Inserir PINCODE</Text>
+      <Text style={styles.desc}>Digite o código do prestador para iniciar o contrato</Text>
 
-      <View style={sub.pinRow}>
+      <View style={styles.pinRow}>
         {[0, 1, 2, 3, 4, 5].map((i) => (
           <View
             key={i}
-            style={[
-              sub.pinDigit,
-              { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
-              pin.length > i && sub.pinDigitFilled,
-            ]}
+            style={[styles.pinDigit, pin.length > i && styles.pinDigitFilled]}
           >
-            <Text style={sub.pinDigitText}>{pin[i] ?? ""}</Text>
+            <Text style={styles.pinDigitText}>{pin[i] ?? ""}</Text>
           </View>
         ))}
       </View>
 
-      <View style={sub.keypadGrid}>
+      <View style={styles.keypadGrid}>
         {KEYPAD_ROWS.map((row, ri) => (
-          <View key={ri} style={sub.keypadRow}>
+          <View key={ri} style={styles.keypadRow}>
             {row.map((d, ci) => (
               <Pressable
                 key={ci}
                 onPress={() => d && handleKey(d)}
                 style={({ pressed }) => [
-                  sub.keypadBtn,
-                  { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
-                  d === "" && sub.keypadBtnEmpty,
-                  pressed && !!d && sub.keypadBtnPressed,
+                  styles.keypadBtn,
+                  d === "" && styles.keypadBtnEmpty,
+                  pressed && !!d && styles.keypadBtnPressed,
                 ]}
               >
                 {d === "del" ? (
                   <Feather name="delete" size={20} color={colors.textSecondary} />
                 ) : (
-                  <Text style={[sub.keypadBtnText, { color: colors.text }]}>{d}</Text>
+                  <Text style={styles.keypadBtnText}>{d}</Text>
                 )}
               </Pressable>
             ))}
@@ -247,11 +243,11 @@ function PincodeContent({
       </View>
 
       <Pressable
-        style={[sub.primaryBtn, pin.length < 4 && sub.primaryBtnDisabled]}
+        style={[styles.primaryBtn, pin.length < 4 && styles.primaryBtnDisabled]}
         disabled={pin.length < 4}
         onPress={handleConnect}
       >
-        <Text style={sub.primaryBtnText}>Conectar</Text>
+        <Text style={styles.primaryBtnText}>Conectar</Text>
       </Pressable>
     </View>
   );
@@ -266,6 +262,7 @@ function QrcodeContent({
   onShowDialog: (d: DialogState) => void;
   colors: ColorPalette;
 }) {
+  const styles = useMemo(() => createSubStyles(colors), [colors]);
   const scanLine = useSharedValue(0);
 
   useEffect(() => {
@@ -284,29 +281,29 @@ function QrcodeContent({
 
   return (
     <View>
-      <Text style={[sub.title, { color: colors.text }]}>Escanear QR Code</Text>
-      <Text style={[sub.desc, { color: colors.textSecondary }]}>Aponte a câmera para o QR Code do prestador</Text>
+      <Text style={styles.title}>Escanear QR Code</Text>
+      <Text style={styles.desc}>Aponte a câmera para o QR Code do prestador</Text>
 
-      <View style={[sub.viewfinder, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+      <View style={styles.viewfinder}>
         {[
           { top: 16, left: 16, borderTopWidth: 3, borderLeftWidth: 3 },
           { top: 16, right: 16, borderTopWidth: 3, borderRightWidth: 3 },
           { bottom: 16, left: 16, borderBottomWidth: 3, borderLeftWidth: 3 },
           { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3 },
         ].map((s, i) => (
-          <View key={i} style={[sub.corner, { borderColor: "#ff6b35" }, s]} />
+          <View key={i} style={[styles.corner, { borderColor: "#ff6b35" }, s]} />
         ))}
-        <Animated.View style={[sub.scanLine, scanLineStyle]} />
-        <Text style={[sub.viewfinderLabel, { color: colors.textDim }]}>câmera indisponível em preview</Text>
+        <Animated.View style={[styles.scanLine, scanLineStyle]} />
+        <Text style={styles.viewfinderLabel}>câmera indisponível em preview</Text>
       </View>
 
       <Pressable
-        style={[sub.ghostBtn, { borderColor: colors.surfaceBorder }]}
+        style={styles.ghostBtn}
         onPress={() =>
           onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar manualmente." })
         }
       >
-        <Text style={[sub.ghostBtnText, { color: colors.textSecondary }]}>Inserir código manualmente</Text>
+        <Text style={styles.ghostBtnText}>Inserir código manualmente</Text>
       </Pressable>
     </View>
   );
@@ -315,6 +312,7 @@ function QrcodeContent({
 // ─── NFC ────────────────────────────────────────────────────────────────────
 
 function NfcContent({ colors }: { colors: ColorPalette }) {
+  const styles = useMemo(() => createSubStyles(colors), [colors]);
   const p1 = useSharedValue(0);
   const p2 = useSharedValue(0);
   const p3 = useSharedValue(0);
@@ -353,21 +351,21 @@ function NfcContent({ colors }: { colors: ColorPalette }) {
 
   return (
     <View>
-      <Text style={[sub.title, { color: colors.text }]}>Aproximação NFC</Text>
-      <Text style={[sub.desc, { color: colors.textSecondary }]}>Aproxime os dois dispositivos para iniciar o contrato</Text>
+      <Text style={styles.title}>Aproximação NFC</Text>
+      <Text style={styles.desc}>Aproxime os dois dispositivos para iniciar o contrato</Text>
 
-      <View style={sub.nfcWrap}>
+      <View style={styles.nfcWrap}>
         <Animated.View style={ring3Style} />
         <Animated.View style={ring2Style} />
         <Animated.View style={ring1Style} />
-        <View style={sub.nfcIcon}>
+        <View style={styles.nfcIcon}>
           <Feather name="wifi" size={24} color={"#ff6b35"} />
         </View>
       </View>
 
-      <View style={sub.statusRow}>
-        <View style={sub.statusDot} />
-        <Text style={[sub.statusText, { color: colors.textMuted }]}>aguardando dispositivo próximo...</Text>
+      <View style={styles.statusRow}>
+        <View style={styles.statusDot} />
+        <Text style={styles.statusText}>aguardando dispositivo próximo...</Text>
       </View>
     </View>
   );
@@ -382,21 +380,22 @@ function LinkContent({
   onShowDialog: (d: DialogState) => void;
   colors: ColorPalette;
 }) {
+  const styles = useMemo(() => createSubStyles(colors), [colors]);
   const [link, setLink] = useState("");
 
   return (
     <View>
-      <Text style={[sub.title, { color: colors.text }]}>Inserir Link</Text>
-      <Text style={[sub.desc, { color: colors.textSecondary }]}>Cole o link de contratação recebido do prestador</Text>
+      <Text style={styles.title}>Inserir Link</Text>
+      <Text style={styles.desc}>Cole o link de contratação recebido do prestador</Text>
 
-      <View style={[sub.linkRow, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+      <View style={styles.linkRow}>
         <Feather name="link" size={16} color={colors.textMuted} />
         <TextInput
           value={link}
           onChangeText={setLink}
           placeholder="krono.app/u/..."
           placeholderTextColor={colors.textDim}
-          style={[sub.linkInput, { color: colors.text }]}
+          style={styles.linkInput}
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -408,13 +407,13 @@ function LinkContent({
       </View>
 
       <Pressable
-        style={[sub.primaryBtn, link.length === 0 && sub.primaryBtnDisabled]}
+        style={[styles.primaryBtn, link.length === 0 && styles.primaryBtnDisabled]}
         disabled={link.length === 0}
         onPress={() =>
           onShowDialog({ title: "Em breve", message: "Conexão via link estará disponível em breve." })
         }
       >
-        <Text style={sub.primaryBtnText}>Conectar</Text>
+        <Text style={styles.primaryBtnText}>Conectar</Text>
       </Pressable>
     </View>
   );
@@ -462,6 +461,8 @@ export function HireSheet({ open, onClose }: Props) {
     () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
     [colors]
   );
+
+  const styles = useMemo(() => createMainStyles(colors), [colors]);
 
   const subTitles: Record<HireMethod, string> = {
     PINCODE: "PINCODE",
@@ -574,7 +575,7 @@ export function HireSheet({ open, onClose }: Props) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={[styles.sheetTitle, { color: colors.text }]}>Contratação direta</Text>
+          <Text style={styles.sheetTitle}>Contratação direta</Text>
 
           {/* AI card */}
           <Pressable
@@ -590,8 +591,8 @@ export function HireSheet({ open, onClose }: Props) {
               <Feather name="zap" size={20} color={"#ff6b35"} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.aiTitle, { color: colors.text }]}>Descrever o que preciso</Text>
-              <Text style={[styles.aiDesc, { color: colors.textSecondary }]}>
+              <Text style={styles.aiTitle}>Descrever o que preciso</Text>
+              <Text style={styles.aiDesc}>
                 A IA entende sua necessidade e encontra a pessoa certa para você
               </Text>
             </View>
@@ -600,9 +601,9 @@ export function HireSheet({ open, onClose }: Props) {
 
           {/* Divider */}
           <View style={styles.divRow}>
-            <View style={[styles.divLine, { backgroundColor: colors.surfaceBorder }]} />
-            <Text style={[styles.divText, { color: colors.textMuted }]}>OU CONTRATAR DIRETO</Text>
-            <View style={[styles.divLine, { backgroundColor: colors.surfaceBorder }]} />
+            <View style={styles.divLine} />
+            <Text style={styles.divText}>OU CONTRATAR DIRETO</Text>
+            <View style={styles.divLine} />
           </View>
 
           {/* 4-column hire grid */}
@@ -612,7 +613,6 @@ export function HireSheet({ open, onClose }: Props) {
                 key={opt.method}
                 style={({ pressed }) => [
                   styles.hireItem,
-                  { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
                   pressed && styles.hireItemPressed,
                 ]}
                 onPress={() => {
@@ -621,14 +621,14 @@ export function HireSheet({ open, onClose }: Props) {
                 }}
               >
                 {opt.icon}
-                <Text style={[styles.hireLabel, { color: colors.textSecondary }]}>{opt.label}</Text>
+                <Text style={styles.hireLabel}>{opt.label}</Text>
               </Pressable>
             ))}
           </View>
 
           {/* Disponibilidade */}
           <View style={styles.availHeaderRow}>
-            <Text style={[styles.availTitle, { color: colors.text }]}>Disponibilidade</Text>
+            <Text style={styles.availTitle}>Disponibilidade</Text>
             <View style={styles.toggleRow}>
               <Text style={[styles.toggleLabel, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
                 {disponivel ? "Disponível" : "Indisponível"}
@@ -652,7 +652,6 @@ export function HireSheet({ open, onClose }: Props) {
                 key={opt.label}
                 style={({ pressed }) => [
                   styles.availRow,
-                  { backgroundColor: colors.inputBg, borderColor: colors.cardBorder },
                   pressed && disponivel && styles.availRowPressed,
                 ]}
                 onPress={() => {
@@ -670,7 +669,7 @@ export function HireSheet({ open, onClose }: Props) {
                   }
                 }}
               >
-                <View style={[styles.availIcon, { backgroundColor: colors.menuIconBg }]}>
+                <View style={styles.availIcon}>
                   {opt.pin ? (
                     <Text style={styles.pinDisplay}>{opt.pin}</Text>
                   ) : (
@@ -678,8 +677,8 @@ export function HireSheet({ open, onClose }: Props) {
                   )}
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.availLabel, { color: colors.text }]}>{opt.label}</Text>
-                  <Text style={[styles.availDesc, { color: colors.textMuted }]}>{opt.desc}</Text>
+                  <Text style={styles.availLabel}>{opt.label}</Text>
+                  <Text style={styles.availDesc}>{opt.desc}</Text>
                 </View>
               </Pressable>
             ))}
@@ -713,7 +712,7 @@ export function HireSheet({ open, onClose }: Props) {
               <Pressable onPress={() => setSubMode(null)} style={styles.backBtn}>
                 <Feather name="arrow-left" size={18} color={"#ff6b35"} />
               </Pressable>
-              <Text style={[styles.sheetHeaderLabel, { color: colors.text }]}>
+              <Text style={styles.sheetHeaderLabel}>
                 {subMode ? subTitles[subMode] : ""}
               </Text>
             </View>
@@ -749,382 +748,146 @@ export function HireSheet({ open, onClose }: Props) {
 
 // ─── STYLES ─────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 4,
-  },
-  sheetHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 20,
-  },
-  backBtn: {
-    padding: 4,
-  },
-  sheetHeaderLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 16,
-  },
-  sheetTitle: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 17,
-    marginBottom: 16,
-    marginTop: 4,
-  },
-  aiCard: {
-    backgroundColor: "#ff6b350a",
-    borderWidth: 1,
-    borderColor: "#ff6b3528",
-    borderRadius: 18,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    marginBottom: 16,
-  },
-  aiIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 13,
-    backgroundColor: "#ff6b3518",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  aiTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  aiDesc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    lineHeight: 16,
-  },
-  divRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 14,
-  },
-  divLine: { flex: 1, height: 1 },
-  divText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    letterSpacing: 1,
-  },
-  hireGrid: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 28,
-  },
-  hireItem: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingVertical: 18,
-    alignItems: "center",
-    gap: 10,
-  },
-  hireItemPressed: {
-    backgroundColor: "#ff6b3510",
-    borderColor: "#ff6b3540",
-  },
-  hireLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 8,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    textAlign: "center",
-  },
-  availHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  availTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-  },
-  toggleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  toggleLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    letterSpacing: 0.3,
-  },
-  availRow: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  availRowPressed: {
-    backgroundColor: "#00e5a008",
-    borderColor: "#00e5a022",
-  },
-  availIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  pinDisplay: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 15,
-    color: "#ff6b35",
-    fontWeight: "800",
-    letterSpacing: 2,
-  },
-  availLabel: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 13,
-    marginBottom: 3,
-  },
-  availDesc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    lineHeight: 15,
-  },
-});
+function createMainStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    scrollContent: { paddingHorizontal: 20, paddingTop: 4 },
+    sheetHeaderRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 20 },
+    backBtn: { padding: 4 },
+    sheetHeaderLabel: { fontFamily: "Sora_600SemiBold", fontSize: 16, color: colors.text },
+    sheetTitle: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 16, marginTop: 4, color: colors.text },
+    aiCard: {
+      backgroundColor: "#ff6b350a",
+      borderWidth: 1,
+      borderColor: "#ff6b3528",
+      borderRadius: 18,
+      padding: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+      marginBottom: 16,
+    },
+    aiIconWrap: {
+      width: 46, height: 46, borderRadius: 13,
+      backgroundColor: "#ff6b3518", borderWidth: 1, borderColor: "#ff6b3530",
+      alignItems: "center", justifyContent: "center", flexShrink: 0,
+    },
+    aiTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 4, color: colors.text },
+    aiDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 16, color: colors.textSecondary },
+    divRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
+    divLine: { flex: 1, height: 1, backgroundColor: colors.surfaceBorder },
+    divText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, color: colors.textMuted },
+    hireGrid: { flexDirection: "row", gap: 10, marginBottom: 28 },
+    hireItem: {
+      flex: 1, borderWidth: 1, borderRadius: 16, paddingVertical: 18,
+      alignItems: "center", gap: 10,
+      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+    },
+    hireItemPressed: { backgroundColor: "#ff6b3510", borderColor: "#ff6b3540" },
+    hireLabel: {
+      fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5,
+      textTransform: "uppercase", textAlign: "center", color: colors.textSecondary,
+    },
+    availHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+    availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: colors.text },
+    toggleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+    toggleLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.3 },
+    availRow: {
+      borderWidth: 1, borderRadius: 16, padding: 14,
+      flexDirection: "row", alignItems: "center", gap: 14,
+      backgroundColor: colors.inputBg, borderColor: colors.cardBorder,
+    },
+    availRowPressed: { backgroundColor: "#00e5a008", borderColor: "#00e5a022" },
+    availIcon: {
+      width: 52, height: 52, borderRadius: 14,
+      alignItems: "center", justifyContent: "center", flexShrink: 0,
+      backgroundColor: colors.menuIconBg,
+    },
+    pinDisplay: { fontFamily: "DMMono_500Medium", fontSize: 15, color: "#ff6b35", fontWeight: "800", letterSpacing: 2 },
+    availLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 3, color: colors.text },
+    availDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 15, color: colors.textMuted },
+  });
+}
 
 // ─── SUB STYLES ─────────────────────────────────────────────────────────────
 
-const sub = StyleSheet.create({
-  title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 18,
-    marginBottom: 6,
-  },
-  desc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    marginBottom: 28,
-    lineHeight: 18,
-  },
-  userCard: {
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  userAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#00e5a020",
-    borderWidth: 2,
-    borderColor: "#00e5a040",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  userAvatarText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 20,
-    color: "#00e5a0",
-    fontWeight: "700",
-  },
-  userName: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 17,
-    marginBottom: 4,
-  },
-  infoChipsRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 4,
-  },
-  infoChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-  },
-  infoChipText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-  },
-  confirmDesc: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-    textAlign: "center",
-    lineHeight: 18,
-    marginBottom: 20,
-  },
-  primaryBtn: {
-    backgroundColor: "#ff6b35",
-    borderRadius: 14,
-    padding: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
-  },
-  primaryBtnDisabled: {
-    opacity: 0.35,
-  },
-  primaryBtnText: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 15,
-    color: "#fff",
-  },
-  ghostBtn: {
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-    alignItems: "center",
-  },
-  ghostBtnText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 13,
-  },
-  pinRow: {
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "center",
-    marginBottom: 28,
-  },
-  pinDigit: {
-    width: 40,
-    height: 48,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  pinDigitFilled: {
-    borderColor: "#ff6b3560",
-    backgroundColor: "#ff6b3510",
-  },
-  pinDigitText: {
-    color: "#ff6b35",
-    fontSize: 20,
-    fontFamily: "DMMono_500Medium",
-  },
-  keypadGrid: {
-    gap: 10,
-    marginBottom: 24,
-  },
-  keypadRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  keypadBtn: {
-    flex: 1,
-    height: 54,
-    borderWidth: 1,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  keypadBtnEmpty: {
-    backgroundColor: "transparent",
-    borderColor: "transparent",
-  },
-  keypadBtnPressed: {
-    backgroundColor: "#ff6b3515",
-    borderColor: "#ff6b3530",
-  },
-  keypadBtnText: {
-    fontFamily: "DMMono_500Medium",
-    fontSize: 20,
-  },
-  viewfinder: {
-    width: "100%",
-    aspectRatio: 1,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginBottom: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    position: "relative",
-  },
-  corner: {
-    position: "absolute",
-    width: 28,
-    height: 28,
-  },
-  scanLine: {
-    position: "absolute",
-    left: "10%",
-    right: "10%",
-    height: 2,
-    backgroundColor: "#ff6b3580",
-    borderRadius: 1,
-  },
-  viewfinderLabel: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    textAlign: "center",
-  },
-  nfcWrap: {
-    width: 180,
-    height: 180,
-    alignSelf: "center",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-    position: "relative",
-  },
-  nfcIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#ff6b3515",
-    borderWidth: 1,
-    borderColor: "#ff6b3530",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#ff6b35",
-  },
-  statusText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 12,
-  },
-  linkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 20,
-  },
-  linkInput: {
-    flex: 1,
-    fontFamily: "DMMono_400Regular",
-    fontSize: 13,
-  },
-});
+function createSubStyles(colors: ColorPalette) {
+  return StyleSheet.create({
+    title: { fontFamily: "Sora_700Bold", fontSize: 18, marginBottom: 6, color: colors.text },
+    desc: { fontFamily: "DMMono_400Regular", fontSize: 12, marginBottom: 28, lineHeight: 18, color: colors.textSecondary },
+    userCard: {
+      borderWidth: 1, borderRadius: 20, padding: 20, alignItems: "center", marginBottom: 16,
+      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+    },
+    userAvatar: {
+      width: 64, height: 64, borderRadius: 32,
+      backgroundColor: "#00e5a020", borderWidth: 2, borderColor: "#00e5a040",
+      alignItems: "center", justifyContent: "center", marginBottom: 12,
+    },
+    userAvatarText: { fontFamily: "DMMono_500Medium", fontSize: 20, color: "#00e5a0", fontWeight: "700" },
+    userName: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 4, color: colors.text },
+    infoChipsRow: { flexDirection: "row", gap: 8, marginTop: 4 },
+    infoChip: {
+      flexDirection: "row", alignItems: "center", gap: 5,
+      borderWidth: 1, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12,
+      backgroundColor: colors.surface, borderColor: colors.surfaceBorder,
+    },
+    infoChipText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: colors.textSecondary },
+    confirmDesc: {
+      fontFamily: "DMMono_400Regular", fontSize: 12, textAlign: "center",
+      lineHeight: 18, marginBottom: 20, color: colors.textMuted,
+    },
+    primaryBtn: {
+      backgroundColor: "#ff6b35", borderRadius: 14, padding: 16,
+      alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8, marginBottom: 10,
+    },
+    primaryBtnDisabled: { opacity: 0.35 },
+    primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
+    ghostBtn: { borderWidth: 1, borderRadius: 14, padding: 14, alignItems: "center", borderColor: colors.surfaceBorder },
+    ghostBtnText: { fontFamily: "DMMono_400Regular", fontSize: 13, color: colors.textSecondary },
+    pinRow: { flexDirection: "row", gap: 10, justifyContent: "center", marginBottom: 28 },
+    pinDigit: {
+      width: 40, height: 48, borderRadius: 10, borderWidth: 1,
+      alignItems: "center", justifyContent: "center",
+      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+    },
+    pinDigitFilled: { borderColor: "#ff6b3560", backgroundColor: "#ff6b3510" },
+    pinDigitText: { color: "#ff6b35", fontSize: 20, fontFamily: "DMMono_500Medium" },
+    keypadGrid: { gap: 10, marginBottom: 24 },
+    keypadRow: { flexDirection: "row", gap: 10 },
+    keypadBtn: {
+      flex: 1, height: 54, borderWidth: 1, borderRadius: 14,
+      alignItems: "center", justifyContent: "center",
+      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+    },
+    keypadBtnEmpty: { backgroundColor: "transparent", borderColor: "transparent" },
+    keypadBtnPressed: { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" },
+    keypadBtnText: { fontFamily: "DMMono_500Medium", fontSize: 20, color: colors.text },
+    viewfinder: {
+      width: "100%", aspectRatio: 1, borderRadius: 20, borderWidth: 1,
+      marginBottom: 20, alignItems: "center", justifyContent: "center",
+      overflow: "hidden", position: "relative",
+      backgroundColor: colors.card, borderColor: colors.cardBorder,
+    },
+    corner: { position: "absolute", width: 28, height: 28 },
+    scanLine: { position: "absolute", left: "10%", right: "10%", height: 2, backgroundColor: "#ff6b3580", borderRadius: 1 },
+    viewfinderLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, textAlign: "center", color: colors.textDim },
+    nfcWrap: {
+      width: 180, height: 180, alignSelf: "center", alignItems: "center",
+      justifyContent: "center", marginBottom: 24, position: "relative",
+    },
+    nfcIcon: {
+      width: 56, height: 56, borderRadius: 28,
+      backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+      alignItems: "center", justifyContent: "center",
+    },
+    statusRow: { flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 20 },
+    statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#ff6b35" },
+    statusText: { fontFamily: "DMMono_400Regular", fontSize: 12, color: colors.textMuted },
+    linkRow: {
+      flexDirection: "row", alignItems: "center", gap: 10,
+      borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 14, marginBottom: 20,
+      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+    },
+    linkInput: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 13, color: colors.text },
+  });
+}
