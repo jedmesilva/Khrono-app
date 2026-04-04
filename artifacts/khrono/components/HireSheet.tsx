@@ -341,14 +341,6 @@ function QrcodeContent({
           <Feather name="camera" size={16} color="#fff" />
           <Text style={styles.primaryBtnText}>Permitir câmera</Text>
         </Pressable>
-        <Pressable
-          style={[styles.ghostBtn, { marginTop: 10 }]}
-          onPress={() =>
-            onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar sem precisar da câmera." })
-          }
-        >
-          <Text style={styles.ghostBtnText}>Usar PINCODE</Text>
-        </Pressable>
       </View>
     );
   }
@@ -376,18 +368,9 @@ function QrcodeContent({
         )}
       </View>
 
-      {scanned ? (
+      {scanned && (
         <Pressable style={styles.ghostBtn} onPress={() => setScanned(false)}>
           <Text style={styles.ghostBtnText}>Escanear novamente</Text>
-        </Pressable>
-      ) : (
-        <Pressable
-          style={styles.ghostBtn}
-          onPress={() =>
-            onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar sem precisar da câmera." })
-          }
-        >
-          <Text style={styles.ghostBtnText}>Usar PINCODE</Text>
         </Pressable>
       )}
     </View>
