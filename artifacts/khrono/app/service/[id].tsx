@@ -79,8 +79,8 @@ export default function ServiceDetailScreen() {
             <Feather name="arrow-left" size={18} color="#ff6b35" />
           </Pressable>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Text style={[styles.serviceTitle, { color: active ? colors.text : colors.textDim }]}>{service.name}</Text>
+            <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+              <Text style={[styles.serviceTitle, { color: active ? colors.text : colors.textDim, flexShrink: 1 }]}>{service.name}</Text>
               {service.verified && (
                 <VerifiedBadge onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")} />
               )}
