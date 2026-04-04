@@ -231,10 +231,10 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
-  chipActive: { borderColor: "#ff6b3560", backgroundColor: "#ff6b3510" },
+  chipActive: { borderColor: "#ff6b35", borderWidth: 1.5 },
   chipDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#ff6b35" },
   chipLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  chipLabelActive: { color: "#fff" },
+  chipLabelActive: { color: "#ff6b35" },
   filesSection: { borderWidth: 1, borderRadius: 14, overflow: "hidden" },
   fileItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
   fileIconWrap: {
