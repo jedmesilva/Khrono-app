@@ -132,7 +132,7 @@ export function AddCardModal({ visible, onClose }: Props) {
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
-      keyboardBehavior="extend"
+      keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
     >
