@@ -4,9 +4,11 @@ export type LocationMode = "realtime" | "fixed";
 export interface Skill {
   id: string;
   name: string;
+  type: string;
   description: string;
   verified: { type: VerificationType } | null;
   isNew: boolean;
+  addedAt: string;
 }
 
 export interface Tool {
@@ -17,6 +19,7 @@ export interface Tool {
   details: string;
   available: boolean;
   verified: { type: VerificationType } | null;
+  addedAt: string;
 }
 
 export interface Review {
@@ -86,13 +89,13 @@ export const PROVIDERS: ProviderProfile[] = [
     serviceRadius: 3000,
     fixedAddress: "Savassi, BH",
     skills: [
-      { id: "cm-s1", name: "Pintor", description: "Pintura residencial e comercial com acabamento de alta qualidade e materiais inclusos.", verified: { type: "documentation" as VerificationType }, isNew: false },
-      { id: "cm-s2", name: "Gesseiro", description: "Aplicação de gesso, texturas e acabamentos decorativos em paredes e tetos.", verified: { type: "community" as VerificationType }, isNew: false },
+      { id: "cm-s1", name: "Pintor", type: "Construção", description: "Pintura residencial e comercial com acabamento de alta qualidade e materiais inclusos.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Jan 2023" },
+      { id: "cm-s2", name: "Gesseiro", type: "Construção", description: "Aplicação de gesso, texturas e acabamentos decorativos em paredes e tetos.", verified: { type: "community" as VerificationType }, isNew: false, addedAt: "Jan 2023" },
     ],
     tools: [
-      { id: "cm-t1", name: "Rolo 23cm", type: "Ferramenta", icon: "tool" as const, details: "Rolo para pintura de alta cobertura", available: true, verified: null },
-      { id: "cm-t2", name: "Escada 6m", type: "Equipamento", icon: "box" as const, details: "Escada alumínio extensível 6 metros", available: true, verified: { type: "community" as VerificationType } },
-      { id: "cm-t3", name: "Desempenadeira", type: "Ferramenta", icon: "tool" as const, details: "Desempenadeira inox 50cm para gesso", available: true, verified: null },
+      { id: "cm-t1", name: "Rolo 23cm", type: "Ferramenta", icon: "tool" as const, details: "Rolo para pintura de alta cobertura", available: true, verified: null, addedAt: "Jan 2023" },
+      { id: "cm-t2", name: "Escada 6m", type: "Equipamento", icon: "box" as const, details: "Escada alumínio extensível 6 metros", available: true, verified: { type: "community" as VerificationType }, addedAt: "Jan 2023" },
+      { id: "cm-t3", name: "Desempenadeira", type: "Ferramenta", icon: "tool" as const, details: "Desempenadeira inox 50cm para gesso", available: true, verified: null, addedAt: "Jan 2023" },
     ],
     services: [
       {
@@ -154,11 +157,11 @@ export const PROVIDERS: ProviderProfile[] = [
     serviceRadius: 8000,
     fixedAddress: "",
     skills: [
-      { id: "jr-s1", name: "Personal Trainer", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento físico.", verified: { type: "documentation" as VerificationType }, isNew: false },
-      { id: "jr-s2", name: "Nutricionista", description: "Consultoria nutricional com planos alimentares personalizados.", verified: { type: "documentation" as VerificationType }, isNew: false },
+      { id: "jr-s1", name: "Personal Trainer", type: "Bem-estar", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento físico.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Jun 2022" },
+      { id: "jr-s2", name: "Nutricionista", type: "Bem-estar", description: "Consultoria nutricional com planos alimentares personalizados.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Jun 2022" },
     ],
     tools: [
-      { id: "jr-t1", name: "Kit de Treino", type: "Equipamento", icon: "box" as const, details: "Halteres, elásticos e colchonete", available: true, verified: { type: "documentation" as VerificationType } },
+      { id: "jr-t1", name: "Kit de Treino", type: "Equipamento", icon: "box" as const, details: "Halteres, elásticos e colchonete", available: true, verified: { type: "documentation" as VerificationType }, addedAt: "Jun 2022" },
     ],
     services: [
       {
@@ -220,11 +223,11 @@ export const PROVIDERS: ProviderProfile[] = [
     serviceRadius: 1500,
     fixedAddress: "Lourdes, BH",
     skills: [
-      { id: "pa-s1", name: "Eletricista", description: "Instalações elétricas residenciais e comerciais, com certificação NR10.", verified: { type: "documentation" as VerificationType }, isNew: false },
+      { id: "pa-s1", name: "Eletricista", type: "Construção", description: "Instalações elétricas residenciais e comerciais, com certificação NR10.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Mar 2023" },
     ],
     tools: [
-      { id: "pa-t1", name: "Alicate Amperímetro", type: "Ferramenta", icon: "tool" as const, details: "Alicate digital profissional", available: true, verified: null },
-      { id: "pa-t2", name: "Kit Cabos", type: "Equipamento", icon: "box" as const, details: "Cabos elétricos PP 10m, 16A, 25A", available: true, verified: null },
+      { id: "pa-t1", name: "Alicate Amperímetro", type: "Ferramenta", icon: "tool" as const, details: "Alicate digital profissional", available: true, verified: null, addedAt: "Mar 2023" },
+      { id: "pa-t2", name: "Kit Cabos", type: "Equipamento", icon: "box" as const, details: "Cabos elétricos PP 10m, 16A, 25A", available: true, verified: null, addedAt: "Mar 2023" },
     ],
     services: [
       {
@@ -282,10 +285,10 @@ export const PROVIDERS: ProviderProfile[] = [
     serviceRadius: 2000,
     fixedAddress: "",
     skills: [
-      { id: "im-s1", name: "Cuidadora", description: "Cuidados com idosos e pessoas com necessidades especiais, com experiência em ambiente hospitalar.", verified: { type: "documentation" as VerificationType }, isNew: false },
+      { id: "im-s1", name: "Cuidadora", type: "Cuidados", description: "Cuidados com idosos e pessoas com necessidades especiais, com experiência em ambiente hospitalar.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Aug 2022" },
     ],
     tools: [
-      { id: "im-t1", name: "Cadeira de Rodas", type: "Equipamento", icon: "box" as const, details: "Cadeira dobrável, confortável", available: true, verified: { type: "community" as VerificationType } },
+      { id: "im-t1", name: "Cadeira de Rodas", type: "Equipamento", icon: "box" as const, details: "Cadeira dobrável, confortável", available: true, verified: { type: "community" as VerificationType }, addedAt: "Aug 2022" },
     ],
     services: [
       {
@@ -347,26 +350,32 @@ export const MY_PROFILE = {
     {
       id: "s1",
       name: "Montador de Móveis",
+      type: "Construção",
       description:
         "Montagem de móveis de todos os tipos, com ferramentas próprias e experiência em grandes redes de varejo.",
       verified: { type: "documentation" as VerificationType },
       isNew: false,
+      addedAt: "Mar 2024",
     },
     {
       id: "s2",
       name: "Carregador / Mudanças",
+      type: "Transporte",
       description:
         "Serviços de transporte e mudança residencial ou comercial com cuidado e eficiência.",
       verified: { type: "community" as VerificationType },
       isNew: false,
+      addedAt: "Mar 2024",
     },
     {
       id: "s3",
       name: "Pintor",
+      type: "Construção",
       description:
         "Pintura residencial e comercial, acabamento de qualidade e materiais inclusos.",
       verified: null,
       isNew: true,
+      addedAt: "Jan 2025",
     },
   ] as Skill[],
   tools: [
@@ -378,6 +387,7 @@ export const MY_PROFILE = {
       details: "Prata · 4 portas · Ar condicionado",
       available: true,
       verified: { type: "documentation" as VerificationType },
+      addedAt: "Mar 2024",
     },
     {
       id: "t2",
@@ -387,6 +397,7 @@ export const MY_PROFILE = {
       details: "Furadeira + bits + nível + parafusadeira",
       available: true,
       verified: { type: "community" as VerificationType },
+      addedAt: "Mar 2024",
     },
     {
       id: "t3",
@@ -396,6 +407,7 @@ export const MY_PROFILE = {
       details: "Capacidade 200kg · Com cintas",
       available: false,
       verified: null,
+      addedAt: "Jun 2024",
     },
   ] as Tool[],
   services: [
