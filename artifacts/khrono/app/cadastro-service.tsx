@@ -233,6 +233,7 @@ export default function CadastroServiceScreen() {
             {" foi adicionado ao seu perfil."}
           </>
         }
+        secondaryAction={{ label: "Criar outro service", icon: "plus", onPress: clearDraft }}
         onVerPerfil={() => { clearDraft(); router.back(); }}
       />
     );

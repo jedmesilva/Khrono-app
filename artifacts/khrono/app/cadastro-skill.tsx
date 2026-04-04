@@ -107,11 +107,20 @@ export default function CadastroSkillScreen() {
     setStep(2);
   }
 
+  function handleReset() {
+    setStep(1);
+    setStep1Sub("search");
+    setSkillName("");
+    setDescription("");
+    setQuery("");
+  }
+
   if (step === "done") {
     return (
       <CadastroDone
         topPadding={topPadding}
         title="Skill adicionada!"
+        secondaryAction={{ label: "Adicionar outra skill", icon: "plus", onPress: handleReset }}
         subtitle={
           <>
             <Text style={{ color: "#ff6b35" }}>{skillName}</Text>
