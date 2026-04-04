@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CadastroDone } from "@/components/CadastroDone";
+import { SkillListCard } from "@/components/SkillListCard";
 import { useTheme } from "@/context/ThemeContext";
 
 interface SkillTemplate {
@@ -201,7 +202,13 @@ export default function CadastroSkillScreen() {
 
           <View style={styles.templateList}>
             {filteredTemplates.map((t) => (
-              <SkillCard key={t.id} template={t} colors={colors} onPress={() => handleSelectTemplate(t)} />
+              <SkillListCard
+                key={t.id}
+                name={t.name}
+                description={t.description}
+                badge={t.category}
+                onPress={() => handleSelectTemplate(t)}
+              />
             ))}
 
             {showCreateAtBottom && (
@@ -305,37 +312,6 @@ export default function CadastroSkillScreen() {
   );
 }
 
-function SkillCard({ template, colors, onPress }: {
-  template: SkillTemplate;
-  colors: any;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-      onPress={onPress}
-    >
-      <View style={styles.templateTopRow}>
-        <View style={[styles.templateIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3328" }]}>
-          <Feather name="star" size={16} color="#ff6b35" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.templateName, { color: colors.text }]}>{template.name}</Text>
-          <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={1}>
-            {template.description}
-          </Text>
-        </View>
-        <View style={[styles.categoryBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-          <Text style={[styles.categoryBadgeText, { color: colors.textMuted }]}>{template.category}</Text>
-        </View>
-      </View>
-      <View style={styles.templateFooter}>
-        <Feather name="chevron-right" size={14} color={colors.chevron} />
-      </View>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 24 },
@@ -351,14 +327,6 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
   listLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   templateList: { gap: 10 },
-  templateCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
-  templateTopRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
-  templateIconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  templateName: { fontFamily: "Sora_700Bold", fontSize: 15, marginBottom: 2 },
-  templateDescription: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
-  categoryBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
-  categoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
-  templateFooter: { alignItems: "flex-end" },
   createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
   createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },

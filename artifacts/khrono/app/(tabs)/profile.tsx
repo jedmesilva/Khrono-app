@@ -13,6 +13,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
+import { SkillListCard } from "@/components/SkillListCard";
+import { ToolListCard } from "@/components/ToolListCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -100,23 +102,14 @@ function SkillsListView({ colors, onBack, onSelectSkill, onVerifiedPress, onAdd 
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
         {MY_PROFILE.skills.map((skill) => (
-          <Pressable key={skill.id} style={[styles.listCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => onSelectSkill(skill)}>
-            <View style={[styles.listIcon, { backgroundColor: colors.menuIconBg, borderColor: skill.isNew ? colors.cardBorder : "#ff6b3520" }]}>
-              <Feather name="tool" size={18} color={skill.isNew ? colors.textMuted : "#ff6b35"} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.nameWithBadge}>
-                <Text style={[styles.listCardName, { flex: 1, color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
-                {skill.verified && (
-                  <VerifiedBadge onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} />
-                )}
-              </View>
-              {skill.description ? (
-                <Text style={[styles.listCardSub, { color: colors.textMuted }]} numberOfLines={1}>{skill.description}</Text>
-              ) : null}
-            </View>
-            <Feather name="chevron-right" size={16} color={colors.chevron} />
-          </Pressable>
+          <SkillListCard
+            key={skill.id}
+            name={skill.name}
+            description={skill.description}
+            isNew={skill.isNew}
+            verifiedBadge={skill.verified ? <VerifiedBadge onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} /> : undefined}
+            onPress={() => onSelectSkill(skill)}
+          />
         ))}
       </ScrollView>
     </View>
@@ -151,28 +144,15 @@ function ToolsListView({ colors, onBack, onVerifiedPress, onAdd }: {
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
         {MY_PROFILE.tools.map((tool) => (
-          <View key={tool.id} style={[styles.listCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: tool.available ? 1 : 0.55 }]}>
-            <View style={[styles.listIcon, { borderColor: tool.available ? "#ff6b3530" : colors.surfaceBorder, backgroundColor: tool.available ? "#ff6b3512" : colors.surface }]}>
-              <Feather name={tool.icon} size={18} color={tool.available ? "#ff6b35" : colors.textMuted} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.nameWithBadge}>
-                <Text style={[styles.listCardName, { flex: 1, color: colors.text }]} numberOfLines={1}>{tool.name}</Text>
-                {tool.verified && (
-                  <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} />
-                )}
-              </View>
-              <View style={styles.toolMetaRow}>
-                <Text style={[styles.listCardSub, { color: colors.textMuted }]}>{tool.type}</Text>
-                <View style={[styles.availBadge, { backgroundColor: tool.available ? "#ff6b3512" : colors.surface, borderColor: tool.available ? "#ff6b3530" : colors.surfaceBorder }]}>
-                  <Text style={[styles.availBadgeText, { color: tool.available ? "#ff6b35" : colors.textMuted }]}>
-                    {tool.available ? "disponível" : "indisponível"}
-                  </Text>
-                </View>
-              </View>
-              <Text style={[styles.toolDetails, { color: colors.textDim }]} numberOfLines={1}>{tool.details}</Text>
-            </View>
-          </View>
+          <ToolListCard
+            key={tool.id}
+            name={tool.name}
+            iconName={tool.icon}
+            description={tool.details}
+            badge={tool.available ? "disponível" : "indisponível"}
+            available={tool.available}
+            verifiedBadge={tool.verified ? <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} /> : undefined}
+          />
         ))}
       </ScrollView>
     </View>
@@ -420,7 +400,6 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6, marginBottom: 2 },
   locationText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
   sinceText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  nameWithBadge: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 },
   statsCard: { borderWidth: 1, borderRadius: 16, paddingVertical: 14, flexDirection: "row", justifyContent: "space-around", alignItems: "center", marginBottom: 16 },
   statItem: { alignItems: "center" },
   statValue: { fontFamily: "DMMono_500Medium", fontSize: 20, marginBottom: 2 },
@@ -464,14 +443,6 @@ const styles = StyleSheet.create({
   subTitle: { fontFamily: "Sora_700Bold", fontSize: 16 },
   subMeta: { fontFamily: "DMMono_400Regular", fontSize: 10, marginTop: 2 },
   newSkillTag: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  listCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center", gap: 14 },
-  listIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  listCardName: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  listCardSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 2 },
-  toolMetaRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 },
-  availBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 7, paddingVertical: 1 },
-  availBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9 },
-  toolDetails: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 2 },
   skillDetailContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100 },
   descriptionCard: { borderWidth: 1, borderRadius: 16, padding: 18 },
   descriptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
