@@ -318,8 +318,8 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("tools")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#00e5a020" }]}>
-              <Feather name="box" size={16} color="#00e5a0" />
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#ff6b3520" }]}>
+              <Feather name="box" size={16} color="#ff6b35" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
