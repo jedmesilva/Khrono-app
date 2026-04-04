@@ -15,20 +15,51 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
 
+interface ToolTemplate {
+  id: string;
+  name: string;
+  type: string;
+  typeLabel: string;
+  icon: "truck" | "tool" | "box";
+}
+
 const TOOL_TYPES = [
-  { id: "veiculo", label: "Veículo", icon: "truck" as const, description: "Carro, moto, van ou qualquer veículo usado no trabalho" },
-  { id: "ferramenta", label: "Ferramenta", icon: "tool" as const, description: "Ferramentas manuais ou elétricas que você utiliza" },
-  { id: "equipamento", label: "Equipamento", icon: "box" as const, description: "Equipamentos, máquinas ou acessórios especializados" },
+  { id: "veiculo", label: "Veículo", icon: "truck" as const },
+  { id: "ferramenta", label: "Ferramenta", icon: "tool" as const },
+  { id: "equipamento", label: "Equipamento", icon: "box" as const },
 ];
 
-const SUGGESTIONS_BY_TYPE: Record<string, string[]> = {
-  veiculo: ["Carro", "Moto", "Van", "Caminhão", "Pickup", "Bicicleta", "Scooter"],
-  ferramenta: ["Furadeira", "Serra Circular", "Parafusadeira", "Esmerilhadeira", "Martelo", "Chave de Fenda", "Nível a Laser"],
-  equipamento: ["Escada", "Carrinho de Mudança", "Betoneira", "Compressor de Ar", "Gerador", "Andaime", "Aspirador Industrial"],
-};
+const TOOL_TEMPLATES: ToolTemplate[] = [
+  { id: "tv01", name: "Carro", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tv02", name: "Moto", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tv03", name: "Van", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tv04", name: "Caminhão", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tv05", name: "Pickup", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tv06", name: "Bicicleta", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tv07", name: "Scooter", type: "veiculo", typeLabel: "Veículo", icon: "truck" },
+  { id: "tf01", name: "Furadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "tf02", name: "Serra Circular", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "tf03", name: "Parafusadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "tf04", name: "Esmerilhadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "tf05", name: "Martelo", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "tf06", name: "Chave de Fenda", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "tf07", name: "Nível a Laser", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool" },
+  { id: "te01", name: "Escada", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "te02", name: "Carrinho de Mudança", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "te03", name: "Betoneira", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "te04", name: "Compressor de Ar", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "te05", name: "Gerador", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "te06", name: "Andaime", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+  { id: "te07", name: "Aspirador Industrial", type: "equipamento", typeLabel: "Equipamento", icon: "box" },
+];
 
-const TOTAL_STEPS = 3;
-type Step = 1 | 2 | 3 | "done";
+const TOTAL_STEPS = 2;
+type Step = 1 | 2 | "done";
+type Step1Sub = "search" | "new_form";
+
+function normalize(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 export default function CadastroToolScreen() {
   const { colors } = useTheme();
@@ -37,34 +68,67 @@ export default function CadastroToolScreen() {
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
   const [step, setStep] = useState<Step>(1);
-  const [toolType, setToolType] = useState<string>("");
+  const [step1Sub, setStep1Sub] = useState<Step1Sub>("search");
+  const [toolType, setToolType] = useState("");
   const [toolName, setToolName] = useState("");
   const [query, setQuery] = useState("");
   const [details, setDetails] = useState("");
   const [available, setAvailable] = useState(true);
 
-  const suggestions = toolType ? SUGGESTIONS_BY_TYPE[toolType] ?? [] : [];
-  const filtered = query.length > 0 ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase())) : [];
-
   const currentStep = step === "done" ? TOTAL_STEPS : (step as number);
   const progress = currentStep / TOTAL_STEPS;
 
-  function handleSelectSuggestion(name: string) { setToolName(name); setQuery(name); }
+  const filteredTemplates = query.length > 0
+    ? TOOL_TEMPLATES.filter((t) =>
+        normalize(t.name).includes(normalize(query)) ||
+        normalize(t.typeLabel).includes(normalize(query))
+      )
+    : TOOL_TEMPLATES;
 
-  function handleBack() {
-    if (step === 1) router.back();
-    else if (step === 2) setStep(1);
-    else if (step === 3) setStep(2);
+  const hasExactMatch = query.length > 0 && TOOL_TEMPLATES.some((t) => normalize(t.name) === normalize(query));
+  const showCreateOnly = query.length > 1 && filteredTemplates.length === 0;
+  const showCreateAtBottom = query.length > 1 && filteredTemplates.length > 0 && !hasExactMatch;
+
+  function handleSelectTemplate(t: ToolTemplate) {
+    setToolName(t.name);
+    setToolType(t.type);
+    setStep(2);
   }
 
-  function handleNext() {
-    if (step === 1 && toolType) setStep(2);
-    else if (step === 2) {
-      const name = toolName || query;
-      if (!name.trim()) return;
-      setToolName(name.trim());
-      setStep(3);
-    } else if (step === 3) setStep("done");
+  function handleCreateNew() {
+    setToolName(query);
+    setToolType("");
+    setStep1Sub("new_form");
+  }
+
+  function handleBack() {
+    if (step === 1 && step1Sub === "new_form") {
+      setStep1Sub("search");
+    } else if (step === 1) {
+      router.back();
+    } else if (step === 2) {
+      setStep(1);
+      setStep1Sub("search");
+    }
+  }
+
+  function handleNewFormNext() {
+    if (!toolName.trim() || !toolType) return;
+    setStep(2);
+  }
+
+  function handleDetailsNext() {
+    setStep("done");
+  }
+
+  function handleReset() {
+    setStep(1);
+    setStep1Sub("search");
+    setToolType("");
+    setToolName("");
+    setQuery("");
+    setDetails("");
+    setAvailable(true);
   }
 
   if (step === "done") {
@@ -79,10 +143,7 @@ export default function CadastroToolScreen() {
             <Text style={{ color: "#ff6b35" }}>{toolName}</Text> foi cadastrada no seu perfil como{" "}
             {available ? "disponível" : "indisponível"}.
           </Text>
-          <Pressable
-            style={styles.secondaryBtn}
-            onPress={() => { setStep(1); setToolType(""); setToolName(""); setQuery(""); setDetails(""); setAvailable(true); }}
-          >
+          <Pressable style={styles.secondaryBtn} onPress={handleReset}>
             <Feather name="plus" size={14} color="#ff6b35" />
             <Text style={styles.secondaryBtnText}>Adicionar outra tool</Text>
           </Pressable>
@@ -101,112 +162,188 @@ export default function CadastroToolScreen() {
           <Feather name="arrow-left" size={18} color="#ff6b35" />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>
-            Passo {currentStep} de {TOTAL_STEPS}
-          </Text>
-          <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-          </View>
+          {step !== 1 || step1Sub === "new_form" ? (
+            <>
+              <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>
+                Passo {currentStep} de {TOTAL_STEPS}
+              </Text>
+              <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
+                <View style={[styles.progressFill, { width: `${progress * 100}%` as any }]} />
+              </View>
+            </>
+          ) : (
+            <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>NOVA TOOL</Text>
+          )}
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {step === 1 && (
-          <>
-            <Text style={[styles.stepTitle, { color: colors.text }]}>Que tipo de tool?</Text>
-            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>Selecione a categoria que melhor descreve o que você vai adicionar.</Text>
-            <View style={styles.typeGrid}>
+      {/* STEP 1 — SEARCH */}
+      {step === 1 && step1Sub === "search" && (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={[styles.stepTitle, { color: colors.text }]}>Qual é a sua tool?</Text>
+          <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
+            Escolha uma da lista ou escreva o nome do equipamento, ferramenta ou veículo que você usa.
+          </Text>
+
+          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#ff6b3550" : colors.inputBorder }]}>
+            <Feather name="search" size={15} color={query.length > 0 ? "#ff6b35" : colors.textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Buscar tool..."
+              placeholderTextColor={colors.textDim}
+              autoCapitalize="words"
+            />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery("")}>
+                <Feather name="x" size={15} color={colors.textMuted} />
+              </Pressable>
+            )}
+          </View>
+
+          {showCreateOnly && (
+            <Pressable
+              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#ff6b35" }]}
+              onPress={handleCreateNew}
+            >
+              <View style={[styles.createOptionIcon, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3540" }]}>
+                <Feather name="plus" size={18} color="#ff6b35" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.createOptionLabel}>Criar tool</Text>
+                <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color="#ff6b35" />
+            </Pressable>
+          )}
+
+          {query.length === 0 && (
+            <Text style={[styles.listLabel, { color: colors.textMuted }]}>SUGESTÕES POPULARES</Text>
+          )}
+          {query.length > 0 && filteredTemplates.length > 0 && (
+            <Text style={[styles.listLabel, { color: colors.textMuted }]}>
+              {filteredTemplates.length} RESULTADO{filteredTemplates.length !== 1 ? "S" : ""}
+            </Text>
+          )}
+
+          <View style={styles.templateList}>
+            {filteredTemplates.map((t) => (
+              <ToolCard key={t.id} template={t} colors={colors} onPress={() => handleSelectTemplate(t)} />
+            ))}
+
+            {showCreateAtBottom && (
+              <Pressable
+                style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                onPress={handleCreateNew}
+              >
+                <Feather name="plus-circle" size={14} color="#ff6b35" />
+                <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
+                  Criar "<Text style={{ color: "#ff6b35" }}>{query}</Text>" como nova tool
+                </Text>
+                <Feather name="chevron-right" size={14} color={colors.chevron} />
+              </Pressable>
+            )}
+          </View>
+        </ScrollView>
+      )}
+
+      {/* STEP 1 — NEW TOOL FORM (name + type picker) */}
+      {step === 1 && step1Sub === "new_form" && (
+        <>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={[styles.content, { paddingBottom: 40 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={[styles.stepTitle, { color: colors.text }]}>Nova tool</Text>
+            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
+              Confirme o nome e selecione o tipo da tool.
+            </Text>
+
+            <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+              <TextInput
+                style={[styles.input, { color: colors.text }]}
+                value={toolName}
+                onChangeText={setToolName}
+                placeholder="Nome da tool..."
+                placeholderTextColor={colors.textDim}
+                autoCapitalize="words"
+                autoFocus
+              />
+            </View>
+
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>TIPO</Text>
+            <View style={styles.typeRow}>
               {TOOL_TYPES.map((t) => (
                 <Pressable
                   key={t.id}
-                  style={[styles.typeCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }, toolType === t.id && styles.typeCardSelected]}
+                  style={[
+                    styles.typeChip,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: toolType === t.id ? "#ff6b35" : colors.cardBorder,
+                      borderWidth: toolType === t.id ? 1.5 : 1,
+                    },
+                  ]}
                   onPress={() => setToolType(t.id)}
                 >
-                  <View style={[
-                    styles.typeIcon,
-                    toolType === t.id
-                      ? { backgroundColor: "#ff6b3520", borderColor: "#ff6b3540" }
-                      : { backgroundColor: colors.surface, borderColor: colors.surfaceBorder },
-                  ]}>
-                    <Feather name={t.icon} size={22} color={toolType === t.id ? "#ff6b35" : colors.textMuted} />
-                  </View>
-                  <Text style={[styles.typeLabel, { color: toolType === t.id ? colors.text : colors.textSecondary }]}>{t.label}</Text>
-                  <Text style={[styles.typeDescription, { color: colors.textMuted }]}>{t.description}</Text>
-                  {toolType === t.id && (
-                    <View style={styles.typeCheck}>
-                      <Feather name="check" size={11} color="#ff6b35" />
-                    </View>
-                  )}
+                  <Feather name={t.icon} size={14} color={toolType === t.id ? "#ff6b35" : colors.textMuted} />
+                  <Text style={[styles.typeChipText, { color: toolType === t.id ? colors.text : colors.textSecondary }]}>
+                    {t.label}
+                  </Text>
+                  {toolType === t.id && <Feather name="check" size={12} color="#ff6b35" />}
                 </Pressable>
               ))}
             </View>
-          </>
-        )}
+          </ScrollView>
 
-        {step === 2 && (
-          <>
-            <Text style={[styles.stepTitle, { color: colors.text }]}>
-              Nome da {TOOL_TYPES.find((t) => t.id === toolType)?.label.toLowerCase() ?? "tool"}
-            </Text>
-            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>Escreva o nome ou escolha uma sugestão da lista.</Text>
+          <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
+            <Pressable
+              style={[styles.primaryBtn, { flex: 1 }, (!toolName.trim() || !toolType) && styles.primaryBtnDisabled]}
+              onPress={handleNewFormNext}
+              disabled={!toolName.trim() || !toolType}
+            >
+              <Text style={styles.primaryBtnText}>Próximo</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
 
-            <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
-              <Feather name="search" size={15} color={colors.textMuted} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                value={query}
-                onChangeText={(t) => { setQuery(t); setToolName(t); }}
-                placeholder="Buscar ou escrever..."
-                placeholderTextColor={colors.textDim}
-                autoCapitalize="words"
-              />
-              {query.length > 0 && (
-                <Pressable onPress={() => { setQuery(""); setToolName(""); }}>
-                  <Feather name="x" size={15} color={colors.textMuted} />
-                </Pressable>
-              )}
-            </View>
-
-            {query.length === 0 && (
-              <View style={styles.chipsSection}>
-                <Text style={[styles.chipsLabel, { color: colors.textMuted }]}>SUGESTÕES</Text>
-                <View style={styles.chips}>
-                  {suggestions.map((s) => (
-                    <Pressable key={s} style={[styles.chip, { backgroundColor: colors.inputBg }]} onPress={() => handleSelectSuggestion(s)}>
-                      <Text style={styles.chipText}>{s}</Text>
-                    </Pressable>
-                  ))}
+      {/* STEP 2 — DETAILS + AVAILABILITY */}
+      {step === 2 && (
+        <>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={[styles.content, { paddingBottom: 40 }]}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#ff6b3530" }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Text style={[styles.nameCardValue, { color: colors.text, flex: 1 }]}>{toolName}</Text>
+                <View style={[styles.typeBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                  <Feather
+                    name={TOOL_TYPES.find((t) => t.id === toolType)?.icon ?? "box"}
+                    size={10}
+                    color={colors.textMuted}
+                  />
+                  <Text style={[styles.typeBadgeText, { color: colors.textMuted }]}>
+                    {TOOL_TYPES.find((t) => t.id === toolType)?.label ?? toolType}
+                  </Text>
                 </View>
               </View>
-            )}
+            </View>
 
-            {filtered.length > 0 && (
-              <View style={styles.suggestionList}>
-                {filtered.map((s) => (
-                  <Pressable key={s} style={[styles.suggestionItem, { borderBottomColor: colors.surface }]} onPress={() => handleSelectSuggestion(s)}>
-                    <Feather name="box" size={13} color="#ff6b35" />
-                    <Text style={[styles.suggestionText, { color: colors.textSecondary }]}>{s}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-
-            {query.length > 0 && filtered.length === 0 && (
-              <View style={styles.freeTextHint}>
-                <Feather name="plus-circle" size={13} color={colors.textSecondary} />
-                <Text style={[styles.freeTextHintText, { color: colors.textSecondary }]}>
-                  Usar "<Text style={{ color: colors.text }}>{query}</Text>" como nome
-                </Text>
-              </View>
-            )}
-          </>
-        )}
-
-        {step === 3 && (
-          <>
             <Text style={[styles.stepTitle, { color: colors.text }]}>Detalhes</Text>
             <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
-              Adicione informações extras sobre <Text style={{ color: "#ff6b35" }}>{toolName}</Text> e defina a disponibilidade.
+              Adicione informações extras sobre{" "}
+              <Text style={{ color: "#ff6b35" }}>{toolName}</Text> e defina a disponibilidade.
             </Text>
 
             <TextInput
@@ -234,83 +371,98 @@ export default function CadastroToolScreen() {
                 thumbColor={available ? "#00e5a0" : colors.textMuted}
               />
             </View>
-          </>
-        )}
+          </ScrollView>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
-
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
-        <Pressable
-          style={[
-            styles.primaryBtn,
-            { flex: 1 },
-            ((step === 1 && !toolType) || (step === 2 && !toolName.trim() && !query.trim())) && styles.primaryBtnDisabled,
-          ]}
-          onPress={handleNext}
-          disabled={(step === 1 && !toolType) || (step === 2 && !toolName.trim() && !query.trim())}
-        >
-          <Text style={styles.primaryBtnText}>{step === 3 ? "Concluir" : "Próximo"}</Text>
-        </Pressable>
-      </View>
+          <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
+            <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }]} onPress={handleDetailsNext}>
+              <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
+            </Pressable>
+            <Pressable style={[styles.primaryBtn, { flex: 1 }]} onPress={handleDetailsNext}>
+              <Text style={styles.primaryBtnText}>Concluir</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
     </View>
+  );
+}
+
+function ToolCard({ template, colors, onPress }: {
+  template: ToolTemplate;
+  colors: any;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+      onPress={onPress}
+    >
+      <View style={styles.templateTopRow}>
+        <View style={[styles.templateIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3328" }]}>
+          <Feather name={template.icon} size={16} color="#ff6b35" />
+        </View>
+        <Text style={[styles.templateName, { color: colors.text, flex: 1 }]}>{template.name}</Text>
+        <View style={[styles.categoryBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+          <Text style={[styles.categoryBadgeText, { color: colors.textMuted }]}>{template.typeLabel}</Text>
+        </View>
+      </View>
+      <View style={styles.templateFooter}>
+        <Feather name="chevron-right" size={14} color={colors.chevron} />
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 28 },
+  header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 24 },
   backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 },
+  stepIndicator: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
   progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
   progressFill: { height: "100%", backgroundColor: "#ff6b35", borderRadius: 2 },
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
-  typeGrid: { gap: 10 },
-  typeCard: { borderWidth: 1, borderRadius: 16, padding: 18, position: "relative" },
-  typeCardSelected: { borderColor: "#ff6b35", borderWidth: 1.5 },
-  typeIcon: { width: 48, height: 48, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center", marginBottom: 12 },
-  typeLabel: { fontFamily: "Sora_700Bold", fontSize: 16, marginBottom: 4 },
-  typeDescription: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18 },
-  typeCheck: {
-    position: "absolute", top: 16, right: 16, width: 22, height: 22, borderRadius: 11,
-    backgroundColor: "#ff6b3520", borderWidth: 1, borderColor: "#ff6b3540",
-    alignItems: "center", justifyContent: "center",
-  },
   inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
-  chipsSection: { marginBottom: 10 },
-  chipsLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { borderWidth: 1, borderColor: "#ff6b3525", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
-  chipText: { fontFamily: "DMMono_400Regular", fontSize: 12, color: "#ff6b35" },
-  suggestionList: { gap: 2 },
-  suggestionItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13, paddingHorizontal: 4, borderBottomWidth: 1 },
-  suggestionText: { fontFamily: "Sora_400Regular", fontSize: 14 },
-  freeTextHint: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 4 },
-  freeTextHintText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
+  listLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  templateList: { gap: 10 },
+  templateCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  templateTopRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
+  templateIconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  templateName: { fontFamily: "Sora_700Bold", fontSize: 15 },
+  categoryBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
+  categoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
+  templateFooter: { alignItems: "flex-end" },
+  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
+  createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },
+  createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
+  createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
+  createOptionSmallText: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 12 },
+  fieldLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
+  typeRow: { flexDirection: "row", gap: 8, marginBottom: 24 },
+  typeChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 8 },
+  typeChipText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
+  nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },
+  typeBadge: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  typeBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.5 },
   textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 120, lineHeight: 22, marginBottom: 16 },
   availCard: { borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 },
   availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 3 },
   availSub: { fontFamily: "DMMono_400Regular", fontSize: 10, lineHeight: 15 },
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
+  skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  skipBtnText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
   primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
-  secondaryBtn: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3530",
-    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, width: "100%", justifyContent: "center",
-  },
+  secondaryBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3530", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, width: "100%", justifyContent: "center" },
   secondaryBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#ff6b35" },
   doneWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, gap: 16 },
-  doneIcon: {
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
-    alignItems: "center", justifyContent: "center", marginBottom: 8,
-  },
+  doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530", alignItems: "center", justifyContent: "center", marginBottom: 8 },
   doneTitle: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center" },
   doneSub: { fontFamily: "Sora_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 12 },
 });
