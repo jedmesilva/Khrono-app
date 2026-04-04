@@ -333,7 +333,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Services</Text>
-            <Pressable style={[styles.addBtn, { borderColor: colors.surfaceBorder }]} onPress={() => setDialog({ title: "Em breve", message: "Criação de services em breve." })}>
+            <Pressable style={[styles.addBtn, { borderColor: colors.surfaceBorder }]} onPress={() => router.push("/cadastro-service")}>
               <Feather name="plus" size={11} color={colors.textSecondary} />
               <Text style={[styles.addBtnText, { color: colors.textSecondary }]}>adicionar</Text>
             </Pressable>
