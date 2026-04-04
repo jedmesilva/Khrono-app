@@ -18,7 +18,29 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { useTheme } from "@/context/ThemeContext";
-import { useContracts } from "@/context/ContractsContext";
+import { Contract, useContracts } from "@/context/ContractsContext";
+
+function getDetailValueLabel(contract: Contract): string {
+  const isHiring = contract.role === "hiring";
+  const isTimer = contract.tipo === "timer";
+  const isCash = contract.paymentMethod === "dinheiro";
+  const isCardOrPix = contract.paymentMethod === "cartao" || contract.paymentMethod === "pix";
+
+  if (contract.status === "ended") {
+    return isHiring ? "pago" : "recebido";
+  }
+
+  if (isHiring) {
+    if (isCash) return "a pagar";
+    if (isCardOrPix && isTimer) return "pagando";
+    if (isCardOrPix && !isTimer) return "a pagar";
+    return "pagando";
+  } else {
+    if (isCash) return "a receber";
+    if (isCardOrPix) return "recebendo";
+    return "recebendo";
+  }
+}
 
 function formatTimer(s: number) {
   const h = Math.floor(s / 3600);
@@ -241,14 +263,14 @@ export default function ContractDetailScreen() {
                   <View style={[styles.progressFill, { width: `${Math.round((progresso ?? 0) * 100)}%` as any, backgroundColor: !isScheduled && (restante ?? 0) < 600000 ? "#ff4444" : cor }]} />
                 </View>
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
-                <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>valor total fixo</Text>
+                <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>{getDetailValueLabel(contract)}</Text>
               </>
             ) : (
               <>
                 <Text style={[styles.timerLabel, { color: colors.textMuted }]}>tempo decorrido</Text>
                 <Text style={[styles.timerValue, { color: colors.text }]}>{formatTimer(Math.floor(elapsed / 1000))}</Text>
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
-                <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>{isHiring ? "pagando" : "recebendo"}</Text>
+                <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>{getDetailValueLabel(contract)}</Text>
               </>
             )}
             {isScheduled && (

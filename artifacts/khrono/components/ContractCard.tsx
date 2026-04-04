@@ -12,6 +12,28 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
 
+function getValueLabel(contract: Contract): string {
+  const isHiring = contract.role === "hiring";
+  const isTimer = contract.tipo === "timer";
+  const isCash = contract.paymentMethod === "dinheiro";
+  const isCardOrPix = contract.paymentMethod === "cartao" || contract.paymentMethod === "pix";
+
+  if (contract.status === "ended") {
+    return isHiring ? "PAGO" : "RECEBIDO";
+  }
+
+  if (isHiring) {
+    if (isCash) return "A PAGAR";
+    if (isCardOrPix && isTimer) return "PAGANDO";
+    if (isCardOrPix && !isTimer) return "A PAGAR";
+    return "PAGANDO";
+  } else {
+    if (isCash) return "A RECEBER";
+    if (isCardOrPix) return "RECEBENDO";
+    return "RECEBENDO";
+  }
+}
+
 type Props = {
   contract: Contract;
   onStop: (id: string) => void;
@@ -154,7 +176,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
               </Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={[styles.metaLabel, { color: colors.textMuted }]}>VALOR TOTAL</Text>
+              <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{getValueLabel(contract)}</Text>
               <Text style={[styles.valueText, { color: displayColor }]}>
                 R${formatValue(contract.duracaoTotal, contract.ratePerHour)}
               </Text>
@@ -169,7 +191,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
             <Text style={[styles.timerText, { color: colors.text }]}>{formatElapsed(elapsed)}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{isHiring ? "PAGANDO" : "RECEBENDO"}</Text>
+            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{getValueLabel(contract)}</Text>
             <Text style={[styles.valueText, { color: displayColor }]}>
               R${formatValue(elapsed, contract.ratePerHour)}
             </Text>

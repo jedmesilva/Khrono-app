@@ -37,7 +37,7 @@ export type Contract = {
     skill?: string;
     tools?: string[];
   };
-  paymentMethod?: "cartao" | "pix" | "dinheiro";
+  paymentMethod?: "cartao" | "pix" | "dinheiro" | "saldo";
   paymentCardLabel?: string;
   agendado?: boolean;
   agendadoLabel?: string;
