@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { PROVIDERS, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
@@ -107,10 +108,7 @@ export default function ProviderServiceScreen() {
                 <View style={styles.compNameRow}>
                   <Text style={styles.compSkillName}>{skill.name}</Text>
                   {skill.verified && (
-                    <Pressable style={styles.verifiedBadge} onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)}>
-                      <Feather name="check-circle" size={9} color="#4a9eff" />
-                      <Text style={styles.verifiedBadgeText}>Verificado</Text>
-                    </Pressable>
+                    <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
                   )}
                 </View>
                 <Text style={[styles.skillDesc, { color: colors.textSecondary }]}>{skill.description}</Text>
@@ -131,10 +129,7 @@ export default function ProviderServiceScreen() {
                       <View style={styles.compNameRow}>
                         <Text style={styles.compToolName}>{tool.name}</Text>
                         {tool.verified && (
-                          <Pressable style={styles.verifiedBadge} onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)}>
-                            <Feather name="check-circle" size={9} color="#4a9eff" />
-                            <Text style={styles.verifiedBadgeText}>Verificado</Text>
-                          </Pressable>
+                          <VerifiedBadge onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)} />
                         )}
                       </View>
                       <Text style={[styles.toolDetails, { color: colors.textDim }]}>{tool.details}</Text>
@@ -248,8 +243,6 @@ const styles = StyleSheet.create({
   compEmptyText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
   skillDesc: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16, marginTop: 2 },
   toolDetails: { fontFamily: "DMMono_400Regular", fontSize: 10, marginTop: 1 },
-  verifiedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#0d1f33", borderWidth: 1, borderColor: "#1a3a5c", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  verifiedBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 9, color: "#4a9eff" },
   performanceGrid: { gap: 10, marginBottom: 16 },
   perfCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
   perfCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },

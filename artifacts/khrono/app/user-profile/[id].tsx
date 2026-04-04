@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { formatRadius } from "@/components/LocationSheet";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { PROVIDERS, VERIFICATION_LABELS, VerificationType, ProviderProfile } from "@/constants/profile-data";
 
@@ -225,10 +226,7 @@ export default function UserProfileScreen() {
                   <View style={styles.skillNameRow}>
                     <Text style={styles.skillName}>{skill.name}</Text>
                     {skill.verified && (
-                      <Pressable style={styles.verifiedBadge} onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)}>
-                        <Feather name="check-circle" size={9} color="#4a9eff" />
-                        <Text style={styles.verifiedBadgeText}>Verificado</Text>
-                      </Pressable>
+                      <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
                     )}
                     {skill.isNew && (
                       <View style={styles.newBadge}>
@@ -255,10 +253,7 @@ export default function UserProfileScreen() {
                 <View style={styles.toolNameRow}>
                   <Text style={styles.toolName}>{tool.name}</Text>
                   {tool.verified && (
-                    <Pressable style={styles.verifiedBadge} onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)}>
-                      <Feather name="check-circle" size={9} color="#4a9eff" />
-                      <Text style={styles.verifiedBadgeText}>Verificado</Text>
-                    </Pressable>
+                    <VerifiedBadge onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)} />
                   )}
                 </View>
                 <Text style={[styles.toolType, { color: colors.textMuted }]}>{tool.type}</Text>
@@ -312,8 +307,6 @@ const styles = StyleSheet.create({
   skillDesc: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
   newBadge: { backgroundColor: "#1a2a1a", borderWidth: 1, borderColor: "#00e5a030", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
   newBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#00e5a0" },
-  verifiedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#0d1f33", borderWidth: 1, borderColor: "#1a3a5c", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  verifiedBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 9, color: "#4a9eff" },
   toolCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12 },
   toolIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#00e5a025", backgroundColor: "#00e5a010", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   toolNameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 },

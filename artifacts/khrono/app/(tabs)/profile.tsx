@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import {
   MY_PROFILE,
@@ -25,14 +26,6 @@ import {
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 type ViewState = "main" | "skills" | "skill_detail" | "tools";
 
-function VerifiedBadge({ type, onPress }: { type: VerificationType; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} style={styles.verifiedBadge}>
-      <Feather name="check-circle" size={9} color="#4a9eff" />
-      <Text style={styles.verifiedBadgeText}>Verificado</Text>
-    </Pressable>
-  );
-}
 
 function SkillDetailView({ skill, colors, onBack, onVerifiedPress }: {
   skill: Skill;
@@ -50,7 +43,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress }: {
           <View style={styles.nameWithBadge}>
             <Text style={[styles.subTitle, { color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
             {skill.verified && (
-              <VerifiedBadge type={skill.verified.type} onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} />
+              <VerifiedBadge onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} />
             )}
           </View>
           {skill.isNew ? (
@@ -114,7 +107,7 @@ function SkillsListView({ colors, onBack, onSelectSkill, onVerifiedPress, onAdd 
               <View style={styles.nameWithBadge}>
                 <Text style={[styles.listCardName, { flex: 1, color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
                 {skill.verified && (
-                  <VerifiedBadge type={skill.verified.type} onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} />
+                  <VerifiedBadge onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} />
                 )}
               </View>
               {skill.description ? (
@@ -165,7 +158,7 @@ function ToolsListView({ colors, onBack, onVerifiedPress, onAdd }: {
               <View style={styles.nameWithBadge}>
                 <Text style={[styles.listCardName, { flex: 1, color: colors.text }]} numberOfLines={1}>{tool.name}</Text>
                 {tool.verified && (
-                  <VerifiedBadge type={tool.verified.type} onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} />
+                  <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} />
                 )}
               </View>
               <View style={styles.toolMetaRow}>
@@ -262,7 +255,7 @@ export default function ProfileScreen() {
           <View style={styles.profileInfo}>
             <View style={styles.nameWithBadge}>
               <Text style={[styles.profileName, { color: colors.text }]}>{MY_PROFILE.name}</Text>
-              {hasVerified && <VerifiedBadge type="documentation" onPress={() => handleVerifiedPress("documentation")} />}
+              {hasVerified && <VerifiedBadge onPress={() => handleVerifiedPress("documentation")} />}
             </View>
             <View style={styles.locationRow}>
               <Feather name="map-pin" size={11} color={colors.textMuted} />
@@ -420,8 +413,6 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6, marginBottom: 2 },
   locationText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
   sinceText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  verifiedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#0d1f33", borderWidth: 1, borderColor: "#1a3a5c", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2, flexShrink: 0 },
-  verifiedBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 9, color: "#4a9eff" },
   nameWithBadge: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 },
   statsCard: { borderWidth: 1, borderRadius: 16, paddingVertical: 14, flexDirection: "row", justifyContent: "space-around", alignItems: "center", marginBottom: 16 },
   statItem: { alignItems: "center" },
@@ -454,7 +445,7 @@ const styles = StyleSheet.create({
   compositionItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   compositionSkill: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff6b35cc", flex: 1 },
   compositionTool: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#00e5a0cc", flex: 1 },
-  compVerifiedDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#4a9eff", flexShrink: 0 },
+  compVerifiedDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#00e5a0", flexShrink: 0 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   serviceRatingText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
   newBadgeWrap: { flexDirection: "row" },

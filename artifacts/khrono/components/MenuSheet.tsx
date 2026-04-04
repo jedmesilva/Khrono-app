@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -152,10 +153,7 @@ export function MenuSheet({ visible, onClose }: Props) {
               <Text style={[staticStyles.userName, { color: colors.text }]}>Minha conta</Text>
               <Text style={[staticStyles.userSub, { color: colors.textDim }]}>ID #K-00142</Text>
             </View>
-            <View style={staticStyles.verifiedBadge}>
-              <Feather name="check" size={10} color={"#00e5a0"} />
-              <Text style={staticStyles.verifiedText}>verificado</Text>
-            </View>
+            <VerifiedBadge />
           </Pressable>
 
           <View style={[staticStyles.divider, { backgroundColor: colors.divider }]} />
@@ -261,23 +259,6 @@ const staticStyles = StyleSheet.create({
     fontSize: 10,
     marginTop: 2,
     letterSpacing: 0.5,
-  },
-  verifiedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#00e5a012",
-    borderWidth: 1,
-    borderColor: "#00e5a030",
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  verifiedText: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 9,
-    color: "#00e5a0",
-    letterSpacing: 0.3,
   },
   divider: {
     height: 1,

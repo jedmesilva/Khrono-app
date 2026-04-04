@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { MY_PROFILE, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
@@ -91,10 +92,7 @@ export default function ServiceDetailScreen() {
                 <View style={styles.compNameRow}>
                   <Text style={styles.compSkillName}>{skill.name}</Text>
                   {skill.verified && (
-                    <Pressable style={styles.verifiedBadge} onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)}>
-                      <Feather name="check-circle" size={9} color="#4a9eff" />
-                      <Text style={styles.verifiedBadgeText}>Verificado</Text>
-                    </Pressable>
+                    <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
                   )}
                 </View>
               </View>
@@ -113,10 +111,7 @@ export default function ServiceDetailScreen() {
                     <View key={tool.id} style={styles.compNameRow}>
                       <Text style={styles.compToolName}>{tool.name}</Text>
                       {tool.verified && (
-                        <Pressable style={styles.verifiedBadge} onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)}>
-                          <Feather name="check-circle" size={9} color="#4a9eff" />
-                          <Text style={styles.verifiedBadgeText}>Verificado</Text>
-                        </Pressable>
+                        <VerifiedBadge onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)} />
                       )}
                     </View>
                   ))}
@@ -221,8 +216,6 @@ const styles = StyleSheet.create({
   compSkillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff6b35dd" },
   compToolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#00e5a0dd" },
   compEmptyText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
-  verifiedBadge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#0d1f33", borderWidth: 1, borderColor: "#1a3a5c", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  verifiedBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 9, color: "#4a9eff" },
   performanceGrid: { gap: 10, marginBottom: 16 },
   perfCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
   perfCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
