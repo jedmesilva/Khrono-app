@@ -39,10 +39,10 @@ function formatData(ts: number) {
 }
 
 const FAQS = [
-  { q: "O prestador não apareceu, o que fazer?", r: "Se o prestador não apareceu no horário combinado, você pode encerrar o contrato sem custo. Entre em contato conosco para análise do caso e eventual reembolso." },
+  { q: "O contratado não apareceu, o que fazer?", r: "Se o contratado não apareceu no horário combinado, você pode encerrar o contrato sem custo. Entre em contato conosco para análise do caso e eventual reembolso." },
   { q: "Fui cobrado um valor incorreto", r: "O valor é calculado automaticamente pelo cronômetro. Se acredita que houve erro, entre em contato informando o ID do contrato e detalharemos o cálculo." },
   { q: "Como cancelar um contrato ativo?", r: "Você pode encerrar o contrato a qualquer momento pelo botão abaixo. O valor cobrado será proporcional ao tempo decorrido." },
-  { q: "Não consigo avaliar o prestador", r: "A avaliação fica disponível por 7 dias após o encerramento. Se o prazo não venceu e ainda não consegue avaliar, entre em contato." },
+  { q: "Não consigo avaliar o contratado", r: "A avaliação fica disponível por 7 dias após o encerramento. Se o prazo não venceu e ainda não consegue avaliar, entre em contato." },
 ];
 
 export default function ContractDetailScreen() {
@@ -350,7 +350,7 @@ export default function ContractDetailScreen() {
                   {contract.paymentMethod === "cartao" ? contract.paymentCardLabel ?? "Cartão" : contract.paymentMethod === "pix" ? "Pix" : "Dinheiro"}
                 </Text>
                 <Text style={[styles.pagamentoSub, { color: colors.textMuted }]}>
-                  {contract.paymentMethod === "cartao" ? "cartão de crédito/débito" : contract.paymentMethod === "pix" ? "QR Code / chave Pix" : "pago diretamente ao prestador"}
+                  {contract.paymentMethod === "cartao" ? "cartão de crédito/débito" : contract.paymentMethod === "pix" ? "QR Code / chave Pix" : "pago direto ao contratado"}
                 </Text>
               </View>
             </View>

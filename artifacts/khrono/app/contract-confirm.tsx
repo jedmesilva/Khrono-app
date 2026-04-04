@@ -515,7 +515,7 @@ export default function ContractConfirmScreen() {
               {metodoPagamento === "dinheiro" && (
                 <>
                   <Text style={[styles.scheduleLabel, { color: colors.textSecondary }]}>Dinheiro</Text>
-                  <Text style={styles.scheduleSub}>pague diretamente ao prestador</Text>
+                  <Text style={styles.scheduleSub}>pague direto ao contratado</Text>
                 </>
               )}
             </View>
@@ -606,7 +606,7 @@ export default function ContractConfirmScreen() {
           </Text>
 
           <View style={styles.simCard}>
-            <Text style={styles.simLabel}>simular resposta do prestador:</Text>
+            <Text style={styles.simLabel}>simular resposta do contratado:</Text>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Pressable onPress={aceitar} style={styles.simAcceptBtn}>
                 <Feather name="check" size={14} color={"#00e5a0"} />

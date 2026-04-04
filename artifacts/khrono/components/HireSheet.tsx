@@ -169,7 +169,7 @@ function PincodeContent({
   if (found) {
     return (
       <View>
-        <Text style={styles.title}>Prestador encontrado</Text>
+        <Text style={styles.title}>Contratado encontrado</Text>
         <View style={styles.userCard}>
           <View style={styles.userAvatar}>
             <Text style={styles.userAvatarText}>{found.initials}</Text>
@@ -191,7 +191,7 @@ function PincodeContent({
           </View>
         </View>
         <Text style={styles.confirmDesc}>
-          Confirme o prestador para definir os detalhes do contrato.
+          Confirme o contratado para definir os detalhes do contrato.
         </Text>
         <Pressable style={styles.primaryBtn} onPress={handleContinue}>
           <Feather name="arrow-right" size={16} color="#fff" />
@@ -207,7 +207,7 @@ function PincodeContent({
   return (
     <View>
       <Text style={styles.title}>Inserir PINCODE</Text>
-      <Text style={styles.desc}>Digite o código do prestador para iniciar o contrato</Text>
+      <Text style={styles.desc}>Digite o código do contratado para iniciar o contrato</Text>
 
       <View style={styles.pinRow}>
         {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -328,7 +328,7 @@ function QrcodeContent({
       <View>
         <Text style={styles.title}>Escanear QR Code</Text>
         <Text style={styles.desc}>
-          A câmera precisa de permissão para escanear QR Codes de prestadores.
+          A câmera precisa de permissão para escanear QR Codes de contratados.
         </Text>
         <View style={[styles.viewfinder, { justifyContent: "center", gap: 16 }]}>
           <Feather name="camera-off" size={40} color={colors.textMuted} />
@@ -357,7 +357,7 @@ function QrcodeContent({
   return (
     <View>
       <Text style={styles.title}>Escanear QR Code</Text>
-      <Text style={styles.desc}>Aponte a câmera para o QR Code do prestador</Text>
+      <Text style={styles.desc}>Aponte a câmera para o QR Code do contratado</Text>
 
       <View style={styles.viewfinder}>
         <CameraView
@@ -471,7 +471,7 @@ function LinkContent({
   return (
     <View>
       <Text style={styles.title}>Inserir Link</Text>
-      <Text style={styles.desc}>Cole o link de contratação recebido do prestador</Text>
+      <Text style={styles.desc}>Cole o link de contratação recebido do contratado</Text>
 
       <View style={styles.linkRow}>
         <Feather name="link" size={16} color={colors.textMuted} />

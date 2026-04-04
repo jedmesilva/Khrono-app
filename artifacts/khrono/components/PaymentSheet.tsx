@@ -163,7 +163,7 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.methodLabel, method === "dinheiro" && { color: "#ccc" }]}>Dinheiro</Text>
-            <Text style={styles.methodSub}>Pague em espécie diretamente ao prestador</Text>
+            <Text style={styles.methodSub}>Pague em espécie direto ao contratado</Text>
           </View>
           <View style={[styles.radio, method === "dinheiro" && styles.radioDinheiroActive]}>
             {method === "dinheiro" && <View style={styles.radioInnerGray} />}
