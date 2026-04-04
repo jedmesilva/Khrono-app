@@ -683,24 +683,24 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
   colors: any;
   onPress: () => void;
 }) {
-  const iconColor = selected ? "#00e5a0" : tool.available ? colors.textMuted : colors.textDim;
-  const borderColor = selected ? "#00e5a040" : recommended ? "#00e5a020" : colors.cardBorder;
-  const bgColor = selected ? "#00e5a010" : colors.card;
+  const iconColor = selected ? "#ff6b35" : tool.available ? colors.textMuted : colors.textDim;
+  const borderColor = selected ? "#ff6b3540" : recommended ? "#ff6b3520" : colors.cardBorder;
+  const bgColor = selected ? "#ff6b3510" : colors.card;
 
   return (
     <Pressable
       style={[styles.selectableCard, { backgroundColor: bgColor, borderColor, opacity: tool.available ? 1 : 0.6 }]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: selected ? "#00e5a015" : colors.surface, borderColor: selected ? "#00e5a030" : colors.surfaceBorder }]}>
+      <View style={[styles.selectableIcon, { backgroundColor: selected ? "#ff6b3520" : colors.surface, borderColor: selected ? "#ff6b3540" : colors.surfaceBorder }]}>
         <Feather name={tool.icon} size={16} color={iconColor} />
       </View>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Text style={[styles.selectableName, { color: selected ? colors.text : colors.textSecondary }]} numberOfLines={1}>{tool.name}</Text>
           {recommended && !selected && (
-            <View style={[styles.recommendedBadge, { backgroundColor: "#00e5a010", borderColor: "#00e5a025" }]}>
-              <Text style={[styles.recommendedText, { color: "#00e5a0" }]}>sugerida</Text>
+            <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3525" }]}>
+              <Text style={[styles.recommendedText, { color: "#ff6b35" }]}>sugerida</Text>
             </View>
           )}
         </View>
@@ -712,7 +712,7 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
       <View style={[
         styles.checkbox,
         selected
-          ? { backgroundColor: "#00e5a0", borderColor: "#00e5a0" }
+          ? { backgroundColor: "#ff6b35", borderColor: "#ff6b35" }
           : { backgroundColor: "transparent", borderColor: colors.surfaceBorder },
       ]}>
         {selected && <Feather name="check" size={11} color="#fff" />}
