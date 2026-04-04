@@ -689,6 +689,12 @@ export function HireSheet({ open, onClose }: Props) {
             </View>
           </View>
 
+          <Text style={[styles.availStatusMsg, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
+            {disponivel
+              ? "Você está disponível e pode receber contratos."
+              : "Você está indisponível e não pode receber contratos."}
+          </Text>
+
           <View style={{ opacity: disponivel ? 1 : 0.3, gap: 10, marginBottom: 8 }}>
             {availOptions.map((opt) => (
               <Pressable
@@ -834,6 +840,7 @@ function createMainStyles(colors: ColorPalette) {
     availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: colors.text },
     toggleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
     toggleLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.3 },
+    availStatusMsg: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.2, marginBottom: 14 },
     availRow: {
       borderWidth: 1, borderRadius: 16, padding: 14,
       flexDirection: "row", alignItems: "center", gap: 14,
