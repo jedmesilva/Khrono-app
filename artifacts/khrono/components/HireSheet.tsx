@@ -15,12 +15,14 @@ import React, {
   useState,
 } from "react";
 import {
+  ActivityIndicator,
   Keyboard,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -255,56 +257,139 @@ function PincodeContent({
 
 // ─── QRCODE ─────────────────────────────────────────────────────────────────
 
+const CORNERS = [
+  { top: 16, left: 16, borderTopWidth: 3, borderLeftWidth: 3 },
+  { top: 16, right: 16, borderTopWidth: 3, borderRightWidth: 3 },
+  { bottom: 16, left: 16, borderBottomWidth: 3, borderLeftWidth: 3 },
+  { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3 },
+];
+
 function QrcodeContent({
+  onFoundProvider,
   onShowDialog,
   colors,
 }: {
+  onFoundProvider: (p: ProviderData) => void;
   onShowDialog: (d: DialogState) => void;
   colors: ColorPalette;
 }) {
   const styles = useMemo(() => createSubStyles(colors), [colors]);
-  const scanLine = useSharedValue(0);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scanned, setScanned] = useState(false);
 
-  useEffect(() => {
-    const loop = () => {
-      scanLine.value = withTiming(1, { duration: 2200 }, () => {
-        scanLine.value = 0;
-        loop();
-      });
-    };
-    loop();
-  }, []);
+  const handleBarcodeScanned = useCallback(
+    ({ data }: { type: string; data: string }) => {
+      if (scanned) return;
+      setScanned(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-  const scanLineStyle = useAnimatedStyle(() => ({
-    top: `${interpolate(scanLine.value, [0, 1], [8, 82], Extrapolation.CLAMP)}%`,
-  }));
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.type === "khrono-qr" && parsed.provider) {
+          onFoundProvider(parsed.provider as ProviderData);
+          return;
+        }
+      } catch {
+        // not JSON — ignore
+      }
 
+      if (/^\d{4}$/.test(data.trim())) {
+        onShowDialog({
+          title: "PINCODE detectado",
+          message: `Use a aba PINCODE e insira o código ${data.trim()} para conectar.`,
+        });
+      } else {
+        onShowDialog({
+          title: "QR Code inválido",
+          message: "Este QR Code não é reconhecido pelo Khrono.",
+        });
+      }
+
+      setTimeout(() => setScanned(false), 3000);
+    },
+    [scanned, onFoundProvider, onShowDialog]
+  );
+
+  // Still loading permissions
+  if (!permission) {
+    return (
+      <View>
+        <Text style={styles.title}>Escanear QR Code</Text>
+        <View style={[styles.viewfinder, { justifyContent: "center" }]}>
+          <ActivityIndicator color="#ff6b35" size="large" />
+        </View>
+      </View>
+    );
+  }
+
+  // Permission denied or not yet requested
+  if (!permission.granted) {
+    return (
+      <View>
+        <Text style={styles.title}>Escanear QR Code</Text>
+        <Text style={styles.desc}>
+          A câmera precisa de permissão para escanear QR Codes de prestadores.
+        </Text>
+        <View style={[styles.viewfinder, { justifyContent: "center", gap: 16 }]}>
+          <Feather name="camera-off" size={40} color={colors.textMuted} />
+          <Text style={styles.viewfinderLabel}>câmera sem permissão</Text>
+        </View>
+        <Pressable
+          style={[styles.primaryBtn, { marginTop: 4 }]}
+          onPress={requestPermission}
+        >
+          <Feather name="camera" size={16} color="#fff" />
+          <Text style={styles.primaryBtnText}>Permitir câmera</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.ghostBtn, { marginTop: 10 }]}
+          onPress={() =>
+            onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar sem precisar da câmera." })
+          }
+        >
+          <Text style={styles.ghostBtnText}>Usar PINCODE</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  // Camera ready
   return (
     <View>
       <Text style={styles.title}>Escanear QR Code</Text>
       <Text style={styles.desc}>Aponte a câmera para o QR Code do prestador</Text>
 
       <View style={styles.viewfinder}>
-        {[
-          { top: 16, left: 16, borderTopWidth: 3, borderLeftWidth: 3 },
-          { top: 16, right: 16, borderTopWidth: 3, borderRightWidth: 3 },
-          { bottom: 16, left: 16, borderBottomWidth: 3, borderLeftWidth: 3 },
-          { bottom: 16, right: 16, borderBottomWidth: 3, borderRightWidth: 3 },
-        ].map((s, i) => (
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          facing="back"
+          barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+        />
+        {CORNERS.map((s, i) => (
           <View key={i} style={[styles.corner, { borderColor: "#ff6b35" }, s]} />
         ))}
-        <Animated.View style={[styles.scanLine, scanLineStyle]} />
-        <Text style={styles.viewfinderLabel}>câmera indisponível em preview</Text>
+        {scanned && (
+          <View style={styles.scannedOverlay}>
+            <Feather name="check-circle" size={52} color="#00e5a0" />
+          </View>
+        )}
       </View>
 
-      <Pressable
-        style={styles.ghostBtn}
-        onPress={() =>
-          onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar manualmente." })
-        }
-      >
-        <Text style={styles.ghostBtnText}>Inserir código manualmente</Text>
-      </Pressable>
+      {scanned ? (
+        <Pressable style={styles.ghostBtn} onPress={() => setScanned(false)}>
+          <Text style={styles.ghostBtnText}>Escanear novamente</Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          style={styles.ghostBtn}
+          onPress={() =>
+            onShowDialog({ title: "Dica", message: "Use o PINCODE para conectar sem precisar da câmera." })
+          }
+        >
+          <Text style={styles.ghostBtnText}>Usar PINCODE</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -790,7 +875,11 @@ export function HireSheet({ open, onClose }: Props) {
               />
             )}
             {subMode === "QRCODE" && (
-              <QrcodeContent onShowDialog={setDialog} colors={colors} />
+              <QrcodeContent
+                onFoundProvider={handleFoundProvider}
+                onShowDialog={setDialog}
+                colors={colors}
+              />
             )}
             {subMode === "NFC" && <NfcContent colors={colors} />}
             {subMode === "LINK" && (
@@ -928,6 +1017,12 @@ function createSubStyles(colors: ColorPalette) {
     },
     corner: { position: "absolute", width: 28, height: 28 },
     scanLine: { position: "absolute", left: "10%", right: "10%", height: 2, backgroundColor: "#ff6b3580", borderRadius: 1 },
+    scannedOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "#00000080",
+      alignItems: "center",
+      justifyContent: "center",
+    },
     viewfinderLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, textAlign: "center", color: colors.textDim },
     nfcWrap: {
       width: 180, height: 180, alignSelf: "center", alignItems: "center",

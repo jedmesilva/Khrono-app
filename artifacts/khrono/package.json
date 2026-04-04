@@ -61,6 +61,7 @@
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-community/datetimepicker": "^9.1.0",
     "@supabase/supabase-js": "^2.100.0",
+    "expo-camera": "^17.0.10",
     "expo-clipboard": "^55.0.9",
     "expo-document-picker": "^55.0.9"
   }
