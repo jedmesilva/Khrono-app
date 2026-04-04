@@ -597,8 +597,8 @@ function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
           <Text style={[styles.templateName, { color: colors.text }]}>{template.name}</Text>
           <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={1}>{template.description}</Text>
         </View>
-        <View style={[styles.categoryBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-          <Text style={[styles.categoryBadgeText, { color: colors.textMuted }]}>{template.category}</Text>
+        <View style={[styles.categoryBadge, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528" }]}>
+          <Text style={[styles.categoryBadgeText, { color: "#ff6b35" }]}>{template.category}</Text>
         </View>
       </View>
 
