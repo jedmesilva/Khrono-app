@@ -34,7 +34,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "O Khrono precisa da câmera para escanear QR Codes de contratados.",
+          "cameraPermission": "O Khrono precisa da câmera para escanear QR Codes de usuários.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
