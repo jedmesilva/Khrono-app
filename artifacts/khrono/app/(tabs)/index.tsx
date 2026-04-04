@@ -14,7 +14,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { ContractCard } from "@/components/ContractCard";
-import { HistoryCard } from "@/components/HistoryCard";
 import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
@@ -28,7 +27,7 @@ const UNREAD_COUNT = 2;
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { activeContracts, history, endContract } = useContracts();
+  const { activeContracts, endContract } = useContracts();
   const { colors } = useTheme();
   const isWeb = Platform.OS === "web";
   const [notifOpen, setNotifOpen] = useState(false);
@@ -155,27 +154,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* History */}
-        {history.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>ENCERRADOS</Text>
-              <Pressable onPress={() => router.push("/history")}>
-                <Text style={styles.sectionLink}>Ver tudo</Text>
-              </Pressable>
-            </View>
-            <View style={styles.historyList}>
-              {history.slice(0, 3).map((h) => (
-                <HistoryCard
-                  key={h.id}
-                  contract={h}
-                  onPress={() => router.push(`/contract-detail/${h.id}` as any)}
-                />
-              ))}
-            </View>
-          </View>
-        )}
-
         <View style={{ height: isWeb ? 34 + 84 + 20 : 100 }} />
       </ScrollView>
 
@@ -246,12 +224,6 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 28,
   },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
   sectionLabel: {
     fontFamily: "DMMono_400Regular",
     fontSize: 9,
@@ -259,17 +231,8 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 12,
   },
-  sectionLink: {
-    fontFamily: "DMMono_400Regular",
-    fontSize: 11,
-    color: "#ff6b35",
-    letterSpacing: 0.5,
-  },
   contractList: {
     gap: 12,
-  },
-  historyList: {
-    gap: 8,
   },
   emptyState: {
     alignItems: "center",
