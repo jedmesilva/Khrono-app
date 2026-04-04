@@ -780,7 +780,7 @@ function createMainStyles(colors: ColorPalette) {
     hireItem: {
       flex: 1, borderWidth: 1, borderRadius: 16, paddingVertical: 18,
       alignItems: "center", gap: 10,
-      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+      backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
     hireItemPressed: { backgroundColor: "#ff6b3510", borderColor: "#ff6b3540" },
     hireLabel: {
@@ -794,7 +794,7 @@ function createMainStyles(colors: ColorPalette) {
     availRow: {
       borderWidth: 1, borderRadius: 16, padding: 14,
       flexDirection: "row", alignItems: "center", gap: 14,
-      backgroundColor: colors.inputBg, borderColor: colors.cardBorder,
+      backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
     availRowPressed: { backgroundColor: "#00e5a008", borderColor: "#00e5a022" },
     availIcon: {
@@ -816,7 +816,7 @@ function createSubStyles(colors: ColorPalette) {
     desc: { fontFamily: "DMMono_400Regular", fontSize: 12, marginBottom: 28, lineHeight: 18, color: colors.textSecondary },
     userCard: {
       borderWidth: 1, borderRadius: 20, padding: 20, alignItems: "center", marginBottom: 16,
-      backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
+      backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
     userAvatar: {
       width: 64, height: 64, borderRadius: 32,
