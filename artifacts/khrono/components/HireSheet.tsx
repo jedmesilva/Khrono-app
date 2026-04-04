@@ -371,7 +371,7 @@ function QrcodeContent({
         ))}
         {scanned && (
           <View style={styles.scannedOverlay}>
-            <Feather name="check-circle" size={52} color="#00e5a0" />
+            <Feather name="check-circle" size={52} color="#ff6b35" />
           </View>
         )}
       </View>
@@ -699,19 +699,19 @@ export function HireSheet({ open, onClose }: Props) {
       label: "Gerar QRCODE",
       desc: "Mostre o QR Code para ser escaneado",
       pin: null,
-      icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={"#00e5a0"} />,
+      icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={colors.textSecondary} />,
     },
     {
       label: "Compartilhar LINK",
       desc: "Copie e compartilhe o link de contratação",
       pin: null,
-      icon: <Feather name="link" size={24} color={"#00e5a0"} />,
+      icon: <Feather name="link" size={24} color={colors.textSecondary} />,
     },
     {
       label: "Iniciar APROXIMAÇÃO",
       desc: "Ative o NFC e aproxime os dois dispositivos",
       pin: null,
-      icon: <Feather name="wifi" size={24} color={"#00e5a0"} />,
+      icon: <Feather name="wifi" size={24} color={colors.textSecondary} />,
     },
   ];
 
@@ -824,7 +824,7 @@ export function HireSheet({ open, onClose }: Props) {
               >
                 <View style={styles.availIcon}>
                   {opt.pin ? (
-                    <Feather name="hash" size={24} color="#00e5a0" />
+                    <Feather name="hash" size={24} color={colors.textSecondary} />
                   ) : (
                     opt.icon
                   )}
@@ -942,7 +942,7 @@ function createMainStyles(colors: ColorPalette) {
       flexDirection: "row", alignItems: "center", gap: 14,
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
-    availRowPressed: { backgroundColor: "#00e5a008", borderColor: "#00e5a022" },
+    availRowPressed: { backgroundColor: "#ff6b3508", borderColor: "#ff6b3522" },
     availIcon: {
       width: 52, height: 52, borderRadius: 14,
       alignItems: "center", justifyContent: "center", flexShrink: 0,
@@ -965,10 +965,10 @@ function createSubStyles(colors: ColorPalette) {
     },
     userAvatar: {
       width: 64, height: 64, borderRadius: 32,
-      backgroundColor: "#00e5a020", borderWidth: 2, borderColor: "#00e5a040",
+      backgroundColor: "#ff6b3512", borderWidth: 2, borderColor: "#ff6b3530",
       alignItems: "center", justifyContent: "center", marginBottom: 12,
     },
-    userAvatarText: { fontFamily: "DMMono_500Medium", fontSize: 20, color: "#00e5a0", fontWeight: "700" },
+    userAvatarText: { fontFamily: "DMMono_500Medium", fontSize: 20, color: "#ff6b35", fontWeight: "700" },
     userName: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 4, color: colors.text },
     infoChipsRow: { flexDirection: "row", gap: 8, marginTop: 4 },
     infoChip: {
