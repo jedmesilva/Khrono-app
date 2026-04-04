@@ -476,7 +476,7 @@ export default function ProfileScreen() {
                     )}
                   </View>
 
-                  {/* Linha 2: badges de categoria/status + preço */}
+                  {/* Linha 2: categoria + status + preço */}
                   <View style={styles.serviceBadgeRow}>
                     <View style={styles.serviceBadgesLeft}>
                       {skill?.type && (
@@ -484,30 +484,34 @@ export default function ProfileScreen() {
                           <Text style={styles.serviceCategoryBadgeText}>{skill.type}</Text>
                         </View>
                       )}
-                      {!active && (
-                        <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
-                          <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>
-                        </View>
-                      )}
+                      <View style={[styles.serviceStatusBadge, { backgroundColor: active ? "#00e5a012" : colors.surface, borderColor: active ? "#00e5a030" : colors.surfaceBorder }]}>
+                        <View style={[styles.serviceStatusDot, { backgroundColor: active ? "#00e5a0" : colors.textDim }]} />
+                        <Text style={[styles.serviceStatusText, { color: active ? "#00e5a0" : colors.textDim }]}>
+                          {active ? "ativo" : "inativo"}
+                        </Text>
+                      </View>
                     </View>
                     <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
                   </View>
 
-                  {/* Linha 3: chips de composição (skill + tools) */}
+                  {/* Separador + linha 3: composição (skill + tools) */}
                   {(skill || tools.length > 0) && (
-                    <View style={styles.compositionRow}>
-                      {skill && (
-                        <View style={styles.compositionChip}>
-                          <Feather name="star" size={9} color="#ff6b35" />
-                          <Text style={styles.compositionChipText} numberOfLines={1}>{skill.name}</Text>
-                        </View>
-                      )}
-                      {tools.map((t) => (
-                        <View key={t.id} style={styles.compositionChip}>
-                          <Feather name="tool" size={9} color="#ff6b35" />
-                          <Text style={styles.compositionChipText} numberOfLines={1}>{t.name}</Text>
-                        </View>
-                      ))}
+                    <View style={[styles.compositionSection, { borderTopColor: colors.divider }]}>
+                      <Text style={[styles.compositionLabel, { color: colors.textDim }]}>composto de</Text>
+                      <View style={styles.compositionRow}>
+                        {skill && (
+                          <View style={[styles.compositionChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                            <Feather name="star" size={9} color={colors.textMuted} />
+                            <Text style={[styles.compositionChipText, { color: colors.textSecondary }]} numberOfLines={1}>{skill.name}</Text>
+                          </View>
+                        )}
+                        {tools.map((t) => (
+                          <View key={t.id} style={[styles.compositionChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                            <Feather name="tool" size={9} color={colors.textMuted} />
+                            <Text style={[styles.compositionChipText, { color: colors.textSecondary }]} numberOfLines={1}>{t.name}</Text>
+                          </View>
+                        ))}
+                      </View>
                     </View>
                   )}
 
@@ -592,14 +596,18 @@ const styles = StyleSheet.create({
   serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, lineHeight: 20 },
   serviceBadgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   serviceBadgesLeft: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1 },
-  inactiveBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  inactiveBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1 },
+
   serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 14, flexShrink: 0 },
-  serviceCategoryBadge: { backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  serviceCategoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase", color: "#ff6b35" },
+  serviceCategoryBadge: { backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
+  serviceCategoryBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35" },
+  serviceStatusBadge: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  serviceStatusDot: { width: 5, height: 5, borderRadius: 3 },
+  serviceStatusText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.5 },
+  compositionSection: { borderTopWidth: 1, paddingTop: 10, gap: 6 },
+  compositionLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase" },
   compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10, color: "#ff6b35", maxWidth: 120 },
+  compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10, maxWidth: 120 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   serviceRatingText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
   newBadgeWrap: { flexDirection: "row" },
