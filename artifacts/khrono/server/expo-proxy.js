@@ -4,12 +4,16 @@ const METRO_PORT = 5000;
 const PROXY_PORT = 22861;
 
 const proxy = http.createServer((req, res) => {
+  const headers = { ...req.headers, host: `localhost:${METRO_PORT}` };
+  if (headers.origin) headers.origin = `http://localhost:${METRO_PORT}`;
+  if (headers.referer) headers.referer = `http://localhost:${METRO_PORT}/`;
+
   const options = {
     hostname: "localhost",
     port: METRO_PORT,
     path: req.url,
     method: req.method,
-    headers: { ...req.headers, host: `localhost:${METRO_PORT}` },
+    headers,
   };
 
   const proxyReq = http.request(options, (proxyRes) => {
