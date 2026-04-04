@@ -655,7 +655,27 @@ export function HireSheet({ open, onClose }: Props) {
               </Text>
               <AnimatedToggle
                 value={disponivel}
-                onValueChange={setDisponivel}
+                onValueChange={(val) => {
+                  if (!val) {
+                    setDialog({
+                      title: "Ficar indisponível?",
+                      message: "Você não poderá receber novos contratos enquanto estiver indisponível.",
+                      buttons: [
+                        {
+                          text: "Cancelar",
+                          style: "cancel",
+                        },
+                        {
+                          text: "Confirmar",
+                          style: "destructive",
+                          onPress: () => setDisponivel(false),
+                        },
+                      ],
+                    });
+                  } else {
+                    setDisponivel(true);
+                  }
+                }}
               />
             </View>
           </View>
