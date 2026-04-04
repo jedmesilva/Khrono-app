@@ -606,28 +606,20 @@ function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
       {(template.skillName || template.toolNames.length > 0) && (
         <View style={styles.compositionRow}>
           {template.skillName && (
-            <View style={[styles.compositionChip, { backgroundColor: hasSkill ? "#ff6b3515" : colors.surface, borderColor: hasSkill ? "#ff6b3530" : colors.surfaceBorder }]}>
-              <Feather name="star" size={9} color={hasSkill ? "#ff6b35" : colors.textMuted} />
-              <Text style={[styles.compositionChipText, { color: hasSkill ? "#ff6b35" : colors.textMuted }]} numberOfLines={1}>{template.skillName}</Text>
-              {!hasSkill && <Feather name="alert-circle" size={9} color={colors.textMuted} />}
+            <View style={[styles.compositionChip, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528", opacity: hasSkill ? 1 : 0.45 }]}>
+              <Feather name="star" size={9} color="#ff6b35" />
+              <Text style={[styles.compositionChipText, { color: "#ff6b35" }]} numberOfLines={1}>{template.skillName}</Text>
             </View>
           )}
           {template.toolNames.map((tn) => {
             const has = userTools.some((t) => normalize(t.name).includes(normalize(tn)));
             return (
-              <View key={tn} style={[styles.compositionChip, { backgroundColor: has ? "#00e5a010" : colors.surface, borderColor: has ? "#00e5a025" : colors.surfaceBorder }]}>
-                <Feather name="tool" size={9} color={has ? "#00e5a0" : colors.textMuted} />
-                <Text style={[styles.compositionChipText, { color: has ? "#00e5a0" : colors.textMuted }]} numberOfLines={1}>{tn}</Text>
-                {!has && <Feather name="alert-circle" size={9} color={colors.textMuted} />}
+              <View key={tn} style={[styles.compositionChip, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528", opacity: has ? 1 : 0.45 }]}>
+                <Feather name="tool" size={9} color="#ff6b35" />
+                <Text style={[styles.compositionChipText, { color: "#ff6b35" }]} numberOfLines={1}>{tn}</Text>
               </View>
             );
           })}
-          {isFullMatch && (
-            <View style={[styles.compositionChip, { backgroundColor: "#00e5a010", borderColor: "#00e5a025" }]}>
-              <Feather name="check" size={9} color="#00e5a0" />
-              <Text style={[styles.compositionChipText, { color: "#00e5a0" }]}>compatível</Text>
-            </View>
-          )}
         </View>
       )}
 
