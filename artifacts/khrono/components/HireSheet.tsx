@@ -18,6 +18,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -430,16 +431,6 @@ export function HireSheet({ open, onClose }: Props) {
   const [disponivel, setDisponivel] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
-  const toggleAnim = useSharedValue(0);
-
-  const thumbAnimStyle = useAnimatedStyle(() => ({
-    left: interpolate(toggleAnim.value, [0, 1], [4, 24]),
-  }));
-
-  useEffect(() => {
-    toggleAnim.value = withTiming(disponivel ? 1 : 0, { duration: 180 });
-  }, [disponivel]);
-
   const subRef = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ["88%"], []);
@@ -638,30 +629,21 @@ export function HireSheet({ open, onClose }: Props) {
           {/* Disponibilidade */}
           <View style={styles.availHeaderRow}>
             <Text style={[styles.availTitle, { color: colors.text }]}>Disponibilidade</Text>
-            <Pressable
-              style={styles.toggleRow}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setDisponivel((d) => !d);
-              }}
-            >
-              <Text
-                style={[
-                  styles.toggleLabel,
-                  { color: disponivel ? "#00e5a0" : colors.textMuted },
-                ]}
-              >
+            <View style={styles.toggleRow}>
+              <Text style={[styles.toggleLabel, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
                 {disponivel ? "Disponível" : "Indisponível"}
               </Text>
-              <View
-                style={[
-                  styles.toggle,
-                  { backgroundColor: disponivel ? "#00e5a0" : colors.surfaceBorder },
-                ]}
-              >
-                <Animated.View style={[styles.toggleThumb, thumbAnimStyle, { backgroundColor: colors.sheetBg }]} />
-              </View>
-            </Pressable>
+              <Switch
+                value={disponivel}
+                onValueChange={(val) => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setDisponivel(val);
+                }}
+                trackColor={{ false: colors.surfaceBorder, true: "#00e5a0" }}
+                thumbColor={colors.sheetBg}
+                ios_backgroundColor={colors.surfaceBorder}
+              />
+            </View>
           </View>
 
           <View style={{ opacity: disponivel ? 1 : 0.3, gap: 10, marginBottom: 8 }}>
@@ -878,19 +860,6 @@ const styles = StyleSheet.create({
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
     letterSpacing: 0.3,
-  },
-  toggle: {
-    width: 42,
-    height: 24,
-    borderRadius: 12,
-    position: "relative",
-  },
-  toggleThumb: {
-    position: "absolute",
-    top: 5,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
   },
   availRow: {
     borderWidth: 1,
