@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CadastroDone } from "@/components/CadastroDone";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { MY_PROFILE, Skill, Tool } from "@/constants/profile-data";
 
@@ -652,7 +653,8 @@ function SelectableSkillCard({ skill, selected, recommended, colors, onPress }: 
       </View>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Text style={[styles.selectableName, { color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
+          <Text style={[styles.selectableName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{skill.name}</Text>
+          {skill.verified && <VerifiedBadge onPress={() => {}} />}
           {recommended && !selected && (
             <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" }]}>
               <Text style={styles.recommendedText}>recomendada</Text>
@@ -695,7 +697,8 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
       </View>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Text style={[styles.selectableName, { color: colors.text }]} numberOfLines={1}>{tool.name}</Text>
+          <Text style={[styles.selectableName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{tool.name}</Text>
+          {tool.verified && <VerifiedBadge onPress={() => {}} />}
           {recommended && !selected && (
             <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3525" }]}>
               <Text style={[styles.recommendedText, { color: "#ff6b35" }]}>sugerida</Text>
