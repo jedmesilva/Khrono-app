@@ -18,7 +18,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
@@ -28,6 +27,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -419,6 +419,55 @@ function LinkContent({
   );
 }
 
+// ─── ANIMATED TOGGLE ────────────────────────────────────────────────────────
+
+function AnimatedToggle({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
+  const offset = useSharedValue(value ? 1 : 0);
+
+  useEffect(() => {
+    offset.value = withSpring(value ? 1 : 0, { mass: 0.4, damping: 12, stiffness: 180 });
+  }, [value]);
+
+  const thumbStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: interpolate(offset.value, [0, 1], [2, 20]) }],
+  }));
+
+  const trackStyle = useAnimatedStyle(() => {
+    const green = [0, 229, 160];
+    const off = [38, 38, 42];
+    const r = Math.round(off[0] + (green[0] - off[0]) * offset.value);
+    const g = Math.round(off[1] + (green[1] - off[1]) * offset.value);
+    const b = Math.round(off[2] + (green[2] - off[2]) * offset.value);
+    return { backgroundColor: `rgb(${r},${g},${b})` };
+  });
+
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onValueChange(!value);
+      }}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+    >
+      <Animated.View style={[{
+        width: 44, height: 26, borderRadius: 13,
+        justifyContent: "center",
+      }, trackStyle]}>
+        <Animated.View style={[{
+          width: 22, height: 22, borderRadius: 11,
+          backgroundColor: "#ffffff",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.25,
+          shadowRadius: 2,
+          elevation: 2,
+        }, thumbStyle]} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
 // ─── MAIN HIRE SHEET ────────────────────────────────────────────────────────
 
 export function HireSheet({ open, onClose }: Props) {
@@ -633,15 +682,9 @@ export function HireSheet({ open, onClose }: Props) {
               <Text style={[styles.toggleLabel, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
                 {disponivel ? "Disponível" : "Indisponível"}
               </Text>
-              <Switch
+              <AnimatedToggle
                 value={disponivel}
-                onValueChange={(val) => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setDisponivel(val);
-                }}
-                trackColor={{ false: colors.surfaceBorder, true: "#00e5a0" }}
-                thumbColor={colors.text}
-                ios_backgroundColor={colors.surfaceBorder}
+                onValueChange={setDisponivel}
               />
             </View>
           </View>
