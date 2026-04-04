@@ -369,8 +369,8 @@ export default function CadastroToolScreen() {
               <Switch
                 value={available}
                 onValueChange={setAvailable}
-                trackColor={{ false: colors.surfaceBorder, true: "#00e5a060" }}
-                thumbColor={available ? "#00e5a0" : colors.textMuted}
+                trackColor={{ false: colors.surfaceBorder, true: "#ff6b3560" }}
+                thumbColor={available ? "#ff6b35" : colors.textMuted}
               />
             </View>
           </ScrollView>

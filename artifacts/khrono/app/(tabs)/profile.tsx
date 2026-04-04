@@ -152,8 +152,8 @@ function ToolsListView({ colors, onBack, onVerifiedPress, onAdd }: {
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
         {MY_PROFILE.tools.map((tool) => (
           <View key={tool.id} style={[styles.listCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: tool.available ? 1 : 0.55 }]}>
-            <View style={[styles.listIcon, { borderColor: tool.available ? "#00e5a020" : colors.surfaceBorder, backgroundColor: tool.available ? "#00e5a010" : colors.surface }]}>
-              <Feather name={tool.icon} size={18} color={tool.available ? "#00e5a0" : colors.textMuted} />
+            <View style={[styles.listIcon, { borderColor: tool.available ? "#ff6b3530" : colors.surfaceBorder, backgroundColor: tool.available ? "#ff6b3512" : colors.surface }]}>
+              <Feather name={tool.icon} size={18} color={tool.available ? "#ff6b35" : colors.textMuted} />
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.nameWithBadge}>
@@ -164,8 +164,8 @@ function ToolsListView({ colors, onBack, onVerifiedPress, onAdd }: {
               </View>
               <View style={styles.toolMetaRow}>
                 <Text style={[styles.listCardSub, { color: colors.textMuted }]}>{tool.type}</Text>
-                <View style={[styles.availBadge, { backgroundColor: tool.available ? "#00e5a015" : colors.surface, borderColor: tool.available ? "#00e5a025" : colors.surfaceBorder }]}>
-                  <Text style={[styles.availBadgeText, { color: tool.available ? "#00e5a0" : colors.textMuted }]}>
+                <View style={[styles.availBadge, { backgroundColor: tool.available ? "#ff6b3512" : colors.surface, borderColor: tool.available ? "#ff6b3530" : colors.surfaceBorder }]}>
+                  <Text style={[styles.availBadgeText, { color: tool.available ? "#ff6b35" : colors.textMuted }]}>
                     {tool.available ? "disponível" : "indisponível"}
                   </Text>
                 </View>
