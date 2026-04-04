@@ -307,7 +307,7 @@ export default function CadastroServiceScreen() {
 
           {showCreateOption && (
             <Pressable
-              style={[styles.createOptionCard, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3530" }]}
+              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#ff6b35" }]}
               onPress={handleCreateNew}
             >
               <View style={[styles.createOptionIcon, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3540" }]}>
@@ -315,7 +315,7 @@ export default function CadastroServiceScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.createOptionLabel}>Criar serviço</Text>
-                <Text style={styles.createOptionName} numberOfLines={1}>"{query}"</Text>
+                <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
               </View>
               <Feather name="chevron-right" size={16} color="#ff6b35" />
             </Pressable>
@@ -642,13 +642,14 @@ function SelectableSkillCard({ skill, selected, recommended, colors, onPress }: 
       style={[
         styles.selectableCard,
         {
-          backgroundColor: selected ? "#ff6b3510" : colors.card,
-          borderColor: selected ? "#ff6b3540" : recommended ? "#ff6b3525" : colors.cardBorder,
+          backgroundColor: colors.card,
+          borderColor: selected ? "#ff6b35" : recommended ? "#ff6b3525" : colors.cardBorder,
+          borderWidth: selected ? 1.5 : 1,
         },
       ]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: selected ? "#ff6b3520" : colors.surface, borderColor: selected ? "#ff6b3540" : colors.surfaceBorder }]}>
+      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#ff6b3560" : colors.surfaceBorder }]}>
         <Feather name="star" size={16} color={selected ? "#ff6b35" : colors.textMuted} />
       </View>
       <View style={{ flex: 1 }}>
@@ -684,15 +685,14 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
   onPress: () => void;
 }) {
   const iconColor = selected ? "#ff6b35" : tool.available ? colors.textMuted : colors.textDim;
-  const borderColor = selected ? "#ff6b3540" : recommended ? "#ff6b3520" : colors.cardBorder;
-  const bgColor = selected ? "#ff6b3510" : colors.card;
+  const borderColor = selected ? "#ff6b35" : recommended ? "#ff6b3520" : colors.cardBorder;
 
   return (
     <Pressable
-      style={[styles.selectableCard, { backgroundColor: bgColor, borderColor, opacity: tool.available ? 1 : 0.6 }]}
+      style={[styles.selectableCard, { backgroundColor: colors.card, borderColor, borderWidth: selected ? 1.5 : 1, opacity: tool.available ? 1 : 0.6 }]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: selected ? "#ff6b3520" : colors.surface, borderColor: selected ? "#ff6b3540" : colors.surfaceBorder }]}>
+      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#ff6b3560" : colors.surfaceBorder }]}>
         <Feather name={tool.icon} size={16} color={iconColor} />
       </View>
       <View style={{ flex: 1 }}>
@@ -751,7 +751,7 @@ const styles = StyleSheet.create({
   createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
   createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },
-  createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16, color: "#fff" },
+  createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
   createOptionSmallText: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 12 },
   nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
