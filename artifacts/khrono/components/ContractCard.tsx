@@ -32,24 +32,6 @@ function formatValue(ms: number, rate: number) {
   return (hours * rate).toFixed(2);
 }
 
-function PulseIndicator({ color }: { color: string }) {
-  const pulse = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
-
-  const opacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
-
-  return (
-    <Animated.View style={[styles.pulse, { backgroundColor: color, opacity }]} />
-  );
-}
 
 export function ContractCard({ contract, onStop, onPress }: Props) {
   const [now, setNow] = useState(Date.now());
@@ -115,7 +97,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
           {isScheduled ? (
             <Feather name="calendar" size={8} color={accentColor} />
           ) : (
-            <PulseIndicator color={displayColor} />
+            <View style={[styles.statusDot, { backgroundColor: displayColor }]} />
           )}
           <Text style={[styles.roleText, { color: accentColor }]}>
             {isHiring ? "VOCÊ CONTRATOU" : "VOCÊ FOI CONTRATADO"}
@@ -253,7 +235,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  pulse: {
+  statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
