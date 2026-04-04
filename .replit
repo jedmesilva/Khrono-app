@@ -32,7 +32,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=5000 pnpm --filter @workspace/khrono run dev"
+args = "node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/khrono run dev"
 waitForPort = 5000
 
   [userenv]
@@ -45,10 +45,6 @@ waitForPort = 5000
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 22861
 externalPort = 80
 
 [[ports]]
