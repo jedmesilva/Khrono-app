@@ -624,7 +624,7 @@ export function HireSheet({ open, onClose }: Props) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.sheetTitle}>Contratação direta</Text>
+          <Text style={styles.sheetTitle}>Iniciar contratação</Text>
 
           {/* AI card */}
           <Pressable
