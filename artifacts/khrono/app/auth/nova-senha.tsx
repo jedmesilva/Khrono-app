@@ -63,16 +63,28 @@ export default function NovaSenhaScreen() {
     setError(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const { error: updateError } = await supabase.auth.updateUser({ password: senha });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        setLoading(false);
+        setError("Sessão expirada. Volte e solicite um novo código.");
+        return;
+      }
 
-    if (updateError) {
+      const { error: updateError } = await supabase.auth.updateUser({ password: senha });
+
+      if (updateError) {
+        setLoading(false);
+        setError(updateError.message ?? "Não foi possível atualizar a senha. Tente novamente.");
+        return;
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace("/(tabs)" as any);
+    } catch (e: any) {
       setLoading(false);
-      setError("Não foi possível atualizar a senha. Tente novamente.");
-      return;
+      setError("Erro inesperado. Tente novamente.");
     }
-
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.replace("/" as any);
   }
 
   return (
