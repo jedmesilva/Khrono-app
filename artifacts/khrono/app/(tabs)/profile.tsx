@@ -465,31 +465,36 @@ export default function ProfileScreen() {
               const active = isActive(sv.id);
               return (
                 <Pressable key={sv.id} style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: active ? 1 : 0.45 }]} onPress={() => router.push(`/service/${sv.id}`)}>
-                  <View style={[styles.serviceIconWrap, { backgroundColor: active ? "#ff6b3312" : colors.surface, borderColor: active ? "#ff6b3528" : colors.surfaceBorder }]}>
-                    <Feather name="layers" size={16} color={active ? "#ff6b35" : colors.textMuted} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={styles.serviceTopRow}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
-                        <Text style={[styles.serviceName, { color: colors.text }]}>{sv.name}</Text>
-                        {sv.verified && (
-                          <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
-                        )}
-                      </View>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        {skill?.type && (
-                          <View style={styles.serviceCategoryBadge}>
-                            <Text style={styles.serviceCategoryBadgeText}>{skill.type}</Text>
-                          </View>
-                        )}
-                        {!active && (
-                          <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
-                            <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>
-                          </View>
-                        )}
-                        <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
-                      </View>
+                  {/* Linha 1: ícone + nome + badge de verificação */}
+                  <View style={styles.serviceNameRow}>
+                    <View style={[styles.serviceIconWrap, { backgroundColor: active ? "#ff6b3312" : colors.surface, borderColor: active ? "#ff6b3528" : colors.surfaceBorder }]}>
+                      <Feather name="layers" size={15} color={active ? "#ff6b35" : colors.textMuted} />
                     </View>
+                    <Text style={[styles.serviceName, { color: colors.text, flex: 1 }]} numberOfLines={2}>{sv.name}</Text>
+                    {sv.verified && (
+                      <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
+                    )}
+                  </View>
+
+                  {/* Linha 2: badges de categoria/status + preço */}
+                  <View style={styles.serviceBadgeRow}>
+                    <View style={styles.serviceBadgesLeft}>
+                      {skill?.type && (
+                        <View style={styles.serviceCategoryBadge}>
+                          <Text style={styles.serviceCategoryBadgeText}>{skill.type}</Text>
+                        </View>
+                      )}
+                      {!active && (
+                        <View style={[styles.inactiveBadge, { borderColor: colors.surfaceBorder }]}>
+                          <Text style={[styles.inactiveBadgeText, { color: colors.textDim }]}>INATIVO</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
+                  </View>
+
+                  {/* Linha 3: chips de composição (skill + tools) */}
+                  {(skill || tools.length > 0) && (
                     <View style={styles.compositionRow}>
                       {skill && (
                         <View style={styles.compositionChip}>
@@ -504,19 +509,21 @@ export default function ProfileScreen() {
                         </View>
                       ))}
                     </View>
-                    {!sv.isNew ? (
-                      <View style={styles.serviceRatingRow}>
-                        <Feather name="star" size={10} color="#ff6b35" />
-                        <Text style={[styles.serviceRatingText, { color: colors.textSecondary }]}>{sv.rating} · {sv.reviews} avaliações · {sv.contracts} contratos</Text>
+                  )}
+
+                  {/* Linha 4: avaliação ou badge "novo" */}
+                  {!sv.isNew ? (
+                    <View style={styles.serviceRatingRow}>
+                      <Feather name="star" size={10} color="#ff6b35" />
+                      <Text style={[styles.serviceRatingText, { color: colors.textSecondary }]}>{sv.rating} · {sv.reviews} avaliações · {sv.contracts} contratos</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.newBadgeWrap}>
+                      <View style={styles.newBadge}>
+                        <Text style={styles.newBadgeText}>novo</Text>
                       </View>
-                    ) : (
-                      <View style={styles.newBadgeWrap}>
-                        <View style={styles.newBadge}>
-                          <Text style={styles.newBadgeText}>novo</Text>
-                        </View>
-                      </View>
-                    )}
-                  </View>
+                    </View>
+                  )}
                 </Pressable>
               );
             })}
@@ -579,16 +586,18 @@ const styles = StyleSheet.create({
   addBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
   addBtnText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
   list: { gap: 10 },
-  serviceCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  serviceIconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 },
+  serviceCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "column", gap: 10 },
+  serviceNameRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  serviceIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, lineHeight: 20 },
+  serviceBadgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  serviceBadgesLeft: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1 },
   inactiveBadge: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   inactiveBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1 },
-  serviceTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 },
-  serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, flexShrink: 1 },
-  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, flexShrink: 0 },
+  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 14, flexShrink: 0 },
   serviceCategoryBadge: { backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
   serviceCategoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase", color: "#ff6b35" },
-  compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
+  compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
   compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10, color: "#ff6b35", maxWidth: 120 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
