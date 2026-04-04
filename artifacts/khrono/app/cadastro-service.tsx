@@ -52,7 +52,7 @@ const SERVICE_TEMPLATES: ServiceTemplate[] = [
   { id: "t20", name: "Motorista Particular", description: "Transporte particular com veículo próprio e seguro", category: "Transporte", skillName: "Motorista", toolNames: ["Carro"] },
 ];
 
-type Step = 1 | 2 | 3 | "done";
+type Step = 1 | 2 | 3 | 4 | "done";
 type Step1Sub = "search" | "new_form";
 
 interface Draft {
@@ -66,6 +66,7 @@ interface Draft {
   requiredToolNames: string[];
   selectedSkillIds: string[];
   selectedToolIds: string[];
+  hourlyRateInput: string;
 }
 
 const EMPTY_DRAFT: Draft = {
@@ -79,9 +80,10 @@ const EMPTY_DRAFT: Draft = {
   requiredToolNames: [],
   selectedSkillIds: [],
   selectedToolIds: [],
+  hourlyRateInput: "",
 };
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 function normalize(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -204,6 +206,8 @@ export default function CadastroServiceScreen() {
       setDraft({ step: 1, step1Sub: "search" });
     } else if (draft.step === 3) {
       setDraft({ step: 2 });
+    } else if (draft.step === 4) {
+      setDraft({ step: 3 });
     }
   }
 
@@ -212,9 +216,18 @@ export default function CadastroServiceScreen() {
   }
 
   function handleToolsNext() {
+    setDraft({ step: 4 });
+  }
+
+  function handleHourlyRateNext() {
     const finalName = draft.serviceName;
     setDraftState({ ...EMPTY_DRAFT, step: "done", serviceName: finalName });
     AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+  }
+
+  function handleHourlyRateInput(text: string) {
+    const cleaned = text.replace(/[^0-9]/g, "");
+    setDraft({ hourlyRateInput: cleaned });
   }
 
   const currentStep = draft.step === "done" ? TOTAL_STEPS : (draft.step as number);
@@ -566,6 +579,106 @@ export default function CadastroServiceScreen() {
               <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
             </Pressable>
             <Pressable style={[styles.primaryBtn, { flex: 1 }]} onPress={handleToolsNext}>
+              <Text style={styles.primaryBtnText}>Próximo</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
+
+      {/* STEP 4 — HOURLY RATE */}
+      {draft.step === 4 && (
+        <>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={[styles.content, { paddingBottom: 40 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[styles.serviceNamePill, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.serviceNamePillText, { color: colors.text }]} numberOfLines={1}>{draft.serviceName}</Text>
+              {draft.selectedSkillIds.map((sid) => {
+                const sk = userSkills.find((s) => s.id === sid);
+                return sk ? (
+                  <View key={sid} style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
+                    <Feather name="star" size={9} color="#ff6b35" />
+                    <Text style={styles.pillBadgeText}>{sk.name}</Text>
+                  </View>
+                ) : null;
+              })}
+              {draft.selectedToolIds.map((tid) => {
+                const tl = userTools.find((t) => t.id === tid);
+                return tl ? (
+                  <View key={tid} style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
+                    <Feather name="tool" size={9} color="#ff6b35" />
+                    <Text style={styles.pillBadgeText}>{tl.name}</Text>
+                  </View>
+                ) : null;
+              })}
+            </View>
+
+            <Text style={[styles.stepTitle, { color: colors.text }]}>Valor por hora</Text>
+            <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
+              Defina quanto você cobra por hora de trabalho neste service. Você pode alterar isso depois.
+            </Text>
+
+            {/* Big currency input */}
+            <View style={[styles.rateInputWrap, { backgroundColor: colors.inputBg, borderColor: draft.hourlyRateInput ? "#ff6b3560" : colors.inputBorder }]}>
+              <Text style={[styles.rateCurrency, { color: draft.hourlyRateInput ? "#ff6b35" : colors.textMuted }]}>R$</Text>
+              <TextInput
+                style={[styles.rateInput, { color: colors.text }]}
+                value={draft.hourlyRateInput}
+                onChangeText={handleHourlyRateInput}
+                placeholder="0"
+                placeholderTextColor={colors.textDim}
+                keyboardType="numeric"
+                autoFocus
+                maxLength={6}
+              />
+              <Text style={[styles.rateUnit, { color: colors.textMuted }]}>/h</Text>
+            </View>
+
+            {/* Quick pick presets */}
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>VALORES COMUNS</Text>
+            <View style={styles.presetsRow}>
+              {["30", "50", "80", "120", "200"].map((val) => {
+                const isActive = draft.hourlyRateInput === val;
+                return (
+                  <Pressable
+                    key={val}
+                    style={[
+                      styles.presetChip,
+                      {
+                        backgroundColor: isActive ? "#ff6b35" : colors.card,
+                        borderColor: isActive ? "#ff6b35" : colors.cardBorder,
+                      },
+                    ]}
+                    onPress={() => setDraft({ hourlyRateInput: val })}
+                  >
+                    <Text style={[styles.presetChipText, { color: isActive ? "#fff" : colors.textSecondary }]}>
+                      R$ {val}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Info card */}
+            <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Feather name="info" size={13} color={colors.textMuted} style={{ flexShrink: 0, marginTop: 1 }} />
+              <Text style={[styles.infoCardText, { color: colors.textMuted }]}>
+                O valor é cobrado automaticamente a cada hora durante o contrato. O cliente vê o valor antes de contratar.
+              </Text>
+            </View>
+          </ScrollView>
+
+          <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
+            <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }]} onPress={handleHourlyRateNext}>
+              <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.primaryBtn, { flex: 1 }, !draft.hourlyRateInput && styles.primaryBtnDisabled]}
+              onPress={handleHourlyRateNext}
+            >
               <Text style={styles.primaryBtnText}>Concluir</Text>
             </Pressable>
           </View>
@@ -784,4 +897,13 @@ const styles = StyleSheet.create({
   primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
+  rateInputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1.5, borderRadius: 18, paddingHorizontal: 20, paddingVertical: 18, gap: 8, marginBottom: 28 },
+  rateCurrency: { fontFamily: "Sora_700Bold", fontSize: 28 },
+  rateInput: { flex: 1, fontFamily: "Sora_700Bold", fontSize: 44, textAlign: "center" },
+  rateUnit: { fontFamily: "DMMono_400Regular", fontSize: 20 },
+  presetsRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
+  presetChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9 },
+  presetChipText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
+  infoCard: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
+  infoCardText: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18, flex: 1 },
 });
