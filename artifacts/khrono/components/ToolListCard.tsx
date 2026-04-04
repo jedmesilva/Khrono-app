@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   card: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 16, padding: 16 },
   iconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  name: { fontFamily: "Sora_700Bold", fontSize: 15, flex: 1 },
+  name: { fontFamily: "Sora_700Bold", fontSize: 15, flexShrink: 1 },
   description: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
   badge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
   badgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
