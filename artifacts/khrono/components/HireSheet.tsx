@@ -626,35 +626,6 @@ export function HireSheet({ open, onClose }: Props) {
         >
           <Text style={styles.sheetTitle}>Iniciar contratação</Text>
 
-          {/* AI card */}
-          <Pressable
-            style={styles.aiCard}
-            onPress={() =>
-              setDialog({
-                title: "IA em breve",
-                message: "A busca inteligente estará disponível em breve.",
-              })
-            }
-          >
-            <View style={styles.aiIconWrap}>
-              <Feather name="zap" size={20} color={"#ff6b35"} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.aiTitle}>Descrever o que preciso</Text>
-              <Text style={styles.aiDesc}>
-                A IA entende sua necessidade e encontra a pessoa certa para você
-              </Text>
-            </View>
-            <Feather name="chevron-right" size={16} color={"#ff6b3580"} />
-          </Pressable>
-
-          {/* Divider */}
-          <View style={styles.divRow}>
-            <View style={styles.divLine} />
-            <Text style={styles.divText}>OU CONTRATAR DIRETO</Text>
-            <View style={styles.divLine} />
-          </View>
-
           {/* 4-column hire grid */}
           <View style={styles.hireGrid}>
             {hireOptions.map((opt) => (
@@ -816,27 +787,6 @@ function createMainStyles(colors: ColorPalette) {
     backBtn: { padding: 4 },
     sheetHeaderLabel: { fontFamily: "Sora_600SemiBold", fontSize: 16, color: colors.text },
     sheetTitle: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 16, marginTop: 4, color: colors.text },
-    aiCard: {
-      backgroundColor: "#ff6b350a",
-      borderWidth: 1,
-      borderColor: "#ff6b3528",
-      borderRadius: 18,
-      padding: 16,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 14,
-      marginBottom: 16,
-    },
-    aiIconWrap: {
-      width: 46, height: 46, borderRadius: 13,
-      backgroundColor: "#ff6b3518", borderWidth: 1, borderColor: "#ff6b3530",
-      alignItems: "center", justifyContent: "center", flexShrink: 0,
-    },
-    aiTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 4, color: colors.text },
-    aiDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 16, color: colors.textSecondary },
-    divRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
-    divLine: { flex: 1, height: 1, backgroundColor: colors.surfaceBorder },
-    divText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, color: colors.textMuted },
     hireGrid: { flexDirection: "row", gap: 10, marginBottom: 28 },
     hireItem: {
       flex: 1, borderWidth: 1, borderRadius: 16, paddingVertical: 18,
