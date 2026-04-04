@@ -430,6 +430,16 @@ export function HireSheet({ open, onClose }: Props) {
   const [disponivel, setDisponivel] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
+  const toggleAnim = useSharedValue(0);
+
+  const thumbAnimStyle = useAnimatedStyle(() => ({
+    left: interpolate(toggleAnim.value, [0, 1], [4, 24]),
+  }));
+
+  useEffect(() => {
+    toggleAnim.value = withTiming(disponivel ? 1 : 0, { duration: 180 });
+  }, [disponivel]);
+
   const subRef = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ["88%"], []);
@@ -649,7 +659,7 @@ export function HireSheet({ open, onClose }: Props) {
                   { backgroundColor: disponivel ? "#00e5a0" : colors.surfaceBorder },
                 ]}
               >
-                <View style={[styles.toggleThumb, { backgroundColor: colors.sheetBg }]} />
+                <Animated.View style={[styles.toggleThumb, thumbAnimStyle, { backgroundColor: colors.sheetBg }]} />
               </View>
             </Pressable>
           </View>
