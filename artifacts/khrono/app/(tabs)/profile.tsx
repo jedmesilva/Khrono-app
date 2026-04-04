@@ -61,6 +61,12 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
+        <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.toolIconLarge, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3528" }]}>
+            <Feather name="star" size={32} color="#ff6b35" />
+          </View>
+        </View>
+
         <View style={styles.detailRow}>
           <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Text style={[styles.detailCardLabel, { color: colors.textMuted }]}>CATEGORIA</Text>
