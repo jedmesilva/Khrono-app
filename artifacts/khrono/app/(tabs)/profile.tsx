@@ -242,10 +242,6 @@ export default function ProfileScreen() {
               <Text style={[styles.profileName, { color: colors.text }]}>{MY_PROFILE.name}</Text>
               {hasVerified && <VerifiedBadge onPress={() => handleVerifiedPress("documentation")} />}
             </View>
-            <View style={styles.locationRow}>
-              <Feather name="map-pin" size={11} color={colors.textMuted} />
-              <Text style={[styles.locationText, { color: colors.textMuted }]}>{MY_PROFILE.location}</Text>
-            </View>
             <Text style={[styles.sinceText, { color: colors.textDim }]}>membro desde {MY_PROFILE.since}</Text>
           </View>
         </View>
