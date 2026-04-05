@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { formatRadius } from "@/components/LocationSheet";
+import { ServiceCard } from "@/components/ServiceCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { PROVIDERS, VERIFICATION_LABELS, VerificationType, ProviderProfile } from "@/constants/profile-data";
@@ -171,52 +172,16 @@ export default function UserProfileScreen() {
             const skill = provider.skills.find((s) => s.id === service.skillId);
             const tools = provider.tools.filter((t) => service.toolIds.includes(t.id));
             return (
-              <Pressable
+              <ServiceCard
                 key={service.id}
-                style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                service={service}
+                skill={skill}
+                tools={tools}
+                active={service.active}
+                colors={colors}
                 onPress={() => router.push(`/provider-service/${service.id}?profileId=${provider.id}` as any)}
-              >
-                <View style={styles.serviceTop}>
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <Text style={[styles.serviceName, { color: colors.text }]}>{service.name}</Text>
-                      {service.verified && (
-                        <VerifiedBadge onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")} />
-                      )}
-                    </View>
-                    <View style={styles.serviceMeta}>
-                      {!service.isNew ? (
-                        <>
-                          <Feather name="star" size={10} color="#ff6b35" />
-                          <Text style={[styles.serviceMetaText, { color: colors.textSecondary }]}>{service.rating.toFixed(1)} · {service.reviews} avaliações</Text>
-                          <Text style={[styles.serviceMetaDot, { color: colors.textDim }]}>·</Text>
-                          <Text style={[styles.serviceMetaText, { color: colors.textSecondary }]}>{service.contracts} contratos</Text>
-                        </>
-                      ) : (
-                        <Text style={[styles.serviceMetaText, { color: colors.textMuted }]}>novo service</Text>
-                      )}
-                    </View>
-                  </View>
-                  <View style={{ alignItems: "flex-end", gap: 4 }}>
-                    <Text style={styles.serviceRate}>R${service.hourlyRate}/h</Text>
-                    <Feather name="chevron-right" size={14} color={colors.chevron} />
-                  </View>
-                </View>
-                <View style={styles.serviceComposition}>
-                  {skill && (
-                    <View style={styles.compositionChip}>
-                      <Feather name="star" size={9} color="#ff6b35" />
-                      <Text style={styles.compositionChipText}>{skill.name}</Text>
-                    </View>
-                  )}
-                  {tools.map((tool) => (
-                    <View key={tool.id} style={styles.compositionChip}>
-                      <Feather name="tool" size={9} color="#ff6b35" />
-                      <Text style={styles.compositionChipText}>{tool.name}</Text>
-                    </View>
-                  ))}
-                </View>
-              </Pressable>
+                onVerifiedPress={handleVerifiedPress}
+              />
             );
           })}
         </View>

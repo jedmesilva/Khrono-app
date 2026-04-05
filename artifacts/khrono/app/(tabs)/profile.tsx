@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
+import { ServiceCard } from "@/components/ServiceCard";
 import { SkillListCard } from "@/components/SkillListCard";
 import { ToolListCard } from "@/components/ToolListCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -455,73 +456,16 @@ export default function ProfileScreen() {
               const tools = MY_PROFILE.tools.filter((t) => sv.toolIds.includes(t.id));
               const active = isActive(sv.id);
               return (
-                <Pressable key={sv.id} style={[styles.serviceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: active ? 1 : 0.45 }]} onPress={() => router.push(`/service/${sv.id}`)}>
-                  {/* Linha 1: ícone + nome + badge de verificação */}
-                  <View style={styles.serviceNameRow}>
-                    <View style={[styles.serviceIconWrap, { backgroundColor: active ? "#ff6b3312" : colors.surface, borderColor: active ? "#ff6b3528" : colors.surfaceBorder }]}>
-                      <Feather name="layers" size={15} color={active ? "#ff6b35" : colors.textMuted} />
-                    </View>
-                    <View style={styles.serviceNameInner}>
-                      <Text style={[styles.serviceName, { color: colors.text }]} numberOfLines={2}>{sv.name}</Text>
-                      {sv.verified && (
-                        <VerifiedBadge onPress={() => sv.verified && handleVerifiedPress(sv.verified.type, "service")} />
-                      )}
-                    </View>
-                  </View>
-
-                  {/* Linha 2: categoria + status + preço */}
-                  <View style={styles.serviceBadgeRow}>
-                    <View style={styles.serviceBadgesLeft}>
-                      {skill?.type && (
-                        <View style={styles.serviceCategoryBadge}>
-                          <Text style={styles.serviceCategoryBadgeText}>{skill.type}</Text>
-                        </View>
-                      )}
-                      <View style={[styles.serviceStatusBadge, { backgroundColor: active ? "#00e5a012" : colors.surface, borderColor: active ? "#00e5a030" : colors.surfaceBorder }]}>
-                        <View style={[styles.serviceStatusDot, { backgroundColor: active ? "#00e5a0" : colors.textDim }]} />
-                        <Text style={[styles.serviceStatusText, { color: active ? "#00e5a0" : colors.textDim }]}>
-                          {active ? "ativo" : "inativo"}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={[styles.serviceRate, { color: active ? "#ff6b35" : colors.textDim }]}>R${sv.hourlyRate}/h</Text>
-                  </View>
-
-                  {/* Separador + linha 3: composição (skill + tools) */}
-                  {(skill || tools.length > 0) && (
-                    <View style={[styles.compositionSection, { borderTopColor: colors.divider }]}>
-                      <Text style={[styles.compositionLabel, { color: colors.textDim }]}>composto de</Text>
-                      <View style={styles.compositionRow}>
-                        {skill && (
-                          <View style={[styles.compositionChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-                            <Feather name="star" size={9} color={colors.textMuted} />
-                            <Text style={[styles.compositionChipText, { color: colors.textSecondary }]} numberOfLines={1}>{skill.name}</Text>
-                          </View>
-                        )}
-                        {tools.map((t) => (
-                          <View key={t.id} style={[styles.compositionChip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-                            <Feather name="tool" size={9} color={colors.textMuted} />
-                            <Text style={[styles.compositionChipText, { color: colors.textSecondary }]} numberOfLines={1}>{t.name}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Linha 4: avaliação ou badge "novo" */}
-                  {!sv.isNew ? (
-                    <View style={styles.serviceRatingRow}>
-                      <Feather name="star" size={10} color="#ff6b35" />
-                      <Text style={[styles.serviceRatingText, { color: colors.textSecondary }]}>{sv.rating} · {sv.reviews} avaliações · {sv.contracts} contratos</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.newBadgeWrap}>
-                      <View style={styles.newBadge}>
-                        <Text style={styles.newBadgeText}>novo</Text>
-                      </View>
-                    </View>
-                  )}
-                </Pressable>
+                <ServiceCard
+                  key={sv.id}
+                  service={sv}
+                  skill={skill}
+                  tools={tools}
+                  active={active}
+                  colors={colors}
+                  onPress={() => router.push(`/service/${sv.id}`)}
+                  onVerifiedPress={handleVerifiedPress}
+                />
               );
             })}
           </View>
