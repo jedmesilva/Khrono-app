@@ -54,7 +54,7 @@ export default function ExploreScreen() {
       >
         <View style={styles.header}>
           <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
+            K<Text style={{ color: "#e06030" }}>r</Text>ono
           </Text>
           <Text style={[styles.subtitle, { color: colors.textDim }]}>explorar</Text>
         </View>
@@ -109,7 +109,7 @@ export default function ExploreScreen() {
                   <View style={styles.avatar}>
                     <Text style={styles.avatarText}>{u.initials}</Text>
                   </View>
-                  <View style={[styles.availDot, { backgroundColor: u.available ? "#00e5a0" : colors.textDim, borderColor: colors.card }]} />
+                  <View style={[styles.availDot, { backgroundColor: u.available ? "#18a06b" : colors.textDim, borderColor: colors.card }]} />
                 </View>
                 <View style={styles.userInfo}>
                   <Text style={[styles.userName, { color: colors.text }]}>{u.name}</Text>
@@ -134,7 +134,7 @@ export default function ExploreScreen() {
 
               <View style={styles.cardFooter}>
                 <View style={styles.ratingRow}>
-                  <Feather name="star" size={11} color="#ff6b35" />
+                  <Feather name="star" size={11} color="#e06030" />
                   <Text style={[styles.ratingText, { color: colors.textSecondary }]}>{u.rating} · {u.reviews} avaliações</Text>
                 </View>
                 <Pressable style={[styles.hireBtn, { opacity: u.available ? 1 : 0.4 }]} disabled={!u.available}>
@@ -155,45 +155,45 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
   logo: { fontFamily: "Sora_700Bold", fontSize: 24, letterSpacing: -0.5 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
   searchBar: {
     flexDirection: "row", alignItems: "center", gap: 10,
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16,
   },
-  searchInput: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 13 },
+  searchInput: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 13 },
   catScroll: { marginBottom: 24 },
   catContent: { gap: 8 },
   catChip: {
     flexDirection: "row", alignItems: "center", gap: 6,
     borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
   },
-  catChipActive: { backgroundColor: "#ff6b3520", borderColor: "#ff6b3550" },
-  catLabel: { fontFamily: "DMMono_400Regular", fontSize: 11 },
-  sectionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 2, marginBottom: 14 },
+  catChipActive: { backgroundColor: "#e0603020", borderColor: "#e0603050" },
+  catLabel: { fontFamily: "DMSans_400Regular", fontSize: 11 },
+  sectionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, marginBottom: 14 },
   cardList: { gap: 12 },
   userCard: { borderWidth: 1, borderRadius: 18, padding: 16, gap: 12 },
   userCardTop: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatarWrap: { position: "relative" },
   avatar: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: "#ff6b3518", borderWidth: 1.5, borderColor: "#ff6b3535",
+    backgroundColor: "#e0603018", borderWidth: 1.5, borderColor: "#e0603035",
     alignItems: "center", justifyContent: "center",
   },
-  avatarText: { fontFamily: "DMMono_500Medium", fontSize: 13, color: "#ff6b35" },
+  avatarText: { fontFamily: "DMSans_500Medium", fontSize: 13, color: "#e06030" },
   availDot: { position: "absolute", bottom: 1, right: 1, width: 10, height: 10, borderRadius: 5, borderWidth: 2 },
   userInfo: { flex: 1 },
   userName: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 2 },
   locationRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  locationText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  locationText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   rateWrap: { flexDirection: "row", alignItems: "baseline" },
-  rateText: { fontFamily: "DMMono_500Medium", fontSize: 16, color: "#ff6b35" },
-  rateUnit: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  rateText: { fontFamily: "DMSans_500Medium", fontSize: 16, color: "#e06030" },
+  rateUnit: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   skillScroll: {},
   skillChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, marginRight: 6 },
-  skillLabel: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  skillLabel: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   ratingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
-  ratingText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
-  hireBtn: { backgroundColor: "#ff6b35", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
+  ratingText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
+  hireBtn: { backgroundColor: "#e06030", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
   hireBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#fff" },
 });

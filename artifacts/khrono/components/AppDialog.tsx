@@ -63,7 +63,7 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
                       styles.btnText,
                       btn.style === "cancel"
                         ? { color: colors.textSecondary }
-                        : { color: "#ff6b35" },
+                        : { color: "#e06030" },
                     ]}
                   >
                     {btn.text}
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   message: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 13,
     lineHeight: 20,
   },
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     width: 1,
   },
   btnText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 13,
     letterSpacing: 0.5,
   },

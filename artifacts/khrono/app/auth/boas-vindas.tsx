@@ -64,7 +64,7 @@ export default function BoasVindasScreen() {
 
         <Animated.View style={[styles.textBlock, { opacity: fadeAnim, transform: [{ translateY: textSlide }] }]}>
           <Text style={[styles.greeting, { color: colors.text }]}>
-            Olá, <Text style={{ color: "#ff6b35" }}>{firstName}</Text>!
+            Olá, <Text style={{ color: "#e06030" }}>{firstName}</Text>!
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Sua conta foi criada com sucesso.</Text>
           <Text style={[styles.body, { color: colors.textMuted }]}>
@@ -80,7 +80,7 @@ export default function BoasVindasScreen() {
 
         <View style={styles.taglineRow}>
           <Text style={[styles.tagline, { color: colors.textMuted }]}>
-            Kr<Text style={{ color: "#ff6b35" }}>o</Text>no
+            Kr<Text style={{ color: "#e06030" }}>o</Text>no
           </Text>
           <Text style={[styles.taglineSub, { color: colors.textDim }]}>· app de contratos</Text>
         </View>
@@ -94,25 +94,25 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 },
   checkCircle: {
     width: 100, height: 100, borderRadius: 50,
-    backgroundColor: "#00e5a015", borderWidth: 2, borderColor: "#00e5a040",
+    backgroundColor: "#18a06b15", borderWidth: 2, borderColor: "#18a06b40",
     alignItems: "center", justifyContent: "center", marginBottom: 36,
   },
   checkRing: {
     position: "absolute", width: 100, height: 100, borderRadius: 50,
-    borderWidth: 2, borderColor: "#00e5a0",
+    borderWidth: 2, borderColor: "#18a06b",
   },
-  checkIcon: { fontSize: 42, color: "#00e5a0", lineHeight: 50 },
+  checkIcon: { fontSize: 42, color: "#18a06b", lineHeight: 50 },
   textBlock: { alignItems: "center", gap: 10 },
   greeting: { fontFamily: "Sora_700Bold", fontSize: 32, letterSpacing: -1, textAlign: "center" },
-  subtitle: { fontFamily: "DMMono_500Medium", fontSize: 13, textAlign: "center" },
-  body: { fontFamily: "DMMono_400Regular", fontSize: 12, textAlign: "center", lineHeight: 20, marginTop: 8 },
+  subtitle: { fontFamily: "DMSans_500Medium", fontSize: 13, textAlign: "center" },
+  body: { fontFamily: "DMSans_400Regular", fontSize: 12, textAlign: "center", lineHeight: 20, marginTop: 8 },
   footer: { paddingHorizontal: 28, gap: 20, alignItems: "center" },
   btn: {
-    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    backgroundColor: "#e06030", borderRadius: 14, height: 52,
     alignItems: "center", justifyContent: "center", width: "100%",
   },
   btnText: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: "#fff" },
   taglineRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   tagline: { fontFamily: "Sora_700Bold", fontSize: 14, letterSpacing: -0.5 },
-  taglineSub: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  taglineSub: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 });

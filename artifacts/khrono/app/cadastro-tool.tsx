@@ -142,7 +142,7 @@ export default function CadastroToolScreen() {
         title="Tool adicionada!"
         subtitle={
           <>
-            <Text style={{ color: "#ff6b35" }}>{toolName}</Text>
+            <Text style={{ color: "#e06030" }}>{toolName}</Text>
             {` foi cadastrada no seu perfil como ${available ? "disponível" : "indisponível"}.`}
           </>
         }
@@ -156,7 +156,7 @@ export default function CadastroToolScreen() {
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           {step !== 1 || step1Sub === "new_form" ? (
@@ -187,8 +187,8 @@ export default function CadastroToolScreen() {
             Escolha uma da lista ou escreva o nome do equipamento, ferramenta ou veículo que você usa.
           </Text>
 
-          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#ff6b3550" : colors.inputBorder }]}>
-            <Feather name="search" size={15} color={query.length > 0 ? "#ff6b35" : colors.textMuted} style={styles.inputIcon} />
+          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
+            <Feather name="search" size={15} color={query.length > 0 ? "#e06030" : colors.textMuted} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={query}
@@ -206,17 +206,17 @@ export default function CadastroToolScreen() {
 
           {showCreateOnly && (
             <Pressable
-              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#ff6b35" }]}
+              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
               onPress={handleCreateNew}
             >
-              <View style={[styles.createOptionIcon, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3540" }]}>
-                <Feather name="plus" size={18} color="#ff6b35" />
+              <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                <Feather name="plus" size={18} color="#e06030" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.createOptionLabel}>Criar tool</Text>
                 <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
               </View>
-              <Feather name="chevron-right" size={16} color="#ff6b35" />
+              <Feather name="chevron-right" size={16} color="#e06030" />
             </Pressable>
           )}
 
@@ -246,9 +246,9 @@ export default function CadastroToolScreen() {
                 style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 onPress={handleCreateNew}
               >
-                <Feather name="plus-circle" size={14} color="#ff6b35" />
+                <Feather name="plus-circle" size={14} color="#e06030" />
                 <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
-                  Criar "<Text style={{ color: "#ff6b35" }}>{query}</Text>" como nova tool
+                  Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como nova tool
                 </Text>
                 <Feather name="chevron-right" size={14} color={colors.chevron} />
               </Pressable>
@@ -292,17 +292,17 @@ export default function CadastroToolScreen() {
                     styles.typeChip,
                     {
                       backgroundColor: colors.card,
-                      borderColor: toolType === t.id ? "#ff6b35" : colors.cardBorder,
+                      borderColor: toolType === t.id ? "#e06030" : colors.cardBorder,
                       borderWidth: toolType === t.id ? 1.5 : 1,
                     },
                   ]}
                   onPress={() => setToolType(t.id)}
                 >
-                  <Feather name={t.icon} size={14} color={toolType === t.id ? "#ff6b35" : colors.textMuted} />
+                  <Feather name={t.icon} size={14} color={toolType === t.id ? "#e06030" : colors.textMuted} />
                   <Text style={[styles.typeChipText, { color: toolType === t.id ? colors.text : colors.textSecondary }]}>
                     {t.label}
                   </Text>
-                  {toolType === t.id && <Feather name="check" size={12} color="#ff6b35" />}
+                  {toolType === t.id && <Feather name="check" size={12} color="#e06030" />}
                 </Pressable>
               ))}
             </View>
@@ -328,7 +328,7 @@ export default function CadastroToolScreen() {
             contentContainerStyle={[styles.content, { paddingBottom: 40 }]}
             showsVerticalScrollIndicator={false}
           >
-            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#ff6b3530" }]}>
+            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#e0603030" }]}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <Text style={[styles.nameCardValue, { color: colors.text, flex: 1 }]}>{toolName}</Text>
                 <View style={[styles.typeBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
@@ -347,7 +347,7 @@ export default function CadastroToolScreen() {
             <Text style={[styles.stepTitle, { color: colors.text }]}>Detalhes</Text>
             <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
               Adicione informações extras sobre{" "}
-              <Text style={{ color: "#ff6b35" }}>{toolName}</Text> e defina a disponibilidade.
+              <Text style={{ color: "#e06030" }}>{toolName}</Text> e defina a disponibilidade.
             </Text>
 
             <TextInput
@@ -371,8 +371,8 @@ export default function CadastroToolScreen() {
               <Switch
                 value={available}
                 onValueChange={setAvailable}
-                trackColor={{ false: colors.surfaceBorder, true: "#ff6b3560" }}
-                thumbColor={available ? "#ff6b35" : colors.textMuted}
+                trackColor={{ false: colors.surfaceBorder, true: "#e0603060" }}
+                thumbColor={available ? "#e06030" : colors.textMuted}
               />
             </View>
           </ScrollView>
@@ -395,39 +395,39 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 24 },
   backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
+  stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
   progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#ff6b35", borderRadius: 2 },
+  progressFill: { height: "100%", backgroundColor: "#e06030", borderRadius: 2 },
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
   inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
-  listLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   templateList: { gap: 10 },
-  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
+  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 16, marginBottom: 20 },
   createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },
+  createOptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#e06030", marginBottom: 2 },
   createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
-  createOptionSmallText: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 12 },
-  fieldLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
+  createOptionSmallText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 12 },
+  fieldLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
   typeRow: { flexDirection: "row", gap: 8, marginBottom: 24 },
   typeChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 8 },
-  typeChipText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  typeChipText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
   nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },
   typeBadge: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  typeBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.5 },
+  typeBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.5 },
   textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 120, lineHeight: 22, marginBottom: 16 },
   availCard: { borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 },
   availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 3 },
-  availSub: { fontFamily: "DMMono_400Regular", fontSize: 10, lineHeight: 15 },
+  availSub: { fontFamily: "DMSans_400Regular", fontSize: 10, lineHeight: 15 },
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
   skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  skipBtnText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
-  primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
+  skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
+  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
 });

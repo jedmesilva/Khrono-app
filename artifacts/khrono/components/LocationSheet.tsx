@@ -86,9 +86,9 @@ const dot = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#00e5a040",
+    backgroundColor: "#18a06b40",
   },
-  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#00e5a0" },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#18a06b" },
 });
 
 function RadiusSlider({
@@ -152,7 +152,7 @@ function RadiusSlider({
       <View style={sliderStyles.labelRow}>
         <Text style={sliderStyles.label}>Raio de atendimento</Text>
         <View style={sliderStyles.valuePill}>
-          <Feather name="radio" size={10} color={"#ff6b35"} />
+          <Feather name="radio" size={10} color={"#e06030"} />
           <Text style={sliderStyles.valueText}>{formatRadius(displayMeters)}</Text>
         </View>
       </View>
@@ -197,17 +197,17 @@ function createSliderStyles(colors: ColorPalette) {
       flexDirection: "row",
       alignItems: "center",
       gap: 5,
-      backgroundColor: "#ff6b3515",
+      backgroundColor: "#e0603015",
       borderWidth: 1,
-      borderColor: "#ff6b3530",
+      borderColor: "#e0603030",
       borderRadius: 20,
       paddingHorizontal: 10,
       paddingVertical: 4,
     },
     valueText: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 12,
-      color: "#ff6b35",
+      color: "#e06030",
     },
     track: {
       height: 44,
@@ -227,7 +227,7 @@ function createSliderStyles(colors: ColorPalette) {
       left: 0,
       height: 4,
       borderRadius: 2,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
     },
     thumb: {
       position: "absolute",
@@ -236,7 +236,7 @@ function createSliderStyles(colors: ColorPalette) {
       borderRadius: THUMB_SIZE / 2,
       backgroundColor: colors.card,
       borderWidth: 2,
-      borderColor: "#ff6b35",
+      borderColor: "#e06030",
       alignItems: "center",
       justifyContent: "center",
       top: (44 - THUMB_SIZE) / 2,
@@ -245,14 +245,14 @@ function createSliderStyles(colors: ColorPalette) {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
     },
     rangeRow: {
       flexDirection: "row",
       justifyContent: "space-between",
     },
     rangeText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textDim,
     },
@@ -369,8 +369,8 @@ export function LocationSheet({
                   style={[
                     styles.optionIconWrap,
                     selectedMode === "realtime" && {
-                      backgroundColor: "#00e5a018",
-                      borderColor: "#00e5a030",
+                      backgroundColor: "#18a06b18",
+                      borderColor: "#18a06b30",
                     },
                   ]}
                 >
@@ -400,7 +400,7 @@ export function LocationSheet({
                     <Feather
                       name="navigation"
                       size={11}
-                      color={"#00e5a0"}
+                      color={"#18a06b"}
                     />
                     <Text style={styles.realtimeText}>
                       Belo Horizonte, MG · atualizado agora
@@ -423,15 +423,15 @@ export function LocationSheet({
                   style={[
                     styles.optionIconWrap,
                     selectedMode === "fixed" && {
-                      backgroundColor: "#ff6b3518",
-                      borderColor: "#ff6b3530",
+                      backgroundColor: "#e0603018",
+                      borderColor: "#e0603030",
                     },
                   ]}
                 >
                   <Feather
                     name="map-pin"
                     size={20}
-                    color={selectedMode === "fixed" ? "#ff6b35" : colors.textMuted}
+                    color={selectedMode === "fixed" ? "#e06030" : colors.textMuted}
                   />
                 </View>
                 <View style={styles.optionTexts}>
@@ -450,7 +450,7 @@ export function LocationSheet({
                     <View
                       style={[
                         styles.radioInner,
-                        { backgroundColor: "#ff6b35" },
+                        { backgroundColor: "#e06030" },
                       ]}
                     />
                   )}
@@ -523,7 +523,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 2,
     },
     subtitle: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 12,
       color: colors.textSecondary,
       lineHeight: 18,
@@ -539,12 +539,12 @@ function createStyles(colors: ColorPalette) {
       gap: 12,
     },
     optionCardActive: {
-      borderColor: "#00e5a040",
-      backgroundColor: "#00e5a006",
+      borderColor: "#18a06b40",
+      backgroundColor: "#18a06b06",
     },
     optionCardActiveBlue: {
-      borderColor: "#ff6b3540",
-      backgroundColor: "#ff6b3506",
+      borderColor: "#e0603040",
+      backgroundColor: "#e0603006",
     },
     optionTop: { flexDirection: "row", alignItems: "center", gap: 14 },
     optionIconWrap: {
@@ -566,7 +566,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 3,
     },
     optionDesc: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textSecondary,
       lineHeight: 16,
@@ -581,29 +581,29 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       flexShrink: 0,
     },
-    radioActive: { borderColor: "#00e5a0" },
-    radioActiveBlue: { borderColor: "#ff6b35" },
+    radioActive: { borderColor: "#18a06b" },
+    radioActiveBlue: { borderColor: "#e06030" },
     radioInner: {
       width: 9,
       height: 9,
       borderRadius: 5,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
     },
     realtimeInfo: {
       paddingTop: 4,
       borderTopWidth: 1,
-      borderTopColor: "#00e5a015",
+      borderTopColor: "#18a06b15",
     },
     realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     realtimeText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
-      color: "#00e5a0aa",
+      color: "#18a06baa",
     },
     addressWrap: {
       paddingTop: 4,
       borderTopWidth: 1,
-      borderTopColor: "#ff6b3515",
+      borderTopColor: "#e0603015",
       gap: 8,
     },
     addressInputRow: {
@@ -619,12 +619,12 @@ function createStyles(colors: ColorPalette) {
     },
     addressInput: {
       flex: 1,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 13,
       color: colors.text,
     },
     addressHint: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textMuted,
       lineHeight: 15,
@@ -648,13 +648,13 @@ function createStyles(colors: ColorPalette) {
     },
     infoText: {
       flex: 1,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textMuted,
       lineHeight: 16,
     },
     saveBtn: {
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
       borderRadius: 14,
       padding: 16,
       flexDirection: "row",

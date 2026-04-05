@@ -99,7 +99,7 @@ Utility scripts package. Each script is a `.ts` file in `src/` with a correspond
 
 Expo React Native mobile app (Khrono) — cross-platform time-based contracts app. Runs via `pnpm --filter @workspace/khrono run dev` (port 22861). The app allows users to create and manage time-based contracts, individually or with other users.
 
-**Design system:** dark background `#060606`, accent orange `#ff6b35`, accent green `#00e5a0`, fonts Sora + DM Mono.
+**Design system:** light background `#F8F5F2`, cards `#ffffff`, accent orange `#e06030`, accent green `#18a06b`, typography Sora (display/prices) + DM Sans (body/UI). Border radii: cards 24, icon containers 22, chips/badges 20.
 
 **Key screens & components:**
 - `app/(tabs)/index.tsx` — Home: live active contract cards with timers

@@ -87,7 +87,7 @@ export default function NomeScreen() {
 
           <View style={styles.content}>
             <View style={styles.iconWrap}>
-              <Feather name="smile" size={28} color="#ff6b35" />
+              <Feather name="smile" size={28} color="#e06030" />
             </View>
 
             <Text style={[styles.title, { color: colors.text }]}>Como você se chama?</Text>
@@ -153,25 +153,25 @@ const styles = StyleSheet.create({
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 20 },
   iconWrap: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 10 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 32, lineHeight: 20 },
-  label: { fontFamily: "DMMono_500Medium", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 13, marginBottom: 32, lineHeight: 20 },
+  label: { fontFamily: "DMSans_500Medium", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 },
   inputWrap: {
     flexDirection: "row", alignItems: "center",
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, height: 52,
   },
-  inputWrapActive: { borderColor: "#ff6b3540" },
+  inputWrapActive: { borderColor: "#e0603040" },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 16 },
   clearBtn: { padding: 4 },
   previewWrap: { marginTop: 20, padding: 16, borderRadius: 14, borderWidth: 1 },
-  previewLabel: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 },
+  previewLabel: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 },
   previewName: { fontFamily: "Sora_600SemiBold", fontSize: 18 },
   footer: { paddingHorizontal: 28 },
   btn: {
-    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    backgroundColor: "#e06030", borderRadius: 14, height: 52,
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
   },
   btnDisabled: { opacity: 0.3 },

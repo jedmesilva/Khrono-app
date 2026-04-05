@@ -80,22 +80,22 @@ export function ServiceSelectionSheet({
                   <Text style={[styles.serviceName, ativo && { color: colors.text }]}>{s.nome}</Text>
 
                   <View style={styles.metaRow}>
-                    <Feather name="star" size={10} color={"#ff6b35"} />
+                    <Feather name="star" size={10} color={"#e06030"} />
                     <Text style={styles.metaText}>{s.nota} · {s.avaliacoes} avaliações</Text>
                   </View>
 
                   {s.skill && (
                     <View style={styles.metaRow}>
-                      <Feather name="tool" size={9} color={"#ff6b3588"} />
-                      <Text style={[styles.metaText, { color: "#ff6b3588" }]}>{s.skill}</Text>
+                      <Feather name="tool" size={9} color={"#e0603088"} />
+                      <Text style={[styles.metaText, { color: "#e0603088" }]}>{s.skill}</Text>
                     </View>
                   )}
 
                   {s.tools && s.tools.length > 0 && (
                     <View style={styles.metaRow}>
-                      <Feather name="key" size={9} color={"#00e5a088"} />
+                      <Feather name="key" size={9} color={"#18a06b88"} />
                       <Text
-                        style={[styles.metaText, { color: "#00e5a088" }]}
+                        style={[styles.metaText, { color: "#18a06b88" }]}
                         numberOfLines={1}
                       >
                         {s.tools.join(", ")}
@@ -104,7 +104,7 @@ export function ServiceSelectionSheet({
                   )}
                 </View>
 
-                <Text style={[styles.serviceRate, ativo && { color: "#ff6b35" }]}>
+                <Text style={[styles.serviceRate, ativo && { color: "#e06030" }]}>
                   R${valor}/h
                 </Text>
               </Pressable>
@@ -161,12 +161,12 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
-      borderRadius: 16,
+      borderRadius: 24,
       padding: 16,
     },
     serviceRowActive: {
-      backgroundColor: "#ff6b3508",
-      borderColor: "#ff6b3530",
+      backgroundColor: "#e0603008",
+      borderColor: "#e0603030",
     },
     radio: {
       width: 18,
@@ -179,13 +179,13 @@ function createStyles(colors: ColorPalette) {
       flexShrink: 0,
     },
     radioActive: {
-      borderColor: "#ff6b35",
+      borderColor: "#e06030",
     },
     radioInner: {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
     },
     serviceName: {
       fontFamily: "Sora_600SemiBold",
@@ -200,12 +200,12 @@ function createStyles(colors: ColorPalette) {
       marginTop: 3,
     },
     metaText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textSecondary,
     },
     serviceRate: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 14,
       color: colors.textSecondary,
       flexShrink: 0,

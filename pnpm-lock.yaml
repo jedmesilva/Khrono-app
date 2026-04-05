@@ -218,6 +218,9 @@ importers:
       '@expo-google-fonts/dm-mono':
         specifier: ^0.4.2
         version: 0.4.2
+      '@expo-google-fonts/dm-sans':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@expo-google-fonts/sora':
         specifier: ^0.4.2
         version: 0.4.2
@@ -1144,6 +1147,9 @@ packages:
 
   '@expo-google-fonts/dm-mono@0.4.2':
     resolution: {integrity: sha512-loMaZOkQRs1r7yt4rN39zcr9e0J+smwnSx929yuODkuiPfsY4PaW18C9SEZ0BvXfcBKoRhatGoIBl8V2MOYVPQ==}
+
+  '@expo-google-fonts/dm-sans@0.4.2':
+    resolution: {integrity: sha512-e/fLH5aCJzkEenz7axvEn8N7IJAKhUwNjIxS75h9j+Ip1M9S7d22M19gJN3A7QW4egVkBJRyQh1hQFhngQn9yA==}
 
   '@expo-google-fonts/inter@0.4.2':
     resolution: {integrity: sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ==}
@@ -6400,6 +6406,8 @@ snapshots:
     optional: true
 
   '@expo-google-fonts/dm-mono@0.4.2': {}
+
+  '@expo-google-fonts/dm-sans@0.4.2': {}
 
   '@expo-google-fonts/inter@0.4.2': {}
 

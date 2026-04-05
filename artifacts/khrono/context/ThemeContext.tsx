@@ -35,59 +35,59 @@ export type ColorPalette = {
   chevron: string;
 };
 
-const ACCENT = "#ff6b35";
-const GREEN = "#00e5a0";
-
-export const darkColors: ColorPalette = {
-  accent: ACCENT,
-  accentGreen: GREEN,
-  background: "#060606",
-  card: "#0a0a0a",
-  cardBorder: "#1a1a1a",
-  surface: "#111111",
-  surfaceBorder: "#1e1e1e",
-  text: "#ffffff",
-  textSecondary: "#888888",
-  textMuted: "#444444",
-  textDim: "#333333",
-  tabIconDefault: "#444444",
-  tint: ACCENT,
-  sheetBg: "#0d0d0d",
-  sheetBorder: "#1a1a1a",
-  handleColor: "#2a2a2a",
-  rowPressed: "#111111",
-  divider: "#141414",
-  inputBg: "#0d0d0d",
-  inputBorder: "#1e1e1e",
-  menuIconBg: "#161616",
-  avatarBg: "#161616",
-  chevron: "#2a2a2a",
-};
+const ACCENT = "#e06030";
+const GREEN = "#18a06b";
 
 export const lightColors: ColorPalette = {
   accent: ACCENT,
   accentGreen: GREEN,
-  background: "#f9f9f9",
+  background: "#F8F5F2",
   card: "#ffffff",
-  cardBorder: "#efefef",
-  surface: "#f5f5f5",
-  surfaceBorder: "#eaeaea",
+  cardBorder: "#edeae6",
+  surface: "#f2f0ed",
+  surfaceBorder: "#e8e4df",
   text: "#1a1a1a",
-  textSecondary: "#7a7a7a",
-  textMuted: "#b5b5b5",
-  textDim: "#d0d0d0",
+  textSecondary: "#444444",
+  textMuted: "#888888",
+  textDim: "#aaaaaa",
   tabIconDefault: "#aaaaaa",
   tint: ACCENT,
   sheetBg: "#ffffff",
-  sheetBorder: "#efefef",
-  handleColor: "#dedede",
-  rowPressed: "#f5f5f5",
-  divider: "#f2f2f2",
-  inputBg: "#f5f5f5",
-  inputBorder: "#e8e8e8",
-  menuIconBg: "#f2f2f2",
-  avatarBg: "#eeeeee",
-  chevron: "#dedede",
+  sheetBorder: "#f2f0ee",
+  handleColor: "#d8d4cf",
+  rowPressed: "#f2f0ed",
+  divider: "#f2f0ee",
+  inputBg: "#f2f0ed",
+  inputBorder: "#e8e4df",
+  menuIconBg: "#f2f0ed",
+  avatarBg: "#ede9e4",
+  chevron: "#d0ccc8",
+};
+
+export const darkColors: ColorPalette = {
+  accent: ACCENT,
+  accentGreen: GREEN,
+  background: "#100e0c",
+  card: "#1a1714",
+  cardBorder: "#2a2520",
+  surface: "#211e1a",
+  surfaceBorder: "#302b26",
+  text: "#f0ebe6",
+  textSecondary: "#a09890",
+  textMuted: "#706860",
+  textDim: "#504840",
+  tabIconDefault: "#706860",
+  tint: ACCENT,
+  sheetBg: "#1a1714",
+  sheetBorder: "#2a2520",
+  handleColor: "#3a3530",
+  rowPressed: "#211e1a",
+  divider: "#231f1c",
+  inputBg: "#161310",
+  inputBorder: "#302b26",
+  menuIconBg: "#211e1a",
+  avatarBg: "#251f1a",
+  chevron: "#3a3530",
 };
 
 type ThemeContextValue = {
@@ -97,17 +97,17 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
-  isDark: true,
-  colors: darkColors,
+  isDark: false,
+  colors: lightColors,
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (val === "light") setIsDark(false);
+      if (val === "dark") setIsDark(true);
     });
   }, []);
 

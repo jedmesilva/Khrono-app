@@ -28,7 +28,7 @@ function getStrength(pw: string): { level: number; label: string; color: string 
   if (score <= 1) return { level: 1, label: "fraca", color: "#ff4444" };
   if (score === 2) return { level: 2, label: "média", color: "#ffaa00" };
   if (score === 3) return { level: 3, label: "boa", color: "#00c47a" };
-  return { level: 4, label: "forte", color: "#00e5a0" };
+  return { level: 4, label: "forte", color: "#18a06b" };
 }
 
 export default function NovaSenhaScreen() {
@@ -102,7 +102,7 @@ export default function NovaSenhaScreen() {
 
           <View style={styles.content}>
             <View style={styles.iconWrap}>
-              <Feather name="lock" size={28} color="#ff6b35" />
+              <Feather name="lock" size={28} color="#e06030" />
             </View>
 
             <Text style={[styles.title, { color: colors.text }]}>Nova senha</Text>
@@ -168,7 +168,7 @@ export default function NovaSenhaScreen() {
             )}
             {confirmOk && (
               <View style={styles.matchRow}>
-                <Feather name="check" size={12} color="#00e5a0" />
+                <Feather name="check" size={12} color="#18a06b" />
                 <Text style={styles.matchText}>Senhas coincidem</Text>
               </View>
             )}
@@ -201,33 +201,33 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 28, paddingTop: 20 },
   iconWrap: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 10 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 32, lineHeight: 20 },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 13, marginBottom: 32, lineHeight: 20 },
   label: {
-    fontFamily: "DMMono_500Medium", fontSize: 11,
+    fontFamily: "DMSans_500Medium", fontSize: 11,
     letterSpacing: 1, textTransform: "uppercase", marginBottom: 8,
   },
   inputWrap: {
     flexDirection: "row", alignItems: "center",
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, height: 52,
   },
-  input: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 15 },
+  input: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 15 },
   eyeBtn: { padding: 4 },
   strengthWrap: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
   strengthBars: { flexDirection: "row", gap: 4, flex: 1 },
   strengthBar: { flex: 1, height: 3, borderRadius: 2 },
-  strengthLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.5 },
+  strengthLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.5 },
   errorText: {
-    fontFamily: "DMMono_400Regular", fontSize: 11,
+    fontFamily: "DMSans_400Regular", fontSize: 11,
     color: "#ff4444", marginTop: 8, paddingLeft: 4,
   },
   matchRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 8, paddingLeft: 4 },
-  matchText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#00e5a0" },
+  matchText: { fontFamily: "DMSans_400Regular", fontSize: 11, color: "#18a06b" },
   btn: {
-    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    backgroundColor: "#e06030", borderRadius: 14, height: 52,
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
   },
   btnDisabled: { opacity: 0.3 },

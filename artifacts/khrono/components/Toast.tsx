@@ -12,9 +12,9 @@ interface ToastProps {
 }
 
 const CONFIGS: Record<ToastType, { bg: string; icon: keyof typeof Feather.glyphMap }> = {
-  success: { bg: "#00e5a0", icon: "check-circle" },
+  success: { bg: "#18a06b", icon: "check-circle" },
   error:   { bg: "#ff3b30", icon: "x-circle" },
-  info:    { bg: "#ff6b35", icon: "info" },
+  info:    { bg: "#e06030", icon: "info" },
 };
 
 export function Toast({ visible, message, type = "success" }: ToastProps) {

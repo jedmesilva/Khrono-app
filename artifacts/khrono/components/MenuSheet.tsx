@@ -244,7 +244,7 @@ const staticStyles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 12,
   },
   userInfo: {
@@ -255,7 +255,7 @@ const staticStyles = StyleSheet.create({
     fontSize: 15,
   },
   userSub: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     marginTop: 2,
     letterSpacing: 0.5,
@@ -292,7 +292,7 @@ const staticStyles = StyleSheet.create({
     fontSize: 14,
   },
   menuSublabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     marginTop: 2,
   },

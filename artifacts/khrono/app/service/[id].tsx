@@ -24,7 +24,7 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
   return (
     <View style={{ flexDirection: "row", gap: 2 }}>
       {[1, 2, 3, 4, 5].map((s) => (
-        <Feather key={s} name="star" size={size} color="#ff6b35" style={{ opacity: s <= rating ? 1 : 0.2 }} />
+        <Feather key={s} name="star" size={size} color="#e06030" style={{ opacity: s <= rating ? 1 : 0.2 }} />
       ))}
     </View>
   );
@@ -47,7 +47,7 @@ export default function ServiceDetailScreen() {
     return (
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Service não encontrado.</Text>
       </View>
@@ -111,7 +111,7 @@ export default function ServiceDetailScreen() {
         {/* Header: voltar + nome + verificado + mais opções */}
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#ff6b35" />
+            <Feather name="arrow-left" size={18} color="#e06030" />
           </Pressable>
           <View style={styles.headerNameWrap}>
             <Text style={[styles.serviceTitle, { color: active ? colors.text : colors.textDim }]} numberOfLines={2}>
@@ -139,19 +139,19 @@ export default function ServiceDetailScreen() {
             )}
             <View style={[
               styles.statusBadge,
-              { backgroundColor: active ? "#00e5a012" : colors.surface, borderColor: active ? "#00e5a030" : colors.surfaceBorder },
+              { backgroundColor: active ? "#18a06b12" : colors.surface, borderColor: active ? "#18a06b30" : colors.surfaceBorder },
             ]}>
-              <View style={[styles.statusDot, { backgroundColor: active ? "#00e5a0" : colors.textDim }]} />
-              <Text style={[styles.statusText, { color: active ? "#00e5a0" : colors.textDim }]}>
+              <View style={[styles.statusDot, { backgroundColor: active ? "#18a06b" : colors.textDim }]} />
+              <Text style={[styles.statusText, { color: active ? "#18a06b" : colors.textDim }]}>
                 {active ? "ativo" : "inativo"}
               </Text>
             </View>
           </View>
           <Pressable
-            style={[styles.toggleBtn, { borderColor: active ? "#ff6b3540" : colors.surfaceBorder }, active && { backgroundColor: "#ff6b3510" }]}
+            style={[styles.toggleBtn, { borderColor: active ? "#e0603040" : colors.surfaceBorder }, active && { backgroundColor: "#e0603010" }]}
             onPress={() => toggleActive(service.id)}
           >
-            <Text style={[styles.toggleText, { color: active ? "#ff6b35" : colors.textDim }]}>
+            <Text style={[styles.toggleText, { color: active ? "#e06030" : colors.textDim }]}>
               {active ? "desativar" : "ativar"}
             </Text>
           </Pressable>
@@ -160,7 +160,7 @@ export default function ServiceDetailScreen() {
         {/* Preço em destaque */}
         <View style={[styles.priceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>VALOR POR HORA</Text>
-          <Text style={[styles.priceValue, { color: active ? "#ff6b35" : colors.textDim }]}>R${service.hourlyRate}<Text style={styles.priceUnit}>/h</Text></Text>
+          <Text style={[styles.priceValue, { color: active ? "#e06030" : colors.textDim }]}>R${service.hourlyRate}<Text style={styles.priceUnit}>/h</Text></Text>
         </View>
 
         {/* Detalhes */}
@@ -186,8 +186,8 @@ export default function ServiceDetailScreen() {
           {/* Skill */}
           {skill ? (
             <View style={styles.compItem}>
-              <View style={[styles.compIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3528" }]}>
-                <Feather name="star" size={13} color="#ff6b35" />
+              <View style={[styles.compIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#e0603028" }]}>
+                <Feather name="star" size={13} color="#e06030" />
               </View>
               <View style={styles.compBody}>
                 <Text style={[styles.compTypeLabel, { color: colors.textDim }]}>SKILL</Text>
@@ -214,8 +214,8 @@ export default function ServiceDetailScreen() {
             <Text style={[styles.compSectionLabel, { color: colors.textDim }]}>TOOLS</Text>
             {tools.length > 0 ? tools.map((tool) => (
               <View key={tool.id} style={styles.compItem}>
-                <View style={[styles.compIconWrap, { backgroundColor: tool.available ? "#ff6b3312" : colors.surface, borderColor: tool.available ? "#ff6b3528" : colors.surfaceBorder }]}>
-                  <Feather name={tool.icon} size={13} color={tool.available ? "#ff6b35" : colors.textDim} />
+                <View style={[styles.compIconWrap, { backgroundColor: tool.available ? "#ff6b3312" : colors.surface, borderColor: tool.available ? "#e0603028" : colors.surfaceBorder }]}>
+                  <Feather name={tool.icon} size={13} color={tool.available ? "#e06030" : colors.textDim} />
                 </View>
                 <View style={styles.compBody}>
                   <View style={styles.compNameRow}>
@@ -346,61 +346,61 @@ const styles = StyleSheet.create({
 
   metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 16 },
   metaBadgesLeft: { flexDirection: "row", alignItems: "center", gap: 6, flex: 1, flexWrap: "wrap" },
-  categoryTag: { backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
-  categoryTagText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35" },
+  categoryTag: { backgroundColor: "#e0603012", borderWidth: 1, borderColor: "#e0603028", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
+  categoryTagText: { fontFamily: "DMSans_500Medium", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", color: "#e06030" },
   statusBadge: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
   statusDot: { width: 5, height: 5, borderRadius: 3 },
-  statusText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.5 },
+  statusText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.5 },
   toggleBtn: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, flexShrink: 0 },
-  toggleText: { fontFamily: "DMMono_500Medium", fontSize: 9, letterSpacing: 0.8 },
+  toggleText: { fontFamily: "DMSans_500Medium", fontSize: 9, letterSpacing: 0.8 },
 
-  priceCard: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 18, paddingVertical: 14, marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  priceLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
-  priceValue: { fontFamily: "DMMono_500Medium", fontSize: 28 },
-  priceUnit: { fontFamily: "DMMono_400Regular", fontSize: 14 },
+  priceCard: { borderWidth: 1, borderRadius: 24, paddingHorizontal: 18, paddingVertical: 14, marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  priceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
+  priceValue: { fontFamily: "DMSans_500Medium", fontSize: 28 },
+  priceUnit: { fontFamily: "DMSans_400Regular", fontSize: 14 },
 
-  card: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 12 },
-  cardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 },
+  card: { borderWidth: 1, borderRadius: 24, padding: 18, marginBottom: 12 },
+  cardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 },
 
   detailsGrid: { flexDirection: "row", alignItems: "center" },
   detailItem: { flex: 1 },
-  detailItemLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
+  detailItemLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
   detailItemValue: { fontFamily: "Sora_600SemiBold", fontSize: 14 },
   detailDivider: { width: 1, height: 36, marginHorizontal: 16 },
 
   compItem: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 2 },
   compIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 },
   compBody: { flex: 1, gap: 2 },
-  compTypeLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase" },
+  compTypeLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase" },
   compNameRow: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" },
   compName: { fontFamily: "Sora_600SemiBold", fontSize: 13, flexShrink: 1 },
-  compDetail: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  compEmpty: { fontFamily: "DMMono_400Regular", fontSize: 11, alignSelf: "center" },
+  compDetail: { fontFamily: "DMSans_400Regular", fontSize: 10 },
+  compEmpty: { fontFamily: "DMSans_400Regular", fontSize: 11, alignSelf: "center" },
   compDivider: { borderTopWidth: 1, marginTop: 14, paddingTop: 14, gap: 10 },
-  compSectionLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
+  compSectionLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
 
   performanceGrid: { gap: 10, marginBottom: 16 },
-  perfCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  perfCard: { borderWidth: 1, borderRadius: 24, padding: 16 },
   perfCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  perfCardValue: { fontFamily: "DMMono_500Medium", fontSize: 26 },
-  perfCardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
+  perfCardValue: { fontFamily: "DMSans_500Medium", fontSize: 26 },
+  perfCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
   perfExpanded: { marginTop: 16, borderTopWidth: 1, paddingTop: 14 },
   perfExpandedInner: { gap: 8, alignItems: "flex-start" },
-  perfExpandedText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  perfExpandedText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 
   reviewItem: { paddingVertical: 12 },
   reviewItemHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   reviewAuthor: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
   reviewText: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18, marginBottom: 6 },
-  reviewDate: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  reviewDate: { fontFamily: "DMSans_400Regular", fontSize: 10 },
 
   contractItem: { paddingVertical: 10 },
   contractRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
   contractClient: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
-  contractValue: { fontFamily: "DMMono_500Medium", fontSize: 12, color: "#00e5a0" },
-  contractMeta: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  contractValue: { fontFamily: "DMSans_500Medium", fontSize: 12, color: "#18a06b" },
+  contractMeta: { fontFamily: "DMSans_400Regular", fontSize: 10 },
 
   emptyPerf: { alignItems: "center", paddingVertical: 50, gap: 10 },
-  emptyPerfText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
-  emptyPerfSub: { fontFamily: "DMMono_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
+  emptyPerfText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
+  emptyPerfSub: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
 });

@@ -81,7 +81,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
+            K<Text style={{ color: "#e06030" }}>r</Text>ono
           </Text>
           <View style={styles.headerActions}>
             <Pressable
@@ -119,9 +119,9 @@ export default function HomeScreen() {
           <StatsBar
             style={styles.summaryBar}
             items={[
-              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: "#ff6b35" },
+              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: "#e06030" },
               { label: "ATIVOS", value: activeContracts.length, align: "center" },
-              { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: "#00e5a0", align: "flex-end" },
+              { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: "#18a06b", align: "flex-end" },
             ]}
           />
         )}
@@ -207,13 +207,13 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: "#ff6b35",
+    backgroundColor: "#e06030",
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
   },
   badgeText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 8,
     color: "#fff",
     fontWeight: "700",
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   sectionLabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 2,
     textTransform: "uppercase",
@@ -240,11 +240,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 14,
   },
   emptySubtext: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     textAlign: "center",
     maxWidth: 220,

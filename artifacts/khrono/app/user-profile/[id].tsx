@@ -38,8 +38,8 @@ function PulsingDot({ size = 8 }: { size?: number }) {
 
   return (
     <View style={{ width: size * 2.5, height: size * 2.5, alignItems: "center", justifyContent: "center" }}>
-      <Animated.View style={[{ position: "absolute", width: size * 2, height: size * 2, borderRadius: size, backgroundColor: "#00e5a040" }, ringStyle]} />
-      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: "#00e5a0" }} />
+      <Animated.View style={[{ position: "absolute", width: size * 2, height: size * 2, borderRadius: size, backgroundColor: "#18a06b40" }, ringStyle]} />
+      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: "#18a06b" }} />
     </View>
   );
 }
@@ -51,8 +51,8 @@ function ServiceAreaCard({ provider, colors }: { provider: ProviderProfile; colo
   return (
     <View style={[areaStyles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
       <View style={areaStyles.topRow}>
-        <View style={[areaStyles.iconWrap, isRealtime ? { backgroundColor: "#00e5a015", borderColor: "#00e5a025" } : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" }]}>
-          {isRealtime ? <PulsingDot size={7} /> : <Feather name="map-pin" size={14} color="#ff6b35" />}
+        <View style={[areaStyles.iconWrap, isRealtime ? { backgroundColor: "#18a06b15", borderColor: "#18a06b25" } : { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
+          {isRealtime ? <PulsingDot size={7} /> : <Feather name="map-pin" size={14} color="#e06030" />}
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[areaStyles.areaLabel, { color: colors.textSecondary }]}>Área de atendimento</Text>
@@ -61,9 +61,9 @@ function ServiceAreaCard({ provider, colors }: { provider: ProviderProfile; colo
             {" · raio "}{formatRadius(provider.serviceRadius)}
           </Text>
         </View>
-        <View style={[areaStyles.availBadge, isAvailable ? { backgroundColor: "#00e5a015", borderColor: "#00e5a030" } : { backgroundColor: "#ff3b3015", borderColor: "#ff3b3030" }]}>
-          <View style={[areaStyles.availDot, { backgroundColor: isAvailable ? "#00e5a0" : "#ff3b30" }]} />
-          <Text style={[areaStyles.availText, { color: isAvailable ? "#00e5a0" : "#ff3b30" }]}>
+        <View style={[areaStyles.availBadge, isAvailable ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" } : { backgroundColor: "#ff3b3015", borderColor: "#ff3b3030" }]}>
+          <View style={[areaStyles.availDot, { backgroundColor: isAvailable ? "#18a06b" : "#ff3b30" }]} />
+          <Text style={[areaStyles.availText, { color: isAvailable ? "#18a06b" : "#ff3b30" }]}>
             {isAvailable ? "Disponível" : "Fora da área"}
           </Text>
         </View>
@@ -83,16 +83,16 @@ function ServiceAreaCard({ provider, colors }: { provider: ProviderProfile; colo
 }
 
 const areaStyles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 16, padding: 14, marginBottom: 28, gap: 10 },
+  card: { borderWidth: 1, borderRadius: 24, padding: 14, marginBottom: 28, gap: 10 },
   topRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   iconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   areaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 12, marginBottom: 2 },
-  areaDesc: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  areaDesc: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   availBadge: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 9, paddingVertical: 4, flexShrink: 0 },
   availDot: { width: 5, height: 5, borderRadius: 3 },
-  availText: { fontFamily: "DMMono_500Medium", fontSize: 10 },
+  availText: { fontFamily: "DMSans_500Medium", fontSize: 10 },
   warningRow: { flexDirection: "row", alignItems: "flex-start", gap: 7, backgroundColor: "#ff3b3010", borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 10, padding: 10 },
-  warningText: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 10, color: "#ff3b30cc", lineHeight: 15 },
+  warningText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 10, color: "#ff3b30cc", lineHeight: 15 },
 });
 
 export default function UserProfileScreen() {
@@ -109,7 +109,7 @@ export default function UserProfileScreen() {
     return (
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Perfil não encontrado.</Text>
       </View>
@@ -133,7 +133,7 @@ export default function UserProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#ff6b35" />
+            <Feather name="arrow-left" size={18} color="#e06030" />
           </Pressable>
           <Text style={[styles.screenLabel, { color: colors.textMuted }]}>perfil</Text>
         </View>
@@ -193,7 +193,7 @@ export default function UserProfileScreen() {
             <View key={skill.id} style={[styles.skillCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <View style={styles.skillHeader}>
                 <View style={styles.skillIconWrap}>
-                  <Feather name="star" size={13} color="#ff6b35" />
+                  <Feather name="star" size={13} color="#e06030" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.skillNameRow}>
@@ -220,7 +220,7 @@ export default function UserProfileScreen() {
           {provider.tools.map((tool) => (
             <View key={tool.id} style={[styles.toolCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
               <View style={styles.toolIconWrap}>
-                <Feather name={tool.icon === "truck" ? "truck" : tool.icon === "tool" ? "tool" : "box"} size={14} color="#00e5a0" />
+                <Feather name={tool.icon === "truck" ? "truck" : tool.icon === "tool" ? "tool" : "box"} size={14} color="#18a06b" />
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.toolNameRow}>
@@ -232,7 +232,7 @@ export default function UserProfileScreen() {
                 <Text style={[styles.toolType, { color: colors.textMuted }]}>{tool.type}</Text>
                 <Text style={[styles.toolDetails, { color: colors.textSecondary }]}>{tool.details}</Text>
               </View>
-              <View style={[styles.availDot, { backgroundColor: tool.available ? "#00e5a0" : colors.textDim }]} />
+              <View style={[styles.availDot, { backgroundColor: tool.available ? "#18a06b" : colors.textDim }]} />
             </View>
           ))}
         </View>
@@ -249,41 +249,41 @@ const styles = StyleSheet.create({
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 24 },
   backBtn: { padding: 4, flexShrink: 0 },
-  screenLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  screenLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
   profileCard: { borderWidth: 1, borderRadius: 20, padding: 24, alignItems: "center", marginBottom: 14 },
   avatarWrap: { marginBottom: 16 },
-  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#ff6b3515", borderWidth: 2, borderColor: "#ff6b3530", alignItems: "center", justifyContent: "center" },
-  avatarText: { fontFamily: "Sora_700Bold", fontSize: 24, color: "#ff6b35" },
+  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#e0603015", borderWidth: 2, borderColor: "#e0603030", alignItems: "center", justifyContent: "center" },
+  avatarText: { fontFamily: "Sora_700Bold", fontSize: 24, color: "#e06030" },
   profileName: { fontFamily: "Sora_700Bold", fontSize: 20, marginBottom: 8, textAlign: "center" },
   statsRow: { flexDirection: "row", alignItems: "center", width: "100%", paddingTop: 16, borderTopWidth: 1 },
   statItem: { flex: 1, alignItems: "center", gap: 4 },
   statDivider: { width: 1, height: 28 },
-  statValue: { fontFamily: "DMMono_500Medium", fontSize: 14 },
-  statLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase" },
-  sectionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
-  serviceCard: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 12 },
+  statValue: { fontFamily: "DMSans_500Medium", fontSize: 14 },
+  statLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase" },
+  sectionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  serviceCard: { borderWidth: 1, borderRadius: 24, padding: 16, gap: 12 },
   serviceTop: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   serviceName: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 4 },
   serviceMeta: { flexDirection: "row", alignItems: "center", gap: 5 },
-  serviceMetaText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  serviceMetaDot: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 13, color: "#ff6b35" },
+  serviceMetaText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
+  serviceMetaDot: { fontFamily: "DMSans_400Regular", fontSize: 10 },
+  serviceRate: { fontFamily: "DMSans_500Medium", fontSize: 13, color: "#e06030" },
   serviceComposition: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#ff6b3510", borderWidth: 1, borderColor: "#ff6b3520", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#ff6b35cc" },
-  skillCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#e0603010", borderWidth: 1, borderColor: "#e0603020", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  compositionChipText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#e06030cc" },
+  skillCard: { borderWidth: 1, borderRadius: 24, padding: 16 },
   skillHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  skillIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#ff6b3525", backgroundColor: "#ff6b3510", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  skillIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#e0603025", backgroundColor: "#e0603010", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   skillNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
-  skillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff6b35dd", flex: 1 },
+  skillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#e06030dd", flex: 1 },
   skillDesc: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
-  newBadge: { backgroundColor: "#1a2a1a", borderWidth: 1, borderColor: "#00e5a030", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  newBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#00e5a0" },
-  toolCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  toolIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#00e5a025", backgroundColor: "#00e5a010", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  newBadge: { backgroundColor: "#1a2a1a", borderWidth: 1, borderColor: "#18a06b30", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
+  newBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#18a06b" },
+  toolCard: { borderWidth: 1, borderRadius: 24, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  toolIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#18a06b25", backgroundColor: "#18a06b10", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   toolNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  toolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#00e5a0dd", flex: 1 },
-  toolType: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },
+  toolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#18a06bdd", flex: 1 },
+  toolType: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },
   toolDetails: { fontFamily: "Sora_400Regular", fontSize: 11 },
   availDot: { width: 7, height: 7, borderRadius: 4, marginTop: 4, flexShrink: 0 },
 });

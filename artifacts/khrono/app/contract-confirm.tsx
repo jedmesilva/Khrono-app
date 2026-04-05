@@ -222,10 +222,10 @@ export default function ContractConfirmScreen() {
           style={styles.backBtn}
           hitSlop={12}
         >
-          <Feather name="arrow-left" size={20} color={"#ff6b35"} />
+          <Feather name="arrow-left" size={20} color={"#e06030"} />
         </Pressable>
         <Text style={styles.headerTitle}>
-          K<Text style={{ color: "#ff6b35" }}>r</Text>ono
+          K<Text style={{ color: "#e06030" }}>r</Text>ono
         </Text>
       </View>
 
@@ -268,9 +268,9 @@ export default function ContractConfirmScreen() {
                 onPress={() => router.push(`/user-profile/${provider.profileId}` as any)}
                 style={styles.verPerfilBtn}
               >
-                <Feather name="user" size={11} color={"#ff6b3599"} />
+                <Feather name="user" size={11} color={"#e0603099"} />
                 <Text style={styles.verPerfilText}>ver perfil completo</Text>
-                <Feather name="chevron-right" size={11} color={"#ff6b3560"} />
+                <Feather name="chevron-right" size={11} color={"#e0603060"} />
               </Pressable>
             )}
           </View>
@@ -285,19 +285,19 @@ export default function ContractConfirmScreen() {
             style={[styles.scheduleBtn, servico && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, servico && styles.scheduleIconActive]}>
-              <Feather name="tool" size={16} color={servico ? "#ff6b35" : colors.textMuted} />
+              <Feather name="tool" size={16} color={servico ? "#e06030" : colors.textMuted} />
             </View>
             <View style={{ flex: 1 }}>
               {servico ? (
                 <>
                   <Text style={[styles.scheduleLabel, { color: colors.text }]}>{servico.nome}</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-                    <Feather name="star" size={9} color={"#ff6b35"} />
+                    <Feather name="star" size={9} color={"#e06030"} />
                     <Text style={styles.scheduleSub}>{servico.nota} · {servico.avaliacoes} avaliações</Text>
                     {servico.skill && (
                       <>
                         <Text style={[styles.scheduleSub, { color: colors.textDim }]}>·</Text>
-                        <Text style={[styles.scheduleSub, { color: "#ff6b3588" }]}>{servico.skill}</Text>
+                        <Text style={[styles.scheduleSub, { color: "#e0603088" }]}>{servico.skill}</Text>
                       </>
                     )}
                   </View>
@@ -310,7 +310,7 @@ export default function ContractConfirmScreen() {
               )}
             </View>
             {servico && (
-              <Text style={[styles.optionRate, { color: "#ff6b35" }]}>
+              <Text style={[styles.optionRate, { color: "#e06030" }]}>
                 R${(provider.valorBase * servico.multiplicador).toFixed(0)}/h
               </Text>
             )}
@@ -328,7 +328,7 @@ export default function ContractConfirmScreen() {
             style={[styles.scheduleBtn, agendado && styles.scheduleBtnActive]}
           >
             <View style={[styles.scheduleIcon, agendado && styles.scheduleIconActive]}>
-              <Feather name="calendar" size={16} color={agendado ? "#ff6b35" : colors.textMuted} />
+              <Feather name="calendar" size={16} color={agendado ? "#e06030" : colors.textMuted} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.scheduleLabel, agendado && { color: colors.text }]}>
@@ -395,11 +395,11 @@ export default function ContractConfirmScreen() {
                 onPress={() => setCustomAtivo(c => !c)}
                 style={[styles.customChip, customAtivo && styles.customChipActive]}
               >
-                <Text style={[styles.customChipText, customAtivo && { color: "#ff6b35" }]}>
+                <Text style={[styles.customChipText, customAtivo && { color: "#e06030" }]}>
                   Personalizado
                 </Text>
                 {customAtivo && (
-                  <Text style={{ color: "#ff6b35", fontSize: 12, fontFamily: "DMMono_400Regular" }}>
+                  <Text style={{ color: "#e06030", fontSize: 12, fontFamily: "DMSans_400Regular" }}>
                     {customHoras === 0 && customMinutos === 0
                       ? "defina abaixo"
                       : `${customHoras > 0 ? customHoras + "h " : ""}${customMinutos > 0 ? customMinutos + "min" : ""}`}
@@ -472,14 +472,14 @@ export default function ContractConfirmScreen() {
             style={[
               styles.scheduleBtn,
               metodoPagamento && styles.scheduleBtnActive,
-              metodoPagamento === "pix" && { borderColor: "#00e5a035", backgroundColor: "#00e5a008" },
+              metodoPagamento === "pix" && { borderColor: "#18a06b35", backgroundColor: "#18a06b08" },
               metodoPagamento === "dinheiro" && { borderColor: colors.surfaceBorder, backgroundColor: colors.card },
             ]}
           >
             <View style={[
               styles.scheduleIcon,
               metodoPagamento && metodoPagamento !== "pix" && metodoPagamento !== "dinheiro" && styles.scheduleIconActive,
-              metodoPagamento === "pix" && { borderColor: "#00e5a040", backgroundColor: "#00e5a010" },
+              metodoPagamento === "pix" && { borderColor: "#18a06b40", backgroundColor: "#18a06b10" },
               metodoPagamento === "dinheiro" && { borderColor: colors.surfaceBorder, backgroundColor: colors.surface },
             ]}>
               <Feather
@@ -491,8 +491,8 @@ export default function ContractConfirmScreen() {
                 }
                 size={16}
                 color={
-                  metodoPagamento === "cartao" ? "#ff6b35"
-                  : metodoPagamento === "pix" ? "#00e5a0"
+                  metodoPagamento === "cartao" ? "#e06030"
+                  : metodoPagamento === "pix" ? "#18a06b"
                   : metodoPagamento === "dinheiro" ? colors.textSecondary
                   : colors.textMuted
                 }
@@ -518,7 +518,7 @@ export default function ContractConfirmScreen() {
               })()}
               {metodoPagamento === "pix" && (
                 <>
-                  <Text style={[styles.scheduleLabel, { color: "#00e5a0" }]}>Pix</Text>
+                  <Text style={[styles.scheduleLabel, { color: "#18a06b" }]}>Pix</Text>
                   <Text style={styles.scheduleSub}>QR Code gerado ao confirmar</Text>
                 </>
               )}
@@ -619,7 +619,7 @@ export default function ContractConfirmScreen() {
             <Text style={styles.simLabel}>simular resposta do contratado:</Text>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Pressable onPress={aceitar} style={styles.simAcceptBtn}>
-                <Feather name="check" size={14} color={"#00e5a0"} />
+                <Feather name="check" size={14} color={"#18a06b"} />
                 <Text style={styles.simAcceptText}>Aceitar</Text>
               </Pressable>
               <Pressable onPress={() => setEtapa("confirmacao")} style={styles.simRejectBtn}>
@@ -647,7 +647,7 @@ export default function ContractConfirmScreen() {
           </View>
 
           <View style={styles.activeProviderRow}>
-            <View style={[styles.avatar, { borderColor: "#00e5a0" }]}>
+            <View style={[styles.avatar, { borderColor: "#18a06b" }]}>
               <Text style={styles.avatarText}>{provider.initials}</Text>
             </View>
             <View>
@@ -676,7 +676,7 @@ export default function ContractConfirmScreen() {
                   styles.progressFill,
                   {
                     width: `${Math.round((progresso ?? 0) * 100)}%` as any,
-                    backgroundColor: (timerRestante ?? 0) < 600 ? "#ff4444" : "#ff6b35",
+                    backgroundColor: (timerRestante ?? 0) < 600 ? "#ff4444" : "#e06030",
                   }
                 ]} />
               </View>
@@ -724,7 +724,7 @@ function createStyles(colors: ColorPalette) {
     sectionLabel: {
       color: colors.textSecondary,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 2,
       textTransform: "uppercase",
       marginBottom: 12,
@@ -752,27 +752,27 @@ function createStyles(colors: ColorPalette) {
       borderTopColor: colors.menuIconBg,
     },
     verPerfilText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
-      color: "#ff6b3599",
+      color: "#e0603099",
       flex: 1,
     },
     avatar: {
       width: 56,
       height: 56,
       borderRadius: 28,
-      backgroundColor: "#00e5a020",
+      backgroundColor: "#18a06b20",
       borderWidth: 2,
-      borderColor: "#00e5a040",
+      borderColor: "#18a06b40",
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
     },
     avatarText: {
-      color: "#00e5a0",
+      color: "#18a06b",
       fontSize: 18,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     providerName: {
       color: colors.text,
@@ -799,20 +799,20 @@ function createStyles(colors: ColorPalette) {
       paddingHorizontal: 10,
     },
     infoChipText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textSecondary,
     },
     rateValue: {
-      color: "#ff6b35",
+      color: "#e06030",
       fontSize: 18,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     rateLabel: {
       color: colors.textMuted,
       fontSize: 9,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 0.5,
       marginTop: 2,
     },
@@ -827,8 +827,8 @@ function createStyles(colors: ColorPalette) {
       gap: 12,
     },
     optionRowActive: {
-      backgroundColor: "#ff6b3515",
-      borderColor: "#ff6b3550",
+      backgroundColor: "#e0603015",
+      borderColor: "#e0603050",
     },
     radio: {
       width: 18,
@@ -841,13 +841,13 @@ function createStyles(colors: ColorPalette) {
       flexShrink: 0,
     },
     radioActive: {
-      borderColor: "#ff6b35",
+      borderColor: "#e06030",
     },
     radioInner: {
       width: 7,
       height: 7,
       borderRadius: 3.5,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
     },
     optionLabel: {
       color: colors.textSecondary,
@@ -858,13 +858,13 @@ function createStyles(colors: ColorPalette) {
     optionMeta: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
     },
     optionRate: {
       color: colors.textMuted,
       fontSize: 14,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     toolRow: {
       backgroundColor: colors.card,
@@ -877,8 +877,8 @@ function createStyles(colors: ColorPalette) {
       gap: 12,
     },
     toolRowActive: {
-      backgroundColor: "#00e5a008",
-      borderColor: "#00e5a030",
+      backgroundColor: "#18a06b08",
+      borderColor: "#18a06b30",
     },
     toolIcon: {
       width: 36,
@@ -892,8 +892,8 @@ function createStyles(colors: ColorPalette) {
       flexShrink: 0,
     },
     toolIconActive: {
-      backgroundColor: "#00e5a015",
-      borderColor: "#00e5a030",
+      backgroundColor: "#18a06b15",
+      borderColor: "#18a06b30",
     },
     toolName: {
       color: colors.textSecondary,
@@ -904,7 +904,7 @@ function createStyles(colors: ColorPalette) {
     toolType: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginTop: 2,
     },
     checkbox: {
@@ -918,8 +918,8 @@ function createStyles(colors: ColorPalette) {
       flexShrink: 0,
     },
     checkboxActive: {
-      backgroundColor: "#00e5a0",
-      borderColor: "#00e5a0",
+      backgroundColor: "#18a06b",
+      borderColor: "#18a06b",
     },
     scheduleBtn: {
       backgroundColor: colors.card,
@@ -933,8 +933,8 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 8,
     },
     scheduleBtnActive: {
-      backgroundColor: "#ff6b3515",
-      borderColor: "#ff6b3550",
+      backgroundColor: "#e0603015",
+      borderColor: "#e0603050",
     },
     scheduleIcon: {
       width: 36,
@@ -948,8 +948,8 @@ function createStyles(colors: ColorPalette) {
       flexShrink: 0,
     },
     scheduleIconActive: {
-      backgroundColor: "#ff6b3520",
-      borderColor: "#ff6b3530",
+      backgroundColor: "#e0603020",
+      borderColor: "#e0603030",
     },
     scheduleLabel: {
       color: colors.textSecondary,
@@ -960,7 +960,7 @@ function createStyles(colors: ColorPalette) {
     scheduleSub: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginTop: 2,
     },
     schedulePicker: {
@@ -974,7 +974,7 @@ function createStyles(colors: ColorPalette) {
     pickerLabel: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 1,
       textTransform: "uppercase",
       marginBottom: 10,
@@ -991,20 +991,20 @@ function createStyles(colors: ColorPalette) {
       minWidth: 52,
     },
     dayChipActive: {
-      backgroundColor: "#ff6b35",
-      borderColor: "#ff6b35",
+      backgroundColor: "#e06030",
+      borderColor: "#e06030",
     },
     dayChipWeekday: {
       color: colors.textMuted,
       fontSize: 9,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       textTransform: "uppercase",
     },
     dayChipNum: {
       color: colors.textSecondary,
       fontSize: 16,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     timePicker: {
       flexDirection: "row",
@@ -1030,7 +1030,7 @@ function createStyles(colors: ColorPalette) {
     timeBtnText: {
       color: colors.textSecondary,
       fontSize: 18,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
     },
     timeValue: {
       flex: 1,
@@ -1038,17 +1038,17 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
       fontSize: 28,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     timeSep: {
       color: colors.textMuted,
       fontSize: 24,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     scheduleConfirmBtn: {
       flex: 1,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
       borderRadius: 12,
       padding: 12,
       alignItems: "center",
@@ -1080,8 +1080,8 @@ function createStyles(colors: ColorPalette) {
       padding: 14,
     },
     contractTypeBtnActive: {
-      backgroundColor: "#ff6b3515",
-      borderColor: "#ff6b3550",
+      backgroundColor: "#e0603015",
+      borderColor: "#e0603050",
     },
     contractTypeTop: {
       flexDirection: "row",
@@ -1101,7 +1101,7 @@ function createStyles(colors: ColorPalette) {
     contractTypeDesc: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       lineHeight: 16,
       paddingLeft: 26,
     },
@@ -1115,14 +1115,14 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
     },
     durChipActive: {
-      backgroundColor: "#ff6b35",
-      borderColor: "#ff6b35",
+      backgroundColor: "#e06030",
+      borderColor: "#e06030",
     },
     durChipText: {
       color: colors.textSecondary,
       fontSize: 11,
       fontWeight: "600",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     customChip: {
       backgroundColor: colors.card,
@@ -1135,13 +1135,13 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "space-between",
     },
     customChipActive: {
-      backgroundColor: "#ff6b3515",
-      borderColor: "#ff6b3550",
+      backgroundColor: "#e0603015",
+      borderColor: "#e0603050",
     },
     customChipText: {
       color: colors.textSecondary,
       fontSize: 12,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
     },
     valueSummary: {
       backgroundColor: colors.card,
@@ -1157,31 +1157,31 @@ function createStyles(colors: ColorPalette) {
     valueSummaryLabel: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 1,
       textTransform: "uppercase",
       marginBottom: 4,
     },
     valueSummaryAmount: {
-      color: "#ff6b35",
+      color: "#e06030",
       fontSize: 24,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     valueSummaryMeta: {
       color: colors.textDim,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginTop: 3,
     },
     durLabel: {
       color: colors.text,
       fontSize: 16,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     confirmBtn: {
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
       borderRadius: 14,
       padding: 16,
       alignItems: "center",
@@ -1230,7 +1230,7 @@ function createStyles(colors: ColorPalette) {
       borderRadius: 50,
       borderWidth: 2,
       borderColor: "transparent",
-      borderTopColor: "#ff6b35",
+      borderTopColor: "#e06030",
     },
     spinnerAvatar: {
       width: 84,
@@ -1241,10 +1241,10 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     spinnerAvatarText: {
-      color: "#00e5a0",
+      color: "#18a06b",
       fontSize: 22,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
     },
     waitTitle: {
       color: colors.text,
@@ -1257,14 +1257,14 @@ function createStyles(colors: ColorPalette) {
     waitSub: {
       color: colors.textSecondary,
       fontSize: 12,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginBottom: 8,
       textAlign: "center",
     },
     waitMeta: {
       color: colors.textDim,
       fontSize: 11,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginBottom: 48,
       textAlign: "center",
       paddingHorizontal: 20,
@@ -1273,7 +1273,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
-      borderRadius: 16,
+      borderRadius: 24,
       padding: 16,
       marginBottom: 16,
       width: "100%",
@@ -1281,14 +1281,14 @@ function createStyles(colors: ColorPalette) {
     simLabel: {
       color: colors.textDim,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginBottom: 12,
     },
     simAcceptBtn: {
       flex: 1,
-      backgroundColor: "#00e5a015",
+      backgroundColor: "#18a06b15",
       borderWidth: 1,
-      borderColor: "#00e5a030",
+      borderColor: "#18a06b30",
       borderRadius: 10,
       padding: 12,
       flexDirection: "row",
@@ -1297,7 +1297,7 @@ function createStyles(colors: ColorPalette) {
       gap: 6,
     },
     simAcceptText: {
-      color: "#00e5a0",
+      color: "#18a06b",
       fontSize: 13,
       fontWeight: "600",
       fontFamily: "Sora_600SemiBold",
@@ -1322,9 +1322,9 @@ function createStyles(colors: ColorPalette) {
       flexDirection: "row",
       alignItems: "center",
       gap: 8,
-      backgroundColor: "#00e5a010",
+      backgroundColor: "#18a06b10",
       borderWidth: 1,
-      borderColor: "#00e5a025",
+      borderColor: "#18a06b25",
       borderRadius: 20,
       paddingVertical: 6,
       paddingHorizontal: 14,
@@ -1335,12 +1335,12 @@ function createStyles(colors: ColorPalette) {
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
     },
     activeBadgeText: {
-      color: "#00e5a0",
+      color: "#18a06b",
       fontSize: 11,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 1,
     },
     activeProviderRow: {
@@ -1352,7 +1352,7 @@ function createStyles(colors: ColorPalette) {
     activeSkillText: {
       color: colors.textSecondary,
       fontSize: 12,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginTop: 2,
     },
     timerWrap: {
@@ -1362,7 +1362,7 @@ function createStyles(colors: ColorPalette) {
     timerLabel: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 2,
       textTransform: "uppercase",
       marginBottom: 8,
@@ -1370,22 +1370,22 @@ function createStyles(colors: ColorPalette) {
     timerValue: {
       fontSize: 52,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       color: colors.text,
       letterSpacing: 4,
       lineHeight: 60,
     },
     timerAmount: {
-      color: "#ff6b35",
+      color: "#e06030",
       fontSize: 22,
       fontWeight: "700",
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       marginTop: 12,
     },
     timerAmountLabel: {
       color: colors.textMuted,
       fontSize: 10,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       marginTop: 4,
     },
     progressBarWrap: {
@@ -1403,15 +1403,15 @@ function createStyles(colors: ColorPalette) {
     },
     endBtn: {
       borderWidth: 1,
-      borderColor: "#ff6b3540",
+      borderColor: "#e0603040",
       borderRadius: 14,
       padding: 16,
       alignItems: "center",
     },
     endBtnText: {
-      color: "#ff6b35",
+      color: "#e06030",
       fontSize: 13,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       letterSpacing: 1,
       textTransform: "uppercase",
     },

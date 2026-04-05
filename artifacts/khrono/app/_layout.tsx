@@ -1,7 +1,8 @@
 import {
-  DMMono_400Regular,
-  DMMono_500Medium,
-} from "@expo-google-fonts/dm-mono";
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+} from "@expo-google-fonts/dm-sans";
 import {
   Sora_400Regular,
   Sora_600SemiBold,
@@ -107,8 +108,9 @@ export default function RootLayout() {
     Sora_400Regular,
     Sora_600SemiBold,
     Sora_700Bold,
-    DMMono_400Regular,
-    DMMono_500Medium,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
   });
 
   useEffect(() => {

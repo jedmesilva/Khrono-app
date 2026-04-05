@@ -123,7 +123,7 @@ export default function CadastroSkillScreen() {
         secondaryAction={{ label: "Adicionar outra skill", icon: "plus", onPress: handleReset }}
         subtitle={
           <>
-            <Text style={{ color: "#ff6b35" }}>{skillName}</Text>
+            <Text style={{ color: "#e06030" }}>{skillName}</Text>
             {" foi cadastrada no seu perfil."}
           </>
         }
@@ -136,7 +136,7 @@ export default function CadastroSkillScreen() {
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           {step !== 1 || step1Sub === "new_form" ? (
@@ -167,8 +167,8 @@ export default function CadastroSkillScreen() {
             Escolha uma da lista ou escreva o nome da skill que você oferece.
           </Text>
 
-          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#ff6b3550" : colors.inputBorder }]}>
-            <Feather name="search" size={15} color={query.length > 0 ? "#ff6b35" : colors.textMuted} style={styles.inputIcon} />
+          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
+            <Feather name="search" size={15} color={query.length > 0 ? "#e06030" : colors.textMuted} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={query}
@@ -186,17 +186,17 @@ export default function CadastroSkillScreen() {
 
           {showCreateOnly && (
             <Pressable
-              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#ff6b35" }]}
+              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
               onPress={handleCreateNew}
             >
-              <View style={[styles.createOptionIcon, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3540" }]}>
-                <Feather name="plus" size={18} color="#ff6b35" />
+              <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                <Feather name="plus" size={18} color="#e06030" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.createOptionLabel}>Criar skill</Text>
                 <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
               </View>
-              <Feather name="chevron-right" size={16} color="#ff6b35" />
+              <Feather name="chevron-right" size={16} color="#e06030" />
             </Pressable>
           )}
 
@@ -225,9 +225,9 @@ export default function CadastroSkillScreen() {
                 style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 onPress={handleCreateNew}
               >
-                <Feather name="plus-circle" size={14} color="#ff6b35" />
+                <Feather name="plus-circle" size={14} color="#e06030" />
                 <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
-                  Criar "<Text style={{ color: "#ff6b35" }}>{query}</Text>" como nova skill
+                  Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como nova skill
                 </Text>
                 <Feather name="chevron-right" size={14} color={colors.chevron} />
               </Pressable>
@@ -284,7 +284,7 @@ export default function CadastroSkillScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#ff6b3530" }]}>
+            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#e0603030" }]}>
               <Text style={[styles.nameCardLabel, { color: colors.textMuted }]}>SKILL</Text>
               <Text style={[styles.nameCardValue, { color: colors.text }]}>{skillName}</Text>
             </View>
@@ -292,7 +292,7 @@ export default function CadastroSkillScreen() {
             <Text style={[styles.stepTitle, { color: colors.text }]}>Descreva sua skill</Text>
             <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
               Conte brevemente o que você faz com{" "}
-              <Text style={{ color: "#ff6b35" }}>{skillName}</Text>. Isso é opcional.
+              <Text style={{ color: "#e06030" }}>{skillName}</Text>. Isso é opcional.
             </Text>
 
             <TextInput
@@ -325,31 +325,31 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 24 },
   backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
+  stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
   progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#ff6b35", borderRadius: 2 },
+  progressFill: { height: "100%", backgroundColor: "#e06030", borderRadius: 2 },
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
   inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
-  listLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   templateList: { gap: 10 },
-  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
+  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 16, marginBottom: 20 },
   createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },
+  createOptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#e06030", marginBottom: 2 },
   createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
-  createOptionSmallText: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 12 },
+  createOptionSmallText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 12 },
   nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
-  nameCardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
+  nameCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
   nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },
   textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 140, lineHeight: 22 },
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
   skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  skipBtnText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
-  primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
+  skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
+  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
 });

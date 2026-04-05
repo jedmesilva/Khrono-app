@@ -94,14 +94,14 @@ export default function LoginScreen() {
 
           <View style={styles.content}>
             <View style={styles.iconWrap}>
-              <Feather name="lock" size={28} color="#ff6b35" />
+              <Feather name="lock" size={28} color="#e06030" />
             </View>
 
             <Text style={[styles.title, { color: colors.text }]}>Bem-vindo de volta</Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Digite sua senha para entrar.</Text>
 
             <View style={styles.contactChip}>
-              <Feather name={type === "email" ? "mail" : "smartphone"} size={13} color="#ff6b35" />
+              <Feather name={type === "email" ? "mail" : "smartphone"} size={13} color="#e06030" />
               <Text style={styles.contactChipText}>{displayContact}</Text>
             </View>
 
@@ -165,31 +165,31 @@ const styles = StyleSheet.create({
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 20, paddingBottom: 40 },
   iconWrap: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 8 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 20, lineHeight: 20 },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 13, marginBottom: 20, lineHeight: 20 },
   contactChip: {
     flexDirection: "row", alignItems: "center", gap: 7, alignSelf: "flex-start",
-    backgroundColor: "#ff6b3510", borderWidth: 1, borderColor: "#ff6b3525",
+    backgroundColor: "#e0603010", borderWidth: 1, borderColor: "#e0603025",
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, marginBottom: 32,
   },
-  contactChipText: { fontFamily: "DMMono_500Medium", fontSize: 12, color: "#ff6b35" },
-  label: { fontFamily: "DMMono_500Medium", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 },
+  contactChipText: { fontFamily: "DMSans_500Medium", fontSize: 12, color: "#e06030" },
+  label: { fontFamily: "DMSans_500Medium", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 },
   inputWrap: {
     flexDirection: "row", alignItems: "center",
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, height: 52, marginBottom: 8,
   },
   inputWrapError: { borderColor: "#ff444460", backgroundColor: "#ff444408" },
-  input: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 15 },
+  input: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 15 },
   eyeBtn: { padding: 4 },
-  errorText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff4444", marginBottom: 8, paddingLeft: 4 },
+  errorText: { fontFamily: "DMSans_400Regular", fontSize: 11, color: "#ff4444", marginBottom: 8, paddingLeft: 4 },
   forgotBtn: { alignSelf: "flex-start", marginTop: 4 },
-  forgotText: { fontFamily: "DMMono_400Regular", fontSize: 12, textDecorationLine: "underline" },
+  forgotText: { fontFamily: "DMSans_400Regular", fontSize: 12, textDecorationLine: "underline" },
   footer: { marginTop: 32 },
   btn: {
-    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    backgroundColor: "#e06030", borderRadius: 14, height: 52,
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
   },
   btnDisabled: { opacity: 0.3 },

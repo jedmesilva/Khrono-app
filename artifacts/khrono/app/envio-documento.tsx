@@ -114,7 +114,7 @@ export default function EnvioDocumentoScreen() {
       >
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#ff6b35" />
+            <Feather name="arrow-left" size={18} color="#e06030" />
           </Pressable>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Enviar documento</Text>
           <View style={{ width: 26 }} />
@@ -153,7 +153,7 @@ export default function EnvioDocumentoScreen() {
             {files.map((file, index) => (
               <View key={index} style={styles.fileItem}>
                 <View style={styles.fileIconWrap}>
-                  <Feather name={getFileIcon(file.mimeType)} size={15} color="#ff6b35" />
+                  <Feather name={getFileIcon(file.mimeType)} size={15} color="#e06030" />
                 </View>
                 <Text style={[styles.fileName, { color: colors.textSecondary }]} numberOfLines={1} ellipsizeMode="middle">
                   {file.name}
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: "Sora_700Bold", fontSize: 16 },
   section: { marginBottom: 24 },
   sectionLabel: {
-    fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.4,
+    fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.4,
     textTransform: "uppercase", marginBottom: 12,
   },
   chipRow: { flexDirection: "row", gap: 8 },
@@ -231,17 +231,17 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1,
   },
-  chipActive: { borderColor: "#ff6b35", borderWidth: 1.5 },
-  chipDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#ff6b35" },
+  chipActive: { borderColor: "#e06030", borderWidth: 1.5 },
+  chipDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#e06030" },
   chipLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  chipLabelActive: { color: "#ff6b35" },
+  chipLabelActive: { color: "#e06030" },
   filesSection: { borderWidth: 1, borderRadius: 14, overflow: "hidden" },
   fileItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
   fileIconWrap: {
-    width: 30, height: 30, borderRadius: 8, backgroundColor: "#ff6b3510",
+    width: 30, height: 30, borderRadius: 8, backgroundColor: "#e0603010",
     alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  fileName: { fontFamily: "DMMono_400Regular", fontSize: 12, flex: 1 },
+  fileName: { fontFamily: "DMSans_400Regular", fontSize: 12, flex: 1 },
   fileRemoveBtn: { padding: 4 },
   filesDivider: { height: 1, marginHorizontal: 14 },
   addBtn: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 16, paddingVertical: 14 },
@@ -251,17 +251,17 @@ const styles = StyleSheet.create({
   },
   addBtnTexts: { flex: 1, gap: 2 },
   addBtnLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  addBtnSub: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  addBtnSub: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   instructionsCard: { borderWidth: 1, borderRadius: 14, padding: 16, gap: 10 },
   instructionRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   instructionDot: {
-    width: 4, height: 4, borderRadius: 2, backgroundColor: "#ff6b35", marginTop: 6, flexShrink: 0,
+    width: 4, height: 4, borderRadius: 2, backgroundColor: "#e06030", marginTop: 6, flexShrink: 0,
   },
-  instructionText: { fontFamily: "DMMono_400Regular", fontSize: 12, lineHeight: 18, flex: 1 },
+  instructionText: { fontFamily: "DMSans_400Regular", fontSize: 12, lineHeight: 18, flex: 1 },
   footer: { paddingHorizontal: 20, paddingTop: 12, borderTopWidth: 1 },
   submitBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 10, backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 15,
+    gap: 10, backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 15,
   },
   submitBtnDisabled: { opacity: 0.4 },
   submitBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#fff" },

@@ -242,7 +242,7 @@ export default function CadastroServiceScreen() {
         title="Service criado!"
         subtitle={
           <>
-            <Text style={{ color: "#ff6b35" }}>{draft.serviceName}</Text>
+            <Text style={{ color: "#e06030" }}>{draft.serviceName}</Text>
             {" foi adicionado ao seu perfil."}
           </>
         }
@@ -263,7 +263,7 @@ export default function CadastroServiceScreen() {
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           {draft.step !== 1 || draft.step1Sub === "new_form" ? (
@@ -300,8 +300,8 @@ export default function CadastroServiceScreen() {
             Escolha um da lista ou escreva o nome do que você oferece.
           </Text>
 
-          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#ff6b3550" : colors.inputBorder }]}>
-            <Feather name="search" size={15} color={query.length > 0 ? "#ff6b35" : colors.textMuted} style={styles.inputIcon} />
+          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
+            <Feather name="search" size={15} color={query.length > 0 ? "#e06030" : colors.textMuted} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={query}
@@ -320,17 +320,17 @@ export default function CadastroServiceScreen() {
 
           {showCreateOption && (
             <Pressable
-              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#ff6b35" }]}
+              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
               onPress={handleCreateNew}
             >
-              <View style={[styles.createOptionIcon, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3540" }]}>
-                <Feather name="plus" size={18} color="#ff6b35" />
+              <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                <Feather name="plus" size={18} color="#e06030" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.createOptionLabel}>Criar serviço</Text>
                 <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
               </View>
-              <Feather name="chevron-right" size={16} color="#ff6b35" />
+              <Feather name="chevron-right" size={16} color="#e06030" />
             </Pressable>
           )}
 
@@ -358,9 +358,9 @@ export default function CadastroServiceScreen() {
                 style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
                 onPress={handleCreateNew}
               >
-                <Feather name="plus-circle" size={14} color="#ff6b35" />
+                <Feather name="plus-circle" size={14} color="#e06030" />
                 <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
-                  Criar "<Text style={{ color: "#ff6b35" }}>{query}</Text>" como novo service
+                  Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como novo service
                 </Text>
                 <Feather name="chevron-right" size={14} color={colors.chevron} />
               </Pressable>
@@ -383,7 +383,7 @@ export default function CadastroServiceScreen() {
               Dê uma descrição para que os clientes entendam o que você oferece.
             </Text>
 
-            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#ff6b3530" }]}>
+            <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#e0603030" }]}>
               <Text style={[styles.nameCardLabel, { color: colors.textMuted }]}>NOME DO SERVICE</Text>
               <Text style={[styles.nameCardValue, { color: colors.text }]}>{draft.serviceName}</Text>
             </View>
@@ -434,10 +434,10 @@ export default function CadastroServiceScreen() {
 
             {/* Required skill warning for predefined */}
             {draft.mode === "predefined" && draft.requiredSkillName && !userHasRequiredSkill && (
-              <View style={[styles.warningCard, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3530" }]}>
-                <Feather name="alert-circle" size={16} color="#ff6b35" />
+              <View style={[styles.warningCard, { backgroundColor: "#e0603010", borderColor: "#e0603030" }]}>
+                <Feather name="alert-circle" size={16} color="#e06030" />
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.warningTitle, { color: "#ff6b35" }]}>Skill não encontrada</Text>
+                  <Text style={[styles.warningTitle, { color: "#e06030" }]}>Skill não encontrada</Text>
                   <Text style={[styles.warningText, { color: colors.textSecondary }]}>
                     Você não tem a skill "{draft.requiredSkillName}" cadastrada. Cadastre-a para completar a composição ideal.
                   </Text>
@@ -446,7 +446,7 @@ export default function CadastroServiceScreen() {
                     onPress={() => router.push("/cadastro-skill")}
                   >
                     <Text style={styles.warningActionText}>Criar skill</Text>
-                    <Feather name="arrow-right" size={12} color="#ff6b35" />
+                    <Feather name="arrow-right" size={12} color="#e06030" />
                   </Pressable>
                 </View>
               </View>
@@ -505,8 +505,8 @@ export default function CadastroServiceScreen() {
               {draft.selectedSkillIds.map((sid) => {
                 const sk = userSkills.find((s) => s.id === sid);
                 return sk ? (
-                  <View key={sid} style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
-                    <Feather name="star" size={9} color="#ff6b35" />
+                  <View key={sid} style={[styles.pillBadge, { backgroundColor: "#e0603020", borderColor: "#e0603030" }]}>
+                    <Feather name="star" size={9} color="#e06030" />
                     <Text style={styles.pillBadgeText}>{sk.name}</Text>
                   </View>
                 ) : null;
@@ -526,10 +526,10 @@ export default function CadastroServiceScreen() {
                 (tn) => !userTools.some((t) => normalize(t.name).includes(normalize(tn)))
               );
               return missingTools.length > 0 ? (
-                <View style={[styles.warningCard, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3530" }]}>
-                  <Feather name="alert-circle" size={16} color="#ff6b35" />
+                <View style={[styles.warningCard, { backgroundColor: "#e0603010", borderColor: "#e0603030" }]}>
+                  <Feather name="alert-circle" size={16} color="#e06030" />
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.warningTitle, { color: "#ff6b35" }]}>Tools não encontradas</Text>
+                    <Text style={[styles.warningTitle, { color: "#e06030" }]}>Tools não encontradas</Text>
                     <Text style={[styles.warningText, { color: colors.textSecondary }]}>
                       Você não tem: {missingTools.join(", ")}. Cadastre-as para completar a composição ideal.
                     </Text>
@@ -538,7 +538,7 @@ export default function CadastroServiceScreen() {
                       onPress={() => router.push("/cadastro-tool")}
                     >
                       <Text style={styles.warningActionText}>Criar tool</Text>
-                      <Feather name="arrow-right" size={12} color="#ff6b35" />
+                      <Feather name="arrow-right" size={12} color="#e06030" />
                     </Pressable>
                   </View>
                 </View>
@@ -599,8 +599,8 @@ export default function CadastroServiceScreen() {
               {draft.selectedSkillIds.map((sid) => {
                 const sk = userSkills.find((s) => s.id === sid);
                 return sk ? (
-                  <View key={sid} style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
-                    <Feather name="star" size={9} color="#ff6b35" />
+                  <View key={sid} style={[styles.pillBadge, { backgroundColor: "#e0603020", borderColor: "#e0603030" }]}>
+                    <Feather name="star" size={9} color="#e06030" />
                     <Text style={styles.pillBadgeText}>{sk.name}</Text>
                   </View>
                 ) : null;
@@ -608,8 +608,8 @@ export default function CadastroServiceScreen() {
               {draft.selectedToolIds.map((tid) => {
                 const tl = userTools.find((t) => t.id === tid);
                 return tl ? (
-                  <View key={tid} style={[styles.pillBadge, { backgroundColor: "#ff6b3520", borderColor: "#ff6b3530" }]}>
-                    <Feather name="tool" size={9} color="#ff6b35" />
+                  <View key={tid} style={[styles.pillBadge, { backgroundColor: "#e0603020", borderColor: "#e0603030" }]}>
+                    <Feather name="tool" size={9} color="#e06030" />
                     <Text style={styles.pillBadgeText}>{tl.name}</Text>
                   </View>
                 ) : null;
@@ -622,8 +622,8 @@ export default function CadastroServiceScreen() {
             </Text>
 
             {/* Big currency input */}
-            <View style={[styles.rateInputWrap, { backgroundColor: colors.inputBg, borderColor: draft.hourlyRateInput ? "#ff6b3560" : colors.inputBorder }]}>
-              <Text style={[styles.rateCurrency, { color: draft.hourlyRateInput ? "#ff6b35" : colors.textMuted }]}>R$</Text>
+            <View style={[styles.rateInputWrap, { backgroundColor: colors.inputBg, borderColor: draft.hourlyRateInput ? "#e0603060" : colors.inputBorder }]}>
+              <Text style={[styles.rateCurrency, { color: draft.hourlyRateInput ? "#e06030" : colors.textMuted }]}>R$</Text>
               <TextInput
                 style={[styles.rateInput, { color: colors.text }]}
                 value={draft.hourlyRateInput}
@@ -649,8 +649,8 @@ export default function CadastroServiceScreen() {
                     style={[
                       styles.presetChip,
                       {
-                        backgroundColor: isActive ? "#ff6b35" : colors.card,
-                        borderColor: isActive ? "#ff6b35" : colors.cardBorder,
+                        backgroundColor: isActive ? "#e06030" : colors.card,
+                        borderColor: isActive ? "#e06030" : colors.cardBorder,
                       },
                     ]}
                     onPress={() => setDraft({ hourlyRateInput: val })}
@@ -713,8 +713,8 @@ function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
           <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={2}>{template.description}</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <View style={[styles.categoryBadge, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528" }]}>
-            <Text style={[styles.categoryBadgeText, { color: "#ff6b35" }]}>{template.category}</Text>
+          <View style={[styles.categoryBadge, { backgroundColor: "#e0603012", borderColor: "#e0603028" }]}>
+            <Text style={[styles.categoryBadgeText, { color: "#e06030" }]}>{template.category}</Text>
           </View>
           <Feather name="chevron-right" size={14} color={colors.chevron} />
         </View>
@@ -723,17 +723,17 @@ function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
       {(template.skillName || template.toolNames.length > 0) && (
         <View style={[styles.compositionRow, { marginBottom: 0 }]}>
           {template.skillName && (
-            <View style={[styles.compositionChip, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528", opacity: hasSkill ? 1 : 0.45 }]}>
-              <Feather name="star" size={9} color="#ff6b35" />
-              <Text style={[styles.compositionChipText, { color: "#ff6b35" }]} numberOfLines={1}>{template.skillName}</Text>
+            <View style={[styles.compositionChip, { backgroundColor: "#e0603012", borderColor: "#e0603028", opacity: hasSkill ? 1 : 0.45 }]}>
+              <Feather name="star" size={9} color="#e06030" />
+              <Text style={[styles.compositionChipText, { color: "#e06030" }]} numberOfLines={1}>{template.skillName}</Text>
             </View>
           )}
           {template.toolNames.map((tn) => {
             const has = userTools.some((t) => normalize(t.name).includes(normalize(tn)));
             return (
-              <View key={tn} style={[styles.compositionChip, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3528", opacity: has ? 1 : 0.45 }]}>
-                <Feather name="tool" size={9} color="#ff6b35" />
-                <Text style={[styles.compositionChipText, { color: "#ff6b35" }]} numberOfLines={1}>{tn}</Text>
+              <View key={tn} style={[styles.compositionChip, { backgroundColor: "#e0603012", borderColor: "#e0603028", opacity: has ? 1 : 0.45 }]}>
+                <Feather name="tool" size={9} color="#e06030" />
+                <Text style={[styles.compositionChipText, { color: "#e06030" }]} numberOfLines={1}>{tn}</Text>
               </View>
             );
           })}
@@ -756,21 +756,21 @@ function SelectableSkillCard({ skill, selected, recommended, colors, onPress }: 
         styles.selectableCard,
         {
           backgroundColor: colors.card,
-          borderColor: selected ? "#ff6b35" : recommended ? "#ff6b3525" : colors.cardBorder,
+          borderColor: selected ? "#e06030" : recommended ? "#e0603025" : colors.cardBorder,
           borderWidth: selected ? 1.5 : 1,
         },
       ]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#ff6b3560" : colors.surfaceBorder }]}>
-        <Feather name="star" size={16} color={selected ? "#ff6b35" : colors.textMuted} />
+      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#e0603060" : colors.surfaceBorder }]}>
+        <Feather name="star" size={16} color={selected ? "#e06030" : colors.textMuted} />
       </View>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Text style={[styles.selectableName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{skill.name}</Text>
           {skill.verified && <VerifiedBadge onPress={() => {}} />}
           {recommended && !selected && (
-            <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" }]}>
+            <View style={[styles.recommendedBadge, { backgroundColor: "#e0603015", borderColor: "#e0603030" }]}>
               <Text style={styles.recommendedText}>recomendada</Text>
             </View>
           )}
@@ -782,7 +782,7 @@ function SelectableSkillCard({ skill, selected, recommended, colors, onPress }: 
       <View style={[
         styles.checkbox,
         selected
-          ? { backgroundColor: "#ff6b35", borderColor: "#ff6b35" }
+          ? { backgroundColor: "#e06030", borderColor: "#e06030" }
           : { backgroundColor: "transparent", borderColor: colors.surfaceBorder },
       ]}>
         {selected && <Feather name="check" size={11} color="#fff" />}
@@ -798,15 +798,15 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
   colors: any;
   onPress: () => void;
 }) {
-  const iconColor = selected ? "#ff6b35" : tool.available ? colors.textMuted : colors.textDim;
-  const borderColor = selected ? "#ff6b35" : recommended ? "#ff6b3520" : colors.cardBorder;
+  const iconColor = selected ? "#e06030" : tool.available ? colors.textMuted : colors.textDim;
+  const borderColor = selected ? "#e06030" : recommended ? "#e0603020" : colors.cardBorder;
 
   return (
     <Pressable
       style={[styles.selectableCard, { backgroundColor: colors.card, borderColor, borderWidth: selected ? 1.5 : 1, opacity: tool.available ? 1 : 0.6 }]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#ff6b3560" : colors.surfaceBorder }]}>
+      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#e0603060" : colors.surfaceBorder }]}>
         <Feather name={tool.icon} size={16} color={iconColor} />
       </View>
       <View style={{ flex: 1 }}>
@@ -814,8 +814,8 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
           <Text style={[styles.selectableName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{tool.name}</Text>
           {tool.verified && <VerifiedBadge onPress={() => {}} />}
           {recommended && !selected && (
-            <View style={[styles.recommendedBadge, { backgroundColor: "#ff6b3510", borderColor: "#ff6b3525" }]}>
-              <Text style={[styles.recommendedText, { color: "#ff6b35" }]}>sugerida</Text>
+            <View style={[styles.recommendedBadge, { backgroundColor: "#e0603010", borderColor: "#e0603025" }]}>
+              <Text style={[styles.recommendedText, { color: "#e06030" }]}>sugerida</Text>
             </View>
           )}
         </View>
@@ -827,7 +827,7 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
       <View style={[
         styles.checkbox,
         selected
-          ? { backgroundColor: "#ff6b35", borderColor: "#ff6b35" }
+          ? { backgroundColor: "#e06030", borderColor: "#e06030" }
           : { backgroundColor: "transparent", borderColor: colors.surfaceBorder },
       ]}>
         {selected && <Feather name="check" size={11} color="#fff" />}
@@ -840,72 +840,72 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 24 },
   backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
+  stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
   progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#ff6b35", borderRadius: 2 },
+  progressFill: { height: "100%", backgroundColor: "#e06030", borderRadius: 2 },
   draftBadge: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  draftBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.5 },
+  draftBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.5 },
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
   inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
-  listLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   templateList: { gap: 10 },
-  templateCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  templateCard: { borderWidth: 1, borderRadius: 24, padding: 16 },
   templateTopRow: { flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 10 },
   templateName: { fontFamily: "Sora_700Bold", fontSize: 15, marginBottom: 3 },
   templateDescription: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
   categoryBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
-  categoryBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
+  categoryBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
   compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
-  compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
+  compositionChipText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
+  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 16, marginBottom: 20 },
   createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  createOptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35", marginBottom: 2 },
+  createOptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#e06030", marginBottom: 2 },
   createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
-  createOptionSmallText: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 12 },
+  createOptionSmallText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 12 },
   nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
-  nameCardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
+  nameCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
   nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },
-  fieldLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
+  fieldLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
   textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 140, lineHeight: 22 },
   serviceNamePill: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 20 },
   serviceNamePillText: { fontFamily: "Sora_600SemiBold", fontSize: 13, flexShrink: 1 },
   pillBadge: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
-  pillBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#ff6b35" },
+  pillBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#e06030" },
   warningCard: { flexDirection: "row", alignItems: "flex-start", gap: 12, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 20 },
   warningTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 4 },
   warningText: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18, marginBottom: 8 },
   warningAction: { flexDirection: "row", alignItems: "center", gap: 6 },
-  warningActionText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#ff6b35" },
+  warningActionText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#e06030" },
   selectionList: { gap: 10 },
-  selectableCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 14 },
+  selectableCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 14 },
   selectableIcon: { width: 40, height: 40, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   selectableName: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 2 },
-  selectableSub: { fontFamily: "DMMono_400Regular", fontSize: 10, lineHeight: 15 },
+  selectableSub: { fontFamily: "DMSans_400Regular", fontSize: 10, lineHeight: 15 },
   recommendedBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  recommendedText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.3, color: "#ff6b35" },
+  recommendedText: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 0.3, color: "#e06030" },
   checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   addNewRow: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderStyle: "dashed", borderRadius: 14, padding: 14 },
-  addNewRowText: { fontFamily: "DMMono_400Regular", fontSize: 12, flex: 1 },
+  addNewRowText: { fontFamily: "DMSans_400Regular", fontSize: 12, flex: 1 },
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
   skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  skipBtnText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
-  primaryBtn: { backgroundColor: "#ff6b35", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
+  skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
+  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
   rateInputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1.5, borderRadius: 18, paddingHorizontal: 20, paddingVertical: 18, gap: 8, marginBottom: 28 },
   rateCurrency: { fontFamily: "Sora_700Bold", fontSize: 28 },
   rateInput: { flex: 1, fontFamily: "Sora_700Bold", fontSize: 44, textAlign: "center" },
   rateDecimals: { fontFamily: "Sora_700Bold", fontSize: 28 },
-  rateUnit: { fontFamily: "DMMono_400Regular", fontSize: 20 },
+  rateUnit: { fontFamily: "DMSans_400Regular", fontSize: 20 },
   presetsRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
   presetChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9 },
-  presetChipText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
+  presetChipText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   infoCard: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
   infoCardText: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18, flex: 1 },
 });

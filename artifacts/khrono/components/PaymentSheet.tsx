@@ -79,11 +79,11 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           onPress={() => selectMethod("cartao")}
           style={[styles.methodRow, method === "cartao" && styles.methodRowActive]}
         >
-          <View style={[styles.methodIcon, method === "cartao" && { borderColor: "#ff6b3540", backgroundColor: "#ff6b3510" }]}>
-            <Feather name="credit-card" size={18} color={method === "cartao" ? "#ff6b35" : colors.textMuted} />
+          <View style={[styles.methodIcon, method === "cartao" && { borderColor: "#e0603040", backgroundColor: "#e0603010" }]}>
+            <Feather name="credit-card" size={18} color={method === "cartao" ? "#e06030" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "cartao" && { color: "#ff6b35" }]}>Cartão</Text>
+            <Text style={[styles.methodLabel, method === "cartao" && { color: "#e06030" }]}>Cartão</Text>
             <Text style={styles.methodSub}>Débito ou crédito</Text>
           </View>
           <View style={[styles.radio, method === "cartao" && styles.radioActive]}>
@@ -141,11 +141,11 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           onPress={() => selectMethod("pix")}
           style={[styles.methodRow, method === "pix" && styles.methodRowPixActive]}
         >
-          <View style={[styles.methodIcon, method === "pix" && { borderColor: "#00e5a040", backgroundColor: "#00e5a010" }]}>
-            <Feather name="zap" size={18} color={method === "pix" ? "#00e5a0" : colors.textMuted} />
+          <View style={[styles.methodIcon, method === "pix" && { borderColor: "#18a06b40", backgroundColor: "#18a06b10" }]}>
+            <Feather name="zap" size={18} color={method === "pix" ? "#18a06b" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "pix" && { color: "#00e5a0" }]}>Pix</Text>
+            <Text style={[styles.methodLabel, method === "pix" && { color: "#18a06b" }]}>Pix</Text>
             <Text style={styles.methodSub}>QR Code ou copia e cola gerados na hora</Text>
           </View>
           <View style={[styles.radio, method === "pix" && styles.radioPixActive]}>
@@ -233,12 +233,12 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     methodRowActive: {
-      borderColor: "#ff6b3535",
-      backgroundColor: "#ff6b3508",
+      borderColor: "#e0603035",
+      backgroundColor: "#e0603008",
     },
     methodRowPixActive: {
-      borderColor: "#00e5a035",
-      backgroundColor: "#00e5a008",
+      borderColor: "#18a06b35",
+      backgroundColor: "#18a06b08",
     },
     methodRowDinheiroActive: {
       borderColor: "#ffffff18",
@@ -261,7 +261,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 2,
     },
     methodSub: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textMuted,
     },
@@ -275,10 +275,10 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     radioActive: {
-      borderColor: "#ff6b35",
+      borderColor: "#e06030",
     },
     radioPixActive: {
-      borderColor: "#00e5a0",
+      borderColor: "#18a06b",
     },
     radioDinheiroActive: {
       borderColor: "#666",
@@ -287,13 +287,13 @@ function createStyles(colors: ColorPalette) {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
     },
     radioInnerGreen: {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
     },
     radioInnerGray: {
       width: 8,
@@ -318,7 +318,7 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.surfaceBorder,
     },
     noCardsText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textMuted,
       flex: 1,
@@ -334,8 +334,8 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     cardRowActive: {
-      borderColor: "#ff6b3540",
-      backgroundColor: "#ff6b3508",
+      borderColor: "#e0603040",
+      backgroundColor: "#e0603008",
     },
     cardBandeira: {
       paddingHorizontal: 6,
@@ -344,33 +344,33 @@ function createStyles(colors: ColorPalette) {
       borderWidth: 1,
     },
     cardBandeiraText: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 9,
       fontWeight: "700",
     },
     cardNumber: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 13,
       color: colors.textSecondary,
       marginBottom: 2,
     },
     cardValidade: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textDim,
     },
     padraoTag: {
-      backgroundColor: "#ff6b3515",
+      backgroundColor: "#e0603015",
       borderRadius: 6,
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderWidth: 1,
-      borderColor: "#ff6b3530",
+      borderColor: "#e0603030",
     },
     padraoText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
-      color: "#ff6b35",
+      color: "#e06030",
     },
     confirmBtn: {
       flexDirection: "row",
@@ -378,7 +378,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 8,
-      backgroundColor: "#ff6b35",
+      backgroundColor: "#e06030",
       borderRadius: 14,
       paddingVertical: 16,
     },

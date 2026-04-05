@@ -240,7 +240,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
         {step === "success" && (
           <View style={styles.successContainer}>
             <View style={styles.successIcon}>
-              <Feather name="check" size={32} color="#00e5a0" />
+              <Feather name="check" size={32} color="#18a06b" />
             </View>
             <Text style={styles.successTitle}>Pix enviado!</Text>
             <Text style={styles.successSub}>
@@ -274,7 +274,7 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
     },
     fieldLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -290,20 +290,20 @@ function createStyles(colors: ColorPalette) {
       paddingHorizontal: 16,
     },
     currencyPrefix: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 18,
       color: colors.textSecondary,
       marginRight: 8,
     },
     amountInput: {
       flex: 1,
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 28,
       color: colors.text,
       paddingVertical: 16,
     },
     balanceHint: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textDim,
       marginTop: 6,
@@ -323,16 +323,16 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
     },
     keyTypeBtnActive: {
-      borderColor: "#00e5a0",
-      backgroundColor: "#00e5a015",
+      borderColor: "#18a06b",
+      backgroundColor: "#18a06b15",
     },
     keyTypeTxt: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textMuted,
     },
     keyTypeTxtActive: {
-      color: "#00e5a0",
+      color: "#18a06b",
     },
     keyInput: {
       backgroundColor: colors.surface,
@@ -341,7 +341,7 @@ function createStyles(colors: ColorPalette) {
       borderRadius: 14,
       paddingHorizontal: 16,
       paddingVertical: 14,
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 14,
       color: colors.text,
     },
@@ -351,7 +351,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 20,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
       borderRadius: 14,
       paddingVertical: 16,
     },
@@ -367,7 +367,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
-      borderRadius: 16,
+      borderRadius: 24,
       padding: 20,
     },
     confirmRow: {
@@ -381,20 +381,20 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.sheetBorder,
     },
     confirmLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
       color: colors.textMuted,
       letterSpacing: 1.5,
     },
     confirmValue: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 13,
       color: colors.text,
       maxWidth: 200,
       textAlign: "right",
     },
     confirmNote: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textDim,
       textAlign: "center",
@@ -410,9 +410,9 @@ function createStyles(colors: ColorPalette) {
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: "#00e5a015",
+      backgroundColor: "#18a06b15",
       borderWidth: 1,
-      borderColor: "#00e5a040",
+      borderColor: "#18a06b40",
       alignItems: "center",
       justifyContent: "center",
     },
@@ -422,7 +422,7 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
     },
     successSub: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 12,
       color: colors.textSecondary,
       textAlign: "center",

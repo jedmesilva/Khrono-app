@@ -12,7 +12,7 @@ interface VerifiedBadgeProps {
 export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
   const content = (
     <>
-      <Feather name="check-circle" size={9} color="#00e5a0" />
+      <Feather name="check-circle" size={9} color="#18a06b" />
       {variant === "full" && <Text style={styles.text}>Verificado</Text>}
     </>
   );
@@ -33,17 +33,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#00e5a012",
+    backgroundColor: "#18a06b12",
     borderWidth: 1,
-    borderColor: "#00e5a030",
+    borderColor: "#18a06b30",
     borderRadius: 20,
     paddingHorizontal: 7,
     paddingVertical: 2,
     flexShrink: 0,
   },
   text: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 9,
-    color: "#00e5a0",
+    color: "#18a06b",
   },
 });

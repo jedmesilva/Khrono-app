@@ -31,7 +31,7 @@ export default function VerificacaoFacialScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPadding + 16 }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Reconhecimento facial</Text>
         <View style={{ width: 26 }} />
@@ -82,7 +82,7 @@ export default function VerificacaoFacialScreen() {
           <>
             <View style={styles.ovalWrap}>
               <View style={[styles.oval, styles.ovalActive]}>
-                <Feather name="user" size={72} color="#ff6b3530" />
+                <Feather name="user" size={72} color="#e0603030" />
               </View>
             </View>
             <Text style={[styles.title, { color: colors.text }]}>Analisando...</Text>
@@ -94,7 +94,7 @@ export default function VerificacaoFacialScreen() {
           <>
             <View style={styles.successIconWrap}>
               <View style={styles.successIcon}>
-                <Feather name="check" size={40} color="#00e5a0" />
+                <Feather name="check" size={40} color="#18a06b" />
               </View>
             </View>
             <Text style={[styles.title, { color: colors.text }]}>Verificação enviada!</Text>
@@ -120,30 +120,30 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4 },
   headerTitle: { fontFamily: "Sora_700Bold", fontSize: 16 },
   body: { flex: 1, alignItems: "center", paddingHorizontal: 28, paddingTop: 12 },
-  stepLabel: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  stepLabel: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   title: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center", marginBottom: 10 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 12, textAlign: "center", lineHeight: 18, marginBottom: 36 },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 12, textAlign: "center", lineHeight: 18, marginBottom: 36 },
   ovalWrap: { position: "relative", width: 200, height: 260, alignItems: "center", justifyContent: "center", marginBottom: 36 },
   oval: {
     width: 180, height: 240, borderRadius: 100,
     borderWidth: 2, borderStyle: "dashed",
     alignItems: "center", justifyContent: "center",
   },
-  ovalActive: { borderColor: "#ff6b3560", borderStyle: "solid", backgroundColor: "#ff6b3508" },
-  ovalCornerTL: { position: "absolute", top: 0, left: 0, width: 20, height: 20, borderTopWidth: 2, borderLeftWidth: 2, borderColor: "#ff6b35", borderTopLeftRadius: 6 },
-  ovalCornerTR: { position: "absolute", top: 0, right: 0, width: 20, height: 20, borderTopWidth: 2, borderRightWidth: 2, borderColor: "#ff6b35", borderTopRightRadius: 6 },
-  ovalCornerBL: { position: "absolute", bottom: 0, left: 0, width: 20, height: 20, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: "#ff6b35", borderBottomLeftRadius: 6 },
-  ovalCornerBR: { position: "absolute", bottom: 0, right: 0, width: 20, height: 20, borderBottomWidth: 2, borderRightWidth: 2, borderColor: "#ff6b35", borderBottomRightRadius: 6 },
+  ovalActive: { borderColor: "#e0603060", borderStyle: "solid", backgroundColor: "#e0603008" },
+  ovalCornerTL: { position: "absolute", top: 0, left: 0, width: 20, height: 20, borderTopWidth: 2, borderLeftWidth: 2, borderColor: "#e06030", borderTopLeftRadius: 6 },
+  ovalCornerTR: { position: "absolute", top: 0, right: 0, width: 20, height: 20, borderTopWidth: 2, borderRightWidth: 2, borderColor: "#e06030", borderTopRightRadius: 6 },
+  ovalCornerBL: { position: "absolute", bottom: 0, left: 0, width: 20, height: 20, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: "#e06030", borderBottomLeftRadius: 6 },
+  ovalCornerBR: { position: "absolute", bottom: 0, right: 0, width: 20, height: 20, borderBottomWidth: 2, borderRightWidth: 2, borderColor: "#e06030", borderBottomRightRadius: 6 },
   tipsList: { width: "100%", gap: 10, marginBottom: 36 },
   tipItem: { flexDirection: "row", alignItems: "center", gap: 12 },
   tipIcon: { width: 30, height: 30, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  tipText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
-  captureBtn: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#ff6b35", borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14 },
+  tipText: { fontFamily: "DMSans_400Regular", fontSize: 12 },
+  captureBtn: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#e06030", borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14 },
   captureBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#fff" },
   successIconWrap: { marginBottom: 28, marginTop: 20 },
   successIcon: {
     width: 96, height: 96, borderRadius: 48,
-    backgroundColor: "#00e5a010", borderWidth: 2, borderColor: "#00e5a030",
+    backgroundColor: "#18a06b10", borderWidth: 2, borderColor: "#18a06b30",
     alignItems: "center", justifyContent: "center",
   },
   doneBtn: { borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14, borderWidth: 1 },

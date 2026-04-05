@@ -57,9 +57,9 @@ export default function HistoryScreen() {
         <StatsBar
           style={styles.statsRow}
           items={[
-            { label: "PAGO", value: `R$${totalPaid.toFixed(2)}`, color: "#ff6b35" },
+            { label: "PAGO", value: `R$${totalPaid.toFixed(2)}`, color: "#e06030" },
             { label: "CONTRATOS", value: history.length, align: "center" },
-            { label: "RECEBIDO", value: `R$${totalReceived.toFixed(2)}`, color: "#00e5a0", align: "flex-end" },
+            { label: "RECEBIDO", value: `R$${totalReceived.toFixed(2)}`, color: "#18a06b", align: "flex-end" },
           ]}
         />
       )}
@@ -156,16 +156,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   filterBtnActive: {
-    borderColor: "#ff6b35",
-    backgroundColor: "#ff6b3515",
+    borderColor: "#e06030",
+    backgroundColor: "#e0603015",
   },
   filterText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     letterSpacing: 0.3,
   },
   filterTextActive: {
-    color: "#ff6b35",
+    color: "#e06030",
   },
   list: {
     paddingHorizontal: 20,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 13,
   },
 });

@@ -43,7 +43,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
@@ -63,8 +63,8 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
         <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.toolIconLarge, { backgroundColor: "#ff6b3312", borderColor: "#ff6b3528" }]}>
-            <Feather name="star" size={32} color="#ff6b35" />
+          <View style={[styles.toolIconLarge, { backgroundColor: "#ff6b3312", borderColor: "#e0603028" }]}>
+            <Feather name="star" size={32} color="#e06030" />
           </View>
         </View>
 
@@ -103,15 +103,15 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
   onVerifiedPress: (type: VerificationType) => void;
   onOptions: () => void;
 }) {
-  const iconColor = tool.available ? "#ff6b35" : colors.textMuted;
+  const iconColor = tool.available ? "#e06030" : colors.textMuted;
   const iconBg = tool.available ? "#ff6b3312" : colors.surface;
-  const iconBorder = tool.available ? "#ff6b3528" : colors.surfaceBorder;
+  const iconBorder = tool.available ? "#e0603028" : colors.surfaceBorder;
 
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
@@ -120,7 +120,7 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
               <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} />
             )}
           </View>
-          <Text style={[styles.newSkillTag, { color: tool.available ? "#00e5a0" : colors.textMuted }]}>
+          <Text style={[styles.newSkillTag, { color: tool.available ? "#18a06b" : colors.textMuted }]}>
             {tool.available ? "disponível" : "indisponível"}
           </Text>
         </View>
@@ -171,7 +171,7 @@ function SkillsListView({ colors, onBack, onSelectSkill, onVerifiedPress, onAdd 
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
@@ -214,7 +214,7 @@ function ToolsListView({ colors, onBack, onVerifiedPress, onAdd, onSelectTool }:
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Tools</Text>
@@ -366,12 +366,12 @@ export default function ProfileScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View style={styles.header}>
-          <Text style={[styles.logo, { color: colors.text }]}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
+          <Text style={[styles.logo, { color: colors.text }]}>K<Text style={{ color: "#e06030" }}>r</Text>ono</Text>
           <Text style={[styles.headerSub, { color: colors.textMuted }]}>perfil</Text>
         </View>
 
         <View style={styles.avatarSection}>
-          <View style={[styles.avatarLarge, { backgroundColor: colors.avatarBg, borderColor: "#ff6b3530" }]}>
+          <View style={[styles.avatarLarge, { backgroundColor: colors.avatarBg, borderColor: "#e0603030" }]}>
             <Text style={styles.avatarLargeText}>{MY_PROFILE.initials}</Text>
           </View>
           <View style={styles.profileInfo}>
@@ -397,14 +397,14 @@ export default function ProfileScreen() {
 
         {/* Location card */}
         <Pressable style={[styles.locationCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setLocationSheetOpen(true)}>
-          <View style={[styles.locationIconWrap, locationMode === "realtime" ? { backgroundColor: "#00e5a015", borderColor: "#00e5a030" } : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" }]}>
-            <Feather name={locationMode === "realtime" ? "navigation" : "map-pin"} size={18} color={locationMode === "realtime" ? "#00e5a0" : "#ff6b35"} />
+          <View style={[styles.locationIconWrap, locationMode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" } : { backgroundColor: "#e0603015", borderColor: "#e0603030" }]}>
+            <Feather name={locationMode === "realtime" ? "navigation" : "map-pin"} size={18} color={locationMode === "realtime" ? "#18a06b" : "#e06030"} />
           </View>
           <View style={{ flex: 1 }}>
             <View style={styles.locationTopRow}>
               <Text style={[styles.locationLabel, { color: colors.textMuted }]}>Localização de serviço</Text>
-              <View style={[styles.locationModeBadge, locationMode === "realtime" ? { backgroundColor: "#00e5a015", borderColor: "#00e5a025" } : { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" }]}>
-                <Text style={[styles.locationModeBadgeText, { color: locationMode === "realtime" ? "#00e5a0" : "#ff6b35" }]}>
+              <View style={[styles.locationModeBadge, locationMode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b25" } : { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
+                <Text style={[styles.locationModeBadgeText, { color: locationMode === "realtime" ? "#18a06b" : "#e06030" }]}>
                   {locationMode === "realtime" ? "Tempo real" : "Fixa"}
                 </Text>
               </View>
@@ -419,8 +419,8 @@ export default function ProfileScreen() {
         {/* Skills + Tools compact */}
         <View style={styles.compactRow}>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("skills")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#ff6b3520" }]}>
-              <Feather name="tool" size={16} color="#ff6b35" />
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#e0603020" }]}>
+              <Feather name="tool" size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
@@ -429,8 +429,8 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("tools")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#ff6b3520" }]}>
-              <Feather name="box" size={16} color="#ff6b35" />
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#e0603020" }]}>
+              <Feather name="box" size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
@@ -495,39 +495,39 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
   logo: { fontFamily: "Sora_700Bold", fontSize: 24, letterSpacing: -0.5 },
-  headerSub: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  headerSub: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
   avatarSection: { flexDirection: "row", gap: 16, alignItems: "center", marginBottom: 20 },
   avatarLarge: { width: 72, height: 72, borderRadius: 36, borderWidth: 2, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  avatarLargeText: { fontFamily: "DMMono_500Medium", fontSize: 22, color: "#ff6b35" },
+  avatarLargeText: { fontFamily: "DMSans_500Medium", fontSize: 22, color: "#e06030" },
   profileInfo: { flex: 1 },
   profileName: { fontFamily: "Sora_700Bold", fontSize: 18 },
   locationRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6, marginBottom: 2 },
-  locationText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
-  sinceText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  statsCard: { borderWidth: 1, borderRadius: 16, paddingVertical: 14, flexDirection: "row", justifyContent: "space-around", alignItems: "center", marginBottom: 16 },
+  locationText: { fontFamily: "DMSans_400Regular", fontSize: 12 },
+  sinceText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
+  statsCard: { borderWidth: 1, borderRadius: 24, paddingVertical: 14, flexDirection: "row", justifyContent: "space-around", alignItems: "center", marginBottom: 16 },
   statItem: { alignItems: "center" },
-  statValue: { fontFamily: "DMMono_500Medium", fontSize: 20, marginBottom: 2 },
-  statLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase" },
+  statValue: { fontFamily: "DMSans_500Medium", fontSize: 20, marginBottom: 2 },
+  statLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase" },
   statDivider: { width: 1, height: 30 },
-  locationCard: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 },
+  locationCard: { borderWidth: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 },
   locationIconWrap: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   locationTopRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
-  locationLabel: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", flex: 1 },
+  locationLabel: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", flex: 1 },
   locationModeBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
-  locationModeBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 9, letterSpacing: 0.5 },
+  locationModeBadgeText: { fontFamily: "DMSans_500Medium", fontSize: 9, letterSpacing: 0.5 },
   locationAddress: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   compactRow: { flexDirection: "row", gap: 10, marginBottom: 24 },
-  compactCard: { flex: 1, borderWidth: 1, borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center", gap: 10 },
+  compactCard: { flex: 1, borderWidth: 1, borderRadius: 24, padding: 14, flexDirection: "row", alignItems: "center", gap: 10 },
   compactIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   compactTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 2 },
-  compactMeta: { fontFamily: "DMMono_400Regular", fontSize: 9 },
+  compactMeta: { fontFamily: "DMSans_400Regular", fontSize: 9 },
   section: { marginBottom: 28 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
   sectionTitle: { fontFamily: "Sora_700Bold", fontSize: 14 },
   addBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-  addBtnText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  addBtnText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   list: { gap: 10 },
-  serviceCard: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: "column", gap: 10 },
+  serviceCard: { borderWidth: 1, borderRadius: 24, padding: 16, flexDirection: "column", gap: 10 },
   serviceNameRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   serviceIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   serviceNameInner: { flex: 1, flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
@@ -535,40 +535,40 @@ const styles = StyleSheet.create({
   serviceBadgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   serviceBadgesLeft: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap", flex: 1 },
 
-  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 14, flexShrink: 0 },
-  serviceCategoryBadge: { backgroundColor: "#ff6b3512", borderWidth: 1, borderColor: "#ff6b3528", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
-  serviceCategoryBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", color: "#ff6b35" },
+  serviceRate: { fontFamily: "DMSans_500Medium", fontSize: 14, flexShrink: 0 },
+  serviceCategoryBadge: { backgroundColor: "#e0603012", borderWidth: 1, borderColor: "#e0603028", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
+  serviceCategoryBadgeText: { fontFamily: "DMSans_500Medium", fontSize: 8, letterSpacing: 1, textTransform: "uppercase", color: "#e06030" },
   serviceStatusBadge: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
   serviceStatusDot: { width: 5, height: 5, borderRadius: 3 },
-  serviceStatusText: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.5 },
+  serviceStatusText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.5 },
   compositionSection: { borderTopWidth: 1, paddingTop: 10, gap: 6 },
-  compositionLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase" },
+  compositionLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase" },
   compositionRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  compositionChipText: { fontFamily: "DMMono_400Regular", fontSize: 10, maxWidth: 120 },
+  compositionChipText: { fontFamily: "DMSans_400Regular", fontSize: 10, maxWidth: 120 },
   serviceRatingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
-  serviceRatingText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  serviceRatingText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   newBadgeWrap: { flexDirection: "row" },
-  newBadge: { backgroundColor: "#00e5a015", borderWidth: 1, borderColor: "#00e5a025", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
-  newBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#00e5a0" },
+  newBadge: { backgroundColor: "#18a06b15", borderWidth: 1, borderColor: "#18a06b25", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2 },
+  newBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#18a06b" },
   nameWithBadge: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
   subContainer: { flex: 1 },
   subHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, marginBottom: 20 },
   backBtn: { padding: 4 },
   subTitle: { fontFamily: "Sora_700Bold", fontSize: 16 },
-  subMeta: { fontFamily: "DMMono_400Regular", fontSize: 10, marginTop: 2 },
-  newSkillTag: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  subMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
+  newSkillTag: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   skillDetailContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 12 },
-  descriptionCard: { borderWidth: 1, borderRadius: 16, padding: 18 },
-  descriptionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
+  descriptionCard: { borderWidth: 1, borderRadius: 24, padding: 18 },
+  descriptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
   descriptionText: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20 },
   emptyState: { alignItems: "center", paddingVertical: 60, gap: 12 },
-  emptyText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
+  emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   moreBtn: { width: 34, height: 34, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   detailRow: { flexDirection: "row", gap: 10 },
-  detailCard: { flex: 1, borderWidth: 1, borderRadius: 16, padding: 16 },
-  detailCardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
+  detailCard: { flex: 1, borderWidth: 1, borderRadius: 24, padding: 16 },
+  detailCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
   detailCardValue: { fontFamily: "Sora_600SemiBold", fontSize: 14 },
-  toolIconCard: { borderWidth: 1, borderRadius: 16, padding: 20, alignItems: "center" },
+  toolIconCard: { borderWidth: 1, borderRadius: 24, padding: 20, alignItems: "center" },
   toolIconLarge: { width: 72, height: 72, borderRadius: 20, borderWidth: 1, alignItems: "center", justifyContent: "center" },
 });

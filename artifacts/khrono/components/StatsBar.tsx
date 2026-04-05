@@ -46,7 +46,7 @@ export function StatsBar({ items, style }: Props) {
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 14,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -56,14 +56,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: 4,
   },
   value: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 17,
   },
   divider: {

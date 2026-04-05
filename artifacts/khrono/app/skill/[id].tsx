@@ -14,7 +14,7 @@ export default function SkillDetailScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + 20, backgroundColor: colors.background }]}>
       <Pressable style={styles.back} onPress={() => router.back()}>
-        <Feather name="arrow-left" size={18} color={"#ff6b35"} />
+        <Feather name="arrow-left" size={18} color={"#e06030"} />
       </Pressable>
       <Text style={[styles.title, { color: colors.text }]}>Skill {id}</Text>
     </View>

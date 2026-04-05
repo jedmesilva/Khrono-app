@@ -144,7 +144,7 @@ export default function CodigoRecuperacaoScreen() {
 
         <View style={styles.content}>
           <View style={styles.iconWrap}>
-            <Feather name="shield" size={28} color="#ff6b35" />
+            <Feather name="shield" size={28} color="#e06030" />
           </View>
 
           <Text style={[styles.title, { color: colors.text }]}>Verifique seu código</Text>
@@ -174,7 +174,7 @@ export default function CodigoRecuperacaoScreen() {
                 keyboardType="number-pad"
                 maxLength={1}
                 textAlign="center"
-                selectionColor="#ff6b35"
+                selectionColor="#e06030"
                 caretHidden
                 editable={!sending && !verifying}
               />
@@ -214,31 +214,31 @@ const styles = StyleSheet.create({
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 20 },
   iconWrap: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+    backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 10 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 13, marginBottom: 4 },
-  contactText: { fontFamily: "DMMono_500Medium", fontSize: 14, marginBottom: 36 },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 13, marginBottom: 4 },
+  contactText: { fontFamily: "DMSans_500Medium", fontSize: 14, marginBottom: 36 },
   codeRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
   codeBox: {
     flex: 1, height: 56, borderRadius: 14, borderWidth: 1,
-    fontFamily: "DMMono_500Medium", fontSize: 22,
+    fontFamily: "DMSans_500Medium", fontSize: 22,
   },
-  codeBoxFilled: { borderColor: "#ff6b3550", backgroundColor: "#ff6b3508" },
+  codeBoxFilled: { borderColor: "#e0603050", backgroundColor: "#e0603008" },
   codeBoxError: { borderColor: "#ff444460", backgroundColor: "#ff444408" },
   errorText: {
-    fontFamily: "DMMono_400Regular", fontSize: 12,
+    fontFamily: "DMSans_400Regular", fontSize: 12,
     color: "#ff4444", marginBottom: 12, paddingLeft: 4,
   },
   btn: {
-    backgroundColor: "#ff6b35", borderRadius: 14, height: 52,
+    backgroundColor: "#e06030", borderRadius: 14, height: 52,
     alignItems: "center", justifyContent: "center", marginBottom: 20,
   },
   btnDisabled: { opacity: 0.3 },
   btnText: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: "#fff" },
   resendText: {
-    fontFamily: "DMMono_400Regular", fontSize: 12,
-    color: "#ff6b35", textAlign: "center",
+    fontFamily: "DMSans_400Regular", fontSize: 12,
+    color: "#e06030", textAlign: "center",
   },
 });

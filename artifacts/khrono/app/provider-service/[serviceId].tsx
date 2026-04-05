@@ -22,7 +22,7 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
   return (
     <View style={{ flexDirection: "row", gap: 2 }}>
       {[1, 2, 3, 4, 5].map((s) => (
-        <Feather key={s} name="star" size={size} color="#ff6b35" style={{ opacity: s <= rating ? 1 : 0.2 }} />
+        <Feather key={s} name="star" size={size} color="#e06030" style={{ opacity: s <= rating ? 1 : 0.2 }} />
       ))}
     </View>
   );
@@ -45,7 +45,7 @@ export default function ProviderServiceScreen() {
     return (
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#ff6b35" />
+          <Feather name="arrow-left" size={18} color="#e06030" />
         </Pressable>
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Service não encontrado.</Text>
       </View>
@@ -74,7 +74,7 @@ export default function ProviderServiceScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#ff6b35" />
+            <Feather name="arrow-left" size={18} color="#e06030" />
           </Pressable>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -95,7 +95,7 @@ export default function ProviderServiceScreen() {
           <View style={{ flex: 1 }}>
             <Text style={[styles.providerMiniName, { color: colors.text }]}>{provider.name}</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <Feather name="star" size={9} color="#ff6b35" />
+              <Feather name="star" size={9} color="#e06030" />
               <Text style={[styles.providerMiniMeta, { color: colors.textSecondary }]}>{provider.rating.toFixed(1)} · {provider.avaliacoes} avaliações</Text>
             </View>
           </View>
@@ -108,8 +108,8 @@ export default function ProviderServiceScreen() {
 
           {skill && (
             <View style={styles.compositionRow}>
-              <View style={[styles.compIcon, { borderColor: "#ff6b3525", backgroundColor: "#ff6b3510" }]}>
-                <Feather name="star" size={13} color="#ff6b35" />
+              <View style={[styles.compIcon, { borderColor: "#e0603025", backgroundColor: "#e0603010" }]}>
+                <Feather name="star" size={13} color="#e06030" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.compLabel, { color: colors.textMuted }]}>Skill</Text>
@@ -126,8 +126,8 @@ export default function ProviderServiceScreen() {
 
           {tools.length > 0 && (
             <View style={[styles.compositionRow, { marginTop: 12 }]}>
-              <View style={[styles.compIcon, { borderColor: "#00e5a025", backgroundColor: "#00e5a010" }]}>
-                <Feather name="key" size={13} color="#00e5a0" />
+              <View style={[styles.compIcon, { borderColor: "#18a06b25", backgroundColor: "#18a06b10" }]}>
+                <Feather name="key" size={13} color="#18a06b" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.compLabel, { color: colors.textMuted }]}>Tools</Text>
@@ -233,42 +233,42 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "flex-start", gap: 14, marginBottom: 16 },
   backBtn: { padding: 4, marginTop: 2, flexShrink: 0 },
   serviceTitle: { fontFamily: "Sora_700Bold", fontSize: 20, marginBottom: 4 },
-  serviceRate: { fontFamily: "DMMono_500Medium", fontSize: 14, color: "#ff6b35" },
+  serviceRate: { fontFamily: "DMSans_500Medium", fontSize: 14, color: "#e06030" },
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
   providerMini: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 16 },
-  providerMiniAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530", alignItems: "center", justifyContent: "center" },
-  providerMiniAvatarText: { fontFamily: "Sora_700Bold", fontSize: 12, color: "#ff6b35" },
+  providerMiniAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030", alignItems: "center", justifyContent: "center" },
+  providerMiniAvatarText: { fontFamily: "Sora_700Bold", fontSize: 12, color: "#e06030" },
   providerMiniName: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 2 },
-  providerMiniMeta: { fontFamily: "DMMono_400Regular", fontSize: 10 },
-  card: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 16 },
-  cardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 },
+  providerMiniMeta: { fontFamily: "DMSans_400Regular", fontSize: 10 },
+  card: { borderWidth: 1, borderRadius: 24, padding: 18, marginBottom: 16 },
+  cardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 },
   compositionRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   compIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 },
-  compLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
+  compLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
   compNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  compSkillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff6b35dd", flex: 1 },
-  compToolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#00e5a0dd", flex: 1 },
-  compEmptyText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  compSkillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#e06030dd", flex: 1 },
+  compToolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#18a06bdd", flex: 1 },
+  compEmptyText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   skillDesc: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16, marginTop: 2 },
-  toolDetails: { fontFamily: "DMMono_400Regular", fontSize: 10, marginTop: 1 },
+  toolDetails: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 1 },
   performanceGrid: { gap: 10, marginBottom: 16 },
-  perfCard: { borderWidth: 1, borderRadius: 16, padding: 16 },
+  perfCard: { borderWidth: 1, borderRadius: 24, padding: 16 },
   perfCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  perfCardValue: { fontFamily: "DMMono_500Medium", fontSize: 26 },
-  perfCardLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
+  perfCardValue: { fontFamily: "DMSans_500Medium", fontSize: 26 },
+  perfCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
   perfExpanded: { marginTop: 16, borderTopWidth: 1, paddingTop: 14 },
-  perfExpandedText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  perfExpandedText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   reviewItem: { paddingVertical: 12 },
   reviewItemHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   reviewAuthor: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
   reviewText: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18, marginBottom: 6 },
-  reviewDate: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  reviewDate: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   contractItem: { paddingVertical: 10 },
   contractRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
   contractClient: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
-  contractValue: { fontFamily: "DMMono_500Medium", fontSize: 12, color: "#00e5a0" },
-  contractMeta: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  contractValue: { fontFamily: "DMSans_500Medium", fontSize: 12, color: "#18a06b" },
+  contractMeta: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   emptyPerf: { alignItems: "center", paddingVertical: 50, gap: 10 },
-  emptyPerfText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
-  emptyPerfSub: { fontFamily: "DMMono_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
+  emptyPerfText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
+  emptyPerfSub: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
 });

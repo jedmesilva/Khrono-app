@@ -178,11 +178,11 @@ export function PixDepositModal({ visible, onClose }: Props) {
                   {Array.from({ length: 9 }).map((_, i) => (
                     <View
                       key={i}
-                      style={[styles.qrCell, i % 2 === 0 && { backgroundColor: "#00e5a080" }]}
+                      style={[styles.qrCell, i % 2 === 0 && { backgroundColor: "#18a06b80" }]}
                     />
                   ))}
                 </View>
-                <Feather name="zap" size={28} color="#00e5a0" style={styles.qrIcon} />
+                <Feather name="zap" size={28} color="#18a06b" style={styles.qrIcon} />
               </View>
               <Text style={styles.qrAmount}>
                 R$ {parsedAmount.toFixed(2).replace(".", ",")}
@@ -202,7 +202,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
                   <Feather
                     name={copied ? "check" : "copy"}
                     size={14}
-                    color={copied ? "#00e5a0" : colors.textSecondary}
+                    color={copied ? "#18a06b" : colors.textSecondary}
                   />
                 </Pressable>
               </View>
@@ -218,7 +218,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
         {step === "success" && (
           <View style={styles.successContainer}>
             <View style={styles.successIcon}>
-              <Feather name="check" size={32} color="#00e5a0" />
+              <Feather name="check" size={32} color="#18a06b" />
             </View>
             <Text style={styles.successTitle}>Depósito em análise</Text>
             <Text style={styles.successSub}>
@@ -252,7 +252,7 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
     },
     fieldLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -269,14 +269,14 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 4,
     },
     currencyPrefix: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 18,
       color: colors.textSecondary,
       marginRight: 8,
     },
     amountInput: {
       flex: 1,
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 28,
       color: colors.text,
       paddingVertical: 16,
@@ -287,7 +287,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 20,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
       borderRadius: 14,
       paddingVertical: 16,
     },
@@ -309,8 +309,8 @@ function createStyles(colors: ColorPalette) {
       height: 160,
       backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: "#00e5a030",
-      borderRadius: 16,
+      borderColor: "#18a06b30",
+      borderRadius: 24,
       alignItems: "center",
       justifyContent: "center",
       position: "relative",
@@ -332,13 +332,13 @@ function createStyles(colors: ColorPalette) {
       position: "absolute",
     },
     qrAmount: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 24,
       color: colors.text,
       letterSpacing: 1,
     },
     qrSub: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textMuted,
     },
@@ -352,7 +352,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 4,
     },
     pixKeyLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -363,9 +363,9 @@ function createStyles(colors: ColorPalette) {
       gap: 10,
     },
     pixKeyValue: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 13,
-      color: "#00e5a0",
+      color: "#18a06b",
       flex: 1,
     },
     copyBtn: {
@@ -379,8 +379,8 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     copyBtnCopied: {
-      borderColor: "#00e5a040",
-      backgroundColor: "#00e5a015",
+      borderColor: "#18a06b40",
+      backgroundColor: "#18a06b15",
     },
     successContainer: {
       alignItems: "center",
@@ -391,9 +391,9 @@ function createStyles(colors: ColorPalette) {
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: "#00e5a015",
+      backgroundColor: "#18a06b15",
       borderWidth: 1,
-      borderColor: "#00e5a040",
+      borderColor: "#18a06b40",
       alignItems: "center",
       justifyContent: "center",
     },
@@ -403,7 +403,7 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
     },
     successSub: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 12,
       color: colors.textSecondary,
       textAlign: "center",

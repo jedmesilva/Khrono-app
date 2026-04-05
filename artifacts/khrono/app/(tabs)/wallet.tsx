@@ -68,7 +68,7 @@ export default function WalletScreen() {
       >
         <View style={styles.header}>
           <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: "#ff6b35" }}>r</Text>ono
+            K<Text style={{ color: "#e06030" }}>r</Text>ono
           </Text>
           <Text style={[styles.subtitle, { color: colors.textDim }]}>carteira</Text>
         </View>
@@ -83,15 +83,15 @@ export default function WalletScreen() {
             </Pressable>
           </View>
           <View style={styles.statsRow}>
-            <View style={[styles.statChip, { borderColor: "#ff6b3525", backgroundColor: "#ff6b3510" }]}>
-              <Text style={[styles.statChipLabel, { color: "#ff6b35" }]}>PAGO</Text>
-              <Text style={[styles.statChipValue, { color: "#ff6b35" }]}>
+            <View style={[styles.statChip, { borderColor: "#e0603025", backgroundColor: "#e0603010" }]}>
+              <Text style={[styles.statChipLabel, { color: "#e06030" }]}>PAGO</Text>
+              <Text style={[styles.statChipValue, { color: "#e06030" }]}>
                 {showBalance ? `R$ ${totalPaid.toFixed(2)}` : "••••"}
               </Text>
             </View>
-            <View style={[styles.statChip, { borderColor: "#00e5a025", backgroundColor: "#00e5a010" }]}>
-              <Text style={[styles.statChipLabel, { color: "#00e5a0" }]}>RECEBIDO</Text>
-              <Text style={[styles.statChipValue, { color: "#00e5a0" }]}>
+            <View style={[styles.statChip, { borderColor: "#18a06b25", backgroundColor: "#18a06b10" }]}>
+              <Text style={[styles.statChipLabel, { color: "#18a06b" }]}>RECEBIDO</Text>
+              <Text style={[styles.statChipValue, { color: "#18a06b" }]}>
                 {showBalance ? `R$ ${totalReceived.toFixed(2)}` : "••••"}
               </Text>
             </View>
@@ -101,18 +101,18 @@ export default function WalletScreen() {
         {/* Action buttons */}
         <View style={styles.actionsRow}>
           <Pressable
-            style={({ pressed }) => [styles.actionBtn, { borderColor: "#00e5a025", backgroundColor: colors.card }, pressed && { backgroundColor: "#00e5a012" }]}
+            style={({ pressed }) => [styles.actionBtn, { borderColor: "#18a06b25", backgroundColor: colors.card }, pressed && { backgroundColor: "#18a06b12" }]}
             onPress={() => setDepositModalVisible(true)}
           >
-            <Feather name="arrow-down-left" size={18} color="#00e5a0" />
-            <Text style={[styles.actionBtnText, { color: "#00e5a0" }]}>Depositar</Text>
+            <Feather name="arrow-down-left" size={18} color="#18a06b" />
+            <Text style={[styles.actionBtnText, { color: "#18a06b" }]}>Depositar</Text>
           </Pressable>
           <Pressable
-            style={({ pressed }) => [styles.actionBtn, { borderColor: "#ff6b3525", backgroundColor: colors.card }, pressed && { backgroundColor: "#ff6b3512" }]}
+            style={({ pressed }) => [styles.actionBtn, { borderColor: "#e0603025", backgroundColor: colors.card }, pressed && { backgroundColor: "#e0603012" }]}
             onPress={() => setWithdrawModalVisible(true)}
           >
-            <Feather name="arrow-up-right" size={18} color="#ff6b35" />
-            <Text style={[styles.actionBtnText, { color: "#ff6b35" }]}>Sacar</Text>
+            <Feather name="arrow-up-right" size={18} color="#e06030" />
+            <Text style={[styles.actionBtnText, { color: "#e06030" }]}>Sacar</Text>
           </Pressable>
         </View>
 
@@ -135,7 +135,7 @@ export default function WalletScreen() {
               style={[
                 styles.cardItem,
                 { backgroundColor: colors.card, borderColor: colors.cardBorder },
-                card.padrao && { borderColor: "#ff6b3535", backgroundColor: "#ff6b3505" },
+                card.padrao && { borderColor: "#e0603035", backgroundColor: "#e0603005" },
               ]}
             >
               <BandeiraTag bandeira={card.bandeira} />
@@ -238,48 +238,48 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
   logo: { fontFamily: "Sora_700Bold", fontSize: 24, letterSpacing: -0.5 },
-  subtitle: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
   balanceCard: { borderWidth: 1, borderRadius: 24, padding: 24, marginBottom: 14, gap: 12 },
-  balanceLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
+  balanceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
   balanceRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  balanceAmount: { fontFamily: "DMMono_500Medium", fontSize: 32, letterSpacing: -0.5, flex: 1 },
+  balanceAmount: { fontFamily: "DMSans_500Medium", fontSize: 32, letterSpacing: -0.5, flex: 1 },
   eyeBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   statsRow: { flexDirection: "row", gap: 10 },
   statChip: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 12, gap: 4 },
-  statChipLabel: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 1.5 },
-  statChipValue: { fontFamily: "DMMono_500Medium", fontSize: 15 },
+  statChipLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.5 },
+  statChipValue: { fontFamily: "DMSans_500Medium", fontSize: 15 },
   actionsRow: { flexDirection: "row", gap: 12, marginBottom: 28 },
   actionBtn: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 8, borderWidth: 1, borderRadius: 16, paddingVertical: 16,
+    gap: 8, borderWidth: 1, borderRadius: 24, paddingVertical: 16,
   },
   actionBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
   sectionTitle: { fontFamily: "Sora_700Bold", fontSize: 14 },
   addCardBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-  addCardText: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  addCardText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   cardsList: { gap: 8, marginBottom: 28 },
-  cardItem: { borderWidth: 1, borderRadius: 16, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
+  cardItem: { borderWidth: 1, borderRadius: 24, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
   bandeiraTag: { width: 38, height: 26, borderRadius: 5, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  bandeiraText: { fontFamily: "DMMono_500Medium", fontSize: 8, letterSpacing: 0.5, fontWeight: "800" },
+  bandeiraText: { fontFamily: "DMSans_500Medium", fontSize: 8, letterSpacing: 0.5, fontWeight: "800" },
   cardInfo: { flex: 1, gap: 3 },
   cardInfoTop: { flexDirection: "row", alignItems: "center", gap: 8 },
   cardName: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  defaultBadge: { backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3525", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 1 },
-  defaultBadgeText: { fontFamily: "DMMono_400Regular", fontSize: 9, color: "#ff6b35" },
-  cardValidade: { fontFamily: "DMMono_400Regular", fontSize: 11 },
+  defaultBadge: { backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603025", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 1 },
+  defaultBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#e06030" },
+  cardValidade: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   cardActions: { flexDirection: "row", alignItems: "center", gap: 8 },
   setDefaultBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
-  setDefaultText: { fontFamily: "DMMono_400Regular", fontSize: 10 },
+  setDefaultText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   removeBtn: { padding: 4 },
-  emptyCards: { borderWidth: 1, borderStyle: "dashed", borderRadius: 16, padding: 24, alignItems: "center", gap: 10 },
-  emptyCardsText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
+  emptyCards: { borderWidth: 1, borderStyle: "dashed", borderRadius: 24, padding: 24, alignItems: "center", gap: 10 },
+  emptyCardsText: { fontFamily: "DMSans_400Regular", fontSize: 12 },
   filtersRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
   filterChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
-  filterChipActive: { backgroundColor: "#ff6b35", borderColor: "#ff6b35" },
-  filterChipText: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.5 },
+  filterChipActive: { backgroundColor: "#e06030", borderColor: "#e06030" },
+  filterChipText: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.5 },
   filterChipTextActive: { color: "#fff" },
   emptyState: { alignItems: "center", paddingVertical: 48, gap: 12 },
-  emptyText: { fontFamily: "DMMono_400Regular", fontSize: 13 },
+  emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   list: { gap: 8 },
 });

@@ -87,8 +87,8 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
     >
       <BottomSheetView style={[styles.container, { paddingBottom: Math.max(insets.bottom, 28) }]}>
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: "#ff6b3512", borderColor: "#ff6b3525" }]}>
-            <Feather name="hash" size={20} color="#ff6b35" />
+          <View style={[styles.iconWrap, { backgroundColor: "#e0603012", borderColor: "#e0603025" }]}>
+            <Feather name="hash" size={20} color="#e06030" />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Meu PINCODE</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
@@ -96,7 +96,7 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
           </Text>
         </View>
 
-        <View style={[styles.statusRow, { backgroundColor: "#00e5a010", borderColor: "#00e5a025" }]}>
+        <View style={[styles.statusRow, { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }]}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
@@ -107,7 +107,7 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
             {digits.map((d, i) => (
               <View
                 key={i}
-                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: "#ff6b3530" }]}
+                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: "#e0603030" }]}
               >
                 <Text style={styles.digitText}>{d}</Text>
               </View>
@@ -129,9 +129,9 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
           <Feather
             name={copied ? "check" : "copy"}
             size={15}
-            color={copied ? "#00e5a0" : colors.textSecondary}
+            color={copied ? "#18a06b" : colors.textSecondary}
           />
-          <Text style={[styles.copyBtnText, { color: copied ? "#00e5a0" : colors.textSecondary }]}>
+          <Text style={[styles.copyBtnText, { color: copied ? "#18a06b" : colors.textSecondary }]}>
             {copied ? "Copiado!" : "Copiar código"}
           </Text>
         </Pressable>
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   subtitle: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     letterSpacing: 0.2,
     textAlign: "center",
@@ -186,12 +186,12 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: "#00e5a0",
+    backgroundColor: "#18a06b",
   },
   statusText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
-    color: "#00e5a0",
+    color: "#18a06b",
     letterSpacing: 0.3,
   },
   pinCard: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   pinLabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 2,
     textTransform: "uppercase",
@@ -216,19 +216,19 @@ const styles = StyleSheet.create({
   digitBox: {
     width: 58,
     height: 72,
-    borderRadius: 16,
+    borderRadius: 24,
     borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
   },
   digitText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 36,
-    color: "#ff6b35",
+    color: "#e06030",
     lineHeight: 42,
   },
   pinHint: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     letterSpacing: 0.2,
     textAlign: "center",

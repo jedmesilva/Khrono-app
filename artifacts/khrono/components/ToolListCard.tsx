@@ -31,8 +31,8 @@ export function ToolListCard({
       style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: available ? 1 : 0.55 }]}
       {...(onPress ? { onPress } : {})}
     >
-      <View style={[styles.iconWrap, { backgroundColor: available ? "#ff6b3312" : colors.surface, borderColor: available ? "#ff6b3528" : colors.surfaceBorder }]}>
-        <Feather name={iconName} size={16} color={available ? "#ff6b35" : colors.textMuted} />
+      <View style={[styles.iconWrap, { backgroundColor: available ? "#ff6b3312" : colors.surface, borderColor: available ? "#e0603028" : colors.surfaceBorder }]}>
+        <Feather name={iconName} size={16} color={available ? "#e06030" : colors.textMuted} />
       </View>
       <View style={{ flex: 1 }}>
         <View style={styles.nameRow}>
@@ -46,8 +46,8 @@ export function ToolListCard({
         ) : null}
       </View>
       {badge ? (
-        <View style={[styles.badge, { backgroundColor: available ? "#ff6b3512" : colors.surface, borderColor: available ? "#ff6b3530" : colors.surfaceBorder }]}>
-          <Text style={[styles.badgeText, { color: available ? "#ff6b35" : colors.textMuted }]}>{badge}</Text>
+        <View style={[styles.badge, { backgroundColor: available ? "#e0603012" : colors.surface, borderColor: available ? "#e0603030" : colors.surfaceBorder }]}>
+          <Text style={[styles.badgeText, { color: available ? "#e06030" : colors.textMuted }]}>{badge}</Text>
         </View>
       ) : null}
       {onPress ? (
@@ -58,11 +58,11 @@ export function ToolListCard({
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 16, padding: 16 },
+  card: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 24, padding: 16 },
   iconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   name: { fontFamily: "Sora_700Bold", fontSize: 15, flexShrink: 1 },
   description: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
   badge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, flexShrink: 0 },
-  badgeText: { fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
+  badgeText: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 0.5, textTransform: "uppercase" },
 });

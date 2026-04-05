@@ -68,7 +68,7 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
 
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
-  const accentColor = isHiring ? "#ff6b35" : "#00e5a0";
+  const accentColor = isHiring ? "#e06030" : "#18a06b";
   const elapsed = isScheduled ? 0 : now - contract.startedAt;
 
   const restante = isTimer && contract.duracaoTotal
@@ -267,12 +267,12 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   roleText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 1,
   },
   tipoText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 1,
   },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 13,
     fontWeight: "700",
   },
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   servicoLabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     marginTop: 2,
   },
@@ -324,20 +324,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   metaLabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 1.5,
     marginBottom: 4,
     textTransform: "uppercase",
   },
   timerText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 30,
     letterSpacing: 2,
     lineHeight: 34,
   },
   valueText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 22,
     letterSpacing: 1,
     lineHeight: 26,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   scheduledText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     letterSpacing: 0.3,
   },
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   rateText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     letterSpacing: 0.5,
   },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stopText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     letterSpacing: 1,
     textTransform: "uppercase",

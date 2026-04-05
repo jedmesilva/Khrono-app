@@ -316,7 +316,7 @@ function QrcodeContent({
       <View>
         <Text style={styles.title}>Escanear QR Code</Text>
         <View style={[styles.viewfinder, { justifyContent: "center" }]}>
-          <ActivityIndicator color="#ff6b35" size="large" />
+          <ActivityIndicator color="#e06030" size="large" />
         </View>
       </View>
     );
@@ -359,11 +359,11 @@ function QrcodeContent({
           onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
         />
         {CORNERS.map((s, i) => (
-          <View key={i} style={[styles.corner, { borderColor: "#ff6b35" }, s]} />
+          <View key={i} style={[styles.corner, { borderColor: "#e06030" }, s]} />
         ))}
         {scanned && (
           <View style={styles.scannedOverlay}>
-            <Feather name="check-circle" size={52} color="#ff6b35" />
+            <Feather name="check-circle" size={52} color="#e06030" />
           </View>
         )}
       </View>
@@ -408,7 +408,7 @@ function NfcContent({ colors }: { colors: ColorPalette }) {
       height: size,
       borderRadius: size / 2,
       borderWidth: 1.5,
-      borderColor: "#ff6b35",
+      borderColor: "#e06030",
       transform: [{ scale: interpolate(val.value, [0, 1], [0.75, 1.55], Extrapolation.CLAMP) }],
       opacity: interpolate(val.value, [0, 0.4, 1], [0.75, 0.3, 0], Extrapolation.CLAMP),
     }));
@@ -427,7 +427,7 @@ function NfcContent({ colors }: { colors: ColorPalette }) {
         <Animated.View style={ring2Style} />
         <Animated.View style={ring1Style} />
         <View style={styles.nfcIcon}>
-          <Feather name="wifi" size={24} color={"#ff6b35"} />
+          <Feather name="wifi" size={24} color={"#e06030"} />
         </View>
       </View>
 
@@ -650,22 +650,22 @@ export function HireSheet({ open, onClose }: Props) {
 
   const hireOptions: { icon: React.ReactNode; label: string; method: HireMethod }[] = [
     {
-      icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={"#ff6b35"} />,
+      icon: <MaterialCommunityIcons name="qrcode-scan" size={22} color={"#e06030"} />,
       label: "QRCODE",
       method: "QRCODE",
     },
     {
-      icon: <Feather name="wifi" size={22} color={"#ff6b35"} />,
+      icon: <Feather name="wifi" size={22} color={"#e06030"} />,
       label: "APROXIMAÇÃO",
       method: "NFC",
     },
     {
-      icon: <Feather name="hash" size={22} color={"#ff6b35"} />,
+      icon: <Feather name="hash" size={22} color={"#e06030"} />,
       label: "PINCODE",
       method: "PINCODE",
     },
     {
-      icon: <Feather name="link" size={22} color={"#ff6b35"} />,
+      icon: <Feather name="link" size={22} color={"#e06030"} />,
       label: "LINK",
       method: "LINK",
     },
@@ -743,7 +743,7 @@ export function HireSheet({ open, onClose }: Props) {
           <View style={styles.availHeaderRow}>
             <Text style={styles.availTitle}>Disponibilidade</Text>
             <View style={styles.toggleRow}>
-              <Text style={[styles.toggleLabel, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
+              <Text style={[styles.toggleLabel, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
                 {disponivel ? "Disponível" : "Indisponível"}
               </Text>
               <AnimatedToggle
@@ -769,15 +769,15 @@ export function HireSheet({ open, onClose }: Props) {
           <View style={[
             styles.availStatusBanner,
             disponivel
-              ? { backgroundColor: "#00e5a010", borderColor: "#00e5a030" }
+              ? { backgroundColor: "#18a06b10", borderColor: "#18a06b30" }
               : { backgroundColor: colors.card, borderColor: colors.cardBorder },
           ]}>
             <Feather
               name={disponivel ? "check-circle" : "slash"}
               size={13}
-              color={disponivel ? "#00e5a0" : colors.textMuted}
+              color={disponivel ? "#18a06b" : colors.textMuted}
             />
-            <Text style={[styles.availStatusMsg, { color: disponivel ? "#00e5a0" : colors.textMuted }]}>
+            <Text style={[styles.availStatusMsg, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
               {disponivel
                 ? "Sessão ativa · disponível para contratações."
                 : "Você está indisponível e não pode receber contratos."}
@@ -843,7 +843,7 @@ export function HireSheet({ open, onClose }: Props) {
             {/* Header */}
             <View style={styles.sheetHeaderRow}>
               <Pressable onPress={() => setSubMode(null)} style={styles.backBtn}>
-                <Feather name="arrow-left" size={18} color={"#ff6b35"} />
+                <Feather name="arrow-left" size={18} color={"#e06030"} />
               </Pressable>
               <Text style={styles.sheetHeaderLabel}>
                 {subMode ? subTitles[subMode] : ""}
@@ -901,38 +901,38 @@ function createMainStyles(colors: ColorPalette) {
     sheetTitle: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 16, marginTop: 4, color: colors.text },
     hireGrid: { flexDirection: "row", gap: 10, marginBottom: 28 },
     hireItem: {
-      flex: 1, borderWidth: 1, borderRadius: 16, paddingVertical: 18,
+      flex: 1, borderWidth: 1, borderRadius: 24, paddingVertical: 18,
       alignItems: "center", gap: 10,
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
-    hireItemPressed: { backgroundColor: "#ff6b3510", borderColor: "#ff6b3540" },
+    hireItemPressed: { backgroundColor: "#e0603010", borderColor: "#e0603040" },
     hireLabel: {
-      fontFamily: "DMMono_400Regular", fontSize: 8, letterSpacing: 0.5,
+      fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 0.5,
       textTransform: "uppercase", textAlign: "center", color: colors.textSecondary,
     },
     availHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
     availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 15, color: colors.text },
     toggleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-    toggleLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.3 },
+    toggleLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.3 },
     availStatusBanner: {
       flexDirection: "row", alignItems: "center", gap: 8,
       borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
       marginBottom: 14,
     },
-    availStatusMsg: { fontFamily: "DMMono_400Regular", fontSize: 11, letterSpacing: 0.2, flex: 1 },
+    availStatusMsg: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.2, flex: 1 },
     availRow: {
-      borderWidth: 1, borderRadius: 16, padding: 14,
+      borderWidth: 1, borderRadius: 24, padding: 14,
       flexDirection: "row", alignItems: "center", gap: 14,
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
-    availRowPressed: { backgroundColor: "#ff6b3508", borderColor: "#ff6b3522" },
+    availRowPressed: { backgroundColor: "#e0603008", borderColor: "#e0603022" },
     availIcon: {
       width: 52, height: 52, borderRadius: 14,
       alignItems: "center", justifyContent: "center", flexShrink: 0,
       backgroundColor: colors.menuIconBg,
     },
     availLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 3, color: colors.text },
-    availDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 15, color: colors.textMuted },
+    availDesc: { fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 15, color: colors.textMuted },
   });
 }
 
@@ -941,17 +941,17 @@ function createMainStyles(colors: ColorPalette) {
 function createSubStyles(colors: ColorPalette) {
   return StyleSheet.create({
     title: { fontFamily: "Sora_700Bold", fontSize: 18, marginBottom: 6, color: colors.text },
-    desc: { fontFamily: "DMMono_400Regular", fontSize: 12, marginBottom: 28, lineHeight: 18, color: colors.textSecondary },
+    desc: { fontFamily: "DMSans_400Regular", fontSize: 12, marginBottom: 28, lineHeight: 18, color: colors.textSecondary },
     userCard: {
       borderWidth: 1, borderRadius: 20, padding: 20, alignItems: "center", marginBottom: 16,
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
     userAvatar: {
       width: 64, height: 64, borderRadius: 32,
-      backgroundColor: "#ff6b3512", borderWidth: 2, borderColor: "#ff6b3530",
+      backgroundColor: "#e0603012", borderWidth: 2, borderColor: "#e0603030",
       alignItems: "center", justifyContent: "center", marginBottom: 12,
     },
-    userAvatarText: { fontFamily: "DMMono_500Medium", fontSize: 20, color: "#ff6b35", fontWeight: "700" },
+    userAvatarText: { fontFamily: "DMSans_500Medium", fontSize: 20, color: "#e06030", fontWeight: "700" },
     userName: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 4, color: colors.text },
     infoChipsRow: { flexDirection: "row", gap: 8, marginTop: 4 },
     infoChip: {
@@ -959,27 +959,27 @@ function createSubStyles(colors: ColorPalette) {
       borderWidth: 1, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12,
       backgroundColor: colors.surface, borderColor: colors.surfaceBorder,
     },
-    infoChipText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: colors.textSecondary },
+    infoChipText: { fontFamily: "DMSans_400Regular", fontSize: 11, color: colors.textSecondary },
     confirmDesc: {
-      fontFamily: "DMMono_400Regular", fontSize: 12, textAlign: "center",
+      fontFamily: "DMSans_400Regular", fontSize: 12, textAlign: "center",
       lineHeight: 18, marginBottom: 20, color: colors.textMuted,
     },
     primaryBtn: {
-      backgroundColor: "#ff6b35", borderRadius: 14, padding: 16,
+      backgroundColor: "#e06030", borderRadius: 14, padding: 16,
       alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8, marginBottom: 10,
     },
     primaryBtnDisabled: { opacity: 0.35 },
     primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
     ghostBtn: { borderWidth: 1, borderRadius: 14, padding: 14, alignItems: "center", borderColor: colors.surfaceBorder },
-    ghostBtnText: { fontFamily: "DMMono_400Regular", fontSize: 13, color: colors.textSecondary },
+    ghostBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13, color: colors.textSecondary },
     pinRow: { flexDirection: "row", gap: 10, justifyContent: "center", marginBottom: 28 },
     pinDigit: {
       width: 40, height: 48, borderRadius: 10, borderWidth: 1,
       alignItems: "center", justifyContent: "center",
       backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
     },
-    pinDigitFilled: { borderColor: "#ff6b3560", backgroundColor: "#ff6b3510" },
-    pinDigitText: { color: "#ff6b35", fontSize: 20, fontFamily: "DMMono_500Medium" },
+    pinDigitFilled: { borderColor: "#e0603060", backgroundColor: "#e0603010" },
+    pinDigitText: { color: "#e06030", fontSize: 20, fontFamily: "DMSans_500Medium" },
     keypadGrid: { gap: 10, marginBottom: 24 },
     keypadRow: { flexDirection: "row", gap: 10 },
     keypadBtn: {
@@ -988,8 +988,8 @@ function createSubStyles(colors: ColorPalette) {
       backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
     },
     keypadBtnEmpty: { backgroundColor: "transparent", borderColor: "transparent" },
-    keypadBtnPressed: { backgroundColor: "#ff6b3515", borderColor: "#ff6b3530" },
-    keypadBtnText: { fontFamily: "DMMono_500Medium", fontSize: 20, color: colors.text },
+    keypadBtnPressed: { backgroundColor: "#e0603015", borderColor: "#e0603030" },
+    keypadBtnText: { fontFamily: "DMSans_500Medium", fontSize: 20, color: colors.text },
     viewfinder: {
       width: "100%", aspectRatio: 1, borderRadius: 20, borderWidth: 1,
       marginBottom: 20, alignItems: "center", justifyContent: "center",
@@ -997,31 +997,31 @@ function createSubStyles(colors: ColorPalette) {
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
     corner: { position: "absolute", width: 28, height: 28 },
-    scanLine: { position: "absolute", left: "10%", right: "10%", height: 2, backgroundColor: "#ff6b3580", borderRadius: 1 },
+    scanLine: { position: "absolute", left: "10%", right: "10%", height: 2, backgroundColor: "#e0603080", borderRadius: 1 },
     scannedOverlay: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: "#00000080",
       alignItems: "center",
       justifyContent: "center",
     },
-    viewfinderLabel: { fontFamily: "DMMono_400Regular", fontSize: 11, textAlign: "center", color: colors.textDim },
+    viewfinderLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", color: colors.textDim },
     nfcWrap: {
       width: 180, height: 180, alignSelf: "center", alignItems: "center",
       justifyContent: "center", marginBottom: 24, position: "relative",
     },
     nfcIcon: {
       width: 56, height: 56, borderRadius: 28,
-      backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530",
+      backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030",
       alignItems: "center", justifyContent: "center",
     },
     statusRow: { flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 20 },
-    statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#ff6b35" },
-    statusText: { fontFamily: "DMMono_400Regular", fontSize: 12, color: colors.textMuted },
+    statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#e06030" },
+    statusText: { fontFamily: "DMSans_400Regular", fontSize: 12, color: colors.textMuted },
     linkRow: {
       flexDirection: "row", alignItems: "center", gap: 10,
       borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 14, marginBottom: 20,
       backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
     },
-    linkInput: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 13, color: colors.text },
+    linkInput: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 13, color: colors.text },
   });
 }

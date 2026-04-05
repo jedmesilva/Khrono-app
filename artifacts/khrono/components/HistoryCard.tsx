@@ -23,7 +23,7 @@ function formatDuration(startedAt: number, endedAt?: number) {
 export function HistoryCard({ contract, onPress }: Props) {
   const { colors } = useTheme();
   const isHiring = contract.role === "hiring";
-  const accentColor = isHiring ? "#ff6b35" : "#00e5a0";
+  const accentColor = isHiring ? "#e06030" : "#18a06b";
 
   return (
     <Pressable
@@ -48,7 +48,7 @@ export function HistoryCard({ contract, onPress }: Props) {
         <Text style={[styles.amount, { color: colors.textSecondary }]}>
           R${contract.totalAmount?.toFixed(0)}
         </Text>
-        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : "#00e5a099" }]}>
+        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : "#18a06b99" }]}>
           {isHiring ? "pago" : "recebido"}
         </Text>
       </View>
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 11,
   },
   info: {
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   skill: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     marginTop: 2,
   },
@@ -93,11 +93,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   amount: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 13,
   },
   roleTag: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     marginTop: 2,
     textTransform: "uppercase",

@@ -29,7 +29,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: "1",
     icon: "check-circle",
-    iconColor: "#00e5a0",
+    iconColor: "#18a06b",
     title: "Contrato encerrado",
     body: "Seu contrato com Rafael Lima foi encerrado. Total: R$120,00",
     time: "2h atrás",
@@ -38,7 +38,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: "2",
     icon: "user-check",
-    iconColor: "#ff6b35",
+    iconColor: "#e06030",
     title: "Nova contratação",
     body: "Bruno Souza te contratou para Consultoria de Redes Sociais.",
     time: "5h atrás",
@@ -47,7 +47,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: "3",
     icon: "dollar-sign",
-    iconColor: "#00e5a0",
+    iconColor: "#18a06b",
     title: "Pagamento recebido",
     body: "R$75,00 creditados pelo contrato com Ana Pereira.",
     time: "ontem",
@@ -182,9 +182,9 @@ const staticStyles = StyleSheet.create({
     fontSize: 18,
   },
   unreadLabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
-    color: "#ff6b35",
+    color: "#e06030",
     marginTop: 2,
     letterSpacing: 0.3,
   },
@@ -225,13 +225,13 @@ const staticStyles = StyleSheet.create({
     flex: 1,
   },
   itemTime: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 0.3,
     marginLeft: 8,
   },
   itemBody: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     lineHeight: 17,
   },
@@ -239,7 +239,7 @@ const staticStyles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: "#ff6b35",
+    backgroundColor: "#e06030",
     marginTop: 6,
     flexShrink: 0,
   },

@@ -30,15 +30,15 @@ export function ServiceCard({ service, skill, tools, active, colors, onPress, on
       onPress={onPress}
     >
       {/* Badge ativo / inativo */}
-      <View style={[styles.statusBadge, { backgroundColor: active ? "#00e5a018" : colors.surface, borderColor: active ? "#00e5a035" : colors.surfaceBorder }]}>
-        <View style={[styles.statusDot, { backgroundColor: active ? "#00e5a0" : colors.textDim }]} />
-        <Text style={[styles.statusText, { color: active ? "#00e5a0" : colors.textDim }]}>
+      <View style={[styles.statusBadge, { backgroundColor: active ? "#18a06b18" : colors.surface, borderColor: active ? "#18a06b35" : colors.surfaceBorder }]}>
+        <View style={[styles.statusDot, { backgroundColor: active ? "#18a06b" : colors.textDim }]} />
+        <Text style={[styles.statusText, { color: active ? "#18a06b" : colors.textDim }]}>
           {active ? "ativo" : "inativo"}
         </Text>
       </View>
 
       {/* Ícone grande */}
-      <View style={[styles.iconBlock, { backgroundColor: active ? "#ff6b35" : colors.surface }]}>
+      <View style={[styles.iconBlock, { backgroundColor: active ? "#e06030" : colors.surface }]}>
         <Feather name="layers" size={32} color={active ? "#fff" : colors.textMuted} />
       </View>
 
@@ -59,7 +59,7 @@ export function ServiceCard({ service, skill, tools, active, colors, onPress, on
             style={styles.verifiedTag}
             onPress={() => onVerifiedPress?.(service.verified!.type, "service")}
           >
-            <Feather name="check-circle" size={12} color="#00e5a0" />
+            <Feather name="check-circle" size={12} color="#18a06b" />
             <Text style={styles.verifiedTagText}>Verificado</Text>
           </Pressable>
         )}
@@ -94,7 +94,7 @@ export function ServiceCard({ service, skill, tools, active, colors, onPress, on
       {/* Footer */}
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
         <View style={styles.priceBlock}>
-          <Text style={[styles.price, { color: active ? "#ff6b35" : colors.textMuted }]}>R${service.hourlyRate}</Text>
+          <Text style={[styles.price, { color: active ? "#e06030" : colors.textMuted }]}>R${service.hourlyRate}</Text>
           <Text style={[styles.perHour, { color: colors.textDim }]}>/hora</Text>
         </View>
         {!service.isNew ? (
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   statusText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     letterSpacing: 0.5,
   },
@@ -160,41 +160,41 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryTag: {
-    backgroundColor: "#ff6b3512",
+    backgroundColor: "#e0603012",
     borderWidth: 1,
-    borderColor: "#ff6b3530",
+    borderColor: "#e0603030",
     borderRadius: 20,
     paddingHorizontal: 11,
     paddingVertical: 4,
   },
   categoryTagText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 11,
-    color: "#ff6b35",
+    color: "#e06030",
     letterSpacing: 0.3,
   },
   verifiedTag: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "#00e5a012",
+    backgroundColor: "#18a06b12",
     borderWidth: 1,
-    borderColor: "#00e5a030",
+    borderColor: "#18a06b30",
     borderRadius: 20,
     paddingHorizontal: 11,
     paddingVertical: 4,
   },
   verifiedTagText: {
-    fontFamily: "DMMono_500Medium",
+    fontFamily: "DMSans_500Medium",
     fontSize: 11,
-    color: "#00e5a0",
+    color: "#18a06b",
     letterSpacing: 0.3,
   },
   section: {
     gap: 8,
   },
   sectionLabel: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 1.5,
     textTransform: "uppercase",
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   chipText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     maxWidth: 160,
   },
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   perHour: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
   },
   contractsCount: {
@@ -240,16 +240,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   newBadge: {
-    backgroundColor: "#00e5a015",
+    backgroundColor: "#18a06b15",
     borderWidth: 1,
-    borderColor: "#00e5a025",
+    borderColor: "#18a06b25",
     borderRadius: 20,
     paddingHorizontal: 9,
     paddingVertical: 3,
   },
   newBadgeText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 9,
-    color: "#00e5a0",
+    color: "#18a06b",
   },
 });

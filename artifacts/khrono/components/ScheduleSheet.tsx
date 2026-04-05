@@ -129,7 +129,7 @@ export function ScheduleSheet({
           style={[styles.optionRow, !isAgendado && styles.optionRowActive]}
         >
           <View style={[styles.optionIcon, !isAgendado && styles.optionIconActive]}>
-            <Feather name="zap" size={18} color={!isAgendado ? "#ff6b35" : colors.textMuted} />
+            <Feather name="zap" size={18} color={!isAgendado ? "#e06030" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.optionLabel, !isAgendado && styles.optionLabelActive]}>
@@ -138,7 +138,7 @@ export function ScheduleSheet({
             <Text style={styles.optionSub}>Iniciar imediatamente</Text>
           </View>
           {!isAgendado && (
-            <Feather name="check" size={16} color={"#ff6b35"} />
+            <Feather name="check" size={16} color={"#e06030"} />
           )}
         </Pressable>
 
@@ -149,11 +149,11 @@ export function ScheduleSheet({
           style={[styles.optionRow, isAgendado && picker === "date" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="calendar" size={18} color={isAgendado ? "#ff6b35" : colors.textMuted} />
+            <Feather name="calendar" size={18} color={isAgendado ? "#e06030" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Dia</Text>
-            <Text style={[styles.optionSub, isAgendado && { color: "#ff6b35" }]}>
+            <Text style={[styles.optionSub, isAgendado && { color: "#e06030" }]}>
               {isAgendado ? formatDataLabel(data) : "Selecionar data"}
             </Text>
           </View>
@@ -165,11 +165,11 @@ export function ScheduleSheet({
           style={[styles.optionRow, isAgendado && picker === "time" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="clock" size={18} color={isAgendado ? "#ff6b35" : colors.textMuted} />
+            <Feather name="clock" size={18} color={isAgendado ? "#e06030" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Horário</Text>
-            <Text style={[styles.optionSub, isAgendado && { color: "#ff6b35" }]}>
+            <Text style={[styles.optionSub, isAgendado && { color: "#e06030" }]}>
               {isAgendado
                 ? `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`
                 : "Selecionar horário"}
@@ -267,9 +267,9 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 6,
     },
     optionRowActive: {
-      backgroundColor: "#ff6b3510",
+      backgroundColor: "#e0603010",
       borderWidth: 1,
-      borderColor: "#ff6b3530",
+      borderColor: "#e0603030",
     },
     optionRowFocused: {
       backgroundColor: colors.cardBorder,
@@ -285,8 +285,8 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     optionIconActive: {
-      borderColor: "#ff6b3540",
-      backgroundColor: "#ff6b3510",
+      borderColor: "#e0603040",
+      backgroundColor: "#e0603010",
     },
     optionLabel: {
       fontFamily: "Sora_600SemiBold",
@@ -295,10 +295,10 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 2,
     },
     optionLabelActive: {
-      color: "#ff6b35",
+      color: "#e06030",
     },
     optionSub: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textMuted,
     },
@@ -326,7 +326,7 @@ function createStyles(colors: ColorPalette) {
       paddingBottom: 4,
     },
     pickerHeaderLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textMuted,
       letterSpacing: 1,
@@ -334,13 +334,13 @@ function createStyles(colors: ColorPalette) {
     pickerDoneBtn: {
       paddingHorizontal: 12,
       paddingVertical: 4,
-      backgroundColor: "#ff6b3520",
+      backgroundColor: "#e0603020",
       borderRadius: 8,
     },
     pickerDoneText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 13,
-      color: "#ff6b35",
+      color: "#e06030",
     },
     picker: {
       backgroundColor: "transparent",
@@ -351,7 +351,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 12,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
       borderRadius: 14,
       paddingVertical: 16,
     },

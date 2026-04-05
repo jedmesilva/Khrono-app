@@ -78,14 +78,14 @@ function brToIso(br: string): string {
 
 const STATUS_COLORS: Record<VerifStatus, { bg: string; border: string; text: string; label: string }> = {
   none:     { bg: "transparent",    border: "transparent",     text: "transparent",   label: "Não enviado" },
-  pending:  { bg: "#ff6b3512",      border: "#ff6b3530",       text: "#ff6b35",       label: "Em análise"  },
-  approved: { bg: "#00e5a012",      border: "#00e5a030",       text: "#00e5a0",       label: "Aprovado"    },
+  pending:  { bg: "#e0603012",      border: "#e0603030",       text: "#e06030",       label: "Em análise"  },
+  approved: { bg: "#18a06b12",      border: "#18a06b30",       text: "#18a06b",       label: "Aprovado"    },
   rejected: { bg: "#ff3b3015",      border: "#ff3b3030",       text: "#ff3b30",       label: "Reprovado"   },
 };
 
 const DOC_STATUS_COLORS: Record<DocStatus, { bg: string; border: string; text: string; label: string }> = {
-  analise:    { bg: "#ff6b3512", border: "#ff6b3530", text: "#ff6b35",  label: "Em análise" },
-  verificado: { bg: "#00e5a012", border: "#00e5a030", text: "#00e5a0",  label: "Verificado" },
+  analise:    { bg: "#e0603012", border: "#e0603030", text: "#e06030",  label: "Em análise" },
+  verificado: { bg: "#18a06b12", border: "#18a06b30", text: "#18a06b",  label: "Verificado" },
   invalido:   { bg: "#ff3b3015", border: "#ff3b3030", text: "#ff3b30",  label: "Inválido"   },
 };
 
@@ -256,7 +256,7 @@ export default function ContaScreen() {
       >
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#ff6b35" />
+            <Feather name="arrow-left" size={18} color="#e06030" />
           </Pressable>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Minha conta</Text>
           <View style={{ width: 26 }} />
@@ -268,7 +268,7 @@ export default function ContaScreen() {
             {pendingImage || profileImage ? (
               <Image source={{ uri: pendingImage ?? profileImage! }} style={styles.avatarImage} />
             ) : (
-              <View style={[styles.avatar, { backgroundColor: colors.avatarBg, borderColor: "#ff6b3530" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.avatarBg, borderColor: "#e0603030" }]}>
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}
@@ -325,7 +325,7 @@ export default function ContaScreen() {
               }
 
               return (
-                <View key={f.key} style={[styles.fieldRow, { borderBottomColor: colors.surface }, isEditing && { backgroundColor: colors.inputBg, borderBottomColor: "#ff6b3520" }]}>
+                <View key={f.key} style={[styles.fieldRow, { borderBottomColor: colors.surface }, isEditing && { backgroundColor: colors.inputBg, borderBottomColor: "#e0603020" }]}>
                   <View style={styles.fieldMeta}>
                     <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{f.label}</Text>
                     {isEditing ? (
@@ -568,38 +568,38 @@ const styles = StyleSheet.create({
   avatarSection: { alignItems: "center", marginBottom: 28 },
   avatarWrap: { position: "relative" },
   avatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  avatarImage: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: "#ff6b3530" },
-  avatarText: { fontFamily: "DMMono_500Medium", fontSize: 24, color: "#ff6b35" },
-  avatarEditBadge: { position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: "#ff6b35", alignItems: "center", justifyContent: "center", borderWidth: 2 },
+  avatarImage: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: "#e0603030" },
+  avatarText: { fontFamily: "DMSans_500Medium", fontSize: 24, color: "#e06030" },
+  avatarEditBadge: { position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: "#e06030", alignItems: "center", justifyContent: "center", borderWidth: 2 },
   avatarName: { fontFamily: "Sora_600SemiBold", fontSize: 16, marginTop: 12 },
   avatarActions: { flexDirection: "row", gap: 8, marginTop: 14 },
   avatarDiscardBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   avatarDiscardText: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
-  avatarSaveBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: "#ff6b35" },
+  avatarSaveBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: "#e06030" },
   avatarSaveText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#fff" },
   section: { marginBottom: 28 },
-  sectionTitle: { fontFamily: "DMMono_500Medium", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
-  fieldList: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  sectionTitle: { fontFamily: "DMSans_500Medium", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
+  fieldList: { borderRadius: 24, borderWidth: 1, overflow: "hidden" },
   fieldRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },
   fieldMeta: { flex: 1 },
-  fieldLabel: { fontFamily: "DMMono_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 3 },
+  fieldLabel: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 3 },
   fieldValue: { fontFamily: "Sora_400Regular", fontSize: 14 },
   fieldInput: { fontFamily: "Sora_400Regular", fontSize: 14, padding: 0 },
   editActions: { flexDirection: "row", gap: 8, marginLeft: 8 },
   cancelBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
   cancelBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11 },
-  saveBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: "#ff6b35" },
+  saveBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: "#e06030" },
   saveBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#fff" },
   editIconBtn: { padding: 6 },
   fieldActions: { flexDirection: "row", alignItems: "center", gap: 4 },
   eyeBtn: { padding: 6 },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
-  statusBadgeText: { fontFamily: "DMMono_500Medium", fontSize: 10, letterSpacing: 0.5 },
-  verifBlock: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  statusBadgeText: { fontFamily: "DMSans_500Medium", fontSize: 10, letterSpacing: 0.5 },
+  verifBlock: { borderRadius: 24, borderWidth: 1, overflow: "hidden" },
   verifBlockHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
   verifIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   verifBlockTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  verifBlockSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 2 },
+  verifBlockSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 2 },
   verifContent: { padding: 12, paddingTop: 0 },
   submitVerifBtn: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, alignSelf: "flex-start" },
   submitVerifBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
@@ -608,34 +608,34 @@ const styles = StyleSheet.create({
   docItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
   docItemIcon: { width: 30, height: 30, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   docItemType: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
-  docItemMeta: { fontFamily: "DMMono_400Regular", fontSize: 10, marginTop: 2 },
+  docItemMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
   docEmpty: { alignItems: "center", gap: 8, paddingVertical: 20, borderTopWidth: 1 },
-  docEmptyText: { fontFamily: "DMMono_400Regular", fontSize: 12 },
+  docEmptyText: { fontFamily: "DMSans_400Regular", fontSize: 12 },
   rejectedMsg: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginHorizontal: 16, marginBottom: 12, padding: 10, backgroundColor: "#ff3b3010", borderRadius: 8, borderWidth: 1, borderColor: "#ff3b3025" },
-  rejectedMsgText: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff3b30", flex: 1, lineHeight: 16 },
-  card: { borderRadius: 16, borderWidth: 1, padding: 16 },
+  rejectedMsgText: { fontFamily: "DMSans_400Regular", fontSize: 11, color: "#ff3b30", flex: 1, lineHeight: 16 },
+  card: { borderRadius: 24, borderWidth: 1, padding: 16 },
   cardAccordionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  cardSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 4, lineHeight: 16 },
+  cardSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 4, lineHeight: 16 },
   pwdFields: { gap: 12 },
   pwdRow: { gap: 6 },
   pwdInputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 44, gap: 8 },
-  pwdInput: { flex: 1, fontFamily: "DMMono_400Regular", fontSize: 14 },
-  changePwdBtn: { marginTop: 16, backgroundColor: "#ff6b35", borderRadius: 10, paddingVertical: 11, alignItems: "center" },
+  pwdInput: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 14 },
+  changePwdBtn: { marginTop: 16, backgroundColor: "#e06030", borderRadius: 10, paddingVertical: 11, alignItems: "center" },
   changePwdBtnDisabled: { opacity: 0.3 },
   changePwdBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#fff" },
   twoFaList: { marginTop: 14, gap: 0 },
   twoFaItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
   twoFaIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   twoFaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  twoFaSub: { fontFamily: "DMMono_400Regular", fontSize: 11, marginTop: 2 },
+  twoFaSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 2 },
   configureBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
   configureBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11 },
-  dangerSection: { borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 16, padding: 16, backgroundColor: "#ff3b3008", marginBottom: 20 },
+  dangerSection: { borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 24, padding: 16, backgroundColor: "#ff3b3008", marginBottom: 20 },
   dangerHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
   dangerTitle: { fontFamily: "Sora_700Bold", fontSize: 13, color: "#ff3b30" },
-  dangerDesc: { fontFamily: "DMMono_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 14 },
+  dangerDesc: { fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 14 },
   deleteBtn: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#ff3b3010", borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 12, padding: 14 },
   deleteBtnLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#ff3b30" },
-  deleteBtnSub: { fontFamily: "DMMono_400Regular", fontSize: 11, color: "#ff3b3070", marginTop: 2, lineHeight: 15 },
+  deleteBtnSub: { fontFamily: "DMSans_400Regular", fontSize: 11, color: "#ff3b3070", marginTop: 2, lineHeight: 15 },
 });

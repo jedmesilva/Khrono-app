@@ -77,12 +77,12 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
                   key={i}
                   style={[
                     styles.qrCell,
-                    i % 2 === 0 && { backgroundColor: "#00e5a080" },
+                    i % 2 === 0 && { backgroundColor: "#18a06b80" },
                   ]}
                 />
               ))}
             </View>
-            <Feather name="zap" size={26} color={"#00e5a0"} style={styles.qrIcon} />
+            <Feather name="zap" size={26} color={"#18a06b"} style={styles.qrIcon} />
           </View>
 
           <Text style={styles.providerName}>{providerName}</Text>
@@ -115,7 +115,7 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
               <Feather
                 name={copied ? "check" : "copy"}
                 size={14}
-                color={copied ? "#00e5a0" : colors.textSecondary}
+                color={copied ? "#18a06b" : colors.textSecondary}
               />
             </Pressable>
           </View>
@@ -182,8 +182,8 @@ function createStyles(colors: ColorPalette) {
       height: 148,
       backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: "#00e5a030",
-      borderRadius: 16,
+      borderColor: "#18a06b30",
+      borderRadius: 24,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -213,19 +213,19 @@ function createStyles(colors: ColorPalette) {
       gap: 2,
     },
     amountLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
       color: colors.textMuted,
       letterSpacing: 1.5,
     },
     amountValue: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 26,
-      color: "#00e5a0",
+      color: "#18a06b",
       letterSpacing: 1,
     },
     amountNote: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 10,
       color: colors.textDim,
       textAlign: "center",
@@ -241,7 +241,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 16,
     },
     pixKeyLabel: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 9,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -252,9 +252,9 @@ function createStyles(colors: ColorPalette) {
       gap: 10,
     },
     pixKeyValue: {
-      fontFamily: "DMMono_500Medium",
+      fontFamily: "DMSans_500Medium",
       fontSize: 13,
-      color: "#00e5a0",
+      color: "#18a06b",
       flex: 1,
     },
     copyBtn: {
@@ -268,15 +268,15 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     copyBtnCopied: {
-      borderColor: "#00e5a040",
-      backgroundColor: "#00e5a015",
+      borderColor: "#18a06b40",
+      backgroundColor: "#18a06b15",
     },
     confirmBtn: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-      backgroundColor: "#00e5a0",
+      backgroundColor: "#18a06b",
       borderRadius: 14,
       paddingVertical: 16,
       marginBottom: 10,
@@ -291,7 +291,7 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 12,
     },
     cancelText: {
-      fontFamily: "DMMono_400Regular",
+      fontFamily: "DMSans_400Regular",
       fontSize: 12,
       color: colors.textMuted,
     },

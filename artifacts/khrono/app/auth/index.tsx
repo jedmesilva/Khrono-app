@@ -159,9 +159,9 @@ export default function EntradaScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.background} pointerEvents="none">
-        <FloatingOrb size={280} color="#ff6b35" x={-80} y={-60} duration={7000} delay={0} />
-        <FloatingOrb size={200} color="#ff6b35" x={width - 140} y={80} duration={9000} delay={500} />
-        <FloatingOrb size={160} color="#00e5a0" x={width / 2 - 40} y={180} duration={11000} delay={800} />
+        <FloatingOrb size={280} color="#e06030" x={-80} y={-60} duration={7000} delay={0} />
+        <FloatingOrb size={200} color="#e06030" x={width - 140} y={80} duration={9000} delay={500} />
+        <FloatingOrb size={160} color="#18a06b" x={width / 2 - 40} y={180} duration={11000} delay={800} />
       </View>
 
       <Animated.View
@@ -169,7 +169,7 @@ export default function EntradaScreen() {
         pointerEvents="none"
       >
         <Text style={[styles.logoText, { color: colors.text }]}>
-          Kr<Text style={{ color: "#ff6b35" }}>o</Text>no
+          Kr<Text style={{ color: "#e06030" }}>o</Text>no
         </Text>
         <Text style={[styles.logoSub, { color: colors.textMuted }]}>app de contratos</Text>
       </Animated.View>
@@ -190,7 +190,7 @@ export default function EntradaScreen() {
               <Feather
                 name={isEmail ? "mail" : "phone"}
                 size={16}
-                color={displayValue.length > 0 ? "#ff6b35" : colors.textMuted}
+                color={displayValue.length > 0 ? "#e06030" : colors.textMuted}
               />
             </View>
             <TextInput
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logoSub: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 11,
     letterSpacing: 2,
     textTransform: "uppercase",
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   sheetSub: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 12,
     marginBottom: 24,
     lineHeight: 18,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   inputWrapActive: {
-    borderColor: "#ff6b3540",
+    borderColor: "#e0603040",
   },
   inputIconWrap: {
     marginRight: 10,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 15,
     height: "100%",
   },
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   btn: {
-    backgroundColor: "#ff6b35",
+    backgroundColor: "#e06030",
     borderRadius: 14,
     height: 52,
     flexDirection: "row",
@@ -352,11 +352,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   btnSecondaryText: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 13,
   },
   terms: {
-    fontFamily: "DMMono_400Regular",
+    fontFamily: "DMSans_400Regular",
     fontSize: 10,
     textAlign: "center",
     lineHeight: 16,
