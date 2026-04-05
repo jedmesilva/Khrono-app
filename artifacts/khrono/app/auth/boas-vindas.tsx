@@ -68,7 +68,7 @@ export default function BoasVindasScreen() {
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Sua conta foi criada com sucesso.</Text>
           <Text style={[styles.body, { color: colors.textMuted }]}>
-            Agora você pode contratar serviços, oferecer seu trabalho e gerenciar seus contratos — tudo em um só lugar.
+            Agora você pode criar e gerenciar contratos baseados no tempo, sozinho ou com outras pessoas — tudo em um só lugar.
           </Text>
         </Animated.View>
       </View>
@@ -82,7 +82,7 @@ export default function BoasVindasScreen() {
           <Text style={[styles.tagline, { color: colors.textMuted }]}>
             Kr<Text style={{ color: "#ff6b35" }}>o</Text>no
           </Text>
-          <Text style={[styles.taglineSub, { color: colors.textDim }]}>· marketplace de serviços</Text>
+          <Text style={[styles.taglineSub, { color: colors.textDim }]}>· app de contratos</Text>
         </View>
       </Animated.View>
     </View>

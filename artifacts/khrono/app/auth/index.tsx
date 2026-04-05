@@ -171,7 +171,7 @@ export default function EntradaScreen() {
         <Text style={[styles.logoText, { color: colors.text }]}>
           Kr<Text style={{ color: "#ff6b35" }}>o</Text>no
         </Text>
-        <Text style={[styles.logoSub, { color: colors.textMuted }]}>marketplace de serviços</Text>
+        <Text style={[styles.logoSub, { color: colors.textMuted }]}>app de contratos</Text>
       </Animated.View>
 
       <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>

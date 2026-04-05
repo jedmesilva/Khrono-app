@@ -97,7 +97,7 @@ Utility scripts package. Each script is a `.ts` file in `src/` with a correspond
 
 ### `artifacts/khrono` (`@workspace/khrono`)
 
-Expo React Native mobile app (Khrono) — cross-platform service marketplace. Runs via `pnpm --filter @workspace/khrono run dev` (port 22861). The app connects users with service providers via contract-based sessions.
+Expo React Native mobile app (Khrono) — cross-platform time-based contracts app. Runs via `pnpm --filter @workspace/khrono run dev` (port 22861). The app allows users to create and manage time-based contracts, individually or with other users.
 
 **Design system:** dark background `#060606`, accent orange `#ff6b35`, accent green `#00e5a0`, fonts Sora + DM Mono.
 
