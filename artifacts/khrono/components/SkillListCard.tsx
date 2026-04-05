@@ -29,7 +29,7 @@ export function SkillListCard({
       style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
       {...(onPress ? { onPress } : {})}
     >
-      <View style={[styles.iconWrap, { backgroundColor: isNew ? colors.surface : "#ff6b3312", borderColor: isNew ? colors.surfaceBorder : "#ff6b3328" }]}>
+      <View style={[styles.iconWrap, { backgroundColor: isNew ? colors.surface : "#e0603012", borderColor: isNew ? colors.surfaceBorder : "#e0603028" }]}>
         <Feather name="star" size={16} color={isNew ? colors.textMuted : "#e06030"} />
       </View>
       <View style={{ flex: 1 }}>

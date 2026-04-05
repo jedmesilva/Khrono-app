@@ -184,13 +184,13 @@ export default function ServiceDetailScreen() {
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>COMPOSIÇÃO</Text>
 
           {/* Skill */}
+          <Text style={[styles.compSectionLabel, { color: colors.textDim }]}>SKILL</Text>
           {skill ? (
             <View style={styles.compItem}>
-              <View style={[styles.compIconWrap, { backgroundColor: "#ff6b3312", borderColor: "#e0603028" }]}>
+              <View style={[styles.compIconWrap, { backgroundColor: "#e0603012", borderColor: "#e0603028" }]}>
                 <Feather name="star" size={13} color="#e06030" />
               </View>
               <View style={styles.compBody}>
-                <Text style={[styles.compTypeLabel, { color: colors.textDim }]}>SKILL</Text>
                 <View style={styles.compNameRow}>
                   <Text style={[styles.compName, { color: colors.text }]} numberOfLines={1}>{skill.name}</Text>
                   {skill.verified && (
@@ -214,7 +214,7 @@ export default function ServiceDetailScreen() {
             <Text style={[styles.compSectionLabel, { color: colors.textDim }]}>TOOLS</Text>
             {tools.length > 0 ? tools.map((tool) => (
               <View key={tool.id} style={styles.compItem}>
-                <View style={[styles.compIconWrap, { backgroundColor: tool.available ? "#ff6b3312" : colors.surface, borderColor: tool.available ? "#e0603028" : colors.surfaceBorder }]}>
+                <View style={[styles.compIconWrap, { backgroundColor: tool.available ? "#e0603012" : colors.surface, borderColor: tool.available ? "#e0603028" : colors.surfaceBorder }]}>
                   <Feather name={tool.icon} size={13} color={tool.available ? "#e06030" : colors.textDim} />
                 </View>
                 <View style={styles.compBody}>

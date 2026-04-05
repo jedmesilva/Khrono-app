@@ -31,7 +31,7 @@ export function ToolListCard({
       style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: available ? 1 : 0.55 }]}
       {...(onPress ? { onPress } : {})}
     >
-      <View style={[styles.iconWrap, { backgroundColor: available ? "#ff6b3312" : colors.surface, borderColor: available ? "#e0603028" : colors.surfaceBorder }]}>
+      <View style={[styles.iconWrap, { backgroundColor: available ? "#e0603012" : colors.surface, borderColor: available ? "#e0603028" : colors.surfaceBorder }]}>
         <Feather name={iconName} size={16} color={available ? "#e06030" : colors.textMuted} />
       </View>
       <View style={{ flex: 1 }}>

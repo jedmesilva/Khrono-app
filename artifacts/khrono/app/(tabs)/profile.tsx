@@ -63,7 +63,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
         <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.toolIconLarge, { backgroundColor: "#ff6b3312", borderColor: "#e0603028" }]}>
+          <View style={[styles.toolIconLarge, { backgroundColor: "#e0603012", borderColor: "#e0603028" }]}>
             <Feather name="star" size={32} color="#e06030" />
           </View>
         </View>
@@ -104,7 +104,7 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
   onOptions: () => void;
 }) {
   const iconColor = tool.available ? "#e06030" : colors.textMuted;
-  const iconBg = tool.available ? "#ff6b3312" : colors.surface;
+  const iconBg = tool.available ? "#e0603012" : colors.surface;
   const iconBorder = tool.available ? "#e0603028" : colors.surfaceBorder;
 
   return (
