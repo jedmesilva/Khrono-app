@@ -41,7 +41,7 @@ waitForPort = 5000
   EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
   EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
   SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
-  SUPABASE_ACCESS_TOKEN = "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb"
+SUPABASE_ACCESS_TOKEN = "sbp_1d53313d24b12251009754b217f3d6b9a87f8119"
 
 [[ports]]
 localPort = 5000

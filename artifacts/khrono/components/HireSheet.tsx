@@ -35,6 +35,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { PincodeSheet } from "@/components/PincodeSheet";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
 
@@ -175,25 +176,13 @@ function PincodeContent({
       <View>
         <Text style={styles.title}>Usuário encontrado</Text>
         <View style={styles.userCard}>
-          <View style={styles.userAvatarWrap}>
-            <View style={styles.userAvatar}>
-              <Text style={styles.userAvatarText}>{found.initials}</Text>
-            </View>
-            {found.verified && (
-              <View style={styles.verifiedBadge}>
-                <MaterialCommunityIcons name="shield-check" size={13} color="#fff" />
-              </View>
-            )}
+          <View style={styles.userAvatar}>
+            <Text style={styles.userAvatarText}>{found.initials}</Text>
           </View>
           <View style={styles.userNameRow}>
             <Text style={styles.userName}>{found.name}</Text>
+            {found.verified && <VerifiedBadge variant="full" />}
           </View>
-          {found.verified && (
-            <View style={styles.verifiedPill}>
-              <MaterialCommunityIcons name="shield-check" size={11} color="#2d8cf0" />
-              <Text style={styles.verifiedPillText}>Perfil verificado</Text>
-            </View>
-          )}
           <View style={styles.infoChipsRow}>
             <View style={styles.infoChip}>
               <Feather name="briefcase" size={10} color={colors.textSecondary} />
@@ -1080,32 +1069,15 @@ function createSubStyles(colors: ColorPalette) {
       borderWidth: 1, borderRadius: 20, padding: 20, alignItems: "center", marginBottom: 16,
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
-    userAvatarWrap: {
-      position: "relative", marginBottom: 12,
-    },
     userAvatar: {
       width: 64, height: 64, borderRadius: 32,
       backgroundColor: "#e0603012", borderWidth: 2, borderColor: "#e0603030",
-      alignItems: "center", justifyContent: "center",
-    },
-    verifiedBadge: {
-      position: "absolute", bottom: -2, right: -2,
-      width: 22, height: 22, borderRadius: 11,
-      backgroundColor: "#2d8cf0", borderWidth: 2, borderColor: colors.card,
-      alignItems: "center", justifyContent: "center",
+      alignItems: "center", justifyContent: "center", marginBottom: 12,
     },
     userNameRow: {
       flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4,
     },
     userName: { fontFamily: "Sora_700Bold", fontSize: 17, color: colors.text },
-    verifiedPill: {
-      flexDirection: "row", alignItems: "center", gap: 4,
-      backgroundColor: "#2d8cf010", borderWidth: 1, borderColor: "#2d8cf030",
-      borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10, marginBottom: 10,
-    },
-    verifiedPillText: {
-      fontFamily: "DMSans_500Medium", fontSize: 11, color: "#2d8cf0",
-    },
     infoChipsRow: { flexDirection: "row", gap: 8, marginTop: 4 },
     infoChip: {
       flexDirection: "row", alignItems: "center", gap: 5,
