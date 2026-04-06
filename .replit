@@ -41,6 +41,7 @@ waitForPort = 5000
   [userenv.shared]
   EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
   EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
+SUPABASE_ACCESS_TOKEN = "sbp_c3faa5dd368ec8a53c08341d72c97744e4ea691d"
 
 [[ports]]
 localPort = 5000
