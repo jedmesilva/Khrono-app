@@ -13,7 +13,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import { BannerCarousel, type Banner } from "@/components/BannerCarousel";
 import { ContractCard } from "@/components/ContractCard";
 import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
@@ -24,33 +23,6 @@ import { useContracts } from "@/context/ContractsContext";
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
 const UNREAD_COUNT = 2;
-
-const BANNERS: Banner[] = [
-  {
-    id: "1",
-    tag: "Novidade",
-    title: "Verifique seu perfil e receba mais contratos",
-    subtitle: "Perfis verificados têm até 3× mais chances de ser contratados.",
-    cta: "Verificar agora",
-    accent: "#ff6b35",
-  },
-  {
-    id: "2",
-    tag: "Dica",
-    title: "Ative o NFC para contratação instantânea",
-    subtitle: "Aproxime os dispositivos e conecte em segundos, sem digitar nada.",
-    cta: "Saiba mais",
-    accent: "#a78bfa",
-  },
-  {
-    id: "3",
-    tag: "Promoção",
-    title: "Primeiros 3 meses de Khrono Pro grátis",
-    subtitle: "Acesse relatórios, prioridade no ranking e suporte dedicado.",
-    cta: "Ativar agora",
-    accent: "#00e5a0",
-  },
-];
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
