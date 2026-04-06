@@ -23,12 +23,7 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://a59a917a-4d58-4daa-be0b-6718f4c6c48b-00-3hla3g5pz3tfp.picard.replit.dev:5000"
-        }
-      ],
+      "expo-router",
       "expo-font",
       "expo-web-browser",
       [
