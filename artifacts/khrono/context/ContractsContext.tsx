@@ -1,20 +1,12 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { supabase } from "@/lib/supabase";
-
-function generateUUID(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 export type ContractTool = {
   nome: string;
@@ -23,6 +15,7 @@ export type ContractTool = {
 
 export type Contract = {
   id: string;
+  code?: string;
   role: "hired" | "hiring";
   tipo: "cronometro" | "timer";
   duracaoTotal?: number;
@@ -45,6 +38,7 @@ export type Contract = {
     ratePerHour: number;
     skill?: string;
     tools?: string[];
+    serviceId?: string;
   };
   paymentMethod?: "cartao" | "pix" | "dinheiro" | "saldo";
   paymentCardLabel?: string;
@@ -62,199 +56,303 @@ export type Contract = {
 type ContractsContextType = {
   activeContracts: Contract[];
   history: Contract[];
-  startContract: (contract: Omit<Contract, "id" | "status" | "startedAt">) => string;
+  isLoading: boolean;
+  startContract: (contract: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }) => Promise<string>;
   endContract: (id: string) => void;
 };
 
 const ContractsContext = createContext<ContractsContextType | null>(null);
 
-const STORAGE_KEY = "khrono_contracts_v2";
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
 
-const INITIAL_ACTIVE: Contract[] = [
-  {
-    id: "1",
-    role: "hiring",
-    tipo: "cronometro",
-    person: { name: "Felipe Andrade", initials: "FA", skill: "Montador de Móveis", nota: 4.8, avaliacoes: 34, distancia: 1.2, totalContracts: 31, totalServices: 2 },
-    servico: { nome: "Montagem de Móveis", nota: 4.8, avaliacoes: 34, ratePerHour: 60, skill: "Montador de Móveis", tools: ["Honda Civic 2019", "Kit Furadeira Bosch"] },
-    paymentMethod: "cartao",
-    paymentCardLabel: "Mastercard •••• 4291",
-    agendado: false,
-    ratePerHour: 60,
-    startedAt: Date.now() - 1000 * 60 * 47,
-    status: "active",
-  },
-  {
-    id: "2",
-    role: "hired",
-    tipo: "timer",
-    duracaoTotal: 1000 * 60 * 60,
-    person: { name: "Bruno Souza", initials: "BS", skill: "Consultoria de Redes Sociais", nota: 4.6, avaliacoes: 21, distancia: 2.5, totalContracts: 18, totalServices: 3 },
-    servico: { nome: "Consultoria de Redes Sociais", nota: 4.6, avaliacoes: 21, ratePerHour: 50, skill: "Consultor Digital" },
-    paymentMethod: "pix",
-    agendado: false,
-    ratePerHour: 50,
-    startedAt: Date.now() - 1000 * 60 * 23,
-    status: "active",
-  },
-];
+function mapPaymentMethodToUi(pm: string | null): "cartao" | "pix" | "dinheiro" | "saldo" | undefined {
+  if (!pm) return undefined;
+  const map: Record<string, "cartao" | "pix" | "dinheiro" | "saldo"> = {
+    card: "cartao",
+    pix: "pix",
+    cash: "dinheiro",
+    balance: "saldo",
+  };
+  return map[pm];
+}
 
-const INITIAL_HISTORY: Contract[] = [
-  {
-    id: "h1",
-    role: "hiring",
-    tipo: "cronometro",
-    person: { name: "Rafael Lima", initials: "RL", skill: "Eletricista", nota: 4.9, avaliacoes: 58, distancia: 0.8, totalContracts: 34, totalServices: 2 },
-    servico: { nome: "Instalação Elétrica", nota: 4.9, avaliacoes: 58, ratePerHour: 60, skill: "Eletricista", tools: ["Alicate Amperímetro", "Kit Cabos"] },
-    paymentMethod: "dinheiro",
-    agendado: false,
-    ratePerHour: 60,
-    startedAt: Date.now() - 1000 * 60 * 60 * 3,
-    status: "ended",
-    endedAt: Date.now() - 1000 * 60 * 60,
-    totalAmount: 120,
-  },
-  {
-    id: "h2",
-    role: "hired",
-    tipo: "timer",
-    duracaoTotal: 1000 * 60 * 90,
-    person: { name: "Ana Pereira", initials: "AP", skill: "Cuidadora de Crianças", nota: 4.7, avaliacoes: 12, distancia: 3.1, totalContracts: 25, totalServices: 1 },
-    servico: { nome: "Cuidado de Crianças", nota: 4.7, avaliacoes: 12, ratePerHour: 50, skill: "Cuidadora" },
-    paymentMethod: "cartao",
-    paymentCardLabel: "Visa •••• 8823",
-    agendado: true,
-    agendadoLabel: "Amanhã às 09:00",
-    ratePerHour: 50,
-    startedAt: Date.now() - 1000 * 60 * 60 * 4,
-    status: "ended",
-    endedAt: Date.now() - 1000 * 60 * 60 * 2.5,
-    totalAmount: 75,
-  },
-  {
-    id: "h3",
-    role: "hiring",
-    tipo: "cronometro",
-    person: { name: "Mariana Costa", initials: "MC", skill: "Encanadora", nota: 4.5, avaliacoes: 27, distancia: 1.9, totalContracts: 22, totalServices: 2 },
-    servico: { nome: "Reparo Hidráulico", nota: 4.5, avaliacoes: 27, ratePerHour: 80, skill: "Encanadora", tools: ["Kit Hidráulico"] },
-    paymentMethod: "pix",
-    agendado: false,
-    ratePerHour: 80,
-    startedAt: Date.now() - 1000 * 60 * 60 * 24,
-    status: "ended",
-    endedAt: Date.now() - 1000 * 60 * 60 * 22,
-    totalAmount: 160,
-  },
-];
+function mapPaymentMethodToDb(pm: string | undefined | null): string | null {
+  if (!pm) return null;
+  const map: Record<string, string> = {
+    cartao: "card",
+    pix: "pix",
+    dinheiro: "cash",
+    saldo: "balance",
+  };
+  return map[pm] ?? null;
+}
+
+function mapDbToContract(c: any, userId: string): Contract {
+  const isHiring = c.contractor_id === userId;
+  const role: "hiring" | "hired" = isHiring ? "hiring" : "hired";
+
+  const otherParty = isHiring ? c.hired : c.contractor;
+  const otherName = otherParty?.name || otherParty?.first_name || "Desconhecido";
+
+  const providerProfiles = isHiring
+    ? otherParty?.provider_profiles
+    : undefined;
+  const pp = Array.isArray(providerProfiles) ? providerProfiles[0] : providerProfiles;
+
+  const tools = c.service?.tools;
+  const toolsList: string[] = Array.isArray(tools)
+    ? tools
+    : typeof tools === "object" && tools !== null
+    ? Object.values(tools)
+    : [];
+
+  return {
+    id: c.id,
+    code: c.code,
+    role,
+    tipo: c.type === "open" ? "cronometro" : "timer",
+    duracaoTotal: c.total_hours ? Number(c.total_hours) * 3600 * 1000 : undefined,
+    person: {
+      name: otherName,
+      initials: getInitials(otherName),
+      skill: c.service?.skill ?? c.service?.nome ?? "",
+      nota: pp?.nota ? Number(pp.nota) : undefined,
+      avaliacoes: pp?.avaliacoes ?? undefined,
+      distancia: 1.5,
+      profileId: isHiring ? c.hired_id : c.contractor_id,
+      totalContracts: pp?.total_contracts ?? undefined,
+      totalServices: 1,
+    },
+    servico: c.service
+      ? {
+          nome: c.service.nome,
+          nota: c.service.nota ? Number(c.service.nota) : undefined,
+          avaliacoes: c.service.avaliacoes ?? undefined,
+          ratePerHour: Number(c.hourly_rate),
+          skill: c.service.skill ?? undefined,
+          tools: toolsList,
+          serviceId: c.service.id,
+        }
+      : undefined,
+    paymentMethod: mapPaymentMethodToUi(c.payment_method),
+    paymentCardLabel: c.payment_card_label ?? undefined,
+    agendado: c.agendado ?? false,
+    ratePerHour: Number(c.hourly_rate),
+    startedAt: new Date(c.started_at).getTime(),
+    scheduledFor: c.scheduled_for ? new Date(c.scheduled_for).getTime() : undefined,
+    status: c.status === "active" || c.status === "paused" ? "active" : "ended",
+    endedAt: c.ended_at ? new Date(c.ended_at).getTime() : undefined,
+    totalAmount: c.total_amount ? Number(c.total_amount) : undefined,
+  };
+}
+
+const CONTRACT_SELECT = `
+  *,
+  contractor:profiles!contracts_contractor_id_fkey(id, name, first_name),
+  hired:profiles!contracts_hired_id_fkey(id, name, first_name, provider_profiles(nota, avaliacoes, total_contracts)),
+  service:provider_services!contracts_service_id_fkey(id, nome, nota, avaliacoes, skill, tools, multiplicador)
+`;
 
 export function ContractsProvider({ children }: { children: React.ReactNode }) {
-  const [activeContracts, setActiveContracts] = useState<Contract[]>(INITIAL_ACTIVE);
-  const [history, setHistory] = useState<Contract[]>(INITIAL_HISTORY);
+  const [activeContracts, setActiveContracts] = useState<Contract[]>([]);
+  const [history, setHistory] = useState<Contract[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const userIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    loadData();
+  const loadContracts = useCallback(async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const [activeRes, historyRes] = await Promise.all([
+        supabase
+          .from("contracts")
+          .select(CONTRACT_SELECT)
+          .or(`contractor_id.eq.${userId},hired_id.eq.${userId}`)
+          .in("status", ["active", "paused", "pending_signature"])
+          .order("started_at", { ascending: false }),
+        supabase
+          .from("contracts")
+          .select(CONTRACT_SELECT)
+          .or(`contractor_id.eq.${userId},hired_id.eq.${userId}`)
+          .in("status", ["ended", "disputed", "cancelled"])
+          .order("ended_at", { ascending: false })
+          .limit(30),
+      ]);
+
+      if (!activeRes.error && activeRes.data) {
+        setActiveContracts(activeRes.data.map((c) => mapDbToContract(c, userId)));
+      }
+      if (!historyRes.error && historyRes.data) {
+        setHistory(historyRes.data.map((c) => mapDbToContract(c, userId)));
+      }
+    } catch (e) {
+      console.warn("[ContractsContext] loadContracts error:", e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const loadData = async () => {
-    try {
-      const data = await AsyncStorage.getItem(STORAGE_KEY);
-      if (data) {
-        const parsed = JSON.parse(data);
-        if (parsed.active?.length > 0) setActiveContracts(parsed.active);
-        if (parsed.history?.length > 0) setHistory(parsed.history);
-      }
-    } catch (e) {}
-  };
+  useEffect(() => {
+    let contractorChannel: ReturnType<typeof supabase.channel> | null = null;
+    let hiredChannel: ReturnType<typeof supabase.channel> | null = null;
 
-  const saveData = useCallback(
-    async (active: Contract[], hist: Contract[]) => {
-      try {
-        await AsyncStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ active, history: hist })
-        );
-      } catch (e) {}
-    },
-    []
-  );
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setIsLoading(false); return; }
+      userIdRef.current = user.id;
+      await loadContracts(user.id);
+
+      const handleChange = async () => {
+        if (userIdRef.current) await loadContracts(userIdRef.current);
+      };
+
+      contractorChannel = supabase
+        .channel("contracts-as-contractor")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "contracts", filter: `contractor_id=eq.${user.id}` },
+          handleChange
+        )
+        .subscribe();
+
+      hiredChannel = supabase
+        .channel("contracts-as-hired")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "contracts", filter: `hired_id=eq.${user.id}` },
+          handleChange
+        )
+        .subscribe();
+    };
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        userIdRef.current = session.user.id;
+        loadContracts(session.user.id);
+      } else {
+        userIdRef.current = null;
+        setActiveContracts([]);
+        setHistory([]);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (contractorChannel) supabase.removeChannel(contractorChannel);
+      if (hiredChannel) supabase.removeChannel(hiredChannel);
+    };
+  }, [loadContracts]);
 
   const startContract = useCallback(
-    (contract: Omit<Contract, "id" | "status" | "startedAt">): string => {
-      const id = generateUUID();
-      const newContract: Contract = {
-        ...contract,
-        id,
-        status: "active",
-        startedAt: Date.now(),
-      };
-      setActiveContracts((prev) => {
-        const updated = [newContract, ...prev];
-        saveData(updated, history);
-        return updated;
-      });
+    async (contractData: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }): Promise<string> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
 
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (!user) return;
-        supabase.from("contracts").insert({
-          id,
-          hiring_user_id: user.id,
-          hired_user_id: contract.person.profileId ?? user.id,
-          tipo: contract.tipo,
+      const startedAt = new Date().toISOString();
+      const serviceId = contractData.serviceId ?? contractData.servico?.serviceId ?? null;
+
+      const { data: contract, error } = await supabase
+        .from("contracts")
+        .insert({
+          contractor_id: user.id,
+          hired_id: contractData.person.profileId ?? user.id,
+          type: contractData.tipo === "cronometro" ? "open" : "defined",
           status: "active",
-          rate_per_hour: contract.ratePerHour,
-          duracao_total: contract.duracaoTotal ?? null,
-          service_name: contract.servico?.nome ?? null,
-          payment_method: contract.paymentMethod ?? null,
-          payment_card_label: contract.paymentCardLabel ?? null,
-          agendado: contract.agendado ?? false,
-          scheduled_for: contract.scheduledFor ? new Date(contract.scheduledFor).toISOString() : null,
-          started_at: new Date(Date.now()).toISOString(),
-        }).then(({ error }) => {
-          if (error) console.warn("[ContractsContext] Supabase insert error:", error.message);
-        });
-      });
+          hourly_rate: contractData.ratePerHour,
+          total_hours: contractData.duracaoTotal ? contractData.duracaoTotal / 3600000 : null,
+          service_id: serviceId,
+          payment_method: mapPaymentMethodToDb(contractData.paymentMethod),
+          payment_card_label: contractData.paymentCardLabel ?? null,
+          agendado: contractData.agendado ?? false,
+          scheduled_for: contractData.scheduledFor
+            ? new Date(contractData.scheduledFor).toISOString()
+            : null,
+          started_at: startedAt,
+        })
+        .select()
+        .single();
 
-      return id;
+      if (error || !contract) {
+        console.warn("[ContractsContext] insert error:", error?.message);
+        throw new Error(error?.message ?? "Falha ao criar contrato");
+      }
+
+      await Promise.all([
+        supabase.from("contract_parties").insert({
+          contract_id: contract.id,
+          role: "contractor",
+          user_id: user.id,
+          name: user.user_metadata?.name ?? user.email ?? "Contratante",
+        }),
+        supabase.from("contract_parties").insert({
+          contract_id: contract.id,
+          role: "hired",
+          user_id: contractData.person.profileId ?? null,
+          name: contractData.person.name,
+        }),
+        supabase.from("contract_time_entries").insert({
+          contract_id: contract.id,
+          event: "started",
+          triggered_by: user.id,
+        }),
+      ]);
+
+      if (userIdRef.current) await loadContracts(userIdRef.current);
+
+      return contract.id;
     },
-    [history, saveData]
+    [loadContracts]
   );
 
   const endContract = useCallback(
     (id: string) => {
-      setActiveContracts((prev) => {
-        const contract = prev.find((c) => c.id === id);
-        if (!contract) return prev;
-        const endedAt = Date.now();
-        const duration = (endedAt - contract.startedAt) / 1000 / 3600;
-        const totalAmount =
-          contract.tipo === "timer" && contract.duracaoTotal
-            ? parseFloat(((contract.duracaoTotal / 1000 / 3600) * contract.ratePerHour).toFixed(2))
-            : parseFloat((duration * contract.ratePerHour).toFixed(2));
-        const ended: Contract = { ...contract, status: "ended", endedAt, totalAmount };
-        const updatedActive = prev.filter((c) => c.id !== id);
-        setHistory((h) => {
-          const updatedHistory = [ended, ...h];
-          saveData(updatedActive, updatedHistory);
-          return updatedHistory;
-        });
+      const contract = activeContracts.find((c) => c.id === id);
+      if (!contract) return;
 
-        supabase.from("contracts").update({
-          status: "ended",
-          ended_at: new Date(endedAt).toISOString(),
-          total_amount: totalAmount,
-          updated_at: new Date().toISOString(),
-        }).eq("id", id).then(({ error }) => {
-          if (error) console.warn("[ContractsContext] Supabase update error:", error.message);
-        });
+      const endedAt = Date.now();
+      const duration = (endedAt - contract.startedAt) / 1000 / 3600;
+      const totalAmount =
+        contract.tipo === "timer" && contract.duracaoTotal
+          ? parseFloat(((contract.duracaoTotal / 1000 / 3600) * contract.ratePerHour).toFixed(2))
+          : parseFloat((duration * contract.ratePerHour).toFixed(2));
 
-        return updatedActive;
+      const ended: Contract = { ...contract, status: "ended", endedAt, totalAmount };
+      setActiveContracts((prev) => prev.filter((c) => c.id !== id));
+      setHistory((h) => [ended, ...h]);
+
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        Promise.all([
+          supabase
+            .from("contracts")
+            .update({
+              status: "ended",
+              ended_at: new Date(endedAt).toISOString(),
+              total_amount: totalAmount,
+            })
+            .eq("id", id),
+          supabase.from("contract_time_entries").insert({
+            contract_id: id,
+            event: "ended",
+            triggered_by: user.id,
+          }),
+        ]).catch((e) => console.warn("[ContractsContext] endContract error:", e));
       });
     },
-    [saveData]
+    [activeContracts]
   );
 
   return (
-    <ContractsContext.Provider value={{ activeContracts, history, startContract, endContract }}>
+    <ContractsContext.Provider value={{ activeContracts, history, isLoading, startContract, endContract }}>
       {children}
     </ContractsContext.Provider>
   );

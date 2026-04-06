@@ -162,43 +162,49 @@ export default function ContractConfirmScreen() {
     }
   };
 
-  const aceitar = () => {
+  const aceitar = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const cartao = cards.find(c => c.id === cartaoSelecionadoId);
     const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : undefined;
-    const id = startContract({
-      role: "hiring",
-      tipo: tipoContrato === "aberto" ? "cronometro" : "timer",
-      duracaoTotal: tipoContrato === "definido" ? duracaoMs : undefined,
-      person: {
-        name: provider.name,
-        initials: provider.initials,
-        skill: servico?.nome ?? "",
-        nota: provider.nota,
-        avaliacoes: provider.avaliacoes,
-        distancia: provider.distancia,
-        profileId: provider.profileId,
-        totalContracts: provider.totalContracts,
-        totalServices: provider.services.length,
-      },
-      servico: servico
-        ? {
-            nome: servico.nome,
-            nota: servico.nota,
-            avaliacoes: servico.avaliacoes,
-            ratePerHour: valorHora,
-            skill: servico.skill,
-            tools: servico.tools,
-          }
-        : undefined,
-      paymentMethod: metodoPagamento ?? undefined,
-      paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
-      agendado,
-      agendadoLabel: agendado ? formatAgendamento() : undefined,
-      ratePerHour: valorHora,
-    });
-    setActiveContractId(id);
-    router.replace(`/contract-detail/${id}` as any);
+    try {
+      const id = await startContract({
+        role: "hiring",
+        tipo: tipoContrato === "aberto" ? "cronometro" : "timer",
+        duracaoTotal: tipoContrato === "definido" ? duracaoMs : undefined,
+        serviceId: servico?.serviceId,
+        person: {
+          name: provider.name,
+          initials: provider.initials,
+          skill: servico?.nome ?? "",
+          nota: provider.nota,
+          avaliacoes: provider.avaliacoes,
+          distancia: provider.distancia,
+          profileId: provider.profileId,
+          totalContracts: provider.totalContracts,
+          totalServices: provider.services.length,
+        },
+        servico: servico
+          ? {
+              nome: servico.nome,
+              nota: servico.nota,
+              avaliacoes: servico.avaliacoes,
+              ratePerHour: valorHora,
+              skill: servico.skill,
+              tools: servico.tools,
+              serviceId: servico.serviceId,
+            }
+          : undefined,
+        paymentMethod: metodoPagamento ?? undefined,
+        paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
+        agendado,
+        agendadoLabel: agendado ? formatAgendamento() : undefined,
+        ratePerHour: valorHora,
+      });
+      setActiveContractId(id);
+      router.replace(`/contract-detail/${id}` as any);
+    } catch (e) {
+      console.warn("[ContractConfirm] aceitar error:", e);
+    }
   };
 
   const encerrar = () => {

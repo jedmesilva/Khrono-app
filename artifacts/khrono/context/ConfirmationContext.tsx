@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 
 export type ProviderService = {
   id: number;
+  serviceId: string;
   nome: string;
   multiplicador: number;
   avaliacoes: number;

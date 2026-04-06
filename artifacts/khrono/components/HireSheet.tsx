@@ -88,6 +88,7 @@ async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
     profileId,
     services: (servicesRes.data ?? []).map((s: any, idx: number) => ({
       id: idx + 1,
+      serviceId: s.id as string,
       nome: s.nome,
       multiplicador: parseFloat(String(s.multiplicador)),
       skill: s.skill ?? "",
