@@ -20,6 +20,7 @@ export type ProviderData = {
   totalContracts?: number;
   services: ProviderService[];
   profileId?: string;
+  verified?: boolean;
 };
 
 type ConfirmationContextType = {

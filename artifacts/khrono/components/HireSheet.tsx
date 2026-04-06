@@ -50,6 +50,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     valorBase: 45,
     totalContracts: 87,
     profileId: "p-1234",
+    verified: true,
     services: [
       { id: 1, nome: "Pintura Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8, skill: "Pintor", tools: ["Rolo 23cm", "Escada 6m"] },
       { id: 2, nome: "Gessaria", multiplicador: 0.9, avaliacoes: 8, nota: 4.5, skill: "Gesseiro", tools: ["Desempenadeira", "Misturador"] },
@@ -64,6 +65,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     valorBase: 80,
     totalContracts: 152,
     profileId: "p-5678",
+    verified: true,
     services: [
       { id: 1, nome: "Personal Training", multiplicador: 1.0, avaliacoes: 128, nota: 5.0, skill: "Personal Trainer", tools: ["Kit de Treino"] },
       { id: 2, nome: "Consultoria Nutricional", multiplicador: 1.2, avaliacoes: 34, nota: 4.9, skill: "Nutricionista" },
@@ -92,6 +94,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
     valorBase: 40,
     totalContracts: 94,
     profileId: "p-4321",
+    verified: true,
     services: [
       { id: 1, nome: "Cuidados com Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9, skill: "Cuidadora" },
       { id: 2, nome: "Acompanhamento Hospitalar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8, skill: "Cuidadora", tools: ["Cadeira de Rodas"] },
@@ -172,10 +175,25 @@ function PincodeContent({
       <View>
         <Text style={styles.title}>Usuário encontrado</Text>
         <View style={styles.userCard}>
-          <View style={styles.userAvatar}>
-            <Text style={styles.userAvatarText}>{found.initials}</Text>
+          <View style={styles.userAvatarWrap}>
+            <View style={styles.userAvatar}>
+              <Text style={styles.userAvatarText}>{found.initials}</Text>
+            </View>
+            {found.verified && (
+              <View style={styles.verifiedBadge}>
+                <MaterialCommunityIcons name="shield-check" size={13} color="#fff" />
+              </View>
+            )}
           </View>
-          <Text style={styles.userName}>{found.name}</Text>
+          <View style={styles.userNameRow}>
+            <Text style={styles.userName}>{found.name}</Text>
+          </View>
+          {found.verified && (
+            <View style={styles.verifiedPill}>
+              <MaterialCommunityIcons name="shield-check" size={11} color="#2d8cf0" />
+              <Text style={styles.verifiedPillText}>Perfil verificado</Text>
+            </View>
+          )}
           <View style={styles.infoChipsRow}>
             <View style={styles.infoChip}>
               <Feather name="briefcase" size={10} color={colors.textSecondary} />
@@ -183,7 +201,7 @@ function PincodeContent({
             </View>
             <View style={styles.infoChip}>
               <Feather name="tool" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{found.services.length} {found.services.length === 1 ? "service" : "services"}</Text>
+              <Text style={styles.infoChipText}>{found.services.length} {found.services.length === 1 ? "serviço" : "serviços"}</Text>
             </View>
             <View style={styles.infoChip}>
               <Feather name="map-pin" size={10} color={colors.textSecondary} />
@@ -1062,13 +1080,32 @@ function createSubStyles(colors: ColorPalette) {
       borderWidth: 1, borderRadius: 20, padding: 20, alignItems: "center", marginBottom: 16,
       backgroundColor: colors.card, borderColor: colors.cardBorder,
     },
+    userAvatarWrap: {
+      position: "relative", marginBottom: 12,
+    },
     userAvatar: {
       width: 64, height: 64, borderRadius: 32,
       backgroundColor: "#e0603012", borderWidth: 2, borderColor: "#e0603030",
-      alignItems: "center", justifyContent: "center", marginBottom: 12,
+      alignItems: "center", justifyContent: "center",
     },
-    userAvatarText: { fontFamily: "DMSans_500Medium", fontSize: 20, color: "#e06030", fontWeight: "700" },
-    userName: { fontFamily: "Sora_700Bold", fontSize: 17, marginBottom: 4, color: colors.text },
+    verifiedBadge: {
+      position: "absolute", bottom: -2, right: -2,
+      width: 22, height: 22, borderRadius: 11,
+      backgroundColor: "#2d8cf0", borderWidth: 2, borderColor: colors.card,
+      alignItems: "center", justifyContent: "center",
+    },
+    userNameRow: {
+      flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4,
+    },
+    userName: { fontFamily: "Sora_700Bold", fontSize: 17, color: colors.text },
+    verifiedPill: {
+      flexDirection: "row", alignItems: "center", gap: 4,
+      backgroundColor: "#2d8cf010", borderWidth: 1, borderColor: "#2d8cf030",
+      borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10, marginBottom: 10,
+    },
+    verifiedPillText: {
+      fontFamily: "DMSans_500Medium", fontSize: 11, color: "#2d8cf0",
+    },
     infoChipsRow: { flexDirection: "row", gap: 8, marginTop: 4 },
     infoChip: {
       flexDirection: "row", alignItems: "center", gap: 5,
