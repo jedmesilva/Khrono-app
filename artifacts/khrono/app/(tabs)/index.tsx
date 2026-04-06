@@ -126,6 +126,9 @@ export default function HomeScreen() {
           />
         )}
 
+        {/* Banners */}
+        <BannerCarousel banners={BANNERS} style={styles.banners} />
+
         {/* Active contracts */}
         {activeContracts.length > 0 && (
           <View style={styles.section}>
@@ -219,6 +222,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   summaryBar: {
+    marginBottom: 16,
+  },
+  banners: {
     marginBottom: 24,
   },
   section: {
