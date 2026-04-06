@@ -57,7 +57,9 @@ type ContractsContextType = {
   activeContracts: Contract[];
   history: Contract[];
   isLoading: boolean;
-  startContract: (contract: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }) => Promise<string>;
+  startContract: (contract: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }, initialStatus?: "active" | "pending_signature") => Promise<string>;
+  acceptContract: (id: string) => Promise<void>;
+  cancelContract: (id: string) => Promise<void>;
   endContract: (id: string) => void;
 };
 
@@ -147,7 +149,7 @@ function mapDbToContract(c: any, userId: string): Contract {
     ratePerHour: Number(c.hourly_rate),
     startedAt: new Date(c.started_at).getTime(),
     scheduledFor: c.scheduled_for ? new Date(c.scheduled_for).getTime() : undefined,
-    status: c.status === "active" || c.status === "paused" ? "active" : "ended",
+    status: c.status === "active" || c.status === "paused" || c.status === "pending_signature" ? "active" : "ended",
     endedAt: c.ended_at ? new Date(c.ended_at).getTime() : undefined,
     totalAmount: c.total_amount ? Number(c.total_amount) : undefined,
   };
@@ -253,7 +255,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   }, [loadContracts]);
 
   const startContract = useCallback(
-    async (contractData: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }): Promise<string> => {
+    async (contractData: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }, initialStatus: "active" | "pending_signature" = "active"): Promise<string> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
@@ -266,7 +268,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           contractor_id: user.id,
           hired_id: contractData.person.profileId ?? user.id,
           type: contractData.tipo === "cronometro" ? "open" : "defined",
-          status: "active",
+          status: initialStatus,
           hourly_rate: contractData.ratePerHour,
           total_hours: contractData.duracaoTotal ? contractData.duracaoTotal / 3600000 : null,
           service_id: serviceId,
@@ -286,7 +288,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         throw new Error(error?.message ?? "Falha ao criar contrato");
       }
 
-      await Promise.all([
+      const sideEffects: Promise<any>[] = [
         supabase.from("contract_parties").insert({
           contract_id: contract.id,
           role: "contractor",
@@ -299,18 +301,68 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           user_id: contractData.person.profileId ?? null,
           name: contractData.person.name,
         }),
-        supabase.from("contract_time_entries").insert({
-          contract_id: contract.id,
-          event: "started",
-          triggered_by: user.id,
-        }),
-      ]);
+      ];
+
+      if (initialStatus === "active") {
+        sideEffects.push(
+          supabase.from("contract_time_entries").insert({
+            contract_id: contract.id,
+            event: "started",
+            triggered_by: user.id,
+          })
+        );
+      } else {
+        sideEffects.push(
+          supabase.from("contract_time_entries").insert({
+            contract_id: contract.id,
+            event: "created",
+            triggered_by: user.id,
+          })
+        );
+      }
+
+      await Promise.all(sideEffects);
 
       if (userIdRef.current) await loadContracts(userIdRef.current);
 
       return contract.id;
     },
     [loadContracts]
+  );
+
+  const acceptContract = useCallback(
+    async (id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await Promise.all([
+        supabase.from("contracts").update({ status: "active" }).eq("id", id),
+        supabase.from("contract_time_entries").insert({
+          contract_id: id,
+          event: "started",
+          triggered_by: user.id,
+        }),
+      ]).catch((e) => console.warn("[ContractsContext] acceptContract error:", e));
+
+      if (userIdRef.current) await loadContracts(userIdRef.current);
+    },
+    [loadContracts]
+  );
+
+  const cancelContract = useCallback(
+    async (id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from("contracts")
+        .update({ status: "cancelled" })
+        .eq("id", id)
+        .catch((e) => console.warn("[ContractsContext] cancelContract error:", e));
+
+      setActiveContracts((prev) => prev.filter((c) => c.id !== id));
+    },
+    []
   );
 
   const endContract = useCallback(
@@ -352,7 +404,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ContractsContext.Provider value={{ activeContracts, history, isLoading, startContract, endContract }}>
+    <ContractsContext.Provider value={{ activeContracts, history, isLoading, startContract, acceptContract, cancelContract, endContract }}>
       {children}
     </ContractsContext.Provider>
   );

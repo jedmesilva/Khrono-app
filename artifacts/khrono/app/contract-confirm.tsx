@@ -50,7 +50,7 @@ export default function ContractConfirmScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
-  const { startContract, endContract } = useContracts();
+  const { startContract, acceptContract, cancelContract, endContract } = useContracts();
   const { cards } = useCards();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -79,6 +79,7 @@ export default function ContractConfirmScreen() {
   });
   const [segundos, setSegundos] = useState(0);
   const [activeContractId, setActiveContractId] = useState<string | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const spinAnim = useRef(new Animated.Value(0)).current;
 
@@ -152,56 +153,69 @@ export default function ContractConfirmScreen() {
     return `${diaLabel} às ${String(agendaHora).padStart(2, "0")}:${String(agendaMinuto).padStart(2, "0")}`;
   };
 
-  const confirmar = () => {
-    if (!metodoPagamento) return;
+  const buildContractData = () => {
+    const cartao = cards.find(c => c.id === cartaoSelecionadoId);
+    const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : undefined;
+    return {
+      role: "hiring" as const,
+      tipo: tipoContrato === "aberto" ? "cronometro" as const : "timer" as const,
+      duracaoTotal: tipoContrato === "definido" ? duracaoMs : undefined,
+      serviceId: servico?.serviceId,
+      person: {
+        name: provider.name,
+        initials: provider.initials,
+        skill: servico?.nome ?? "",
+        nota: provider.nota,
+        avaliacoes: provider.avaliacoes,
+        distancia: provider.distancia,
+        profileId: provider.profileId,
+        totalContracts: provider.totalContracts,
+        totalServices: provider.services.length,
+      },
+      servico: servico
+        ? {
+            nome: servico.nome,
+            nota: servico.nota,
+            avaliacoes: servico.avaliacoes,
+            ratePerHour: valorHora,
+            skill: servico.skill,
+            tools: servico.tools,
+            serviceId: servico.serviceId,
+          }
+        : undefined,
+      paymentMethod: metodoPagamento ?? undefined,
+      paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
+      agendado,
+      agendadoLabel: agendado ? formatAgendamento() : undefined,
+      ratePerHour: valorHora,
+    };
+  };
+
+  const confirmar = async () => {
+    if (!metodoPagamento || confirmLoading) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (metodoPagamento === "pix") {
-      setPixPaymentAberta(true);
-    } else {
-      setEtapa("aguardando");
+    setConfirmLoading(true);
+    try {
+      const id = await startContract(buildContractData(), "pending_signature");
+      setActiveContractId(id);
+      if (metodoPagamento === "pix") {
+        setPixPaymentAberta(true);
+      } else {
+        setEtapa("aguardando");
+      }
+    } catch (e) {
+      console.warn("[ContractConfirm] confirmar error:", e);
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
   const aceitar = async () => {
+    if (!activeContractId) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    const cartao = cards.find(c => c.id === cartaoSelecionadoId);
-    const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : undefined;
     try {
-      const id = await startContract({
-        role: "hiring",
-        tipo: tipoContrato === "aberto" ? "cronometro" : "timer",
-        duracaoTotal: tipoContrato === "definido" ? duracaoMs : undefined,
-        serviceId: servico?.serviceId,
-        person: {
-          name: provider.name,
-          initials: provider.initials,
-          skill: servico?.nome ?? "",
-          nota: provider.nota,
-          avaliacoes: provider.avaliacoes,
-          distancia: provider.distancia,
-          profileId: provider.profileId,
-          totalContracts: provider.totalContracts,
-          totalServices: provider.services.length,
-        },
-        servico: servico
-          ? {
-              nome: servico.nome,
-              nota: servico.nota,
-              avaliacoes: servico.avaliacoes,
-              ratePerHour: valorHora,
-              skill: servico.skill,
-              tools: servico.tools,
-              serviceId: servico.serviceId,
-            }
-          : undefined,
-        paymentMethod: metodoPagamento ?? undefined,
-        paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
-        agendado,
-        agendadoLabel: agendado ? formatAgendamento() : undefined,
-        ratePerHour: valorHora,
-      });
-      setActiveContractId(id);
-      router.replace(`/contract-detail/${id}` as any);
+      await acceptContract(activeContractId);
+      router.replace(`/contract-detail/${activeContractId}` as any);
     } catch (e) {
       console.warn("[ContractConfirm] aceitar error:", e);
     }
@@ -539,11 +553,11 @@ export default function ContractConfirmScreen() {
           </Pressable>
 
           <Pressable
-            onPress={metodoPagamento ? confirmar : undefined}
-            style={[styles.confirmBtn, !metodoPagamento && styles.confirmBtnDisabled]}
+            onPress={(metodoPagamento && !confirmLoading) ? confirmar : undefined}
+            style={[styles.confirmBtn, (!metodoPagamento || confirmLoading) && styles.confirmBtnDisabled]}
           >
-            <Text style={[styles.confirmBtnText, !metodoPagamento && { color: colors.textDim }]}>
-              {metodoPagamento === "pix" ? "Confirmar e gerar Pix" : "Confirmar e enviar solicitação"}
+            <Text style={[styles.confirmBtnText, (!metodoPagamento || confirmLoading) && { color: colors.textDim }]}>
+              {confirmLoading ? "Criando contrato..." : metodoPagamento === "pix" ? "Confirmar e gerar Pix" : "Confirmar e enviar solicitação"}
             </Text>
           </Pressable>
           <Pressable onPress={goBack} style={styles.cancelBtn}>
@@ -577,7 +591,11 @@ export default function ContractConfirmScreen() {
       {/* ── PIX PAYMENT MODAL ── */}
       <PixPaymentModal
         visible={pixPaymentAberta}
-        onClose={() => setPixPaymentAberta(false)}
+        onClose={async () => {
+          if (activeContractId) await cancelContract(activeContractId);
+          setActiveContractId(null);
+          setPixPaymentAberta(false);
+        }}
         onConfirm={() => {
           setPixPaymentAberta(false);
           setEtapa("aguardando");
@@ -628,13 +646,27 @@ export default function ContractConfirmScreen() {
                 <Feather name="check" size={14} color={"#18a06b"} />
                 <Text style={styles.simAcceptText}>Aceitar</Text>
               </Pressable>
-              <Pressable onPress={() => setEtapa("confirmacao")} style={styles.simRejectBtn}>
+              <Pressable
+                onPress={async () => {
+                  if (activeContractId) await cancelContract(activeContractId);
+                  setActiveContractId(null);
+                  setEtapa("confirmacao");
+                }}
+                style={styles.simRejectBtn}
+              >
                 <Text style={styles.simRejectText}>Recusar</Text>
               </Pressable>
             </View>
           </View>
 
-          <Pressable onPress={() => setEtapa("confirmacao")} style={[styles.cancelBtn, { width: "100%" }]}>
+          <Pressable
+            onPress={async () => {
+              if (activeContractId) await cancelContract(activeContractId);
+              setActiveContractId(null);
+              goBack();
+            }}
+            style={[styles.cancelBtn, { width: "100%" }]}
+          >
             <Text style={styles.cancelBtnText}>Cancelar solicitação</Text>
           </Pressable>
         </View>
