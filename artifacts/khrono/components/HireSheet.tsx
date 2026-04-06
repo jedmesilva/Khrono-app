@@ -114,6 +114,7 @@ const MOCK_PROVIDERS: Record<string, ProviderData> = {
 };
 
 type HireMethod = "PINCODE" | "QRCODE" | "NFC" | "LINK";
+type HireTab = "direta" | "externa";
 type Props = { open: boolean; onClose: () => void };
 
 const KEYPAD_ROWS = [
@@ -544,6 +545,7 @@ export function HireSheet({ open, onClose }: Props) {
   const router = useRouter();
   const { setPendingProvider } = useConfirmation();
   const { colors } = useTheme();
+  const [activeTab, setActiveTab] = useState<HireTab>("direta");
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [disponivel, setDisponivel] = useState(false);
   const [sessionPin, setSessionPin] = useState<string | null>(null);
@@ -719,106 +721,170 @@ export function HireSheet({ open, onClose }: Props) {
         >
           <Text style={styles.sheetTitle}>Iniciar contratação</Text>
 
-          {/* 4-column hire grid */}
-          <View style={styles.hireGrid}>
-            {hireOptions.map((opt) => (
-              <Pressable
-                key={opt.method}
-                style={({ pressed }) => [
-                  styles.hireItem,
-                  pressed && styles.hireItemPressed,
-                ]}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSubMode(opt.method);
-                }}
-              >
-                {opt.icon}
-                <Text style={styles.hireLabel}>{opt.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {/* Disponibilidade */}
-          <View style={styles.availHeaderRow}>
-            <Text style={styles.availTitle}>Disponibilidade</Text>
-            <View style={styles.toggleRow}>
-              <Text style={[styles.toggleLabel, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
-                {disponivel ? "Disponível" : "Indisponível"}
+          {/* ── Tab selector ── */}
+          <View style={styles.tabBar}>
+            <Pressable
+              style={[styles.tabItem, activeTab === "direta" && styles.tabItemActive]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setActiveTab("direta");
+              }}
+            >
+              <Text style={[styles.tabLabel, activeTab === "direta" && styles.tabLabelActive]}>
+                Contratação Direta
               </Text>
-              <AnimatedToggle
-                value={disponivel}
-                onValueChange={(val) => {
-                  if (!val) {
-                    setDialog({
-                      title: "Encerrar sessão?",
-                      message: "Você ficará indisponível e o PINCODE atual será invalidado.",
-                      buttons: [
-                        { text: "Cancelar", style: "cancel" },
-                        { text: "Encerrar", style: "destructive", onPress: endSession },
-                      ],
-                    });
-                  } else {
-                    startSession();
-                  }
-                }}
-              />
-            </View>
+            </Pressable>
+            <Pressable
+              style={[styles.tabItem, activeTab === "externa" && styles.tabItemActive]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setActiveTab("externa");
+              }}
+            >
+              <Text style={[styles.tabLabel, activeTab === "externa" && styles.tabLabelActive]}>
+                Contratação Externa
+              </Text>
+            </Pressable>
           </View>
 
-          <View style={[
-            styles.availStatusBanner,
-            disponivel
-              ? { backgroundColor: "#18a06b10", borderColor: "#18a06b30" }
-              : { backgroundColor: colors.card, borderColor: colors.cardBorder },
-          ]}>
-            <Feather
-              name={disponivel ? "check-circle" : "slash"}
-              size={13}
-              color={disponivel ? "#18a06b" : colors.textMuted}
-            />
-            <Text style={[styles.availStatusMsg, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
-              {disponivel
-                ? "Sessão ativa · disponível para contratações."
-                : "Você está indisponível e não pode receber contratos."}
-            </Text>
-          </View>
+          {activeTab === "direta" && (
+            <>
+              {/* 4-column hire grid */}
+              <View style={styles.hireGrid}>
+                {hireOptions.map((opt) => (
+                  <Pressable
+                    key={opt.method}
+                    style={({ pressed }) => [
+                      styles.hireItem,
+                      pressed && styles.hireItemPressed,
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSubMode(opt.method);
+                    }}
+                  >
+                    {opt.icon}
+                    <Text style={styles.hireLabel}>{opt.label}</Text>
+                  </Pressable>
+                ))}
+              </View>
 
-          <View style={{ opacity: disponivel ? 1 : 0.3, gap: 10, marginBottom: 8 }}>
-            {availOptions.map((opt) => (
-              <Pressable
-                key={opt.label}
-                style={({ pressed }) => [
-                  styles.availRow,
-                  pressed && disponivel && styles.availRowPressed,
-                ]}
-                onPress={() => {
-                  if (!disponivel) return;
-                  if (opt.pin) {
-                    Haptics.selectionAsync();
-                    setPincodeSheetOpen(true);
-                  } else {
-                    setDialog({
-                      title: "Em breve",
-                      message: "Esta funcionalidade estará disponível em breve.",
-                    });
-                  }
-                }}
-              >
-                <View style={styles.availIcon}>
-                  {opt.pin ? (
-                    <Feather name="hash" size={24} color={colors.textSecondary} />
-                  ) : (
-                    opt.icon
-                  )}
+              {/* Disponibilidade */}
+              <View style={styles.availHeaderRow}>
+                <Text style={styles.availTitle}>Disponibilidade</Text>
+                <View style={styles.toggleRow}>
+                  <Text style={[styles.toggleLabel, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
+                    {disponivel ? "Disponível" : "Indisponível"}
+                  </Text>
+                  <AnimatedToggle
+                    value={disponivel}
+                    onValueChange={(val) => {
+                      if (!val) {
+                        setDialog({
+                          title: "Encerrar sessão?",
+                          message: "Você ficará indisponível e o PINCODE atual será invalidado.",
+                          buttons: [
+                            { text: "Cancelar", style: "cancel" },
+                            { text: "Encerrar", style: "destructive", onPress: endSession },
+                          ],
+                        });
+                      } else {
+                        startSession();
+                      }
+                    }}
+                  />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.availLabel}>{opt.label}</Text>
-                  <Text style={styles.availDesc}>{opt.desc}</Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
+              </View>
+
+              <View style={[
+                styles.availStatusBanner,
+                disponivel
+                  ? { backgroundColor: "#18a06b10", borderColor: "#18a06b30" }
+                  : { backgroundColor: colors.card, borderColor: colors.cardBorder },
+              ]}>
+                <Feather
+                  name={disponivel ? "check-circle" : "slash"}
+                  size={13}
+                  color={disponivel ? "#18a06b" : colors.textMuted}
+                />
+                <Text style={[styles.availStatusMsg, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
+                  {disponivel
+                    ? "Sessão ativa · disponível para contratações."
+                    : "Você está indisponível e não pode receber contratos."}
+                </Text>
+              </View>
+
+              <View style={{ opacity: disponivel ? 1 : 0.3, gap: 10, marginBottom: 8 }}>
+                {availOptions.map((opt) => (
+                  <Pressable
+                    key={opt.label}
+                    style={({ pressed }) => [
+                      styles.availRow,
+                      pressed && disponivel && styles.availRowPressed,
+                    ]}
+                    onPress={() => {
+                      if (!disponivel) return;
+                      if (opt.pin) {
+                        Haptics.selectionAsync();
+                        setPincodeSheetOpen(true);
+                      } else {
+                        setDialog({
+                          title: "Em breve",
+                          message: "Esta funcionalidade estará disponível em breve.",
+                        });
+                      }
+                    }}
+                  >
+                    <View style={styles.availIcon}>
+                      {opt.pin ? (
+                        <Feather name="hash" size={24} color={colors.textSecondary} />
+                      ) : (
+                        opt.icon
+                      )}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.availLabel}>{opt.label}</Text>
+                      <Text style={styles.availDesc}>{opt.desc}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
+
+          {activeTab === "externa" && (
+            <>
+              <Text style={styles.externalDesc}>
+                Para contratos fora da plataforma, informe o seu papel nessa contratação.
+              </Text>
+
+              <Text style={styles.externalQuestion}>Qual é o seu papel?</Text>
+
+              <View style={styles.roleGrid}>
+                <Pressable
+                  style={({ pressed }) => [styles.roleCard, pressed && styles.roleCardPressed]}
+                  onPress={() => setDialog({ title: "Em breve", message: "Esta funcionalidade estará disponível em breve." })}
+                >
+                  <View style={styles.roleIconWrap}>
+                    <Feather name="user-check" size={26} color={"#e06030"} />
+                  </View>
+                  <Text style={styles.roleCardTitle}>Vou ser{"\n"}contratado</Text>
+                  <Text style={styles.roleCardDesc}>Receba uma solicitação de contrato</Text>
+                </Pressable>
+
+                <Pressable
+                  style={({ pressed }) => [styles.roleCard, pressed && styles.roleCardPressed]}
+                  onPress={() => setDialog({ title: "Em breve", message: "Esta funcionalidade estará disponível em breve." })}
+                >
+                  <View style={styles.roleIconWrap}>
+                    <Feather name="briefcase" size={26} color={"#e06030"} />
+                  </View>
+                  <Text style={styles.roleCardTitle}>Quero{"\n"}contratar</Text>
+                  <Text style={styles.roleCardDesc}>Envie uma solicitação de contrato</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
         </BottomSheetScrollView>
       </BottomSheet>
 
@@ -933,6 +999,56 @@ function createMainStyles(colors: ColorPalette) {
     },
     availLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13, marginBottom: 3, color: colors.text },
     availDesc: { fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 15, color: colors.textMuted },
+    tabBar: {
+      flexDirection: "row", gap: 8, marginBottom: 24,
+      backgroundColor: colors.card, borderRadius: 16,
+      borderWidth: 1, borderColor: colors.cardBorder, padding: 4,
+    },
+    tabItem: {
+      flex: 1, paddingVertical: 10, borderRadius: 12,
+      alignItems: "center", justifyContent: "center",
+    },
+    tabItemActive: {
+      backgroundColor: "#e06030",
+    },
+    tabLabel: {
+      fontFamily: "DMSans_500Medium", fontSize: 12,
+      color: colors.textSecondary, textAlign: "center",
+    },
+    tabLabelActive: {
+      color: "#fff",
+      fontFamily: "Sora_600SemiBold",
+    },
+    externalDesc: {
+      fontFamily: "DMSans_400Regular", fontSize: 13, lineHeight: 19,
+      color: colors.textSecondary, marginBottom: 24,
+    },
+    externalQuestion: {
+      fontFamily: "Sora_700Bold", fontSize: 16, color: colors.text, marginBottom: 16,
+    },
+    roleGrid: {
+      flexDirection: "row", gap: 12, marginBottom: 8,
+    },
+    roleCard: {
+      flex: 1, borderWidth: 1, borderRadius: 24,
+      paddingVertical: 24, paddingHorizontal: 16,
+      alignItems: "center", gap: 12,
+      backgroundColor: colors.card, borderColor: colors.cardBorder,
+    },
+    roleCardPressed: { backgroundColor: "#e0603010", borderColor: "#e0603040" },
+    roleIconWrap: {
+      width: 60, height: 60, borderRadius: 18,
+      alignItems: "center", justifyContent: "center",
+      backgroundColor: "#e0603012", borderWidth: 1, borderColor: "#e0603030",
+    },
+    roleCardTitle: {
+      fontFamily: "Sora_700Bold", fontSize: 15, color: colors.text,
+      textAlign: "center", lineHeight: 21,
+    },
+    roleCardDesc: {
+      fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 15,
+      color: colors.textMuted, textAlign: "center",
+    },
   });
 }
 
