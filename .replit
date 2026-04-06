@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-24", "postgresql-16"]
   [nix]
   channel = "stable-25_05"
   packages = ["unzip"]
@@ -41,7 +41,7 @@ waitForPort = 5000
   EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
   EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_CQjd1YGgkr8eoPuSha932A_dWtkQ1Ie"
   SUPABASE_DATABASE_URL = "postgresql://postgres:6PmtWMtkvqcHaxKD@db.hbekmqzdoxcsznykuxdj.supabase.co:5432/postgres?sslmode=require"
-SUPABASE_ACCESS_TOKEN = "sbp_1d53313d24b12251009754b217f3d6b9a87f8119"
+SUPABASE_ACCESS_TOKEN = "sbp_bd6de1cb4a5fc378fd5896862fa99378afb19632"
 
 [[ports]]
 localPort = 5000

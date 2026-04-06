@@ -111,15 +111,30 @@ Expo React Native mobile app (Khrono) — cross-platform time-based contracts ap
 
 **Contract flow:**
 1. User opens HireSheet (central orange handshake button)
-2. Selects connection method → enters PIN (mock PINs: 1234, 5678, 9012, 4321, 1257)
+2. Selects connection method → enters PIN (real PIN lookup from Supabase)
 3. Provider found → navigates to `contract-confirm` screen
 4. `confirmacao` stage: select skill, tools, schedule (now/later), contract type (open/fixed), duration
 5. `aguardando` stage: spinner animation, simulate provider accept/reject
 6. `ativo` stage: live timer (stopwatch or countdown), accumulated cost, end button
 
 **Contexts:**
-- `ContractsContext` — manages active contracts + history, AsyncStorage persistence, `startContract` returns contract ID
+- `ContractsContext` — manages active contracts + history, AsyncStorage + Supabase persistence, `startContract` returns contract UUID
 - `HireSheetContext` — controls HireSheet open/close state
 - `ConfirmationContext` — passes `ProviderData` (skills, tools, nota, distancia, valorBase) from HireSheet to contract-confirm screen
 
-**Mock provider PINs:** 1234 = Carlos Mendes (Pintor), 5678 = Juliana Rocha (Personal Trainer), 9012 = Pedro Alves (Eletricista), 4321 = Isabela Martins (Cuidadora), 1257 = Jedme Silva (Montador).
+**Supabase integration (lib/supabase.ts):** Auth via `@supabase/supabase-js` with AsyncStorage session persistence.
+
+**Supabase database tables:**
+- `profiles` — user profiles (id, name, first_name, email, phone, etc.)
+- `provider_profiles` — provider-specific info (valor_base, nota, avaliacoes, total_contracts, verified)
+- `provider_pins` — PIN-to-provider mapping for connection via PINCODE method
+- `provider_services` — services each provider offers (nome, multiplicador, skill, tools, nota)
+- `contracts` — real contracts persisted to Supabase (hiring_user_id, hired_user_id, tipo, status, rate_per_hour, etc.)
+
+**Test provider:** Jedme Silva — PIN `1257`, Supabase profile ID `a1884c2a-f50e-4343-9dd3-33b99af82360`, services: Montagem de Móveis + Desmontagem e Transporte.
+
+**To add new providers to Supabase:**
+1. Create/find a `profiles` entry
+2. Insert into `provider_profiles` (valor_base, nota, etc.)
+3. Insert a PIN into `provider_pins`
+4. Insert services into `provider_services`

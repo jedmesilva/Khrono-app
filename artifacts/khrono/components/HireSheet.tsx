@@ -38,84 +38,65 @@ import { PincodeSheet } from "@/components/PincodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
+import { supabase } from "@/lib/supabase";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
-const MOCK_PROVIDERS: Record<string, ProviderData> = {
-  "1234": {
-    name: "Carlos Mendes",
-    initials: "CM",
-    nota: 4.8,
-    avaliacoes: 42,
-    distancia: 0.8,
-    valorBase: 45,
-    totalContracts: 87,
-    profileId: "p-1234",
-    verified: true,
-    services: [
-      { id: 1, nome: "Pintura Residencial", multiplicador: 1.0, avaliacoes: 42, nota: 4.8, skill: "Pintor", tools: ["Rolo 23cm", "Escada 6m"] },
-      { id: 2, nome: "Gessaria", multiplicador: 0.9, avaliacoes: 8, nota: 4.5, skill: "Gesseiro", tools: ["Desempenadeira", "Misturador"] },
-    ],
-  },
-  "5678": {
-    name: "Juliana Rocha",
-    initials: "JR",
-    nota: 5.0,
-    avaliacoes: 128,
-    distancia: 2.1,
-    valorBase: 80,
-    totalContracts: 152,
-    profileId: "p-5678",
-    verified: true,
-    services: [
-      { id: 1, nome: "Personal Training", multiplicador: 1.0, avaliacoes: 128, nota: 5.0, skill: "Personal Trainer", tools: ["Kit de Treino"] },
-      { id: 2, nome: "Consultoria Nutricional", multiplicador: 1.2, avaliacoes: 34, nota: 4.9, skill: "Nutricionista" },
-    ],
-  },
-  "9012": {
-    name: "Pedro Alves",
-    initials: "PA",
-    nota: 4.7,
-    avaliacoes: 31,
-    distancia: 3.4,
-    valorBase: 60,
-    totalContracts: 45,
-    profileId: "p-9012",
-    services: [
-      { id: 1, nome: "Instalação Elétrica", multiplicador: 1.0, avaliacoes: 31, nota: 4.7, skill: "Eletricista", tools: ["Alicate Amperímetro", "Kit Cabos"] },
-      { id: 2, nome: "Manutenção Elétrica", multiplicador: 0.9, avaliacoes: 12, nota: 4.6, skill: "Eletricista", tools: ["Alicate Amperímetro"] },
-    ],
-  },
-  "4321": {
-    name: "Isabela Martins",
-    initials: "IM",
-    nota: 4.9,
-    avaliacoes: 77,
-    distancia: 0.5,
-    valorBase: 40,
-    totalContracts: 94,
-    profileId: "p-4321",
-    verified: true,
-    services: [
-      { id: 1, nome: "Cuidados com Idosos", multiplicador: 1.0, avaliacoes: 77, nota: 4.9, skill: "Cuidadora" },
-      { id: 2, nome: "Acompanhamento Hospitalar", multiplicador: 1.3, avaliacoes: 22, nota: 4.8, skill: "Cuidadora", tools: ["Cadeira de Rodas"] },
-    ],
-  },
-  "1257": {
-    name: "Jedme Silva",
-    initials: "JS",
-    nota: 4.6,
-    avaliacoes: 19,
-    distancia: 1.8,
-    valorBase: 50,
-    totalContracts: 43,
-    profileId: "p-1257",
-    services: [
-      { id: 1, nome: "Montagem de Móveis", multiplicador: 1.0, avaliacoes: 19, nota: 4.6, skill: "Montador de Móveis", tools: ["Honda Civic 2019", "Kit Furadeira Bosch"] },
-      { id: 2, nome: "Desmontagem e Transporte", multiplicador: 0.85, avaliacoes: 7, nota: 4.4, skill: "Carregador / Mudanças", tools: ["Honda Civic 2019"] },
-    ],
-  },
-};
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
+  const { data: pinRow, error: pinErr } = await supabase
+    .from("provider_pins")
+    .select("profile_id")
+    .eq("pin", pin)
+    .eq("is_active", true)
+    .single();
+
+  if (pinErr || !pinRow) return null;
+
+  const profileId = pinRow.profile_id as string;
+
+  const [profileRes, provRes, servicesRes] = await Promise.all([
+    supabase.from("profiles").select("id, name, first_name").eq("id", profileId).single(),
+    supabase.from("provider_profiles").select("valor_base, nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
+    supabase.from("provider_services").select("*").eq("profile_id", profileId).eq("is_active", true).order("sort_order"),
+  ]);
+
+  if (profileRes.error || !profileRes.data) return null;
+  if (provRes.error || !provRes.data) return null;
+
+  const profile = profileRes.data;
+  const prov = provRes.data;
+  const name = profile.name || profile.first_name;
+
+  return {
+    name,
+    initials: getInitials(name),
+    nota: parseFloat(String(prov.nota)),
+    avaliacoes: prov.avaliacoes,
+    distancia: 1.5,
+    valorBase: parseFloat(String(prov.valor_base)),
+    totalContracts: prov.total_contracts,
+    verified: prov.verified,
+    profileId,
+    services: (servicesRes.data ?? []).map((s: any, idx: number) => ({
+      id: idx + 1,
+      nome: s.nome,
+      multiplicador: parseFloat(String(s.multiplicador)),
+      skill: s.skill ?? "",
+      tools: Array.isArray(s.tools) ? s.tools : [],
+      nota: parseFloat(String(s.nota)),
+      avaliacoes: s.avaliacoes,
+    })),
+  };
+}
 
 type HireMethod = "PINCODE" | "QRCODE" | "NFC" | "LINK";
 type HireTab = "direta" | "externa";
@@ -141,6 +122,7 @@ function PincodeContent({
 }) {
   const [pin, setPin] = useState("");
   const [found, setFound] = useState<ProviderData | null>(null);
+  const [loading, setLoading] = useState(false);
   const styles = useMemo(() => createSubStyles(colors), [colors]);
 
   const handleKey = (d: string) => {
@@ -154,14 +136,23 @@ function PincodeContent({
     }
   };
 
-  const handleConnect = () => {
-    const provider = MOCK_PROVIDERS[pin];
-    if (provider) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setFound(provider);
-    } else {
+  const handleConnect = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const provider = await lookupProviderByPin(pin);
+      if (provider) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setFound(provider);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        onShowDialog({ title: "PIN não encontrado", message: "Verifique o código e tente novamente." });
+      }
+    } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      onShowDialog({ title: "PIN não encontrado", message: "Verifique o código e tente novamente." });
+      onShowDialog({ title: "Erro de conexão", message: "Não foi possível buscar o prestador. Tente novamente." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -253,11 +244,15 @@ function PincodeContent({
       </View>
 
       <Pressable
-        style={[styles.primaryBtn, pin.length < 4 && styles.primaryBtnDisabled]}
-        disabled={pin.length < 4}
+        style={[styles.primaryBtn, (pin.length < 4 || loading) && styles.primaryBtnDisabled]}
+        disabled={pin.length < 4 || loading}
         onPress={handleConnect}
       >
-        <Text style={styles.primaryBtnText}>Conectar</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.primaryBtnText}>Conectar</Text>
+        )}
       </Pressable>
     </View>
   );

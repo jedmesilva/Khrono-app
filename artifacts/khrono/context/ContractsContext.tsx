@@ -6,6 +6,15 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { supabase } from "@/lib/supabase";
+
+function generateUUID(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export type ContractTool = {
   nome: string;
@@ -171,7 +180,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
   const startContract = useCallback(
     (contract: Omit<Contract, "id" | "status" | "startedAt">): string => {
-      const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+      const id = generateUUID();
       const newContract: Contract = {
         ...contract,
         id,
@@ -183,6 +192,28 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         saveData(updated, history);
         return updated;
       });
+
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        supabase.from("contracts").insert({
+          id,
+          hiring_user_id: user.id,
+          hired_user_id: contract.person.profileId ?? user.id,
+          tipo: contract.tipo,
+          status: "active",
+          rate_per_hour: contract.ratePerHour,
+          duracao_total: contract.duracaoTotal ?? null,
+          service_name: contract.servico?.nome ?? null,
+          payment_method: contract.paymentMethod ?? null,
+          payment_card_label: contract.paymentCardLabel ?? null,
+          agendado: contract.agendado ?? false,
+          scheduled_for: contract.scheduledFor ? new Date(contract.scheduledFor).toISOString() : null,
+          started_at: new Date(Date.now()).toISOString(),
+        }).then(({ error }) => {
+          if (error) console.warn("[ContractsContext] Supabase insert error:", error.message);
+        });
+      });
+
       return id;
     },
     [history, saveData]
@@ -206,6 +237,16 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           saveData(updatedActive, updatedHistory);
           return updatedHistory;
         });
+
+        supabase.from("contracts").update({
+          status: "ended",
+          ended_at: new Date(endedAt).toISOString(),
+          total_amount: totalAmount,
+          updated_at: new Date().toISOString(),
+        }).eq("id", id).then(({ error }) => {
+          if (error) console.warn("[ContractsContext] Supabase update error:", error.message);
+        });
+
         return updatedActive;
       });
     },
