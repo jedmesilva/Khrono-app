@@ -33,6 +33,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const ref = useRef<BottomSheetModal>(null);
+  const amountRef = useRef<any>(null);
 
   const snapPoints = useMemo(() => ["55%", "80%"], []);
 
@@ -74,6 +75,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
   useEffect(() => {
     if (visible) {
       ref.current?.present();
+      setTimeout(() => amountRef.current?.focus(), 500);
     } else {
       ref.current?.dismiss();
     }
@@ -140,6 +142,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
             <View style={styles.amountRow}>
               <Text style={styles.currencyPrefix}>R$</Text>
               <BottomSheetTextInput
+                ref={amountRef}
                 style={styles.amountInput}
                 value={amount}
                 onChangeText={setAmount}
