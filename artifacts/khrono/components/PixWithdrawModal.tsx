@@ -193,7 +193,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
               onPress={isValid ? handleConfirm : undefined}
             >
               <Text style={styles.confirmBtnText}>Continuar</Text>
-              <Feather name="arrow-right" size={16} color="#000" />
+              <Feather name="arrow-right" size={16} color="#fff" />
             </Pressable>
           </>
         )}
@@ -234,7 +234,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             </Text>
 
             <Pressable style={styles.confirmBtn} onPress={handlePay}>
-              <Feather name="zap" size={16} color="#000" />
+              <Feather name="zap" size={16} color="#fff" />
               <Text style={styles.confirmBtnText}>Confirmar Pix</Text>
             </Pressable>
           </>
@@ -326,8 +326,8 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
     },
     keyTypeBtnActive: {
-      borderColor: "#18a06b",
-      backgroundColor: "#18a06b15",
+      borderColor: colors.accent,
+      backgroundColor: "#e0603015",
     },
     keyTypeTxt: {
       fontFamily: "DMSans_400Regular",
@@ -335,7 +335,7 @@ function createStyles(colors: ColorPalette) {
       color: colors.textMuted,
     },
     keyTypeTxtActive: {
-      color: "#18a06b",
+      color: colors.accent,
     },
     keyInput: {
       backgroundColor: colors.surface,
@@ -354,7 +354,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 20,
-      backgroundColor: "#18a06b",
+      backgroundColor: colors.accent,
       borderRadius: 14,
       paddingVertical: 16,
     },
@@ -364,7 +364,7 @@ function createStyles(colors: ColorPalette) {
     confirmBtnText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 15,
-      color: "#000",
+      color: "#fff",
     },
     confirmCard: {
       backgroundColor: colors.surface,

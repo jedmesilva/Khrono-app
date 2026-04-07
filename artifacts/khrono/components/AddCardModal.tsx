@@ -235,7 +235,7 @@ export function AddCardModal({ visible, onClose }: Props) {
               style={[styles.addBtn, !isValid && styles.addBtnDisabled]}
               onPress={isValid ? handleAdd : undefined}
             >
-              <Feather name="credit-card" size={16} color={isValid ? "#000" : colors.textDim} />
+              <Feather name="credit-card" size={16} color={isValid ? "#fff" : colors.textDim} />
               <Text style={[styles.addBtnText, !isValid && { color: colors.textDim }]}>
                 Adicionar cartão
               </Text>
@@ -359,7 +359,7 @@ function createStyles(colors: ColorPalette) {
       gap: 8,
       marginTop: 20,
       marginBottom: 8,
-      backgroundColor: "#18a06b",
+      backgroundColor: colors.accent,
       borderRadius: 14,
       paddingVertical: 16,
     },
@@ -369,7 +369,7 @@ function createStyles(colors: ColorPalette) {
     addBtnText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 15,
-      color: "#000",
+      color: "#fff",
     },
     successContainer: {
       alignItems: "center",

@@ -157,7 +157,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
               style={[styles.confirmBtn, !isValid && styles.confirmBtnDisabled]}
               onPress={isValid ? handleContinue : undefined}
             >
-              <Feather name="zap" size={16} color="#000" />
+              <Feather name="zap" size={16} color="#fff" />
               <Text style={styles.confirmBtnText}>Gerar Pix</Text>
             </Pressable>
           </>
@@ -212,7 +212,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
             </View>
 
             <Pressable style={styles.confirmBtn} onPress={handleDone}>
-              <Feather name="check" size={16} color="#000" />
+              <Feather name="check" size={16} color="#fff" />
               <Text style={styles.confirmBtnText}>Já fiz o depósito</Text>
             </Pressable>
           </>
@@ -300,7 +300,7 @@ function createStyles(colors: ColorPalette) {
     confirmBtnText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 15,
-      color: "#000",
+      color: "#fff",
     },
     qrBox: {
       alignItems: "center",
