@@ -195,7 +195,7 @@ function PincodeContent({
         </Text>
         <Pressable style={styles.primaryBtn} onPress={handleContinue}>
           <Feather name="arrow-right" size={16} color="#fff" />
-          <Text style={styles.primaryBtnText}>Configurar contrato</Text>
+          <Text style={styles.primaryBtnText}>Confirmar</Text>
         </Pressable>
         <Pressable style={styles.ghostBtn} onPress={() => setFound(null)}>
           <Text style={styles.ghostBtnText}>Voltar</Text>
@@ -252,7 +252,7 @@ function PincodeContent({
         {loading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <Text style={styles.primaryBtnText}>Conectar</Text>
+          <Text style={styles.primaryBtnText}>Buscar</Text>
         )}
       </Pressable>
     </View>
