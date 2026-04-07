@@ -462,6 +462,7 @@ export default function ContractConfirmScreen() {
           )}
 
           {/* Value summary */}
+          <Text style={[styles.sectionLabel, { marginTop: 4 }]}>resumo</Text>
           <View style={styles.valueSummary}>
             <View style={{ flex: 1 }}>
               <Text style={styles.valueSummaryLabel}>
