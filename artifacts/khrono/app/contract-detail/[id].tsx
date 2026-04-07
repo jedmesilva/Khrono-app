@@ -332,7 +332,7 @@ export default function ContractDetailScreen() {
               { label: "Execução definida para", valor: contract.agendado && contract.agendadoLabel ? contract.agendadoLabel : "Agora", corValor: undefined },
               ...(!isActive ? [
                 { label: "Duração", valor: formatTimer(Math.floor(tempoDecorrido / 1000)), corValor: undefined },
-                { label: isHiring ? "Total pago" : "Total recebido", valor: `R$${valorAcumulado}`, corValor: cor },
+                { label: "Valor", valor: `R$${valorAcumulado}`, corValor: cor },
               ] : []),
               { label: "Iniciado em", valor: formatData(contract.startedAt), corValor: undefined },
               ...(contract.endedAt ? [{ label: "Encerrado em", valor: formatData(contract.endedAt), corValor: undefined }] : []),
