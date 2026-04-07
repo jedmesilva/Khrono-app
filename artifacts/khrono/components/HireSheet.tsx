@@ -252,7 +252,7 @@ function PincodeContent({
         {loading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <Text style={styles.primaryBtnText}>Buscar</Text>
+          <Text style={styles.primaryBtnText}>Conectar</Text>
         )}
       </Pressable>
     </View>
