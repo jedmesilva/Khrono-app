@@ -244,9 +244,7 @@ export default function ContractConfirmScreen() {
         >
           <Feather name="arrow-left" size={20} color={"#e06030"} />
         </Pressable>
-        <Text style={styles.headerTitle}>
-          K<Text style={{ color: "#e06030" }}>r</Text>ono
-        </Text>
+        <Text style={styles.headerTitle}>Definir contrato</Text>
       </View>
 
       {/* ── CONFIRMAÇÃO ── */}
@@ -257,7 +255,7 @@ export default function ContractConfirmScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.sectionLabel}>confirmar contrato</Text>
+          <Text style={styles.sectionLabel}>você está contratando:</Text>
 
           {/* Provider card */}
           <View style={styles.providerCard}>
