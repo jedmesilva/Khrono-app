@@ -1,15 +1,13 @@
 import { Feather } from "@expo/vector-icons";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
-import React, { useMemo, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
@@ -28,15 +26,60 @@ function buildPixKey(name: string) {
   return `${first}@khrono.app`;
 }
 
-export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amount, tipoContrato }: Props) {
+export function PixPaymentModal({
+  visible,
+  onClose,
+  onConfirm,
+  providerName,
+  amount,
+  tipoContrato,
+}: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const ref = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["72%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
 
   const [copied, setCopied] = useState(false);
-
   const pixKey = buildPixKey(providerName);
   const isAberto = tipoContrato === "aberto";
+
+  useEffect(() => {
+    if (visible) {
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [visible]);
 
   async function handleCopy() {
     await Clipboard.setStringAsync(pixKey);
@@ -47,24 +90,37 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
 
   function handleConfirm() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    ref.current?.dismiss();
     onConfirm();
   }
 
+  function handleClose() {
+    ref.current?.dismiss();
+    onClose();
+  }
+
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.handle} />
-
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={sheetBgStyle}
+      handleIndicatorStyle={handleStyle}
+      onDismiss={onClose}
+    >
+      <BottomSheetScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Math.max(insets.bottom, 24) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={handleClose} hitSlop={12}>
             <Feather name="arrow-left" size={18} color={colors.textSecondary} />
           </Pressable>
           <Text style={styles.title}>Pagar via Pix</Text>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={handleClose} hitSlop={12}>
             <Feather name="x" size={18} color={colors.textSecondary} />
           </Pressable>
         </View>
@@ -75,14 +131,16 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
               {Array.from({ length: 9 }).map((_, i) => (
                 <View
                   key={i}
-                  style={[
-                    styles.qrCell,
-                    i % 2 === 0 && styles.qrCellFilled,
-                  ]}
+                  style={[styles.qrCell, i % 2 === 0 && styles.qrCellFilled]}
                 />
               ))}
             </View>
-            <Feather name="zap" size={26} color={colors.textSecondary} style={styles.qrIcon} />
+            <Feather
+              name="zap"
+              size={26}
+              color={colors.textSecondary}
+              style={styles.qrIcon}
+            />
           </View>
 
           <Text style={styles.providerName}>{providerName}</Text>
@@ -91,13 +149,19 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
             {isAberto ? (
               <>
                 <Text style={styles.amountLabel}>VALOR/HORA</Text>
-                <Text style={styles.amountValue}>R$ {amount.toFixed(2).replace(".", ",")}</Text>
-                <Text style={styles.amountNote}>Valor final calculado ao encerrar o contrato</Text>
+                <Text style={styles.amountValue}>
+                  R$ {amount.toFixed(2).replace(".", ",")}
+                </Text>
+                <Text style={styles.amountNote}>
+                  Valor final calculado ao encerrar o contrato
+                </Text>
               </>
             ) : (
               <>
                 <Text style={styles.amountLabel}>VALOR TOTAL</Text>
-                <Text style={styles.amountValue}>R$ {amount.toFixed(2).replace(".", ",")}</Text>
+                <Text style={styles.amountValue}>
+                  R$ {amount.toFixed(2).replace(".", ",")}
+                </Text>
               </>
             )}
           </View>
@@ -106,7 +170,9 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
         <View style={styles.pixKeyBox}>
           <Text style={styles.pixKeyLabel}>CHAVE PIX COPIA E COLA</Text>
           <View style={styles.pixKeyRow}>
-            <Text style={styles.pixKeyValue} numberOfLines={1}>{pixKey}</Text>
+            <Text style={styles.pixKeyValue} numberOfLines={1}>
+              {pixKey}
+            </Text>
             <Pressable
               onPress={handleCopy}
               hitSlop={8}
@@ -115,7 +181,7 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
               <Feather
                 name={copied ? "check" : "copy"}
                 size={14}
-                color={copied ? "#ff6b35" : colors.textSecondary}
+                color={copied ? colors.accent : colors.textSecondary}
               />
             </Pressable>
           </View>
@@ -126,40 +192,19 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
           <Text style={styles.confirmText}>Já realizei o pagamento</Text>
         </Pressable>
 
-        <Pressable onPress={onClose} style={styles.cancelBtn}>
+        <Pressable onPress={handleClose} style={styles.cancelBtn}>
           <Text style={styles.cancelText}>Pagar depois</Text>
         </Pressable>
-      </View>
-    </Modal>
+      </BottomSheetScrollView>
+    </BottomSheetModal>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0,0,0,0.75)",
-    },
-    sheet: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: colors.sheetBg,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
+    content: {
       paddingHorizontal: 24,
-      paddingTop: 12,
-      borderTopWidth: 1,
-      borderColor: colors.sheetBorder,
-    },
-    handle: {
-      width: 36,
-      height: 4,
-      backgroundColor: colors.handleColor,
-      borderRadius: 2,
-      alignSelf: "center",
-      marginBottom: 20,
+      paddingTop: 4,
     },
     header: {
       flexDirection: "row",
@@ -271,15 +316,15 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     copyBtnCopied: {
-      borderColor: "#ff6b3540",
-      backgroundColor: "#ff6b3515",
+      borderColor: colors.accent + "40",
+      backgroundColor: colors.accent + "15",
     },
     confirmBtn: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-      backgroundColor: "#ff6b35",
+      backgroundColor: colors.accent,
       borderRadius: 14,
       paddingVertical: 16,
       marginBottom: 10,

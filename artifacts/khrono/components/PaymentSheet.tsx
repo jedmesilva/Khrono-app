@@ -1,18 +1,16 @@
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import React, { useEffect, useMemo, useState } from "react";
 import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import * as Haptics from "expo-haptics";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { useCards } from "@/context/CardsContext";
+import { ColorPalette, useTheme } from "@/context/ThemeContext";
 
 export type PaymentMethod = "cartao" | "pix" | "dinheiro";
 
@@ -24,19 +22,61 @@ type Props = {
   onConfirm: (method: PaymentMethod, cardId: string | null) => void;
 };
 
-export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, onConfirm }: Props) {
+export function PaymentSheet({
+  visible,
+  onClose,
+  initialMethod,
+  initialCardId,
+  onConfirm,
+}: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { cards } = useCards();
+  const ref = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["60%", "85%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
   const [method, setMethod] = useState<PaymentMethod | null>(initialMethod);
   const [cardId, setCardId] = useState<string | null>(initialCardId);
 
   useEffect(() => {
     if (visible) {
       setMethod(initialMethod);
-      const defaultCardId = initialCardId ?? cards.find(c => c.padrao)?.id ?? cards[0]?.id ?? null;
+      const defaultCardId =
+        initialCardId ?? cards.find((c) => c.padrao)?.id ?? cards[0]?.id ?? null;
       setCardId(defaultCardId);
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
     }
   }, [visible]);
 
@@ -44,7 +84,7 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMethod(m);
     if (m === "cartao" && !cardId && cards.length > 0) {
-      setCardId(cards.find(c => c.padrao)?.id ?? cards[0].id);
+      setCardId(cards.find((c) => c.padrao)?.id ?? cards[0].id);
     }
   }
 
@@ -53,23 +93,33 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
     if (method === "cartao" && !cardId) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onConfirm(method, method === "cartao" ? cardId : null);
+    ref.current?.dismiss();
     onClose();
   }
 
-  const canConfirm = method !== null && (method !== "cartao" || (cardId !== null && cards.length > 0));
+  const canConfirm =
+    method !== null &&
+    (method !== "cartao" || (cardId !== null && cards.length > 0));
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.handle} />
-
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={sheetBgStyle}
+      handleIndicatorStyle={handleStyle}
+      onDismiss={onClose}
+    >
+      <BottomSheetScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Math.max(insets.bottom, 24) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Forma de pagamento</Text>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={() => { ref.current?.dismiss(); onClose(); }} hitSlop={12}>
             <Feather name="x" size={18} color={colors.textSecondary} />
           </Pressable>
         </View>
@@ -80,10 +130,16 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           style={[styles.methodRow, method === "cartao" && styles.methodRowActive]}
         >
           <View style={[styles.methodIcon, method === "cartao" && styles.methodIconActive]}>
-            <Feather name="credit-card" size={18} color={method === "cartao" ? "#ff6b35" : colors.textMuted} />
+            <Feather
+              name="credit-card"
+              size={18}
+              color={method === "cartao" ? colors.accent : colors.textMuted}
+            />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "cartao" && styles.methodLabelActive]}>Cartão</Text>
+            <Text style={[styles.methodLabel, method === "cartao" && styles.methodLabelActive]}>
+              Cartão
+            </Text>
             <Text style={styles.methodSub}>Débito ou crédito</Text>
           </View>
           <View style={[styles.radio, method === "cartao" && styles.radioActive]}>
@@ -91,26 +147,39 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           </View>
         </Pressable>
 
-        {/* Cards list */}
+        {/* Lista de cartões */}
         {method === "cartao" && (
           <View style={styles.cardsList}>
             {cards.length === 0 ? (
               <View style={styles.noCardsBox}>
                 <Feather name="alert-circle" size={14} color={colors.textMuted} />
-                <Text style={styles.noCardsText}>Nenhum cartão na wallet. Adicione um na aba Carteira.</Text>
+                <Text style={styles.noCardsText}>
+                  Nenhum cartão na wallet. Adicione um na aba Carteira.
+                </Text>
               </View>
             ) : (
-              cards.map(card => {
+              cards.map((card) => {
                 const sel = cardId === card.id;
                 const isVisa = card.bandeira === "Visa";
                 const bandeiraColor = isVisa ? "#1a1f71" : "#eb001b";
                 return (
                   <Pressable
                     key={card.id}
-                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCardId(card.id); }}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setCardId(card.id);
+                    }}
                     style={[styles.cardRow, sel && styles.cardRowActive]}
                   >
-                    <View style={[styles.cardBandeira, { borderColor: bandeiraColor + "40", backgroundColor: bandeiraColor + "12" }]}>
+                    <View
+                      style={[
+                        styles.cardBandeira,
+                        {
+                          borderColor: bandeiraColor + "40",
+                          backgroundColor: bandeiraColor + "12",
+                        },
+                      ]}
+                    >
                       <Text style={[styles.cardBandeiraText, { color: bandeiraColor }]}>
                         {card.bandeira.slice(0, 4).toUpperCase()}
                       </Text>
@@ -142,10 +211,16 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           style={[styles.methodRow, method === "pix" && styles.methodRowActive]}
         >
           <View style={[styles.methodIcon, method === "pix" && styles.methodIconActive]}>
-            <Feather name="zap" size={18} color={method === "pix" ? "#ff6b35" : colors.textMuted} />
+            <Feather
+              name="zap"
+              size={18}
+              color={method === "pix" ? colors.accent : colors.textMuted}
+            />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "pix" && styles.methodLabelActive]}>Pix</Text>
+            <Text style={[styles.methodLabel, method === "pix" && styles.methodLabelActive]}>
+              Pix
+            </Text>
             <Text style={styles.methodSub}>QR Code ou copia e cola gerados na hora</Text>
           </View>
           <View style={[styles.radio, method === "pix" && styles.radioActive]}>
@@ -159,10 +234,18 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           style={[styles.methodRow, method === "dinheiro" && styles.methodRowActive]}
         >
           <View style={[styles.methodIcon, method === "dinheiro" && styles.methodIconActive]}>
-            <Feather name="dollar-sign" size={18} color={method === "dinheiro" ? "#ff6b35" : colors.textMuted} />
+            <Feather
+              name="dollar-sign"
+              size={18}
+              color={method === "dinheiro" ? colors.accent : colors.textMuted}
+            />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "dinheiro" && styles.methodLabelActive]}>Dinheiro</Text>
+            <Text
+              style={[styles.methodLabel, method === "dinheiro" && styles.methodLabelActive]}
+            >
+              Dinheiro
+            </Text>
             <Text style={styles.methodSub}>Pague em espécie direto ao contratado</Text>
           </View>
           <View style={[styles.radio, method === "dinheiro" && styles.radioActive]}>
@@ -175,39 +258,20 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           style={[styles.confirmBtn, !canConfirm && styles.confirmBtnDisabled]}
         >
           <Feather name="check" size={16} color={canConfirm ? "#fff" : colors.textDim} />
-          <Text style={[styles.confirmText, !canConfirm && { color: colors.textDim }]}>Confirmar método</Text>
+          <Text style={[styles.confirmText, !canConfirm && { color: colors.textDim }]}>
+            Confirmar método
+          </Text>
         </Pressable>
-      </View>
-    </Modal>
+      </BottomSheetScrollView>
+    </BottomSheetModal>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0,0,0,0.75)",
-    },
-    sheet: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: colors.sheetBg,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
+    content: {
       paddingHorizontal: 20,
-      paddingTop: 12,
-      borderTopWidth: 1,
-      borderColor: colors.sheetBorder,
-    },
-    handle: {
-      width: 36,
-      height: 4,
-      backgroundColor: colors.handleColor,
-      borderRadius: 2,
-      alignSelf: "center",
-      marginBottom: 20,
+      paddingTop: 4,
     },
     header: {
       flexDirection: "row",
@@ -233,7 +297,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     methodRowActive: {
-      borderColor: "#ff6b3540",
+      borderColor: colors.accent + "40",
     },
     methodIcon: {
       width: 40,
@@ -246,7 +310,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     methodIconActive: {
-      borderColor: "#ff6b3540",
+      borderColor: colors.accent + "40",
     },
     methodLabel: {
       fontFamily: "Sora_600SemiBold",
@@ -255,7 +319,7 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 2,
     },
     methodLabelActive: {
-      color: "#ff6b35",
+      color: colors.accent,
     },
     methodSub: {
       fontFamily: "DMSans_400Regular",
@@ -272,13 +336,13 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     radioActive: {
-      borderColor: "#ff6b35",
+      borderColor: colors.accent,
     },
     radioInner: {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#ff6b35",
+      backgroundColor: colors.accent,
     },
     cardsList: {
       marginLeft: 12,
@@ -313,7 +377,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     cardRowActive: {
-      borderColor: "#ff6b3540",
+      borderColor: colors.accent + "40",
     },
     cardBandeira: {
       paddingHorizontal: 6,
@@ -338,17 +402,17 @@ function createStyles(colors: ColorPalette) {
       color: colors.textDim,
     },
     padraoTag: {
-      backgroundColor: "#ff6b3515",
+      backgroundColor: colors.accent + "15",
       borderRadius: 6,
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderWidth: 1,
-      borderColor: "#ff6b3530",
+      borderColor: colors.accent + "30",
     },
     padraoText: {
       fontFamily: "DMSans_400Regular",
       fontSize: 9,
-      color: "#ff6b35",
+      color: colors.accent,
     },
     confirmBtn: {
       flexDirection: "row",
@@ -356,7 +420,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 8,
-      backgroundColor: "#ff6b35",
+      backgroundColor: colors.accent,
       borderRadius: 14,
       paddingVertical: 16,
     },

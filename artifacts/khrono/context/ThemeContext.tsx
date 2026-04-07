@@ -35,8 +35,8 @@ export type ColorPalette = {
   chevron: string;
 };
 
-const ACCENT = "#e06030";
-const GREEN = "#18a06b";
+const ACCENT = "#ff6b35";
+const GREEN = "#00e5a0";
 
 export const lightColors: ColorPalette = {
   accent: ACCENT,
