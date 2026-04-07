@@ -204,6 +204,9 @@ export default function ContractDetailScreen() {
         </View>
 
         {/* Pessoa */}
+        <Text style={[styles.cardSectionLabel, { color: colors.textMuted, marginBottom: 10 }]}>
+          {isHiring ? "você contratou:" : "você foi contratado por:"}
+        </Text>
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
           <View style={styles.pessoaRow}>
             <View style={[styles.avatar, { backgroundColor: cor + "20", borderColor: cor + "40" }]}>
@@ -231,11 +234,6 @@ export default function ContractDetailScreen() {
                   </View>
                 )}
               </View>
-            </View>
-            <View style={[styles.roleBadge, { backgroundColor: cor + "15", borderColor: cor + "30" }]}>
-              <Text style={[styles.roleText, { color: cor }]}>
-                {isHiring ? "você contratou" : "você foi contratado"}
-              </Text>
             </View>
           </View>
           {contract.person.profileId && (
