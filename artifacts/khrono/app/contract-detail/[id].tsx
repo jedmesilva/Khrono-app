@@ -329,14 +329,13 @@ export default function ContractDetailScreen() {
             {[
               { label: "Tipo", valor: isTimer ? "Tempo definido" : "Tempo em aberto", corValor: undefined },
               ...(!contract.servico ? [{ label: "Valor/hora", valor: `R$${valorHora.toFixed(0)}/h`, corValor: cor }] : []),
-              ...(contract.agendado && contract.agendadoLabel ? [{ label: "Agendado para", valor: contract.agendadoLabel, corValor: undefined }] : []),
-              ...(!contract.agendado ? [{ label: "Início imediato", valor: "Agora", corValor: undefined }] : []),
+              { label: "Execução definida para", valor: contract.agendado && contract.agendadoLabel ? contract.agendadoLabel : "Agora", corValor: undefined },
               ...(!isActive ? [
                 { label: "Duração", valor: formatTimer(Math.floor(tempoDecorrido / 1000)), corValor: undefined },
                 { label: isHiring ? "Total pago" : "Total recebido", valor: `R$${valorAcumulado}`, corValor: cor },
               ] : []),
-              { label: "Início", valor: formatData(contract.startedAt), corValor: undefined },
-              ...(contract.endedAt ? [{ label: "Encerramento", valor: formatData(contract.endedAt), corValor: undefined }] : []),
+              { label: "Iniciado em", valor: formatData(contract.startedAt), corValor: undefined },
+              ...(contract.endedAt ? [{ label: "Encerrado em", valor: formatData(contract.endedAt), corValor: undefined }] : []),
             ].map((item, i) => (
               <View key={i} style={[styles.linhaRow, { borderBottomColor: colors.surface }]}>
                 <Text style={[styles.linhaLabel, { color: colors.textSecondary }]}>{item.label}</Text>
