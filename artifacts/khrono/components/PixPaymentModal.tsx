@@ -77,12 +77,12 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
                   key={i}
                   style={[
                     styles.qrCell,
-                    i % 2 === 0 && { backgroundColor: "#18a06b80" },
+                    i % 2 === 0 && styles.qrCellFilled,
                   ]}
                 />
               ))}
             </View>
-            <Feather name="zap" size={26} color={"#18a06b"} style={styles.qrIcon} />
+            <Feather name="zap" size={26} color={colors.textSecondary} style={styles.qrIcon} />
           </View>
 
           <Text style={styles.providerName}>{providerName}</Text>
@@ -115,14 +115,14 @@ export function PixPaymentModal({ visible, onClose, onConfirm, providerName, amo
               <Feather
                 name={copied ? "check" : "copy"}
                 size={14}
-                color={copied ? "#18a06b" : colors.textSecondary}
+                color={copied ? "#ff6b35" : colors.textSecondary}
               />
             </Pressable>
           </View>
         </View>
 
         <Pressable onPress={handleConfirm} style={styles.confirmBtn}>
-          <Feather name="check" size={16} color="#000" />
+          <Feather name="check" size={16} color="#fff" />
           <Text style={styles.confirmText}>Já realizei o pagamento</Text>
         </Pressable>
 
@@ -182,7 +182,7 @@ function createStyles(colors: ColorPalette) {
       height: 148,
       backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: "#18a06b30",
+      borderColor: colors.surfaceBorder,
       borderRadius: 24,
       alignItems: "center",
       justifyContent: "center",
@@ -199,6 +199,9 @@ function createStyles(colors: ColorPalette) {
       height: 24,
       borderRadius: 4,
       backgroundColor: colors.surfaceBorder,
+    },
+    qrCellFilled: {
+      backgroundColor: colors.textDim,
     },
     qrIcon: {
       position: "absolute",
@@ -221,7 +224,7 @@ function createStyles(colors: ColorPalette) {
     amountValue: {
       fontFamily: "DMSans_500Medium",
       fontSize: 26,
-      color: "#18a06b",
+      color: colors.text,
       letterSpacing: 1,
     },
     amountNote: {
@@ -254,7 +257,7 @@ function createStyles(colors: ColorPalette) {
     pixKeyValue: {
       fontFamily: "DMSans_500Medium",
       fontSize: 13,
-      color: "#18a06b",
+      color: colors.textSecondary,
       flex: 1,
     },
     copyBtn: {
@@ -268,15 +271,15 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     copyBtnCopied: {
-      borderColor: "#18a06b40",
-      backgroundColor: "#18a06b15",
+      borderColor: "#ff6b3540",
+      backgroundColor: "#ff6b3515",
     },
     confirmBtn: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-      backgroundColor: "#18a06b",
+      backgroundColor: "#ff6b35",
       borderRadius: 14,
       paddingVertical: 16,
       marginBottom: 10,
@@ -284,7 +287,7 @@ function createStyles(colors: ColorPalette) {
     confirmText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 15,
-      color: "#000",
+      color: "#fff",
     },
     cancelBtn: {
       alignItems: "center",

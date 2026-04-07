@@ -79,11 +79,11 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           onPress={() => selectMethod("cartao")}
           style={[styles.methodRow, method === "cartao" && styles.methodRowActive]}
         >
-          <View style={[styles.methodIcon, method === "cartao" && { borderColor: "#e0603040", backgroundColor: "#e0603010" }]}>
-            <Feather name="credit-card" size={18} color={method === "cartao" ? "#e06030" : colors.textMuted} />
+          <View style={[styles.methodIcon, method === "cartao" && styles.methodIconActive]}>
+            <Feather name="credit-card" size={18} color={method === "cartao" ? "#ff6b35" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "cartao" && { color: "#e06030" }]}>Cartão</Text>
+            <Text style={[styles.methodLabel, method === "cartao" && styles.methodLabelActive]}>Cartão</Text>
             <Text style={styles.methodSub}>Débito ou crédito</Text>
           </View>
           <View style={[styles.radio, method === "cartao" && styles.radioActive]}>
@@ -139,34 +139,34 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
         {/* Pix */}
         <Pressable
           onPress={() => selectMethod("pix")}
-          style={[styles.methodRow, method === "pix" && styles.methodRowPixActive]}
+          style={[styles.methodRow, method === "pix" && styles.methodRowActive]}
         >
-          <View style={[styles.methodIcon, method === "pix" && { borderColor: "#18a06b40", backgroundColor: "#18a06b10" }]}>
-            <Feather name="zap" size={18} color={method === "pix" ? "#18a06b" : colors.textMuted} />
+          <View style={[styles.methodIcon, method === "pix" && styles.methodIconActive]}>
+            <Feather name="zap" size={18} color={method === "pix" ? "#ff6b35" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "pix" && { color: "#18a06b" }]}>Pix</Text>
+            <Text style={[styles.methodLabel, method === "pix" && styles.methodLabelActive]}>Pix</Text>
             <Text style={styles.methodSub}>QR Code ou copia e cola gerados na hora</Text>
           </View>
-          <View style={[styles.radio, method === "pix" && styles.radioPixActive]}>
-            {method === "pix" && <View style={styles.radioInnerGreen} />}
+          <View style={[styles.radio, method === "pix" && styles.radioActive]}>
+            {method === "pix" && <View style={styles.radioInner} />}
           </View>
         </Pressable>
 
         {/* Dinheiro */}
         <Pressable
           onPress={() => selectMethod("dinheiro")}
-          style={[styles.methodRow, method === "dinheiro" && styles.methodRowDinheiroActive]}
+          style={[styles.methodRow, method === "dinheiro" && styles.methodRowActive]}
         >
-          <View style={[styles.methodIcon, method === "dinheiro" && { borderColor: "#ffffff20", backgroundColor: "#ffffff08" }]}>
-            <Feather name="dollar-sign" size={18} color={method === "dinheiro" ? "#ccc" : colors.textMuted} />
+          <View style={[styles.methodIcon, method === "dinheiro" && styles.methodIconActive]}>
+            <Feather name="dollar-sign" size={18} color={method === "dinheiro" ? "#ff6b35" : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.methodLabel, method === "dinheiro" && { color: "#ccc" }]}>Dinheiro</Text>
+            <Text style={[styles.methodLabel, method === "dinheiro" && styles.methodLabelActive]}>Dinheiro</Text>
             <Text style={styles.methodSub}>Pague em espécie direto ao contratado</Text>
           </View>
-          <View style={[styles.radio, method === "dinheiro" && styles.radioDinheiroActive]}>
-            {method === "dinheiro" && <View style={styles.radioInnerGray} />}
+          <View style={[styles.radio, method === "dinheiro" && styles.radioActive]}>
+            {method === "dinheiro" && <View style={styles.radioInner} />}
           </View>
         </Pressable>
 
@@ -174,7 +174,7 @@ export function PaymentSheet({ visible, onClose, initialMethod, initialCardId, o
           onPress={canConfirm ? handleConfirm : undefined}
           style={[styles.confirmBtn, !canConfirm && styles.confirmBtnDisabled]}
         >
-          <Feather name="check" size={16} color={canConfirm ? "#000" : colors.textDim} />
+          <Feather name="check" size={16} color={canConfirm ? "#fff" : colors.textDim} />
           <Text style={[styles.confirmText, !canConfirm && { color: colors.textDim }]}>Confirmar método</Text>
         </Pressable>
       </View>
@@ -233,16 +233,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     methodRowActive: {
-      borderColor: "#e0603035",
-      backgroundColor: "#e0603008",
-    },
-    methodRowPixActive: {
-      borderColor: "#18a06b35",
-      backgroundColor: "#18a06b08",
-    },
-    methodRowDinheiroActive: {
-      borderColor: "#ffffff18",
-      backgroundColor: "#ffffff05",
+      borderColor: "#ff6b3540",
     },
     methodIcon: {
       width: 40,
@@ -254,11 +245,17 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       justifyContent: "center",
     },
+    methodIconActive: {
+      borderColor: "#ff6b3540",
+    },
     methodLabel: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 14,
       color: colors.textSecondary,
       marginBottom: 2,
+    },
+    methodLabelActive: {
+      color: "#ff6b35",
     },
     methodSub: {
       fontFamily: "DMSans_400Regular",
@@ -275,31 +272,13 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     radioActive: {
-      borderColor: "#e06030",
-    },
-    radioPixActive: {
-      borderColor: "#18a06b",
-    },
-    radioDinheiroActive: {
-      borderColor: "#666",
+      borderColor: "#ff6b35",
     },
     radioInner: {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#e06030",
-    },
-    radioInnerGreen: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#18a06b",
-    },
-    radioInnerGray: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#888",
+      backgroundColor: "#ff6b35",
     },
     cardsList: {
       marginLeft: 12,
@@ -334,8 +313,7 @@ function createStyles(colors: ColorPalette) {
       backgroundColor: colors.card,
     },
     cardRowActive: {
-      borderColor: "#e0603040",
-      backgroundColor: "#e0603008",
+      borderColor: "#ff6b3540",
     },
     cardBandeira: {
       paddingHorizontal: 6,
@@ -360,17 +338,17 @@ function createStyles(colors: ColorPalette) {
       color: colors.textDim,
     },
     padraoTag: {
-      backgroundColor: "#e0603015",
+      backgroundColor: "#ff6b3515",
       borderRadius: 6,
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderWidth: 1,
-      borderColor: "#e0603030",
+      borderColor: "#ff6b3530",
     },
     padraoText: {
       fontFamily: "DMSans_400Regular",
       fontSize: 9,
-      color: "#e06030",
+      color: "#ff6b35",
     },
     confirmBtn: {
       flexDirection: "row",
@@ -378,7 +356,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 8,
-      backgroundColor: "#e06030",
+      backgroundColor: "#ff6b35",
       borderRadius: 14,
       paddingVertical: 16,
     },
@@ -388,7 +366,7 @@ function createStyles(colors: ColorPalette) {
     confirmText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 15,
-      color: "#000",
+      color: "#fff",
     },
   });
 }
