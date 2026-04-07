@@ -181,11 +181,11 @@ export function PixDepositModal({ visible, onClose }: Props) {
                   {Array.from({ length: 9 }).map((_, i) => (
                     <View
                       key={i}
-                      style={[styles.qrCell, i % 2 === 0 && { backgroundColor: "#18a06b80" }]}
+                      style={[styles.qrCell, i % 2 === 0 && { backgroundColor: "#e0603080" }]}
                     />
                   ))}
                 </View>
-                <Feather name="zap" size={28} color="#18a06b" style={styles.qrIcon} />
+                <Feather name="zap" size={28} color="#e06030" style={styles.qrIcon} />
               </View>
               <Text style={styles.qrAmount}>
                 R$ {parsedAmount.toFixed(2).replace(".", ",")}
@@ -205,7 +205,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
                   <Feather
                     name={copied ? "check" : "copy"}
                     size={14}
-                    color={copied ? "#18a06b" : colors.textSecondary}
+                    color={copied ? "#e06030" : colors.textSecondary}
                   />
                 </Pressable>
               </View>
@@ -221,7 +221,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
         {step === "success" && (
           <View style={styles.successContainer}>
             <View style={styles.successIcon}>
-              <Feather name="check" size={32} color="#18a06b" />
+              <Feather name="check" size={32} color="#e06030" />
             </View>
             <Text style={styles.successTitle}>Depósito em análise</Text>
             <Text style={styles.successSub}>
@@ -290,7 +290,7 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       gap: 8,
       marginTop: 20,
-      backgroundColor: "#18a06b",
+      backgroundColor: "#e06030",
       borderRadius: 14,
       paddingVertical: 16,
     },
@@ -312,7 +312,7 @@ function createStyles(colors: ColorPalette) {
       height: 160,
       backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: "#18a06b30",
+      borderColor: "#e0603030",
       borderRadius: 24,
       alignItems: "center",
       justifyContent: "center",
@@ -368,7 +368,7 @@ function createStyles(colors: ColorPalette) {
     pixKeyValue: {
       fontFamily: "DMSans_500Medium",
       fontSize: 13,
-      color: "#18a06b",
+      color: "#e06030",
       flex: 1,
     },
     copyBtn: {
@@ -382,8 +382,8 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
     },
     copyBtnCopied: {
-      borderColor: "#18a06b40",
-      backgroundColor: "#18a06b15",
+      borderColor: "#e0603040",
+      backgroundColor: "#e0603015",
     },
     successContainer: {
       alignItems: "center",
@@ -394,9 +394,9 @@ function createStyles(colors: ColorPalette) {
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: "#18a06b15",
+      backgroundColor: "#e0603015",
       borderWidth: 1,
-      borderColor: "#18a06b40",
+      borderColor: "#e0603040",
       alignItems: "center",
       justifyContent: "center",
     },

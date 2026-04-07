@@ -243,7 +243,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
         {step === "success" && (
           <View style={styles.successContainer}>
             <View style={styles.successIcon}>
-              <Feather name="check" size={32} color="#18a06b" />
+              <Feather name="check" size={32} color="#e06030" />
             </View>
             <Text style={styles.successTitle}>Pix enviado!</Text>
             <Text style={styles.successSub}>
@@ -413,9 +413,9 @@ function createStyles(colors: ColorPalette) {
       width: 72,
       height: 72,
       borderRadius: 36,
-      backgroundColor: "#18a06b15",
+      backgroundColor: "#e0603015",
       borderWidth: 1,
-      borderColor: "#18a06b40",
+      borderColor: "#e0603040",
       alignItems: "center",
       justifyContent: "center",
     },
