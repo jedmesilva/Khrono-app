@@ -123,9 +123,9 @@ export default function ContractDetailScreen() {
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-            <Feather name="arrow-left" size={20} color="#ff6b35" />
+            <Feather name="arrow-left" size={20} color="#e06030" />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>K<Text style={{ color: "#e06030" }}>r</Text>ono</Text>
         </View>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: colors.textMuted, fontFamily: "DMSans_400Regular", fontSize: 12 }}>Contrato não encontrado</Text>
@@ -138,7 +138,7 @@ export default function ContractDetailScreen() {
   const isTimer = contract.tipo === "timer";
   const isActive = contract.status === "active";
   const isScheduled = isActive && !!contract.agendado;
-  const cor = isHiring ? "#ff6b35" : "#18a06b";
+  const cor = colors.accent;
 
   const elapsed = isScheduled ? 0 : isActive ? now - contract.startedAt : (contract.endedAt! - contract.startedAt);
   const tempoDecorrido = elapsed;
@@ -173,9 +173,9 @@ export default function ContractDetailScreen() {
       <View style={[styles.header, { justifyContent: "space-between" }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-            <Feather name="arrow-left" size={20} color="#ff6b35" />
+            <Feather name="arrow-left" size={20} color="#e06030" />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>K<Text style={{ color: "#ff6b35" }}>r</Text>ono</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>K<Text style={{ color: "#e06030" }}>r</Text>ono</Text>
         </View>
         <Pressable onPress={() => router.replace("/(tabs)" as any)} style={styles.homeBtn} hitSlop={12}>
           <Feather name="home" size={18} color={colors.textMuted} />
@@ -192,7 +192,7 @@ export default function ContractDetailScreen() {
           <View style={[
             styles.statusBadge,
             isActive
-              ? { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }
+              ? { backgroundColor: "#e0603010", borderColor: "#e0603025" }
               : { backgroundColor: colors.surface, borderColor: colors.surfaceBorder },
           ]}>
             <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? "#18a06b" : colors.textMuted }]} />
@@ -243,9 +243,9 @@ export default function ContractDetailScreen() {
               onPress={() => router.push(`/user-profile/${contract.person.profileId}` as any)}
               style={[styles.verPerfilBtn, { borderTopColor: colors.surface }]}
             >
-              <Feather name="user" size={11} color={"#ff6b3599"} />
+              <Feather name="user" size={11} color={"#e0603099"} />
               <Text style={styles.verPerfilText}>ver perfil completo</Text>
-              <Feather name="chevron-right" size={11} color={"#ff6b3560"} />
+              <Feather name="chevron-right" size={11} color={"#e0603060"} />
             </Pressable>
           )}
         </View>
@@ -297,7 +297,7 @@ export default function ContractDetailScreen() {
                   <Text style={[styles.servicoNome, { color: colors.text }]}>{contract.servico.nome}</Text>
                   {contract.servico.nota != null && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="star" size={10} color="#ff6b35" />
+                      <Feather name="star" size={10} color="#e06030" />
                       <Text style={[styles.servicoMetaText, { color: colors.textSecondary }]}>
                         {contract.servico.nota} · {contract.servico.avaliacoes} avaliações
                       </Text>
@@ -305,14 +305,14 @@ export default function ContractDetailScreen() {
                   )}
                   {contract.servico.skill && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="tool" size={9} color="#ff6b3599" />
-                      <Text style={[styles.servicoMetaText, { color: "#ff6b3599" }]}>{contract.servico.skill}</Text>
+                      <Feather name="tool" size={9} color="#e0603099" />
+                      <Text style={[styles.servicoMetaText, { color: "#e0603099" }]}>{contract.servico.skill}</Text>
                     </View>
                   )}
                   {contract.servico.tools && contract.servico.tools.length > 0 && (
                     <View style={styles.servicoMeta}>
-                      <Feather name="key" size={9} color="#18a06b99" />
-                      <Text style={[styles.servicoMetaText, { color: "#18a06b99" }]} numberOfLines={1}>
+                      <Feather name="key" size={9} color="#e0603099" />
+                      <Text style={[styles.servicoMetaText, { color: "#e0603099" }]} numberOfLines={1}>
                         {contract.servico.tools.join(", ")}
                       </Text>
                     </View>
@@ -353,11 +353,11 @@ export default function ContractDetailScreen() {
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, marginBottom: 12 }]}>
             <Text style={[styles.cardSectionLabel, { color: colors.textMuted }]}>forma de pagamento</Text>
             <View style={styles.pagamentoRow}>
-              <View style={[styles.pagamentoIconWrap, { borderColor: "#ff6b3540" }]}>
+              <View style={[styles.pagamentoIconWrap, { borderColor: "#e0603040" }]}>
                 <Feather
                   name={contract.paymentMethod === "cartao" ? "credit-card" : contract.paymentMethod === "pix" ? "zap" : "dollar-sign"}
                   size={15}
-                  color="#ff6b35"
+                  color="#e06030"
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -397,13 +397,13 @@ export default function ContractDetailScreen() {
 
         {/* Avaliação pendente */}
         {!isActive && isHiring && !avaliacaoEnviada && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#ff6b3530", marginBottom: 12 }]}>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#e0603030", marginBottom: 12 }]}>
             <Text style={styles.avaliacaoTitulo}>Avaliação pendente</Text>
             <Text style={[styles.avaliacaoSub, { color: colors.textSecondary }]}>Como foi sua experiência com {contract.person.name}?</Text>
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map(n => (
                 <Pressable key={n} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setNotaSelecionada(n); }} hitSlop={4}>
-                  <MaterialCommunityIcons name={n <= notaSelecionada ? "star" : "star-outline"} size={32} color="#ff6b35" />
+                  <MaterialCommunityIcons name={n <= notaSelecionada ? "star" : "star-outline"} size={32} color="#e06030" />
                 </Pressable>
               ))}
             </View>
@@ -418,7 +418,7 @@ export default function ContractDetailScreen() {
         )}
 
         {avaliacaoEnviada && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#18a06b30", flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }]}>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#e0603030", flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }]}>
             <Feather name="check-circle" size={16} color="#18a06b" />
             <Text style={{ color: "#18a06b", fontSize: 13, fontFamily: "Sora_600SemiBold" }}>Avaliação enviada!</Text>
           </View>
@@ -426,14 +426,14 @@ export default function ContractDetailScreen() {
 
         {/* Ações */}
         {isActive && (
-          <Pressable onPress={handleEncerrar} style={[styles.encerrarBtn, { borderColor: "#ff6b3540" }]}>
+          <Pressable onPress={handleEncerrar} style={[styles.encerrarBtn, { borderColor: "#e0603040" }]}>
             <Text style={styles.encerrarBtnText}>■  encerrar contrato</Text>
           </Pressable>
         )}
 
         {!isActive && (
           <Pressable onPress={() => router.back()} style={styles.contratarNovBtn}>
-            <Feather name="rotate-ccw" size={15} color="#ff6b35" />
+            <Feather name="rotate-ccw" size={15} color="#e06030" />
             <Text style={styles.contratarNovText}>Contratar novamente</Text>
           </Pressable>
         )}
@@ -469,16 +469,16 @@ export default function ContractDetailScreen() {
 
           <View style={{ gap: 10, marginBottom: 20 }}>
             {[
-              { icon: <Feather name="file-text" size={20} color="#ff6b35" />, label: "Perguntas frequentes", desc: "Respostas para as dúvidas mais comuns", onPress: () => setFaqExpandido(f => !f) },
-              { icon: <MaterialCommunityIcons name="robot-outline" size={20} color="#ff6b35" />, label: "Falar com a AI", desc: "Assistente inteligente com contexto do contrato", onPress: () => {} },
-              { icon: <Feather name="message-circle" size={20} color="#ff6b35" />, label: "Falar com suporte humano", desc: "Para casos que precisam de atenção especial", onPress: () => {} },
+              { icon: <Feather name="file-text" size={20} color="#e06030" />, label: "Perguntas frequentes", desc: "Respostas para as dúvidas mais comuns", onPress: () => setFaqExpandido(f => !f) },
+              { icon: <MaterialCommunityIcons name="robot-outline" size={20} color="#e06030" />, label: "Falar com a AI", desc: "Assistente inteligente com contexto do contrato", onPress: () => {} },
+              { icon: <Feather name="message-circle" size={20} color="#e06030" />, label: "Falar com suporte humano", desc: "Para casos que precisam de atenção especial", onPress: () => {} },
             ].map(op => (
               <Pressable
                 key={op.label}
                 onPress={op.onPress}
                 style={[styles.supportOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
               >
-                <View style={[styles.supportOptionIcon, { backgroundColor: "#ff6b3515", borderColor: "#ff6b3525" }]}>
+                <View style={[styles.supportOptionIcon, { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
                   {op.icon}
                 </View>
                 <View style={{ flex: 1 }}>
@@ -544,10 +544,10 @@ const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 20, padding: 18 },
   pessoaRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   verPerfilBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 12, paddingTop: 10, borderTopWidth: 1 },
-  verPerfilText: { fontFamily: "DMSans_400Regular", fontSize: 11, flex: 1, color: "#ff6b3599" },
+  verPerfilText: { fontFamily: "DMSans_400Regular", fontSize: 11, flex: 1, color: "#e0603099" },
   avatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  avatarText: { fontSize: 16, fontFamily: "DMSans_500Medium" },
-  pessoaNome: { fontSize: 15, fontFamily: "Sora_700Bold", marginBottom: 6 },
+  avatarText: { fontSize: 16, fontWeight: "700", fontFamily: "DMSans_500Medium" },
+  pessoaNome: { fontSize: 16, fontFamily: "DMSans_500Medium", fontWeight: "700", marginBottom: 6 },
   infoChipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   infoChip: { flexDirection: "row", alignItems: "center", gap: 4 },
   infoChipText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
@@ -577,15 +577,15 @@ const styles = StyleSheet.create({
   pagamentoIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   pagamentoLabel: { fontSize: 13, fontFamily: "Sora_600SemiBold" },
   pagamentoSub: { fontSize: 10, fontFamily: "DMSans_400Regular", marginTop: 2 },
-  avaliacaoTitulo: { color: "#ff6b35", fontSize: 12, fontFamily: "Sora_700Bold", marginBottom: 4 },
+  avaliacaoTitulo: { color: "#e06030", fontSize: 12, fontFamily: "Sora_700Bold", marginBottom: 4 },
   avaliacaoSub: { fontSize: 11, fontFamily: "DMSans_400Regular", marginBottom: 16, lineHeight: 16 },
   starsRow: { flexDirection: "row", gap: 8, justifyContent: "center", marginBottom: 16 },
-  avaliacaoBtn: { backgroundColor: "#ff6b35", borderRadius: 12, padding: 13, alignItems: "center" },
+  avaliacaoBtn: { backgroundColor: "#e06030", borderRadius: 12, padding: 13, alignItems: "center" },
   avaliacaoBtnText: { color: "#fff", fontSize: 13, fontFamily: "Sora_600SemiBold" },
   encerrarBtn: { borderWidth: 1, borderRadius: 14, padding: 15, alignItems: "center", marginBottom: 10 },
-  encerrarBtnText: { color: "#ff6b35", fontSize: 12, fontFamily: "DMSans_400Regular", letterSpacing: 1, textTransform: "uppercase" },
-  contratarNovBtn: { backgroundColor: "#ff6b3515", borderWidth: 1, borderColor: "#ff6b3530", borderRadius: 14, padding: 15, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8, marginBottom: 10 },
-  contratarNovText: { color: "#ff6b35", fontSize: 13, fontFamily: "Sora_600SemiBold" },
+  encerrarBtnText: { color: "#e06030", fontSize: 12, fontFamily: "DMSans_400Regular", letterSpacing: 1, textTransform: "uppercase" },
+  contratarNovBtn: { backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030", borderRadius: 14, padding: 15, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8, marginBottom: 10 },
+  contratarNovText: { color: "#e06030", fontSize: 13, fontFamily: "Sora_600SemiBold" },
   suporteBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderRadius: 14, padding: 13, marginTop: 4 },
   suporteBtnText: { fontSize: 12, fontFamily: "DMSans_400Regular" },
   sheetHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 },
