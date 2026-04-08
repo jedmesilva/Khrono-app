@@ -1,16 +1,13 @@
 import { Feather } from "@expo/vector-icons";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
@@ -49,6 +46,37 @@ export function ScheduleSheet({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const ref = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["55%", "80%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
 
   const [data, setData] = useState(initialDate);
   const [hora, setHora] = useState(initialHora);
@@ -63,6 +91,9 @@ export function ScheduleSheet({
       setMinuto(initialMinuto);
       setIsAgendado(agendado);
       setPicker(null);
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
     }
   }, [visible]);
 
@@ -89,34 +120,37 @@ export function ScheduleSheet({
     setPicker(null);
   }
 
-  function handleConfirm() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onConfirm(data, hora, minuto, isAgendado);
-    onClose();
-  }
-
   function openPicker(mode: "date" | "time") {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setPicker(mode);
+  }
+
+  function handleConfirm() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onConfirm(data, hora, minuto, isAgendado);
+    ref.current?.dismiss();
+    onClose();
   }
 
   const pickerDate = new Date(data);
   pickerDate.setHours(hora, minuto, 0, 0);
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={sheetBgStyle}
+      handleIndicatorStyle={handleStyle}
+      onDismiss={onClose}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.handle} />
-
+      <BottomSheetScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Math.max(insets.bottom, 24) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Agendar para</Text>
           <Pressable onPress={onClose} hitSlop={12}>
@@ -124,12 +158,13 @@ export function ScheduleSheet({
           </Pressable>
         </View>
 
+        {/* Agora */}
         <Pressable
           onPress={handleAgoraPress}
           style={[styles.optionRow, !isAgendado && styles.optionRowActive]}
         >
           <View style={[styles.optionIcon, !isAgendado && styles.optionIconActive]}>
-            <Feather name="zap" size={18} color={!isAgendado ? "#e06030" : colors.textMuted} />
+            <Feather name="zap" size={18} color={!isAgendado ? colors.accent : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.optionLabel, !isAgendado && styles.optionLabelActive]}>
@@ -138,38 +173,40 @@ export function ScheduleSheet({
             <Text style={styles.optionSub}>Iniciar imediatamente</Text>
           </View>
           {!isAgendado && (
-            <Feather name="check" size={16} color={"#e06030"} />
+            <Feather name="check" size={16} color={colors.accent} />
           )}
         </Pressable>
 
         <View style={styles.divider} />
 
+        {/* Dia */}
         <Pressable
           onPress={() => openPicker("date")}
           style={[styles.optionRow, isAgendado && picker === "date" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="calendar" size={18} color={isAgendado ? "#e06030" : colors.textMuted} />
+            <Feather name="calendar" size={18} color={isAgendado ? colors.accent : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Dia</Text>
-            <Text style={[styles.optionSub, isAgendado && { color: "#e06030" }]}>
+            <Text style={[styles.optionSub, isAgendado && { color: colors.accent }]}>
               {isAgendado ? formatDataLabel(data) : "Selecionar data"}
             </Text>
           </View>
           <Feather name="chevron-right" size={16} color={colors.textDim} />
         </Pressable>
 
+        {/* Horário */}
         <Pressable
           onPress={() => openPicker("time")}
           style={[styles.optionRow, isAgendado && picker === "time" && styles.optionRowFocused]}
         >
           <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
-            <Feather name="clock" size={18} color={isAgendado ? "#e06030" : colors.textMuted} />
+            <Feather name="clock" size={18} color={isAgendado ? colors.accent : colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Horário</Text>
-            <Text style={[styles.optionSub, isAgendado && { color: "#e06030" }]}>
+            <Text style={[styles.optionSub, isAgendado && { color: colors.accent }]}>
               {isAgendado
                 ? `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`
                 : "Selecionar horário"}
@@ -178,6 +215,7 @@ export function ScheduleSheet({
           <Feather name="chevron-right" size={16} color={colors.textDim} />
         </Pressable>
 
+        {/* DateTimePicker nativo */}
         {picker !== null && (
           <View style={styles.pickerWrap}>
             {Platform.OS === "ios" && (
@@ -185,11 +223,7 @@ export function ScheduleSheet({
                 <Text style={styles.pickerHeaderLabel}>
                   {picker === "date" ? "Selecionar data" : "Selecionar horário"}
                 </Text>
-                <Pressable
-                  onPress={() => setPicker(null)}
-                  hitSlop={12}
-                  style={styles.pickerDoneBtn}
-                >
+                <Pressable onPress={() => setPicker(null)} hitSlop={12} style={styles.pickerDoneBtn}>
                   <Text style={styles.pickerDoneText}>OK</Text>
                 </Pressable>
               </View>
@@ -206,45 +240,25 @@ export function ScheduleSheet({
           </View>
         )}
 
+        {/* Confirmar */}
         <Pressable onPress={handleConfirm} style={styles.confirmBtn}>
-          <Feather name="check" size={16} color="#000" />
+          <Feather name="check" size={16} color="#fff" />
           <Text style={styles.confirmText}>
             {isAgendado
               ? `Agendar para ${formatDataLabel(data)} às ${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`
               : "Confirmar — iniciar agora"}
           </Text>
         </Pressable>
-      </View>
-    </Modal>
+      </BottomSheetScrollView>
+    </BottomSheetModal>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0,0,0,0.7)",
-    },
-    sheet: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: colors.sheetBg,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
+    content: {
       paddingHorizontal: 20,
-      paddingTop: 12,
-      borderTopWidth: 1,
-      borderColor: colors.sheetBorder,
-    },
-    handle: {
-      width: 36,
-      height: 4,
-      backgroundColor: colors.handleColor,
-      borderRadius: 2,
-      alignSelf: "center",
-      marginBottom: 20,
+      paddingTop: 4,
     },
     header: {
       flexDirection: "row",
@@ -253,9 +267,15 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 20,
     },
     title: {
-      fontFamily: "Sora_600SemiBold",
+      fontFamily: "Sora_700Bold",
       fontSize: 16,
       color: colors.text,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.surfaceBorder,
+      marginVertical: 4,
+      marginHorizontal: 4,
     },
     optionRow: {
       flexDirection: "row",
@@ -264,15 +284,15 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 14,
       paddingHorizontal: 12,
       borderRadius: 14,
-      marginBottom: 6,
+      marginBottom: 4,
     },
     optionRowActive: {
-      backgroundColor: "#e0603010",
+      backgroundColor: colors.accent + "10",
       borderWidth: 1,
-      borderColor: "#e0603030",
+      borderColor: colors.accent + "30",
     },
     optionRowFocused: {
-      backgroundColor: colors.cardBorder,
+      backgroundColor: colors.surface,
     },
     optionIcon: {
       width: 40,
@@ -283,39 +303,34 @@ function createStyles(colors: ColorPalette) {
       borderColor: colors.surfaceBorder,
       alignItems: "center",
       justifyContent: "center",
+      flexShrink: 0,
     },
     optionIconActive: {
-      borderColor: "#e0603040",
-      backgroundColor: "#e0603010",
+      backgroundColor: colors.accent + "15",
+      borderColor: colors.accent + "30",
     },
     optionLabel: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 14,
-      color: colors.text,
+      color: colors.textSecondary,
       marginBottom: 2,
     },
     optionLabelActive: {
-      color: "#e06030",
+      color: colors.text,
     },
     optionSub: {
       fontFamily: "DMSans_400Regular",
       fontSize: 11,
       color: colors.textMuted,
     },
-    divider: {
-      height: 1,
-      backgroundColor: colors.sheetBorder,
-      marginVertical: 6,
-      marginHorizontal: 12,
-    },
     pickerWrap: {
-      marginTop: 4,
-      marginBottom: 8,
-      backgroundColor: colors.surface,
+      marginTop: 8,
       borderRadius: 14,
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
+      backgroundColor: colors.surface,
       overflow: "hidden",
+      marginBottom: 4,
     },
     pickerHeader: {
       flexDirection: "row",
@@ -334,13 +349,13 @@ function createStyles(colors: ColorPalette) {
     pickerDoneBtn: {
       paddingHorizontal: 12,
       paddingVertical: 4,
-      backgroundColor: "#e0603020",
+      backgroundColor: colors.accent + "20",
       borderRadius: 8,
     },
     pickerDoneText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 13,
-      color: "#e06030",
+      color: colors.accent,
     },
     picker: {
       backgroundColor: "transparent",
@@ -350,15 +365,15 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-      marginTop: 12,
-      backgroundColor: "#18a06b",
+      marginTop: 16,
+      backgroundColor: colors.accent,
       borderRadius: 14,
       paddingVertical: 16,
     },
     confirmText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 14,
-      color: "#000",
+      color: "#fff",
     },
   });
 }
