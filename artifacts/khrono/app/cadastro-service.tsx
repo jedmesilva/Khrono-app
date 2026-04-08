@@ -3,6 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState, useEffect, useCallback } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -17,40 +18,11 @@ import { CadastroDone } from "@/components/CadastroDone";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { MY_PROFILE, Skill, Tool } from "@/constants/profile-data";
+import { useCatalog, type CatalogService } from "@/context/CatalogContext";
+import { useUserCatalog } from "@/context/UserCatalogContext";
+import { supabase } from "@/lib/supabase";
 
 const DRAFT_KEY = "@khrono/service_draft";
-
-interface ServiceTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  skillName: string | null;
-  toolNames: string[];
-}
-
-const SERVICE_TEMPLATES: ServiceTemplate[] = [
-  { id: "t01", name: "Pintura Residencial", description: "Pintura de paredes internas e externas com acabamento de qualidade", category: "Construção", skillName: "Pintor", toolNames: ["Rolo", "Escada"] },
-  { id: "t02", name: "Instalação Elétrica", description: "Instalação e manutenção de circuitos elétricos residenciais", category: "Construção", skillName: "Eletricista", toolNames: ["Kit Elétrico"] },
-  { id: "t03", name: "Serviços de Encanamento", description: "Conserto e instalação de tubulações, torneiras e vasos sanitários", category: "Construção", skillName: "Encanador", toolNames: [] },
-  { id: "t04", name: "Montagem de Móveis", description: "Montagem e desmontagem de móveis de todos os tipos e marcas", category: "Construção", skillName: "Montador de Móveis", toolNames: ["Furadeira", "Kit de Ferramentas"] },
-  { id: "t05", name: "Marcenaria", description: "Fabricação e reparo de móveis e estruturas em madeira", category: "Construção", skillName: "Marceneiro", toolNames: ["Serra Circular"] },
-  { id: "t06", name: "Gessaria e Drywall", description: "Instalação de gesso, drywall, texturas e acabamentos decorativos", category: "Construção", skillName: "Gesseiro", toolNames: [] },
-  { id: "t07", name: "Mudança Residencial", description: "Transporte e mudança de móveis e pertences com cuidado", category: "Transporte", skillName: "Carregador / Mudanças", toolNames: ["Veículo", "Carrinho de Mudança"] },
-  { id: "t08", name: "Personal Training", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento", category: "Bem-estar", skillName: "Personal Trainer", toolNames: [] },
-  { id: "t09", name: "Consultoria Nutricional", description: "Planos alimentares e orientação nutricional personalizada", category: "Bem-estar", skillName: "Nutricionista", toolNames: [] },
-  { id: "t10", name: "Fisioterapia", description: "Atendimento fisioterapêutico residencial ou clínica", category: "Bem-estar", skillName: "Fisioterapeuta", toolNames: [] },
-  { id: "t11", name: "Cuidados com Idosos", description: "Acompanhamento e cuidado com idosos ou pessoas com necessidades especiais", category: "Cuidados", skillName: "Cuidador", toolNames: [] },
-  { id: "t12", name: "Babá / Cuidador Infantil", description: "Cuidados e supervisão de crianças em residência", category: "Cuidados", skillName: "Babá", toolNames: [] },
-  { id: "t13", name: "Suporte em TI", description: "Suporte técnico, instalação de softwares e manutenção de computadores", category: "Tecnologia", skillName: "Técnico em TI", toolNames: [] },
-  { id: "t14", name: "Desenvolvimento Web", description: "Criação e manutenção de sites e aplicações web", category: "Tecnologia", skillName: "Desenvolvedor Web", toolNames: [] },
-  { id: "t15", name: "Limpeza Residencial", description: "Limpeza e organização de casas, apartamentos e espaços residenciais", category: "Limpeza", skillName: null, toolNames: [] },
-  { id: "t16", name: "Limpeza Comercial", description: "Limpeza de escritórios, lojas e ambientes comerciais", category: "Limpeza", skillName: null, toolNames: [] },
-  { id: "t17", name: "Jardinagem", description: "Manutenção de jardins, poda e paisagismo", category: "Jardinagem", skillName: "Jardineiro", toolNames: [] },
-  { id: "t18", name: "Fotografia e Vídeo", description: "Cobertura fotográfica e audiovisual de eventos ou ensaios", category: "Arte", skillName: "Fotógrafo", toolNames: [] },
-  { id: "t19", name: "Aulas Particulares", description: "Reforço escolar e aulas individuais em diversas disciplinas", category: "Educação", skillName: null, toolNames: [] },
-  { id: "t20", name: "Motorista Particular", description: "Transporte particular com veículo próprio e seguro", category: "Transporte", skillName: "Motorista", toolNames: ["Carro"] },
-];
 
 type Step = 1 | 2 | 3 | 4 | "done";
 type Step1Sub = "search" | "new_form";
@@ -61,7 +33,7 @@ interface Draft {
   mode: "predefined" | "custom" | null;
   serviceName: string;
   serviceDescription: string;
-  templateId: string | null;
+  selectedServiceId: string | null;
   requiredSkillName: string | null;
   requiredToolNames: string[];
   selectedSkillIds: string[];
@@ -75,7 +47,7 @@ const EMPTY_DRAFT: Draft = {
   mode: null,
   serviceName: "",
   serviceDescription: "",
-  templateId: null,
+  selectedServiceId: null,
   requiredSkillName: null,
   requiredToolNames: [],
   selectedSkillIds: [],
@@ -128,33 +100,33 @@ export default function CadastroServiceScreen() {
     AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
   }
 
+  const { services: catalogServices, isLoading: catalogLoading } = useCatalog();
+  const { addService } = useUserCatalog();
+  const [isSaving, setIsSaving] = useState(false);
+
   const userSkills = MY_PROFILE.skills;
   const userTools = MY_PROFILE.tools;
 
   const filteredTemplates = query.length > 0
-    ? SERVICE_TEMPLATES.filter((t) => normalize(t.name).includes(normalize(query)) || normalize(t.category).includes(normalize(query)))
-    : SERVICE_TEMPLATES;
+    ? catalogServices.filter((t) => normalize(t.nome).includes(normalize(query)) || normalize(t.category ?? "").includes(normalize(query)))
+    : catalogServices;
 
-  const hasExactMatch = query.length > 0 && SERVICE_TEMPLATES.some((t) => normalize(t.name) === normalize(query));
+  const hasExactMatch = query.length > 0 && catalogServices.some((t) => normalize(t.nome) === normalize(query));
   const showCreateOption = query.length > 1 && filteredTemplates.length === 0;
   const showCreateOptionAtBottom = query.length > 1 && filteredTemplates.length > 0 && !hasExactMatch;
 
-  function handleSelectTemplate(template: ServiceTemplate) {
+  function handleSelectTemplate(template: CatalogService) {
     setDraft({
       step: 2,
       step1Sub: "search",
       mode: "predefined",
-      serviceName: template.name,
-      serviceDescription: template.description,
-      templateId: template.id,
-      requiredSkillName: template.skillName,
-      requiredToolNames: template.toolNames,
-      selectedSkillIds: template.skillName
-        ? userSkills.filter((s) => normalize(s.name) === normalize(template.skillName!)).map((s) => s.id)
-        : [],
-      selectedToolIds: template.toolNames
-        .map((tn) => userTools.find((t) => normalize(t.name).includes(normalize(tn)))?.id)
-        .filter(Boolean) as string[],
+      serviceName: template.nome,
+      serviceDescription: template.description ?? "",
+      selectedServiceId: template.id,
+      requiredSkillName: null,
+      requiredToolNames: [],
+      selectedSkillIds: [],
+      selectedToolIds: [],
     });
   }
 
@@ -165,7 +137,7 @@ export default function CadastroServiceScreen() {
       mode: "custom",
       serviceName: query,
       serviceDescription: "",
-      templateId: null,
+      selectedServiceId: null,
       requiredSkillName: null,
       requiredToolNames: [],
       selectedSkillIds: [],
@@ -219,10 +191,30 @@ export default function CadastroServiceScreen() {
     setDraft({ step: 4 });
   }
 
-  function handleHourlyRateNext() {
+  async function handleHourlyRateNext() {
     const finalName = draft.serviceName;
-    setDraftState({ ...EMPTY_DRAFT, step: "done", serviceName: finalName });
-    AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+    setIsSaving(true);
+    try {
+      if (draft.selectedServiceId) {
+        await addService(draft.selectedServiceId);
+      } else {
+        // Custom service: insert into catalog as unverified, then link to user
+        const { data: newService } = await supabase
+          .from("services_catalog")
+          .insert({ nome: draft.serviceName.trim(), description: draft.serviceDescription.trim() || null, status: "active", verified: false })
+          .select("id")
+          .single();
+        if (newService) {
+          await addService(newService.id);
+        }
+      }
+    } catch (e) {
+      console.warn("[cadastro-service] save error:", e);
+    } finally {
+      setIsSaving(false);
+      setDraftState({ ...EMPTY_DRAFT, step: "done", serviceName: finalName });
+      AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+    }
   }
 
   function handleHourlyRateInput(text: string) {
@@ -341,14 +333,16 @@ export default function CadastroServiceScreen() {
             <Text style={[styles.listLabel, { color: colors.textMuted }]}>{filteredTemplates.length} RESULTADO{filteredTemplates.length !== 1 ? "S" : ""}</Text>
           )}
 
+          {catalogLoading ? (
+            <ActivityIndicator color="#e06030" style={{ marginTop: 32 }} />
+          ) : null}
+
           <View style={styles.templateList}>
             {filteredTemplates.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
                 colors={colors}
-                userSkills={userSkills}
-                userTools={userTools}
                 onPress={() => handleSelectTemplate(template)}
               />
             ))}
@@ -677,10 +671,15 @@ export default function CadastroServiceScreen() {
               <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
             </Pressable>
             <Pressable
-              style={[styles.primaryBtn, { flex: 1 }, !draft.hourlyRateInput && styles.primaryBtnDisabled]}
+              style={[styles.primaryBtn, { flex: 1 }, (!draft.hourlyRateInput || isSaving) && styles.primaryBtnDisabled]}
               onPress={handleHourlyRateNext}
+              disabled={!draft.hourlyRateInput || isSaving}
             >
-              <Text style={styles.primaryBtnText}>Concluir</Text>
+              {isSaving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.primaryBtnText}>Concluir</Text>
+              )}
             </Pressable>
           </View>
         </>
@@ -689,56 +688,27 @@ export default function CadastroServiceScreen() {
   );
 }
 
-function TemplateCard({ template, colors, userSkills, userTools, onPress }: {
-  template: ServiceTemplate;
+function TemplateCard({ template, colors, onPress }: {
+  template: CatalogService;
   colors: any;
-  userSkills: Skill[];
-  userTools: Tool[];
   onPress: () => void;
 }) {
-  const hasSkill = template.skillName
-    ? userSkills.some((s) => normalize(s.name) === normalize(template.skillName!))
-    : true;
-  const matchedTools = template.toolNames.filter((tn) =>
-    userTools.some((t) => normalize(t.name).includes(normalize(tn)))
-  );
-  const compatScore = (hasSkill ? 1 : 0) + (template.toolNames.length === 0 ? 0 : matchedTools.length / template.toolNames.length);
-  const isFullMatch = hasSkill && (template.toolNames.length === 0 || matchedTools.length === template.toolNames.length);
-
   return (
     <Pressable style={[styles.templateCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={onPress}>
       <View style={styles.templateTopRow}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.templateName, { color: colors.text }]}>{template.name}</Text>
+          <Text style={[styles.templateName, { color: colors.text }]}>{template.nome}</Text>
           <Text style={[styles.templateDescription, { color: colors.textMuted }]} numberOfLines={2}>{template.description}</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <View style={[styles.categoryBadge, { backgroundColor: "#e0603012", borderColor: "#e0603028" }]}>
-            <Text style={[styles.categoryBadgeText, { color: "#e06030" }]}>{template.category}</Text>
-          </View>
+          {template.category ? (
+            <View style={[styles.categoryBadge, { backgroundColor: "#e0603012", borderColor: "#e0603028" }]}>
+              <Text style={[styles.categoryBadgeText, { color: "#e06030" }]}>{template.category}</Text>
+            </View>
+          ) : null}
           <Feather name="chevron-right" size={14} color={colors.chevron} />
         </View>
       </View>
-
-      {(template.skillName || template.toolNames.length > 0) && (
-        <View style={[styles.compositionRow, { marginBottom: 0 }]}>
-          {template.skillName && (
-            <View style={[styles.compositionChip, { backgroundColor: "#e0603012", borderColor: "#e0603028", opacity: hasSkill ? 1 : 0.45 }]}>
-              <Feather name="star" size={9} color="#e06030" />
-              <Text style={[styles.compositionChipText, { color: "#e06030" }]} numberOfLines={1}>{template.skillName}</Text>
-            </View>
-          )}
-          {template.toolNames.map((tn) => {
-            const has = userTools.some((t) => normalize(t.name).includes(normalize(tn)));
-            return (
-              <View key={tn} style={[styles.compositionChip, { backgroundColor: "#e0603012", borderColor: "#e0603028", opacity: has ? 1 : 0.45 }]}>
-                <Feather name="tool" size={9} color="#e06030" />
-                <Text style={[styles.compositionChipText, { color: "#e06030" }]} numberOfLines={1}>{tn}</Text>
-              </View>
-            );
-          })}
-        </View>
-      )}
     </Pressable>
   );
 }

@@ -130,6 +130,18 @@ Expo React Native mobile app (Khrono) — cross-platform time-based contracts ap
 - `provider_pins` — PIN-to-provider mapping for connection via PINCODE method
 - `provider_services` — services each provider offers (nome, multiplicador, skill, tools, nota)
 - `contracts` — real contracts persisted to Supabase (hiring_user_id, hired_user_id, tipo, status, rate_per_hour, etc.)
+- `skills_catalog` — canonical skill templates (id, nome, description, category, verified, status, image_url) — 20 rows seeded
+- `services_catalog` — canonical service templates (same fields) — 20 rows seeded
+- `user_skills` — junction: authenticated user ↔ skills_catalog (user_id, skill_id, created_at)
+- `user_services` — junction: authenticated user ↔ services_catalog (user_id, service_id, created_at)
+
+**Catalog contexts (artifacts/khrono/context/):**
+- `CatalogContext.tsx` — fetches skills_catalog + services_catalog from Supabase; `CatalogProvider` + `useCatalog()` hook
+- `UserCatalogContext.tsx` — CRUD for user_skills / user_services; `UserCatalogProvider` + `useUserCatalog()` hook
+
+**Catalog-integrated screens:**
+- `cadastro-skill.tsx` — reads CatalogContext for template list; calls `addSkill()` on completion; supports custom (unverified) skills
+- `cadastro-service.tsx` — reads CatalogContext for service template list; calls `addService()` on completion; supports custom (unverified) services
 
 **Test provider:** Jedme Silva — PIN `1257`, Supabase profile ID `a1884c2a-f50e-4343-9dd3-33b99af82360`, services: Montagem de Móveis + Desmontagem e Transporte.
 

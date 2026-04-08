@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -15,36 +16,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CadastroDone } from "@/components/CadastroDone";
 import { SkillListCard } from "@/components/SkillListCard";
 import { useTheme } from "@/context/ThemeContext";
-
-interface SkillTemplate {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-}
-
-const SKILL_TEMPLATES: SkillTemplate[] = [
-  { id: "s01", name: "Eletricista", category: "Construção", description: "Instalação e manutenção de circuitos elétricos residenciais e comerciais." },
-  { id: "s02", name: "Encanador", category: "Construção", description: "Conserto e instalação de tubulações, torneiras e sistemas hidráulicos." },
-  { id: "s03", name: "Pintor", category: "Construção", description: "Pintura de paredes internas e externas com acabamento profissional." },
-  { id: "s04", name: "Montador de Móveis", category: "Construção", description: "Montagem e desmontagem de móveis de todos os tipos e marcas." },
-  { id: "s05", name: "Marceneiro", category: "Construção", description: "Fabricação e reparo de móveis e estruturas em madeira." },
-  { id: "s06", name: "Pedreiro", category: "Construção", description: "Construção, reforma e acabamento de alvenaria e estruturas." },
-  { id: "s07", name: "Gesseiro", category: "Construção", description: "Instalação de gesso, drywall, texturas e acabamentos decorativos." },
-  { id: "s08", name: "Personal Trainer", category: "Bem-estar", description: "Treinos personalizados para emagrecimento, hipertrofia e condicionamento." },
-  { id: "s09", name: "Nutricionista", category: "Bem-estar", description: "Planos alimentares e orientação nutricional personalizada." },
-  { id: "s10", name: "Fisioterapeuta", category: "Bem-estar", description: "Atendimento fisioterapêutico residencial ou em clínica." },
-  { id: "s11", name: "Cuidador", category: "Cuidados", description: "Acompanhamento e cuidado com idosos ou pessoas com necessidades especiais." },
-  { id: "s12", name: "Babá", category: "Cuidados", description: "Cuidados e supervisão de crianças em residência." },
-  { id: "s13", name: "Técnico em TI", category: "Tecnologia", description: "Suporte técnico, instalação de softwares e manutenção de computadores." },
-  { id: "s14", name: "Desenvolvedor Web", category: "Tecnologia", description: "Criação e manutenção de sites e aplicações web." },
-  { id: "s15", name: "Designer de Interiores", category: "Arte", description: "Projetos de decoração e planejamento de ambientes residenciais e comerciais." },
-  { id: "s16", name: "Motorista", category: "Transporte", description: "Transporte particular com veículo próprio e condução segura." },
-  { id: "s17", name: "Fotógrafo", category: "Arte", description: "Cobertura fotográfica de eventos, ensaios e produções." },
-  { id: "s18", name: "Cozinheiro", category: "Culinária", description: "Preparo de refeições para eventos, residências ou empresas." },
-  { id: "s19", name: "Jardineiro", category: "Jardinagem", description: "Manutenção de jardins, poda de árvores e paisagismo." },
-  { id: "s20", name: "Carregador / Mudanças", category: "Transporte", description: "Transporte e mudança de móveis e pertences com cuidado." },
-];
+import { useCatalog } from "@/context/CatalogContext";
+import { useUserCatalog } from "@/context/UserCatalogContext";
+import { supabase } from "@/lib/supabase";
 
 const TOTAL_STEPS = 2;
 type Step = 1 | 2 | "done";
@@ -60,33 +34,40 @@ export default function CadastroSkillScreen() {
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
+  const { skills: catalogSkills, isLoading: catalogLoading } = useCatalog();
+  const { addSkill } = useUserCatalog();
+
   const [step, setStep] = useState<Step>(1);
   const [step1Sub, setStep1Sub] = useState<Step1Sub>("search");
   const [skillName, setSkillName] = useState("");
   const [description, setDescription] = useState("");
   const [query, setQuery] = useState("");
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const currentStep = step === "done" ? TOTAL_STEPS : (step as number);
   const progress = currentStep / TOTAL_STEPS;
 
   const filteredTemplates = query.length > 0
-    ? SKILL_TEMPLATES.filter((t) =>
-        normalize(t.name).includes(normalize(query)) ||
-        normalize(t.category).includes(normalize(query))
+    ? catalogSkills.filter((t) =>
+        normalize(t.nome).includes(normalize(query)) ||
+        normalize(t.category ?? "").includes(normalize(query))
       )
-    : SKILL_TEMPLATES;
+    : catalogSkills;
 
-  const hasExactMatch = query.length > 0 && SKILL_TEMPLATES.some((t) => normalize(t.name) === normalize(query));
+  const hasExactMatch = query.length > 0 && catalogSkills.some((t) => normalize(t.nome) === normalize(query));
   const showCreateOnly = query.length > 1 && filteredTemplates.length === 0;
   const showCreateAtBottom = query.length > 1 && filteredTemplates.length > 0 && !hasExactMatch;
 
-  function handleSelectTemplate(t: SkillTemplate) {
-    setSkillName(t.name);
-    setDescription(t.description);
+  function handleSelectTemplate(skillId: string, name: string, desc: string | null) {
+    setSelectedSkillId(skillId);
+    setSkillName(name);
+    setDescription(desc ?? "");
     setStep(2);
   }
 
   function handleCreateNew() {
+    setSelectedSkillId(null);
     setSkillName(query);
     setStep1Sub("new_form");
   }
@@ -107,12 +88,37 @@ export default function CadastroSkillScreen() {
     setStep(2);
   }
 
+  async function handleFinish() {
+    setIsSaving(true);
+    try {
+      if (selectedSkillId) {
+        await addSkill(selectedSkillId);
+      } else {
+        // Custom skill: insert into catalog as unverified, then link to user
+        const { data: newSkill } = await supabase
+          .from("skills_catalog")
+          .insert({ nome: skillName.trim(), description: description.trim() || null, status: "active", verified: false })
+          .select("id")
+          .single();
+        if (newSkill) {
+          await addSkill(newSkill.id);
+        }
+      }
+    } catch (e) {
+      console.warn("[cadastro-skill] save error:", e);
+    } finally {
+      setIsSaving(false);
+      setStep("done");
+    }
+  }
+
   function handleReset() {
     setStep(1);
     setStep1Sub("search");
     setSkillName("");
     setDescription("");
     setQuery("");
+    setSelectedSkillId(null);
   }
 
   if (step === "done") {
@@ -184,55 +190,61 @@ export default function CadastroSkillScreen() {
             )}
           </View>
 
-          {showCreateOnly && (
-            <Pressable
-              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
-              onPress={handleCreateNew}
-            >
-              <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
-                <Feather name="plus" size={18} color="#e06030" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.createOptionLabel}>Criar skill</Text>
-                <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
-              </View>
-              <Feather name="chevron-right" size={16} color="#e06030" />
-            </Pressable>
-          )}
+          {catalogLoading ? (
+            <ActivityIndicator color="#e06030" style={{ marginTop: 32 }} />
+          ) : (
+            <>
+              {showCreateOnly && (
+                <Pressable
+                  style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
+                  onPress={handleCreateNew}
+                >
+                  <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                    <Feather name="plus" size={18} color="#e06030" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.createOptionLabel}>Criar skill</Text>
+                    <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
+                  </View>
+                  <Feather name="chevron-right" size={16} color="#e06030" />
+                </Pressable>
+              )}
 
-          {query.length === 0 && (
-            <Text style={[styles.listLabel, { color: colors.textMuted }]}>SUGESTÕES POPULARES</Text>
-          )}
-          {query.length > 0 && filteredTemplates.length > 0 && (
-            <Text style={[styles.listLabel, { color: colors.textMuted }]}>
-              {filteredTemplates.length} RESULTADO{filteredTemplates.length !== 1 ? "S" : ""}
-            </Text>
-          )}
-
-          <View style={styles.templateList}>
-            {filteredTemplates.map((t) => (
-              <SkillListCard
-                key={t.id}
-                name={t.name}
-                description={t.description}
-                badge={t.category}
-                onPress={() => handleSelectTemplate(t)}
-              />
-            ))}
-
-            {showCreateAtBottom && (
-              <Pressable
-                style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                onPress={handleCreateNew}
-              >
-                <Feather name="plus-circle" size={14} color="#e06030" />
-                <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
-                  Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como nova skill
+              {query.length === 0 && (
+                <Text style={[styles.listLabel, { color: colors.textMuted }]}>SUGESTÕES POPULARES</Text>
+              )}
+              {query.length > 0 && filteredTemplates.length > 0 && (
+                <Text style={[styles.listLabel, { color: colors.textMuted }]}>
+                  {filteredTemplates.length} RESULTADO{filteredTemplates.length !== 1 ? "S" : ""}
                 </Text>
-                <Feather name="chevron-right" size={14} color={colors.chevron} />
-              </Pressable>
-            )}
-          </View>
+              )}
+
+              <View style={styles.templateList}>
+                {filteredTemplates.map((t) => (
+                  <SkillListCard
+                    key={t.id}
+                    name={t.nome}
+                    description={t.description ?? ""}
+                    badge={t.category ?? ""}
+                    onPress={() => handleSelectTemplate(t.id, t.nome, t.description)}
+                  />
+                ))}
+
+                {showCreateAtBottom && (
+                  <Pressable
+                    style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                    onPress={handleCreateNew}
+                  >
+                    <Feather name="plus-circle" size={14} color="#e06030" />
+                    <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
+                      Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como nova skill
+                    </Text>
+                    <Feather name="chevron-right" size={14} color={colors.chevron} />
+                  </Pressable>
+                )}
+              </View>
+            </>
+          )}
         </ScrollView>
       )}
 
@@ -308,11 +320,27 @@ export default function CadastroSkillScreen() {
           </ScrollView>
 
           <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
-            <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }]} onPress={() => setStep("done")}>
-              <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
+            <Pressable
+              style={[styles.skipBtn, { borderColor: colors.inputBorder }]}
+              onPress={handleFinish}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color={colors.textSecondary} />
+              ) : (
+                <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
+              )}
             </Pressable>
-            <Pressable style={[styles.primaryBtn, { flex: 1 }]} onPress={() => setStep("done")}>
-              <Text style={styles.primaryBtnText}>Concluir</Text>
+            <Pressable
+              style={[styles.primaryBtn, { flex: 1 }, isSaving && styles.primaryBtnDisabled]}
+              onPress={handleFinish}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.primaryBtnText}>Concluir</Text>
+              )}
             </Pressable>
           </View>
         </>

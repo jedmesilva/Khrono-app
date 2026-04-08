@@ -20,12 +20,14 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { CatalogProvider } from "@/context/CatalogContext";
 import { CardsProvider } from "@/context/CardsContext";
 import { ContractsProvider } from "@/context/ContractsContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { DocumentsProvider } from "@/context/DocumentsContext";
 import { ServicesProvider } from "@/context/ServicesContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { UserCatalogProvider } from "@/context/UserCatalogContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -130,17 +132,21 @@ export default function RootLayout() {
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
-                  <ContractsProvider>
-                    <CardsProvider>
-                      <ConfirmationProvider>
-                        <DocumentsProvider>
-                          <ServicesProvider>
-                            <RootLayoutNav />
-                          </ServicesProvider>
-                        </DocumentsProvider>
-                      </ConfirmationProvider>
-                    </CardsProvider>
-                  </ContractsProvider>
+                  <CatalogProvider>
+                    <UserCatalogProvider>
+                      <ContractsProvider>
+                        <CardsProvider>
+                          <ConfirmationProvider>
+                            <DocumentsProvider>
+                              <ServicesProvider>
+                                <RootLayoutNav />
+                              </ServicesProvider>
+                            </DocumentsProvider>
+                          </ConfirmationProvider>
+                        </CardsProvider>
+                      </ContractsProvider>
+                    </UserCatalogProvider>
+                  </CatalogProvider>
                 </AuthProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>
