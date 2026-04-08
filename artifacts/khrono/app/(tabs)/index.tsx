@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -34,7 +34,15 @@ export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
-  const now = Date.now();
+  const [now, setNow] = useState(Date.now());
+
+  const hasRunningContracts = activeContracts.some((c) => !c.agendado);
+
+  useEffect(() => {
+    if (!hasRunningContracts) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [hasRunningContracts]);
 
   const totalPagar = activeContracts
     .filter((c) => c.role === "hiring" && !c.agendado)
