@@ -17,8 +17,10 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { SkillListCard } from "@/components/SkillListCard";
 import { ToolListCard } from "@/components/ToolListCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { useContracts } from "@/context/ContractsContext";
 import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useUserCatalog } from "@/context/UserCatalogContext";
 import {
   MY_PROFILE,
   Skill,
@@ -251,6 +253,8 @@ export default function ProfileScreen() {
   const isWeb = Platform.OS === "web";
   const { colors } = useTheme();
   const { isActive } = useServices();
+  const { history } = useContracts();
+  const { userServices } = useUserCatalog();
   const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
@@ -385,12 +389,12 @@ export default function ProfileScreen() {
 
         <View style={[styles.statsCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: colors.text }]}>{MY_PROFILE.totalContracts}</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{history.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>CONTRATOS</Text>
           </View>
           <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: colors.text }]}>{MY_PROFILE.services.length}</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>{userServices.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>SERVICES</Text>
           </View>
         </View>
