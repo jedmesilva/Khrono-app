@@ -37,6 +37,8 @@ function getValueLabel(contract: Contract): string {
 type Props = {
   contract: Contract;
   onStop: (id: string) => void;
+  onAccept?: (id: string) => void;
+  onBegin?: (id: string) => void;
   onPress?: () => void;
 };
 
@@ -55,21 +57,24 @@ function formatValue(ms: number, rate: number) {
 }
 
 
-export function ContractCard({ contract, onStop, onPress }: Props) {
+export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: Props) {
   const [now, setNow] = useState(Date.now());
   const { colors } = useTheme();
   const isScheduled = !!contract.agendado;
+  const isActive = contract.status === "active";
+  const isPending = contract.status === "pending_signature";
+  const isAccepted = contract.status === "accepted";
 
   useEffect(() => {
-    if (isScheduled) return;
+    if (isScheduled || !isActive) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [isScheduled]);
+  }, [isScheduled, isActive]);
 
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
-  const accentColor = isHiring ? "#e06030" : "#18a06b";
-  const elapsed = isScheduled ? 0 : now - contract.startedAt;
+  const accentColor = colors.accent;
+  const elapsed = isScheduled || !isActive ? 0 : now - contract.startedAt;
 
   const restante = isTimer && contract.duracaoTotal
     ? Math.max(0, contract.duracaoTotal - elapsed)
@@ -214,21 +219,55 @@ export function ContractCard({ contract, onStop, onPress }: Props) {
         <Text style={[styles.rateText, { color: colors.textDim }]}>R${contract.ratePerHour}/h</Text>
       </View>
 
-      {/* Stop button */}
-      <Animated.View style={{ transform: [{ scale: stopScale }] }}>
+      {/* Botão: Aceitar contrato (pending_signature + hired) */}
+      {isPending && !isHiring && (
         <Pressable
-          style={[
-            styles.stopBtn,
-            { borderColor: (quaseAcabando ? alertColor : accentColor) + "40" },
-          ]}
-          onPress={handlePress}
+          style={[styles.actionBtn, { backgroundColor: accentColor }]}
+          onPress={() => onAccept?.(contract.id)}
         >
-          <Feather name="square" size={12} color={quaseAcabando ? alertColor : accentColor} />
-          <Text style={[styles.stopText, { color: quaseAcabando ? alertColor : accentColor }]}>
-            ENCERRAR
-          </Text>
+          <Feather name="check" size={14} color="#fff" />
+          <Text style={styles.actionBtnText}>Aceitar contrato</Text>
         </Pressable>
-      </Animated.View>
+      )}
+
+      {/* Indicador: aguardando aceite (pending_signature + hiring) */}
+      {isPending && isHiring && (
+        <View style={[styles.waitingRow, { borderColor: accentColor + "25", backgroundColor: accentColor + "08" }]}>
+          <Feather name="clock" size={12} color={accentColor + "99"} />
+          <Text style={[styles.waitingText, { color: accentColor + "99" }]}>
+            Aguardando aceite do contratado
+          </Text>
+        </View>
+      )}
+
+      {/* Botão: Iniciar contrato (accepted) */}
+      {isAccepted && (
+        <Pressable
+          style={[styles.actionBtn, { backgroundColor: accentColor }]}
+          onPress={() => onBegin?.(contract.id)}
+        >
+          <Feather name="play" size={14} color="#fff" />
+          <Text style={styles.actionBtnText}>Iniciar contrato</Text>
+        </Pressable>
+      )}
+
+      {/* Botão: Encerrar (active) */}
+      {isActive && (
+        <Animated.View style={{ transform: [{ scale: stopScale }] }}>
+          <Pressable
+            style={[
+              styles.stopBtn,
+              { borderColor: (quaseAcabando ? alertColor : accentColor) + "40" },
+            ]}
+            onPress={handlePress}
+          >
+            <Feather name="square" size={12} color={quaseAcabando ? alertColor : accentColor} />
+            <Text style={[styles.stopText, { color: quaseAcabando ? alertColor : accentColor }]}>
+              ENCERRAR
+            </Text>
+          </Pressable>
+        </Animated.View>
+      )}
     </Pressable>
   );
 }
@@ -361,6 +400,34 @@ const styles = StyleSheet.create({
     fontFamily: "DMSans_400Regular",
     fontSize: 11,
     letterSpacing: 0.5,
+  },
+  actionBtn: {
+    borderRadius: 12,
+    paddingVertical: 13,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  actionBtnText: {
+    fontFamily: "Sora_600SemiBold",
+    fontSize: 13,
+    color: "#fff",
+  },
+  waitingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    justifyContent: "center",
+  },
+  waitingText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    letterSpacing: 0.3,
   },
   stopBtn: {
     borderWidth: 1,

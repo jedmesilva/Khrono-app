@@ -48,7 +48,7 @@ export type Contract = {
   ratePerHour: number;
   startedAt: number;
   scheduledFor?: number;
-  status: "active" | "ended";
+  status: "active" | "ended" | "pending_signature" | "accepted";
   endedAt?: number;
   totalAmount?: number;
 };
@@ -59,6 +59,7 @@ type ContractsContextType = {
   isLoading: boolean;
   startContract: (contract: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }, initialStatus?: "active" | "pending_signature") => Promise<string>;
   acceptContract: (id: string) => Promise<void>;
+  beginContract: (id: string) => Promise<void>;
   cancelContract: (id: string) => Promise<void>;
   endContract: (id: string) => void;
 };
@@ -149,7 +150,10 @@ function mapDbToContract(c: any, userId: string): Contract {
     ratePerHour: Number(c.hourly_rate),
     startedAt: new Date(c.started_at).getTime(),
     scheduledFor: c.scheduled_for ? new Date(c.scheduled_for).getTime() : undefined,
-    status: c.status === "active" || c.status === "paused" || c.status === "pending_signature" ? "active" : "ended",
+    status: c.status === "pending_signature" ? "pending_signature"
+      : c.status === "accepted" ? "accepted"
+      : c.status === "active" || c.status === "paused" ? "active"
+      : "ended",
     endedAt: c.ended_at ? new Date(c.ended_at).getTime() : undefined,
     totalAmount: c.total_amount ? Number(c.total_amount) : undefined,
   };
@@ -176,7 +180,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           .from("contracts")
           .select(CONTRACT_SELECT)
           .or(`contractor_id.eq.${userId},hired_id.eq.${userId}`)
-          .in("status", ["active", "paused", "pending_signature"])
+          .in("status", ["active", "paused", "pending_signature", "accepted"])
           .order("started_at", { ascending: false }),
         supabase
           .from("contracts")
@@ -336,13 +340,34 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       if (!user) return;
 
       await Promise.all([
-        supabase.from("contracts").update({ status: "active" }).eq("id", id),
+        supabase.from("contracts").update({ status: "accepted" }).eq("id", id),
+        supabase.from("contract_time_entries").insert({
+          contract_id: id,
+          event: "accepted",
+          triggered_by: user.id,
+        }),
+      ]).catch((e) => console.warn("[ContractsContext] acceptContract error:", e));
+
+      if (userIdRef.current) await loadContracts(userIdRef.current);
+    },
+    [loadContracts]
+  );
+
+  const beginContract = useCallback(
+    async (id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const startedAt = new Date().toISOString();
+
+      await Promise.all([
+        supabase.from("contracts").update({ status: "active", started_at: startedAt }).eq("id", id),
         supabase.from("contract_time_entries").insert({
           contract_id: id,
           event: "started",
           triggered_by: user.id,
         }),
-      ]).catch((e) => console.warn("[ContractsContext] acceptContract error:", e));
+      ]).catch((e) => console.warn("[ContractsContext] beginContract error:", e));
 
       if (userIdRef.current) await loadContracts(userIdRef.current);
     },
@@ -404,7 +429,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ContractsContext.Provider value={{ activeContracts, history, isLoading, startContract, acceptContract, cancelContract, endContract }}>
+    <ContractsContext.Provider value={{ activeContracts, history, isLoading, startContract, acceptContract, beginContract, cancelContract, endContract }}>
       {children}
     </ContractsContext.Provider>
   );
