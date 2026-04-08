@@ -1,15 +1,12 @@
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import React, { useMemo } from "react";
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import * as Haptics from "expo-haptics";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
@@ -35,22 +32,69 @@ export function ServiceSelectionSheet({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const ref = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["50%", "80%"], []);
+
+  const sheetBgStyle = useMemo(
+    () => ({
+      backgroundColor: colors.sheetBg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 1,
+      borderColor: colors.sheetBorder,
+    }),
+    [colors]
+  );
+
+  const handleStyle = useMemo(
+    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    [colors]
+  );
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
+  useEffect(() => {
+    if (visible) {
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [visible]);
 
   function handleSelect(service: ProviderService) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onSelect(service);
+    ref.current?.dismiss();
     onClose();
   }
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay} />
-      </TouchableWithoutFeedback>
-
-      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.handle} />
-
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      backgroundStyle={sheetBgStyle}
+      handleIndicatorStyle={handleStyle}
+      onDismiss={onClose}
+    >
+      <BottomSheetScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Math.max(insets.bottom, 24) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Selecionar service</Text>
           <Pressable onPress={onClose} hitSlop={12}>
@@ -58,11 +102,7 @@ export function ServiceSelectionSheet({
           </Pressable>
         </View>
 
-        <ScrollView
-          style={styles.list}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
-        >
+        <View style={styles.list}>
           {services.map((s) => {
             const ativo = s.id === selectedId;
             const valor = (valorBase * s.multiplicador).toFixed(0);
@@ -77,25 +117,31 @@ export function ServiceSelectionSheet({
                 </View>
 
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.serviceName, ativo && { color: colors.text }]}>{s.nome}</Text>
+                  <Text style={[styles.serviceName, ativo && { color: colors.text }]}>
+                    {s.nome}
+                  </Text>
 
                   <View style={styles.metaRow}>
-                    <Feather name="star" size={10} color={"#e06030"} />
-                    <Text style={styles.metaText}>{s.nota} · {s.avaliacoes} avaliações</Text>
+                    <Feather name="star" size={10} color="#e06030" />
+                    <Text style={styles.metaText}>
+                      {s.nota} · {s.avaliacoes} avaliações
+                    </Text>
                   </View>
 
                   {s.skill && (
                     <View style={styles.metaRow}>
-                      <Feather name="tool" size={9} color={"#e0603088"} />
-                      <Text style={[styles.metaText, { color: "#e0603088" }]}>{s.skill}</Text>
+                      <Feather name="tool" size={9} color="#e0603088" />
+                      <Text style={[styles.metaText, { color: "#e0603088" }]}>
+                        {s.skill}
+                      </Text>
                     </View>
                   )}
 
                   {s.tools && s.tools.length > 0 && (
                     <View style={styles.metaRow}>
-                      <Feather name="key" size={9} color={"#18a06b88"} />
+                      <Feather name="key" size={9} color={colors.textDim} />
                       <Text
-                        style={[styles.metaText, { color: "#18a06b88" }]}
+                        style={[styles.metaText, { color: colors.textDim }]}
                         numberOfLines={1}
                       >
                         {s.tools.join(", ")}
@@ -110,41 +156,23 @@ export function ServiceSelectionSheet({
               </Pressable>
             );
           })}
-        </ScrollView>
-      </View>
-    </Modal>
+        </View>
+      </BottomSheetScrollView>
+    </BottomSheetModal>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.6)",
-    },
-    sheet: {
-      backgroundColor: colors.sheetBg,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      borderTopWidth: 1,
-      borderColor: colors.surfaceBorder,
-      paddingTop: 12,
+    content: {
       paddingHorizontal: 20,
-      maxHeight: "80%",
-    },
-    handle: {
-      width: 36,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: colors.handleColor,
-      alignSelf: "center",
-      marginBottom: 20,
+      paddingTop: 4,
     },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 16,
+      marginBottom: 20,
     },
     title: {
       fontFamily: "Sora_700Bold",
@@ -152,7 +180,7 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
     },
     list: {
-      flexGrow: 0,
+      gap: 8,
     },
     serviceRow: {
       flexDirection: "row",
