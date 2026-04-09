@@ -24,8 +24,6 @@ import {
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import Animated, {
-  Extrapolation,
-  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -34,6 +32,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { ConnectingFeedback } from "@/components/ConnectingFeedback";
 import { PincodeSheet } from "@/components/PincodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
@@ -204,6 +203,17 @@ function PincodeContent({
     );
   }
 
+  if (loading) {
+    return (
+      <ConnectingFeedback
+        visible
+        message="Validando código..."
+        subtitle="Buscando usuário pelo PINCODE"
+        icon="hash"
+      />
+    );
+  }
+
   return (
     <View>
       <Text style={styles.title}>Inserir PINCODE</Text>
@@ -245,15 +255,11 @@ function PincodeContent({
       </View>
 
       <Pressable
-        style={[styles.primaryBtn, (pin.length < 4 || loading) && styles.primaryBtnDisabled]}
-        disabled={pin.length < 4 || loading}
+        style={[styles.primaryBtn, pin.length < 4 && styles.primaryBtnDisabled]}
+        disabled={pin.length < 4}
         onPress={handleConnect}
       >
-        {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.primaryBtnText}>Conectar</Text>
-        )}
+        <Text style={styles.primaryBtnText}>Conectar</Text>
       </Pressable>
     </View>
   );
@@ -280,10 +286,11 @@ function QrcodeContent({
   const styles = useMemo(() => createSubStyles(colors), [colors]);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [validating, setValidating] = useState(false);
 
   const handleBarcodeScanned = useCallback(
-    ({ data }: { type: string; data: string }) => {
-      if (scanned) return;
+    async ({ data }: { type: string; data: string }) => {
+      if (scanned || validating) return;
       setScanned(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -297,22 +304,51 @@ function QrcodeContent({
         // not JSON — ignore
       }
 
-      if (/^\d{4}$/.test(data.trim())) {
-        onShowDialog({
-          title: "PINCODE detectado",
-          message: `Use a aba PINCODE e insira o código ${data.trim()} para conectar.`,
-        });
+      if (/^\d{4,6}$/.test(data.trim())) {
+        setValidating(true);
+        try {
+          const provider = await lookupProviderByPin(data.trim());
+          if (provider) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            onFoundProvider(provider);
+          } else {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            onShowDialog({
+              title: "PIN não encontrado",
+              message: "O QR Code contém um PIN que não foi encontrado.",
+            });
+            setTimeout(() => setScanned(false), 500);
+          }
+        } catch {
+          onShowDialog({
+            title: "Erro de conexão",
+            message: "Não foi possível identificar o usuário. Tente novamente.",
+          });
+          setTimeout(() => setScanned(false), 500);
+        } finally {
+          setValidating(false);
+        }
       } else {
         onShowDialog({
           title: "QR Code inválido",
           message: "Este QR Code não é reconhecido pelo Khrono.",
         });
+        setTimeout(() => setScanned(false), 3000);
       }
-
-      setTimeout(() => setScanned(false), 3000);
     },
-    [scanned, onFoundProvider, onShowDialog]
+    [scanned, validating, onFoundProvider, onShowDialog]
   );
+
+  if (validating) {
+    return (
+      <ConnectingFeedback
+        visible
+        message="Identificando usuário..."
+        subtitle="Verificando o código do QR Code"
+        icon="maximize"
+      />
+    );
+  }
 
   // Still loading permissions
   if (!permission) {
@@ -385,60 +421,17 @@ function QrcodeContent({
 
 function NfcContent({ colors }: { colors: ColorPalette }) {
   const styles = useMemo(() => createSubStyles(colors), [colors]);
-  const p1 = useSharedValue(0);
-  const p2 = useSharedValue(0);
-  const p3 = useSharedValue(0);
-
-  useEffect(() => {
-    const pulse = (val: typeof p1, delay: number) => {
-      const loop = () => {
-        val.value = withTiming(0, { duration: 0 }, () => {
-          val.value = withTiming(1, { duration: 1800 }, () => {
-            setTimeout(loop, delay);
-          });
-        });
-      };
-      setTimeout(loop, delay);
-    };
-    pulse(p1, 0);
-    pulse(p2, 450);
-    pulse(p3, 900);
-  }, []);
-
-  const mkRingStyle = (val: typeof p1, size: number) =>
-    useAnimatedStyle(() => ({
-      position: "absolute",
-      width: size,
-      height: size,
-      borderRadius: size / 2,
-      borderWidth: 1.5,
-      borderColor: "#e06030",
-      transform: [{ scale: interpolate(val.value, [0, 1], [0.75, 1.55], Extrapolation.CLAMP) }],
-      opacity: interpolate(val.value, [0, 0.4, 1], [0.75, 0.3, 0], Extrapolation.CLAMP),
-    }));
-
-  const ring1Style = mkRingStyle(p1, 68);
-  const ring2Style = mkRingStyle(p2, 110);
-  const ring3Style = mkRingStyle(p3, 160);
 
   return (
     <View>
       <Text style={styles.title}>Aproximação NFC</Text>
       <Text style={styles.desc}>Aproxime os dois dispositivos para iniciar o contrato</Text>
-
-      <View style={styles.nfcWrap}>
-        <Animated.View style={ring3Style} />
-        <Animated.View style={ring2Style} />
-        <Animated.View style={ring1Style} />
-        <View style={styles.nfcIcon}>
-          <Feather name="wifi" size={24} color={"#e06030"} />
-        </View>
-      </View>
-
-      <View style={styles.statusRow}>
-        <View style={styles.statusDot} />
-        <Text style={styles.statusText}>aguardando dispositivo próximo...</Text>
-      </View>
+      <ConnectingFeedback
+        visible
+        message="Conectando via NFC..."
+        subtitle="Mantenha os dispositivos próximos"
+        icon="wifi"
+      />
     </View>
   );
 }
