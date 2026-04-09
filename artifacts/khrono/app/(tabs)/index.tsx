@@ -19,7 +19,7 @@ import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
 import { useTheme } from "@/context/ThemeContext";
-import { useContracts } from "@/context/ContractsContext";
+import { useContracts, isContractRunning } from "@/context/ContractsContext";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
@@ -89,7 +89,7 @@ export default function HomeScreen() {
 
   const [now, setNow] = useState(Date.now());
 
-  const hasRunningContracts = activeContracts.some((c) => !c.agendado);
+  const hasRunningContracts = activeContracts.some(isContractRunning);
 
   useEffect(() => {
     if (!hasRunningContracts) return;
@@ -98,14 +98,14 @@ export default function HomeScreen() {
   }, [hasRunningContracts]);
 
   const totalPagar = activeContracts
-    .filter((c) => c.role === "hiring" && !c.agendado)
+    .filter((c) => c.role === "hiring" && isContractRunning(c))
     .reduce((sum, c) => {
       const hours = (now - c.startedAt) / 1000 / 3600;
       return sum + hours * c.ratePerHour;
     }, 0);
 
   const totalReceber = activeContracts
-    .filter((c) => c.role === "hired" && !c.agendado)
+    .filter((c) => c.role === "hired" && isContractRunning(c))
     .reduce((sum, c) => {
       const hours = (now - c.startedAt) / 1000 / 3600;
       return sum + hours * c.ratePerHour;

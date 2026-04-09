@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { useTheme } from "@/context/ThemeContext";
-import { Contract, useContracts } from "@/context/ContractsContext";
+import { Contract, useContracts, isContractRunning } from "@/context/ContractsContext";
 
 function getDetailValueLabel(contract: Contract): string {
   const isHiring = contract.role === "hiring";
@@ -28,6 +28,10 @@ function getDetailValueLabel(contract: Contract): string {
 
   if (contract.status === "ended") {
     return isHiring ? "pago" : "recebido";
+  }
+
+  if (contract.status === "pending_signature" || contract.status === "accepted" || contract.status === "paused") {
+    return isHiring ? "a pagar" : "a receber";
   }
 
   if (isHiring) {
@@ -113,10 +117,10 @@ export default function ContractDetailScreen() {
   }, [suporteAberto]);
 
   useEffect(() => {
-    if (!contract || contract.status !== "active" || contract.agendado) return;
+    if (!contract || !isContractRunning(contract)) return;
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [contract?.status, contract?.agendado]);
+  }, [contract?.status, contract?.agendado, contract?.startedAt]);
 
   if (!contract) {
     return (
@@ -137,10 +141,20 @@ export default function ContractDetailScreen() {
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
   const isActive = contract.status === "active";
+  const isPending = contract.status === "pending_signature";
+  const isAccepted = contract.status === "accepted";
+  const isPaused = contract.status === "paused";
+  const isEnded = contract.status === "ended";
+  const isRunning = isContractRunning(contract);
   const isScheduled = isActive && !!contract.agendado;
   const cor = colors.accent;
 
-  const elapsed = isScheduled ? 0 : isActive ? now - contract.startedAt : (contract.endedAt! - contract.startedAt);
+  // elapsed only counts when contract is actively running
+  const elapsed = isRunning
+    ? now - contract.startedAt
+    : isEnded && contract.endedAt && contract.startedAt > 0
+      ? contract.endedAt - contract.startedAt
+      : 0;
   const tempoDecorrido = elapsed;
   const valorHora = contract.ratePerHour;
 
@@ -148,12 +162,21 @@ export default function ContractDetailScreen() {
     ? ((contract.duracaoTotal / 1000 / 3600) * valorHora).toFixed(2)
     : ((tempoDecorrido / 1000 / 3600) * valorHora).toFixed(2);
 
-  const restante = isTimer && isActive && !isScheduled && contract.duracaoTotal
+  const restante = isTimer && isRunning && contract.duracaoTotal
     ? Math.max(0, contract.duracaoTotal - elapsed)
     : null;
-  const progresso = isTimer && isActive && !isScheduled && contract.duracaoTotal
+  const progresso = isTimer && isRunning && contract.duracaoTotal
     ? Math.min(1, elapsed / contract.duracaoTotal)
     : null;
+
+  // Human-readable status label
+  const statusLabel = isPending ? "aguardando aceite"
+    : isAccepted ? "aguardando início"
+    : isPaused ? "pausado"
+    : isScheduled ? "agendado"
+    : isRunning ? "em andamento"
+    : isEnded ? "encerrado"
+    : "em andamento";
 
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
@@ -191,13 +214,25 @@ export default function ContractDetailScreen() {
         <View style={styles.statusRow}>
           <View style={[
             styles.statusBadge,
-            isActive
-              ? { backgroundColor: "#e0603010", borderColor: "#e0603025" }
-              : { backgroundColor: colors.surface, borderColor: colors.surfaceBorder },
+            isRunning
+              ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" }
+              : isPending || isAccepted
+                ? { backgroundColor: "#e0603010", borderColor: "#e0603025" }
+                : { backgroundColor: colors.surface, borderColor: colors.surfaceBorder },
           ]}>
-            <View style={[styles.statusDot, { backgroundColor: isScheduled ? cor : isActive ? "#18a06b" : colors.textMuted }]} />
-            <Text style={[styles.statusText, { color: isScheduled ? cor : isActive ? "#18a06b" : colors.textSecondary }]}>
-              {isScheduled ? "agendado" : isActive ? "em andamento" : "encerrado"}
+            <View style={[styles.statusDot, {
+              backgroundColor: isRunning ? "#18a06b"
+                : isPending || isAccepted ? cor
+                : isPaused ? "#ffaa00"
+                : colors.textMuted
+            }]} />
+            <Text style={[styles.statusText, {
+              color: isRunning ? "#18a06b"
+                : isPending || isAccepted ? cor
+                : isPaused ? "#ffaa00"
+                : colors.textSecondary
+            }]}>
+              {statusLabel}
             </Text>
           </View>
           <Text style={[styles.contratoId, { color: colors.textMuted }]}>{contratoId}</Text>
@@ -248,26 +283,30 @@ export default function ContractDetailScreen() {
           )}
         </View>
 
-        {/* Cronômetro / Timer */}
-        {isActive && (
+        {/* Cronômetro / Timer — só exibe quando o contrato está em andamento ou encerrado */}
+        {(isRunning || isEnded || isScheduled) && (
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: cor + "20", alignItems: "center", marginBottom: 12 }]}>
             {isTimer ? (
               <>
                 <Text style={[styles.timerLabel, { color: colors.textMuted }]}>tempo restante</Text>
-                <Text style={[styles.timerValue, { color: colors.text }, !isScheduled && (restante ?? 0) < 600000 && { color: "#ff4444" }]}>
+                <Text style={[styles.timerValue, { color: colors.text }, isRunning && (restante ?? 0) < 600000 && { color: "#ff4444" }]}>
                   {formatTimer(Math.floor((restante ?? contract.duracaoTotal ?? 0) / 1000))}
                 </Text>
                 <View style={[styles.progressBarWrap, { backgroundColor: colors.surface }]}>
-                  <View style={[styles.progressFill, { width: `${Math.round((progresso ?? 0) * 100)}%` as any, backgroundColor: !isScheduled && (restante ?? 0) < 600000 ? "#ff4444" : cor }]} />
+                  <View style={[styles.progressFill, { width: `${Math.round((progresso ?? 0) * 100)}%` as any, backgroundColor: isRunning && (restante ?? 0) < 600000 ? "#ff4444" : cor }]} />
                 </View>
                 <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
                 <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>{getDetailValueLabel(contract)}</Text>
               </>
             ) : (
               <>
-                <Text style={[styles.timerLabel, { color: colors.textMuted }]}>tempo decorrido</Text>
+                <Text style={[styles.timerLabel, { color: colors.textMuted }]}>
+                  {isEnded ? "tempo decorrido" : isRunning ? "tempo decorrido" : "duração prevista"}
+                </Text>
                 <Text style={[styles.timerValue, { color: colors.text }]}>{formatTimer(Math.floor(elapsed / 1000))}</Text>
-                <Text style={[styles.timerAmount, { color: cor }]}>R${valorAcumulado}</Text>
+                <Text style={[styles.timerAmount, { color: isRunning ? cor : colors.textSecondary }]}>
+                  {isRunning || isEnded ? `R$${valorAcumulado}` : "—"}
+                </Text>
                 <Text style={[styles.timerAmountLabel, { color: colors.textMuted }]}>{getDetailValueLabel(contract)}</Text>
               </>
             )}
@@ -392,8 +431,8 @@ export default function ContractDetailScreen() {
           </View>
         )}
 
-        {/* Avaliação pendente */}
-        {!isActive && isHiring && !avaliacaoEnviada && (
+        {/* Avaliação pendente — somente após encerrado */}
+        {isEnded && isHiring && !avaliacaoEnviada && (
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: "#e0603030", marginBottom: 12 }]}>
             <Text style={styles.avaliacaoTitulo}>Avaliação pendente</Text>
             <Text style={[styles.avaliacaoSub, { color: colors.textSecondary }]}>Como foi sua experiência com {contract.person.name}?</Text>
@@ -421,14 +460,53 @@ export default function ContractDetailScreen() {
           </View>
         )}
 
-        {/* Ações */}
-        {isActive && (
+        {/* Ações — adaptadas por estado */}
+
+        {/* Aguardando aceite */}
+        {isPending && isHiring && (
+          <View style={[styles.encerrarBtn, { borderColor: cor + "25", backgroundColor: cor + "08", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }]}>
+            <Feather name="clock" size={13} color={cor + "99"} />
+            <Text style={[styles.encerrarBtnText, { color: cor + "99", letterSpacing: 0.5 }]}>Aguardando aceite do contratado</Text>
+          </View>
+        )}
+
+        {/* Aceitar contrato (hired recebe proposta) */}
+        {isPending && !isHiring && (
+          <Pressable
+            style={[styles.encerrarBtn, { backgroundColor: "#18a06b", borderColor: "#18a06b" }]}
+            onPress={() => {}}
+          >
+            <Text style={[styles.encerrarBtnText, { color: "#fff" }]}>✓  aceitar contrato</Text>
+          </Pressable>
+        )}
+
+        {/* Iniciar contrato (após aceite) */}
+        {isAccepted && (
+          <Pressable
+            style={[styles.encerrarBtn, { backgroundColor: cor, borderColor: cor }]}
+            onPress={() => {}}
+          >
+            <Text style={[styles.encerrarBtnText, { color: "#fff" }]}>▶  iniciar contrato</Text>
+          </Pressable>
+        )}
+
+        {/* Pausado */}
+        {isPaused && (
+          <View style={[styles.encerrarBtn, { borderColor: "#ffaa0040", backgroundColor: "#ffaa0008", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }]}>
+            <Feather name="pause-circle" size={13} color="#ffaa00" />
+            <Text style={[styles.encerrarBtnText, { color: "#ffaa00" }]}>Contrato pausado</Text>
+          </View>
+        )}
+
+        {/* Encerrar — somente quando rodando */}
+        {isRunning && (
           <Pressable onPress={handleEncerrar} style={[styles.encerrarBtn, { borderColor: "#e0603040" }]}>
             <Text style={styles.encerrarBtnText}>■  encerrar contrato</Text>
           </Pressable>
         )}
 
-        {!isActive && (
+        {/* Contratar novamente — somente após encerrado */}
+        {isEnded && (
           <Pressable onPress={() => router.back()} style={styles.contratarNovBtn}>
             <Feather name="rotate-ccw" size={15} color="#e06030" />
             <Text style={styles.contratarNovText}>Contratar novamente</Text>

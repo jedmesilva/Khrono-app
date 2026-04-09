@@ -48,10 +48,25 @@ export type Contract = {
   ratePerHour: number;
   startedAt: number;
   scheduledFor?: number;
-  status: "active" | "ended" | "pending_signature" | "accepted";
+  status: "active" | "paused" | "ended" | "pending_signature" | "accepted";
   endedAt?: number;
   totalAmount?: number;
 };
+
+/**
+ * Returns true only when a contract is actively running and accumulating
+ * time and cost. A contract is running when:
+ * - status is "active" (not pending, accepted, paused, or ended)
+ * - it is not scheduled for a future start (agendado = false)
+ * - it has a valid start timestamp (startedAt > 0)
+ */
+export function isContractRunning(contract: Contract): boolean {
+  return (
+    contract.status === "active" &&
+    !contract.agendado &&
+    contract.startedAt > 0
+  );
+}
 
 type ContractsContextType = {
   activeContracts: Contract[];
@@ -148,11 +163,12 @@ function mapDbToContract(c: any, userId: string): Contract {
     paymentCardLabel: c.payment_card_label ?? undefined,
     agendado: c.agendado ?? false,
     ratePerHour: Number(c.hourly_rate),
-    startedAt: new Date(c.started_at).getTime(),
+    startedAt: c.started_at ? new Date(c.started_at).getTime() : 0,
     scheduledFor: c.scheduled_for ? new Date(c.scheduled_for).getTime() : undefined,
     status: c.status === "pending_signature" ? "pending_signature"
       : c.status === "accepted" ? "accepted"
-      : c.status === "active" || c.status === "paused" ? "active"
+      : c.status === "paused" ? "paused"
+      : c.status === "active" ? "active"
       : "ended",
     endedAt: c.ended_at ? new Date(c.ended_at).getTime() : undefined,
     totalAmount: c.total_amount ? Number(c.total_amount) : undefined,

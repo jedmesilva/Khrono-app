@@ -22,6 +22,10 @@ function getValueLabel(contract: Contract): string {
     return isHiring ? "PAGO" : "RECEBIDO";
   }
 
+  if (contract.status === "pending_signature" || contract.status === "accepted" || contract.status === "paused") {
+    return isHiring ? "A PAGAR" : "A RECEBER";
+  }
+
   if (isHiring) {
     if (isCash) return "A PAGAR";
     if (isCardOrPix && isTimer) return "PAGANDO";
@@ -193,12 +197,14 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
         <View style={styles.timerRow}>
           <View>
             <Text style={[styles.metaLabel, { color: colors.textMuted }]}>TEMPO</Text>
-            <Text style={[styles.timerText, { color: colors.text }]}>{formatElapsed(elapsed)}</Text>
+            <Text style={[styles.timerText, { color: colors.text }]}>
+              {isPending || isAccepted ? "—:—:—" : formatElapsed(elapsed)}
+            </Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{getValueLabel(contract)}</Text>
-            <Text style={[styles.valueText, { color: displayColor }]}>
-              R${formatValue(elapsed, contract.ratePerHour)}
+            <Text style={[styles.valueText, { color: isPending || isAccepted ? colors.textMuted : displayColor }]}>
+              {isPending || isAccepted ? "—" : `R$${formatValue(elapsed, contract.ratePerHour)}`}
             </Text>
           </View>
         </View>
