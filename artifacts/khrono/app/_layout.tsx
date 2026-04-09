@@ -28,6 +28,7 @@ import { DocumentsProvider } from "@/context/DocumentsContext";
 import { ServicesProvider } from "@/context/ServicesContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { UserCatalogProvider } from "@/context/UserCatalogContext";
+import { LocationProvider } from "@/context/LocationContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -132,21 +133,23 @@ export default function RootLayout() {
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
-                  <CatalogProvider>
-                    <UserCatalogProvider>
-                      <ContractsProvider>
-                        <WalletProvider>
-                          <ConfirmationProvider>
-                            <DocumentsProvider>
-                              <ServicesProvider>
-                                <RootLayoutNav />
-                              </ServicesProvider>
-                            </DocumentsProvider>
-                          </ConfirmationProvider>
-                        </WalletProvider>
-                      </ContractsProvider>
-                    </UserCatalogProvider>
-                  </CatalogProvider>
+                  <LocationProvider>
+                    <CatalogProvider>
+                      <UserCatalogProvider>
+                        <ContractsProvider>
+                          <WalletProvider>
+                            <ConfirmationProvider>
+                              <DocumentsProvider>
+                                <ServicesProvider>
+                                  <RootLayoutNav />
+                                </ServicesProvider>
+                              </DocumentsProvider>
+                            </ConfirmationProvider>
+                          </WalletProvider>
+                        </ContractsProvider>
+                      </UserCatalogProvider>
+                    </CatalogProvider>
+                  </LocationProvider>
                 </AuthProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>

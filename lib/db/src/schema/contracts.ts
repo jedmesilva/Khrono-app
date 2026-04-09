@@ -1,12 +1,12 @@
 import {
   boolean,
   decimal,
+  integer,
   jsonb,
   pgTable,
   text,
   timestamp,
   uuid,
-  integer,
   bigint,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -67,6 +67,21 @@ export const contractsTable = pgTable("contracts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const providerLocationsTable = pgTable("provider_locations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  profileId: uuid("profile_id").notNull().unique().references(() => profilesTable.id, { onDelete: "cascade" }),
+  locationMode: text("location_mode").notNull().default("realtime"),
+  serviceRadiusMeters: integer("service_radius_meters").notNull().default(5000),
+  fixedAddress: text("fixed_address"),
+  fixedLat: decimal("fixed_lat", { precision: 9, scale: 6 }),
+  fixedLng: decimal("fixed_lng", { precision: 9, scale: 6 }),
+  realtimeLat: decimal("realtime_lat", { precision: 9, scale: 6 }),
+  realtimeLng: decimal("realtime_lng", { precision: 9, scale: 6 }),
+  realtimeUpdatedAt: timestamp("realtime_updated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const insertContractSchema = createInsertSchema(contractsTable).omit({
   createdAt: true,
   updatedAt: true,
@@ -77,3 +92,4 @@ export type ContractRow = typeof contractsTable.$inferSelect;
 export type ProviderProfileRow = typeof providerProfilesTable.$inferSelect;
 export type ProviderPinRow = typeof providerPinsTable.$inferSelect;
 export type ProviderServiceRow = typeof providerServicesTable.$inferSelect;
+export type ProviderLocationRow = typeof providerLocationsTable.$inferSelect;

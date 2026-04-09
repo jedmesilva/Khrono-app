@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import { LocationSheet, LocationMode, formatRadius } from "@/components/LocationSheet";
+import { LocationSheet, formatRadius } from "@/components/LocationSheet";
 import { ServiceCard } from "@/components/ServiceCard";
 import { SkillListCard } from "@/components/SkillListCard";
 import { ToolListCard } from "@/components/ToolListCard";
@@ -21,6 +21,7 @@ import { useContracts } from "@/context/ContractsContext";
 import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
+import { useLocation } from "@/context/LocationContext";
 import {
   MY_PROFILE,
   Skill,
@@ -255,14 +256,12 @@ export default function ProfileScreen() {
   const { isActive } = useServices();
   const { history } = useContracts();
   const { userServices } = useUserCatalog();
+  const { location, saveLocation } = useLocation();
   const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
-  const [locationMode, setLocationMode] = useState<LocationMode>("realtime");
-  const [fixedAddress, setFixedAddress] = useState("Belo Horizonte, MG");
-  const [serviceRadius, setServiceRadius] = useState(5000);
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
   const verifiedSkillsCount = MY_PROFILE.skills.filter((s) => s.verified !== null).length;
@@ -401,20 +400,20 @@ export default function ProfileScreen() {
 
         {/* Location card */}
         <Pressable style={[styles.locationCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setLocationSheetOpen(true)}>
-          <View style={[styles.locationIconWrap, locationMode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" } : { backgroundColor: "#e0603015", borderColor: "#e0603030" }]}>
-            <Feather name={locationMode === "realtime" ? "navigation" : "map-pin"} size={18} color={locationMode === "realtime" ? "#18a06b" : "#e06030"} />
+          <View style={[styles.locationIconWrap, location.mode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" } : { backgroundColor: "#e0603015", borderColor: "#e0603030" }]}>
+            <Feather name={location.mode === "realtime" ? "navigation" : "map-pin"} size={18} color={location.mode === "realtime" ? "#18a06b" : "#e06030"} />
           </View>
           <View style={{ flex: 1 }}>
             <View style={styles.locationTopRow}>
               <Text style={[styles.locationLabel, { color: colors.textMuted }]}>Localização de serviço</Text>
-              <View style={[styles.locationModeBadge, locationMode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b25" } : { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
-                <Text style={[styles.locationModeBadgeText, { color: locationMode === "realtime" ? "#18a06b" : "#e06030" }]}>
-                  {locationMode === "realtime" ? "Tempo real" : "Fixa"}
+              <View style={[styles.locationModeBadge, location.mode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b25" } : { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
+                <Text style={[styles.locationModeBadgeText, { color: location.mode === "realtime" ? "#18a06b" : "#e06030" }]}>
+                  {location.mode === "realtime" ? "Tempo real" : "Fixa"}
                 </Text>
               </View>
             </View>
             <Text style={[styles.locationAddress, { color: colors.textSecondary }]}>
-              {locationMode === "realtime" ? "GPS ativo" : fixedAddress}{" · raio "}{formatRadius(serviceRadius)}
+              {location.mode === "realtime" ? "GPS ativo" : (location.fixedAddress || "—")}{" · raio "}{formatRadius(location.serviceRadiusMeters)}
             </Text>
           </View>
           <Feather name="chevron-right" size={16} color={colors.chevron} />
@@ -480,13 +479,11 @@ export default function ProfileScreen() {
       <LocationSheet
         visible={locationSheetOpen}
         onClose={() => setLocationSheetOpen(false)}
-        mode={locationMode}
-        fixedAddress={fixedAddress}
-        serviceRadius={serviceRadius}
+        mode={location.mode}
+        fixedAddress={location.fixedAddress}
+        serviceRadius={location.serviceRadiusMeters}
         onSave={(mode, address, radius) => {
-          setLocationMode(mode);
-          if (mode === "fixed") setFixedAddress(address);
-          setServiceRadius(radius);
+          saveLocation(mode, address, radius);
         }}
       />
     </View>
