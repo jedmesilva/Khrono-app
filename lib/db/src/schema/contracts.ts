@@ -60,7 +60,7 @@ export const contractsTable = pgTable("contracts", {
   paymentCardLabel: text("payment_card_label"),
   agendado: boolean("agendado").notNull().default(false),
   scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
-  startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
   endedAt: timestamp("ended_at", { withTimezone: true }),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Pressable,
@@ -203,8 +204,13 @@ export default function ContractConfirmScreen() {
       } else {
         setEtapa("aguardando");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn("[ContractConfirm] confirmar error:", e);
+      Alert.alert(
+        "Erro ao criar contrato",
+        e?.message ?? "Ocorreu um erro inesperado. Tente novamente.",
+        [{ text: "OK" }]
+      );
     } finally {
       setConfirmLoading(false);
     }
