@@ -197,7 +197,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           .select(CONTRACT_SELECT)
           .or(`contractor_id.eq.${userId},hired_id.eq.${userId}`)
           .in("status", ["active", "paused", "pending_signature", "accepted"])
-          .order("started_at", { ascending: false }),
+          .order("created_at", { ascending: false }),
         supabase
           .from("contracts")
           .select(CONTRACT_SELECT)
@@ -279,7 +279,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const startedAt = new Date().toISOString();
       const serviceId = contractData.serviceId ?? contractData.servico?.serviceId ?? null;
 
       const { data: contract, error } = await supabase
@@ -298,7 +297,10 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           scheduled_for: contractData.scheduledFor
             ? new Date(contractData.scheduledFor).toISOString()
             : null,
-          started_at: startedAt,
+          // Only record the start timestamp when the contract is immediately active.
+          // pending_signature / accepted contracts get started_at = null here;
+          // beginContract() writes the real timestamp when the hired party begins work.
+          started_at: initialStatus === "active" ? new Date().toISOString() : null,
         })
         .select()
         .single();
