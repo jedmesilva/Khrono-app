@@ -198,13 +198,13 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
           <View>
             <Text style={[styles.metaLabel, { color: colors.textMuted }]}>TEMPO</Text>
             <Text style={[styles.timerText, { color: colors.text }]}>
-              {isPending || isAccepted ? "—:—:—" : formatElapsed(elapsed)}
+              {isPending || isAccepted ? "00:00:00" : formatElapsed(elapsed)}
             </Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{getValueLabel(contract)}</Text>
             <Text style={[styles.valueText, { color: isPending || isAccepted ? colors.textMuted : displayColor }]}>
-              {isPending || isAccepted ? "—" : `R$${formatValue(elapsed, contract.ratePerHour)}`}
+              {isPending || isAccepted ? "R$0,00" : `R$${formatValue(elapsed, contract.ratePerHour)}`}
             </Text>
           </View>
         </View>
