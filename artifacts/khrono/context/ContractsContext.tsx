@@ -203,7 +203,8 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           .select(CONTRACT_SELECT)
           .or(`contractor_id.eq.${userId},hired_id.eq.${userId}`)
           .in("status", ["ended", "disputed", "cancelled"])
-          .order("ended_at", { ascending: false })
+          .order("ended_at", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false })
           .limit(30),
       ]);
 
@@ -397,15 +398,24 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
-        .from("contracts")
-        .update({ status: "cancelled" })
-        .eq("id", id)
-        .catch((e) => console.warn("[ContractsContext] cancelContract error:", e));
+      const contract = activeContracts.find((c) => c.id === id);
+
+      try {
+        await supabase
+          .from("contracts")
+          .update({ status: "cancelled", ended_at: new Date().toISOString() })
+          .eq("id", id);
+      } catch (e) {
+        console.warn("[ContractsContext] cancelContract error:", e);
+      }
 
       setActiveContracts((prev) => prev.filter((c) => c.id !== id));
+      if (contract) {
+        const cancelled: Contract = { ...contract, status: "ended", endedAt: Date.now(), totalAmount: contract.totalAmount ?? 0 };
+        setHistory((h) => [cancelled, ...h]);
+      }
     },
-    []
+    [activeContracts]
   );
 
   const endContract = useCallback(

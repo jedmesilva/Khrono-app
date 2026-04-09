@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Platform,
   Pressable,
@@ -18,10 +19,18 @@ import { useContracts } from "@/context/ContractsContext";
 
 type Filter = "all" | "hiring" | "hired";
 
+function formatBRL(value: number): string {
+  return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+  });
+}
+
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { history } = useContracts();
+  const { history, isLoading } = useContracts();
   const { colors } = useTheme();
   const [filter, setFilter] = useState<Filter>("all");
   const isWeb = Platform.OS === "web";
@@ -57,9 +66,9 @@ export default function HistoryScreen() {
         <StatsBar
           style={styles.statsRow}
           items={[
-            { label: "PAGO", value: `R$${totalPaid.toFixed(2)}`, color: "#e06030" },
+            { label: "PAGO", value: formatBRL(totalPaid), color: "#e06030" },
             { label: "CONTRATOS", value: history.length, align: "center" },
-            { label: "RECEBIDO", value: `R$${totalReceived.toFixed(2)}`, color: "#18a06b", align: "flex-end" },
+            { label: "RECEBIDO", value: formatBRL(totalReceived), color: "#18a06b", align: "flex-end" },
           ]}
         />
       )}
@@ -89,8 +98,13 @@ export default function HistoryScreen() {
         ))}
       </View>
 
-      {/* List */}
-      {filtered.length === 0 ? (
+      {/* Loading */}
+      {isLoading ? (
+        <View style={styles.empty}>
+          <ActivityIndicator color="#e06030" size="large" />
+          <Text style={[styles.emptyText, { color: colors.textDim }]}>carregando histórico...</Text>
+        </View>
+      ) : filtered.length === 0 ? (
         <View style={styles.empty}>
           <Feather name="inbox" size={32} color={colors.textDim} />
           <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhum registro aqui</Text>
