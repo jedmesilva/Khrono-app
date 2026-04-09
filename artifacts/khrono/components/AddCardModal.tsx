@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
-import { type CardBandeira, useCards } from "@/context/CardsContext";
+import { type CardBandeira, useWallet } from "@/context/WalletContext";
 
 type Step = "form" | "success";
 
@@ -47,7 +47,7 @@ export function AddCardModal({ visible, onClose }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { addCard } = useCards();
+  const { addCard } = useWallet();
   const ref = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ["90%"], []);
@@ -121,14 +121,18 @@ export function AddCardModal({ visible, onClose }: Props) {
     onClose();
   }
 
-  function handleAdd() {
+  async function handleAdd() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    addCard({
-      bandeira,
-      numero: lastFour,
-      titular: titular.trim(),
-      validade,
-    });
+    try {
+      await addCard({
+        bandeira,
+        lastFour,
+        titular: titular.trim(),
+        validade,
+      });
+    } catch (e) {
+      console.warn("[AddCardModal] addCard error:", e);
+    }
     setStep("success");
   }
 

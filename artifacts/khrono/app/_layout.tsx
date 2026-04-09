@@ -21,7 +21,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { CatalogProvider } from "@/context/CatalogContext";
-import { CardsProvider } from "@/context/CardsContext";
+import { WalletProvider } from "@/context/WalletContext";
 import { ContractsProvider } from "@/context/ContractsContext";
 import { ConfirmationProvider } from "@/context/ConfirmationContext";
 import { DocumentsProvider } from "@/context/DocumentsContext";
@@ -135,7 +135,7 @@ export default function RootLayout() {
                   <CatalogProvider>
                     <UserCatalogProvider>
                       <ContractsProvider>
-                        <CardsProvider>
+                        <WalletProvider>
                           <ConfirmationProvider>
                             <DocumentsProvider>
                               <ServicesProvider>
@@ -143,7 +143,7 @@ export default function RootLayout() {
                               </ServicesProvider>
                             </DocumentsProvider>
                           </ConfirmationProvider>
-                        </CardsProvider>
+                        </WalletProvider>
                       </ContractsProvider>
                     </UserCatalogProvider>
                   </CatalogProvider>

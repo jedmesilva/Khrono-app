@@ -16,7 +16,7 @@ import { HistoryCard } from "@/components/HistoryCard";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
 import { useTheme } from "@/context/ThemeContext";
-import { useCards } from "@/context/CardsContext";
+import { useWallet } from "@/context/WalletContext";
 import { useContracts } from "@/context/ContractsContext";
 
 type CardBandeira = "Visa" | "Mastercard";
@@ -38,7 +38,7 @@ export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const { history } = useContracts();
-  const { cards, removeCard, setDefault } = useCards();
+  const { balance, cards, transactions, removeCard, setDefaultCard, recordDeposit, recordWithdrawal } = useWallet();
 
   const [showBalance, setShowBalance] = useState(true);
   const [depositModalVisible, setDepositModalVisible] = useState(false);
@@ -56,8 +56,9 @@ export default function WalletScreen() {
   });
 
   const topPadding = isWeb ? insets.top + 67 : insets.top;
-  const formatBalance = (val: number) =>
+  const fmt = (val: number) =>
     showBalance ? `R$ ${val.toFixed(2).replace(".", ",")}` : "R$ ••••••";
+  const formatBalance = fmt;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -77,7 +78,7 @@ export default function WalletScreen() {
         <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.balanceLabel, { color: colors.textDim }]}>SALDO DISPONÍVEL</Text>
           <View style={styles.balanceRow}>
-            <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatBalance(totalReceived)}</Text>
+            <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatBalance(balance)}</Text>
             <Pressable onPress={() => setShowBalance((v) => !v)} style={[styles.eyeBtn, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]} hitSlop={12}>
               <Feather name={showBalance ? "eye-off" : "eye"} size={16} color={colors.textSecondary} />
             </Pressable>
@@ -135,14 +136,14 @@ export default function WalletScreen() {
               style={[
                 styles.cardItem,
                 { backgroundColor: colors.card, borderColor: colors.cardBorder },
-                card.padrao && { borderColor: "#e0603035", backgroundColor: "#e0603005" },
+                card.isDefault && { borderColor: "#e0603035", backgroundColor: "#e0603005" },
               ]}
             >
               <BandeiraTag bandeira={card.bandeira} />
               <View style={styles.cardInfo}>
                 <View style={styles.cardInfoTop}>
-                  <Text style={[styles.cardName, { color: colors.text }]}>{card.bandeira} •••• {card.numero}</Text>
-                  {card.padrao && (
+                  <Text style={[styles.cardName, { color: colors.text }]}>{card.bandeira} •••• {card.lastFour}</Text>
+                  {card.isDefault && (
                     <View style={styles.defaultBadge}>
                       <Text style={styles.defaultBadgeText}>padrão</Text>
                     </View>
@@ -151,10 +152,10 @@ export default function WalletScreen() {
                 <Text style={[styles.cardValidade, { color: colors.textMuted }]}>Válido até {card.validade}</Text>
               </View>
               <View style={styles.cardActions}>
-                {!card.padrao && (
+                {!card.isDefault && (
                   <Pressable
                     style={[styles.setDefaultBtn, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}
-                    onPress={() => setDefault(card.id)}
+                    onPress={() => setDefaultCard(card.id)}
                   >
                     <Text style={[styles.setDefaultText, { color: colors.textMuted }]}>padrão</Text>
                   </Pressable>
@@ -216,7 +217,7 @@ export default function WalletScreen() {
       </ScrollView>
 
       <PixDepositModal visible={depositModalVisible} onClose={() => setDepositModalVisible(false)} />
-      <PixWithdrawModal visible={withdrawModalVisible} balance={totalReceived} onClose={() => setWithdrawModalVisible(false)} />
+      <PixWithdrawModal visible={withdrawModalVisible} balance={balance} onClose={() => setWithdrawModalVisible(false)} />
       <AddCardModal visible={addCardModalVisible} onClose={() => setAddCardModalVisible(false)} />
       <AppDialog
         visible={cardToDelete !== null}
@@ -225,7 +226,7 @@ export default function WalletScreen() {
         onDismiss={() => setCardToDelete(null)}
         buttons={[
           { text: "Cancelar", style: "cancel" },
-          { text: "Remover", style: "destructive", onPress: () => { if (cardToDelete) removeCard(cardToDelete); } },
+          { text: "Remover", style: "destructive", onPress: () => { if (cardToDelete) { removeCard(cardToDelete); setCardToDelete(null); } } },
         ]}
       />
     </View>

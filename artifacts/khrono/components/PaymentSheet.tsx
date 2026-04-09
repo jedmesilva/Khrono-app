@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useCards } from "@/context/CardsContext";
+import { useWallet } from "@/context/WalletContext";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 
 export type PaymentMethod = "cartao" | "pix" | "dinheiro";
@@ -32,7 +32,7 @@ export function PaymentSheet({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { cards } = useCards();
+  const { cards } = useWallet();
   const ref = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ["60%", "85%"], []);
@@ -72,7 +72,7 @@ export function PaymentSheet({
     if (visible) {
       setMethod(initialMethod);
       const defaultCardId =
-        initialCardId ?? cards.find((c) => c.padrao)?.id ?? cards[0]?.id ?? null;
+        initialCardId ?? cards.find((c) => c.isDefault)?.id ?? cards[0]?.id ?? null;
       setCardId(defaultCardId);
       ref.current?.present();
     } else {
@@ -84,7 +84,7 @@ export function PaymentSheet({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMethod(m);
     if (m === "cartao" && !cardId && cards.length > 0) {
-      setCardId(cards.find((c) => c.padrao)?.id ?? cards[0].id);
+      setCardId(cards.find((c) => c.isDefault)?.id ?? cards[0].id);
     }
   }
 
@@ -186,11 +186,11 @@ export function PaymentSheet({
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.cardNumber, sel && { color: colors.text }]}>
-                        •••• {card.numero}
+                        •••• {card.lastFour}
                       </Text>
                       <Text style={styles.cardValidade}>Válido até {card.validade}</Text>
                     </View>
-                    {card.padrao && (
+                    {card.isDefault && (
                       <View style={styles.padraoTag}>
                         <Text style={styles.padraoText}>padrão</Text>
                       </View>

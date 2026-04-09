@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme, ColorPalette } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
-import { useCards } from "@/context/CardsContext";
+import { useWallet } from "@/context/WalletContext";
 import { ScheduleSheet } from "@/components/ScheduleSheet";
 import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
 import { PixPaymentModal } from "@/components/PixPaymentModal";
@@ -52,7 +52,7 @@ export default function ContractConfirmScreen() {
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
   const { startContract, acceptContract, cancelContract, endContract } = useContracts();
-  const { cards } = useCards();
+  const { cards } = useWallet();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -156,7 +156,7 @@ export default function ContractConfirmScreen() {
 
   const buildContractData = () => {
     const cartao = cards.find(c => c.id === cartaoSelecionadoId);
-    const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : undefined;
+    const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.lastFour}` : undefined;
     return {
       role: "hiring" as const,
       tipo: tipoContrato === "aberto" ? "cronometro" as const : "timer" as const,
@@ -526,7 +526,7 @@ export default function ContractConfirmScreen() {
                 return (
                   <>
                     <Text style={[styles.scheduleLabel, { color: colors.text }]}>
-                      {cartao ? `${cartao.bandeira} •••• ${cartao.numero}` : "Cartão"}
+                      {cartao ? `${cartao.bandeira} •••• ${cartao.lastFour}` : "Cartão"}
                     </Text>
                     <Text style={styles.scheduleSub}>cartão de crédito/débito</Text>
                   </>
