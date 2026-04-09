@@ -20,6 +20,63 @@ import { AppDialog } from "@/components/AppDialog";
 import { useTheme } from "@/context/ThemeContext";
 import { Contract, useContracts, isContractRunning } from "@/context/ContractsContext";
 
+type SheetActionRowProps = {
+  icon: React.ReactNode;
+  label: string;
+  desc: string;
+  onPress: () => void;
+  colors: any;
+  destructive?: boolean;
+};
+
+function SheetActionRow({ icon, label, desc, onPress, colors, destructive }: SheetActionRowProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 14,
+          paddingVertical: 13,
+          paddingHorizontal: 4,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.surface,
+          opacity: pressed ? 0.6 : 1,
+        },
+      ]}
+    >
+      <View style={{
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        borderWidth: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        backgroundColor: destructive ? "#ff444410" : "#e0603012",
+        borderColor: destructive ? "#ff444425" : "#e0603025",
+      }}>
+        {icon}
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{
+          fontSize: 13,
+          fontFamily: "Sora_600SemiBold",
+          color: destructive ? "#e05050" : colors.text,
+          marginBottom: 2,
+        }}>
+          {label}
+        </Text>
+        <Text style={{ fontSize: 11, fontFamily: "DMSans_400Regular", color: colors.textSecondary, lineHeight: 15 }}>
+          {desc}
+        </Text>
+      </View>
+      <Feather name="chevron-right" size={15} color={destructive ? "#e0505060" : colors.chevron} />
+    </Pressable>
+  );
+}
+
 function getDetailValueLabel(contract: Contract): string {
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
@@ -64,19 +121,13 @@ function formatData(ts: number) {
   return `${dia} ${mes} ${ano} às ${h}:${min}`;
 }
 
-const FAQS = [
-  { q: "O contratado não apareceu, o que fazer?", r: "Se o contratado não apareceu no horário combinado, você pode encerrar o contrato sem custo. Entre em contato conosco para análise do caso e eventual reembolso." },
-  { q: "Fui cobrado um valor incorreto", r: "O valor é calculado automaticamente pelo cronômetro. Se acredita que houve erro, entre em contato informando o ID do contrato e detalharemos o cálculo." },
-  { q: "Como cancelar um contrato ativo?", r: "Você pode encerrar o contrato a qualquer momento pelo botão abaixo. O valor cobrado será proporcional ao tempo decorrido." },
-  { q: "Não consigo avaliar o contratado", r: "A avaliação fica disponível por 7 dias após o encerramento. Se o prazo não venceu e ainda não consegue avaliar, entre em contato." },
-];
 
 export default function ContractDetailScreen() {
   const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { activeContracts, history, endContract } = useContracts();
+  const { activeContracts, history, endContract, cancelContract } = useContracts();
 
   const contract = [...activeContracts, ...history].find(c => c.id === id);
 
@@ -84,12 +135,11 @@ export default function ContractDetailScreen() {
   const [notaSelecionada, setNotaSelecionada] = useState(0);
   const [avaliacaoEnviada, setAvaliacaoEnviada] = useState(false);
   const [suporteAberto, setSuporteAberto] = useState(false);
-  const [faqAberto, setFaqAberto] = useState<number | null>(null);
-  const [faqExpandido, setFaqExpandido] = useState(false);
   const [confirmEncerrar, setConfirmEncerrar] = useState(false);
+  const [confirmCancelar, setConfirmCancelar] = useState(false);
 
   const suporteRef = useRef<BottomSheetModal>(null);
-  const suporteSnapPoints = useMemo(() => ["75%"], []);
+  const suporteSnapPoints = useMemo(() => ["85%"], []);
   const suporteSheetBg = useMemo(() => ({
     backgroundColor: colors.sheetBg,
     borderTopLeftRadius: 24,
@@ -189,6 +239,14 @@ export default function ContractDetailScreen() {
     setConfirmEncerrar(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     endContract(contract.id);
+  };
+
+  const handleConfirmarCancelamento = () => {
+    setConfirmCancelar(false);
+    setSuporteAberto(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    cancelContract(contract.id);
+    router.back();
   };
 
   return (
@@ -526,7 +584,7 @@ export default function ContractDetailScreen() {
         backgroundStyle={suporteSheetBg}
         handleIndicatorStyle={suporteHandleStyle}
         backdropComponent={renderSuporteBackdrop}
-        onDismiss={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }}
+        onDismiss={() => setSuporteAberto(false)}
       >
         <BottomSheetScrollView
           showsVerticalScrollIndicator={false}
@@ -534,59 +592,132 @@ export default function ContractDetailScreen() {
         >
           <View style={styles.sheetHeader}>
             <View>
-              <Text style={[styles.sheetTitle, { color: colors.text }]}>Ajuda</Text>
+              <Text style={[styles.sheetTitle, { color: colors.text }]}>O que você precisa?</Text>
               <Text style={[styles.sheetSubtitle, { color: colors.textMuted }]}>{contratoId}</Text>
             </View>
-            <Pressable onPress={() => { setSuporteAberto(false); setFaqAberto(null); setFaqExpandido(false); }} hitSlop={8}>
+            <Pressable onPress={() => setSuporteAberto(false)} hitSlop={8}>
               <Feather name="x" size={18} color={colors.textMuted} />
             </Pressable>
           </View>
 
-          <View style={{ gap: 10, marginBottom: 20 }}>
-            {[
-              { icon: <Feather name="file-text" size={20} color="#e06030" />, label: "Perguntas frequentes", desc: "Respostas para as dúvidas mais comuns", onPress: () => setFaqExpandido(f => !f) },
-              { icon: <MaterialCommunityIcons name="robot-outline" size={20} color="#e06030" />, label: "Falar com a AI", desc: "Assistente inteligente com contexto do contrato", onPress: () => {} },
-              { icon: <Feather name="message-circle" size={20} color="#e06030" />, label: "Falar com suporte humano", desc: "Para casos que precisam de atenção especial", onPress: () => {} },
-            ].map(op => (
-              <Pressable
-                key={op.label}
-                onPress={op.onPress}
-                style={[styles.supportOption, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-              >
-                <View style={[styles.supportOptionIcon, { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
-                  {op.icon}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.supportOptionLabel, { color: colors.text }]}>{op.label}</Text>
-                  <Text style={[styles.supportOptionDesc, { color: colors.textSecondary }]}>{op.desc}</Text>
-                </View>
-                <Feather name="chevron-right" size={16} color={colors.chevron} />
-              </Pressable>
-            ))}
+          {/* Ações disponíveis — contextuais ao status e papel do usuário */}
+          <View style={{ gap: 2, marginBottom: 20 }}>
+            {/* Ações de contratos pendentes/aceitos */}
+            {(isPending || isAccepted) && (
+              <SheetActionRow
+                icon={<Feather name="x-circle" size={18} color="#e06030" />}
+                label="Cancelar o contrato"
+                desc="Cancelar antes de iniciar sem custo"
+                onPress={() => { setConfirmCancelar(true); }}
+                colors={colors}
+                destructive
+              />
+            )}
+            {(isPending || isAccepted) && (
+              <SheetActionRow
+                icon={<Feather name="edit-2" size={18} color="#e06030" />}
+                label="Redefinir detalhes do contrato"
+                desc="Alterar serviço, horário ou valor combinado"
+                onPress={() => setSuporteAberto(false)}
+                colors={colors}
+              />
+            )}
+
+            {/* Ações de contratos em andamento */}
+            {(isRunning || isPaused) && (
+              <SheetActionRow
+                icon={<Feather name="square" size={18} color="#e06030" />}
+                label="Encerrar o contrato agora"
+                desc="Finalizar e calcular o valor total acumulado"
+                onPress={() => { setSuporteAberto(false); handleEncerrar(); }}
+                colors={colors}
+              />
+            )}
+            {isRunning && (
+              <SheetActionRow
+                icon={<Feather name="x-circle" size={18} color="#e06030" />}
+                label="Cancelar o contrato"
+                desc="Cancelar sem registrar valor (sujeito a análise)"
+                onPress={() => { setConfirmCancelar(true); }}
+                colors={colors}
+                destructive
+              />
+            )}
+            {(isRunning || isPaused || isAccepted) && (
+              <SheetActionRow
+                icon={<Feather name="credit-card" size={18} color="#e06030" />}
+                label="Alterar forma de pagamento"
+                desc="Trocar o método de pagamento do contrato"
+                onPress={() => setSuporteAberto(false)}
+                colors={colors}
+              />
+            )}
+            {(isRunning || isPaused) && (
+              <SheetActionRow
+                icon={<Feather name="edit-2" size={18} color="#e06030" />}
+                label="Redefinir detalhes do contrato"
+                desc="Alterar valor ou informações do serviço"
+                onPress={() => setSuporteAberto(false)}
+                colors={colors}
+              />
+            )}
+
+            {/* Ações pós-encerramento */}
+            {isEnded && (
+              <SheetActionRow
+                icon={<Feather name="alert-circle" size={18} color="#e06030" />}
+                label="Contestar o valor cobrado"
+                desc="Se acredita que houve erro no cálculo do tempo"
+                onPress={() => setSuporteAberto(false)}
+                colors={colors}
+              />
+            )}
+            {isEnded && (
+              <SheetActionRow
+                icon={<Feather name="rotate-ccw" size={18} color="#e06030" />}
+                label="Solicitar reembolso"
+                desc="Para cancelamentos ou cobranças indevidas"
+                onPress={() => setSuporteAberto(false)}
+                colors={colors}
+              />
+            )}
+            {isEnded && isHiring && (
+              <SheetActionRow
+                icon={<Feather name="star" size={18} color="#e06030" />}
+                label="Problema com a avaliação"
+                desc="Avaliação incorreta ou prazo não disponível"
+                onPress={() => setSuporteAberto(false)}
+                colors={colors}
+              />
+            )}
+
+            {/* Sempre disponível */}
+            <SheetActionRow
+              icon={<Feather name="file-text" size={18} color="#e06030" />}
+              label="Ver comprovante do contrato"
+              desc="Detalhes completos para fins de registro"
+              onPress={() => setSuporteAberto(false)}
+              colors={colors}
+            />
           </View>
 
-          {faqExpandido && (
-            <View>
-              <Text style={[styles.faqSectionLabel, { color: colors.textMuted }]}>perguntas frequentes</Text>
-              <View style={{ gap: 8 }}>
-                {FAQS.map((f, i) => (
-                  <View key={i} style={[styles.faqItem, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-                    <Pressable onPress={() => setFaqAberto(faqAberto === i ? null : i)} style={styles.faqQuestion}>
-                      <Text style={[styles.faqQuestionText, { color: colors.textSecondary }, faqAberto === i && { color: colors.text }]}>
-                        {f.q}
-                      </Text>
-                      <Feather name="chevron-right" size={14} color={colors.chevron} style={{ transform: [{ rotate: faqAberto === i ? "90deg" : "0deg" }] }} />
-                    </Pressable>
-                    {faqAberto === i && (
-                      <View style={[styles.faqAnswer, { borderTopColor: colors.surface }]}>
-                        <Text style={[styles.faqAnswerText, { color: colors.textSecondary }]}>{f.r}</Text>
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </View>
+          {/* Separador + suporte humano */}
+          <View style={[styles.sheetDivider, { borderTopColor: colors.surface }]}>
+            <Text style={[styles.sheetDividerLabel, { color: colors.textMuted }]}>precisa de mais ajuda?</Text>
+          </View>
+          <Pressable
+            onPress={() => setSuporteAberto(false)}
+            style={[styles.suporteHumanoBtn, { borderColor: colors.cardBorder, backgroundColor: colors.card }]}
+          >
+            <View style={[styles.supportOptionIcon, { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
+              <Feather name="message-circle" size={18} color="#e06030" />
             </View>
-          )}
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.supportOptionLabel, { color: colors.text }]}>Solicitar suporte</Text>
+              <Text style={[styles.supportOptionDesc, { color: colors.textSecondary }]}>Fale com nossa equipe sobre este contrato</Text>
+            </View>
+            <Feather name="chevron-right" size={16} color={colors.chevron} />
+          </Pressable>
         </BottomSheetScrollView>
       </BottomSheetModal>
 
@@ -599,6 +730,16 @@ export default function ContractDetailScreen() {
           { text: "Encerrar", style: "destructive", onPress: handleConfirmarEncerramento },
         ]}
         onDismiss={() => setConfirmEncerrar(false)}
+      />
+      <AppDialog
+        visible={confirmCancelar}
+        title="Cancelar contrato?"
+        message="O contrato será cancelado e movido para o histórico. Esta ação não pode ser desfeita."
+        buttons={[
+          { text: "Voltar", style: "cancel", onPress: () => setConfirmCancelar(false) },
+          { text: "Cancelar contrato", style: "destructive", onPress: handleConfirmarCancelamento },
+        ]}
+        onDismiss={() => setConfirmCancelar(false)}
       />
     </View>
   );
@@ -666,14 +807,10 @@ const styles = StyleSheet.create({
   sheetHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 },
   sheetTitle: { fontSize: 16, fontFamily: "Sora_700Bold", marginBottom: 4 },
   sheetSubtitle: { fontSize: 11, fontFamily: "DMSans_400Regular" },
-  supportOption: { borderWidth: 1, borderRadius: 24, padding: 16, flexDirection: "row", alignItems: "center", gap: 14 },
-  supportOptionIcon: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  supportOptionIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   supportOptionLabel: { fontSize: 13, fontFamily: "Sora_600SemiBold", marginBottom: 3 },
   supportOptionDesc: { fontSize: 11, fontFamily: "DMSans_400Regular", lineHeight: 16 },
-  faqSectionLabel: { fontSize: 10, fontFamily: "DMSans_400Regular", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 },
-  faqItem: { borderWidth: 1, borderRadius: 14, overflow: "hidden" },
-  faqQuestion: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14, gap: 12 },
-  faqQuestionText: { fontSize: 12, fontFamily: "Sora_600SemiBold", flex: 1, lineHeight: 18 },
-  faqAnswer: { paddingHorizontal: 14, paddingBottom: 14, paddingTop: 12, borderTopWidth: 1 },
-  faqAnswerText: { fontSize: 12, fontFamily: "DMSans_400Regular", lineHeight: 19 },
+  sheetDivider: { borderTopWidth: 1, paddingTop: 16, marginBottom: 12 },
+  sheetDividerLabel: { fontSize: 10, fontFamily: "DMSans_400Regular", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 },
+  suporteHumanoBtn: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 20, padding: 16 },
 });
