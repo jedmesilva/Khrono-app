@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Platform,
   Pressable,
   ScrollView,
@@ -24,10 +25,62 @@ type DialogState = { title: string; message?: string; buttons?: AppDialogButton[
 
 const UNREAD_COUNT = 2;
 
+function SkeletonBlock({ width, height, borderRadius = 8, style }: {
+  width: number | string;
+  height: number;
+  borderRadius?: number;
+  style?: object;
+}) {
+  const { colors } = useTheme();
+  const opacity = useRef(new Animated.Value(0.4)).current;
+
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 750, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 750, useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        { width, height, borderRadius, backgroundColor: colors.cardBorder ?? "#edeae6", opacity },
+        style,
+      ]}
+    />
+  );
+}
+
+function ContractCardSkeleton() {
+  const { colors } = useTheme();
+  return (
+    <View style={[skeletonStyles.card, { backgroundColor: colors.card ?? "#ffffff" }]}>
+      <View style={skeletonStyles.cardHeader}>
+        <View style={skeletonStyles.avatarRow}>
+          <SkeletonBlock width={44} height={44} borderRadius={22} />
+          <View style={skeletonStyles.nameCol}>
+            <SkeletonBlock width={120} height={13} borderRadius={6} />
+            <SkeletonBlock width={80} height={10} borderRadius={5} style={{ marginTop: 6 }} />
+          </View>
+        </View>
+        <SkeletonBlock width={56} height={28} borderRadius={14} />
+      </View>
+      <View style={skeletonStyles.cardFooter}>
+        <SkeletonBlock width={70} height={10} borderRadius={5} />
+        <SkeletonBlock width={90} height={22} borderRadius={8} />
+      </View>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { activeContracts, endContract } = useContracts();
+  const { activeContracts, isLoading, endContract } = useContracts();
   const { colors } = useTheme();
   const isWeb = Platform.OS === "web";
   const [notifOpen, setNotifOpen] = useState(false);
@@ -122,8 +175,19 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Loading skeletons */}
+        {isLoading && (
+          <View style={styles.section}>
+            <SkeletonBlock width={90} height={9} borderRadius={5} style={{ marginBottom: 14 }} />
+            <View style={styles.contractList}>
+              <ContractCardSkeleton />
+              <ContractCardSkeleton />
+            </View>
+          </View>
+        )}
+
         {/* Summary bar */}
-        {activeContracts.length > 0 && (
+        {!isLoading && activeContracts.length > 0 && (
           <StatsBar
             style={styles.summaryBar}
             items={[
@@ -135,7 +199,7 @@ export default function HomeScreen() {
         )}
 
         {/* Active contracts */}
-        {activeContracts.length > 0 && (
+        {!isLoading && activeContracts.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>EM ANDAMENTO</Text>
             <View style={styles.contractList}>
@@ -152,7 +216,7 @@ export default function HomeScreen() {
         )}
 
         {/* Empty state */}
-        {activeContracts.length === 0 && (
+        {!isLoading && activeContracts.length === 0 && (
           <View style={styles.emptyState}>
             <Feather name="clock" size={36} color={colors.textDim} />
             <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhum contrato ativo</Text>
@@ -177,6 +241,32 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+const skeletonStyles = StyleSheet.create({
+  card: {
+    borderRadius: 24,
+    padding: 20,
+    gap: 16,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  avatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  nameCol: {
+    gap: 4,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
