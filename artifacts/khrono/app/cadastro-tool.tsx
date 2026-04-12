@@ -79,6 +79,7 @@ export default function CadastroToolScreen() {
   const [details, setDetails] = useState("");
   const [available, setAvailable] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const toolTemplates = React.useMemo(
     () => catalogTools.map(mapCatalogTool),
@@ -131,6 +132,7 @@ export default function CadastroToolScreen() {
   async function handleDetailsNext() {
     if (isSaving) return;
     setIsSaving(true);
+    setSaveError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
@@ -145,11 +147,12 @@ export default function CadastroToolScreen() {
 
       if (error) throw error;
       await refresh();
+      setStep("done");
     } catch (e) {
       console.warn("[cadastro-tool] save error:", e);
+      setSaveError("Não foi possível salvar esta tool. Tente novamente.");
     } finally {
       setIsSaving(false);
-      setStep("done");
     }
   }
 
@@ -161,6 +164,7 @@ export default function CadastroToolScreen() {
     setQuery("");
     setDetails("");
     setAvailable(true);
+    setSaveError(null);
   }
 
   if (step === "done") {
@@ -409,6 +413,8 @@ export default function CadastroToolScreen() {
                 thumbColor={available ? "#e06030" : colors.textMuted}
               />
             </View>
+
+            {saveError && <Text style={styles.errorText}>{saveError}</Text>}
           </ScrollView>
 
           <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
@@ -458,6 +464,7 @@ const styles = StyleSheet.create({
   availCard: { borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 },
   availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 3 },
   availSub: { fontFamily: "DMSans_400Regular", fontSize: 10, lineHeight: 15 },
+  errorText: { color: "#e06030", fontFamily: "DMSans_400Regular", fontSize: 12, lineHeight: 17, marginTop: 12 },
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
   skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },

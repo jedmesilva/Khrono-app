@@ -63,6 +63,8 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 
 ### Secrets (in Replit Secrets)
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase public anon key (used in app)
+- `EXPO_SUPABASE_ACESS_TOKEN` — Supabase Management API token for applying remote SQL migrations
+- `EXPO_SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key for privileged server-side/database maintenance
 - `DATABASE_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` — Replit PostgreSQL
 
 ## Migration Notes
@@ -83,6 +85,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `service_tools` — N:N service ↔ provider_tools
 - `skills_catalog` — 20 skill types (public read)
 - `services_catalog` — 20 service types (public read)
+- `tools_catalog` — 21 vehicle/tool/equipment templates (public read)
 - `user_skills` — skills linked to a user profile
 - `user_services` — services linked to a user profile
 - `contracts` — service contracts between users
@@ -98,6 +101,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 4. `20260409_provider_locations.sql` — provider location table
 5. `20260409_wallet_tables.sql` — wallet system
 6. `20260412_service_schema_redesign.sql` — valor_hora, provider_tools, service_skills/tools, dropped old columns
+7. `20260412_tools_catalog.sql` — tools catalog + default templates
 
 ## Code Generation
 ```bash
