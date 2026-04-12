@@ -95,6 +95,9 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `wallet_cards` — saved payment cards (metadata only)
 - `wallet_transactions` — deposit/withdrawal/payment history
 
+### New Tables
+- `availability_sessions` — histórico de sessões de disponibilidade do prestador (status, GPS, PIN, timestamps)
+
 ### Applied Migrations (in order)
 1. `20260408_catalog_tables.sql` — skills/services catalogs + user link tables
 2. `20260409_contracts_schema_fixes.sql` — status constraints, indexes
@@ -104,6 +107,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 6. `20260412_service_schema_redesign.sql` — valor_hora, provider_tools, service_skills/tools, dropped old columns
 7. `20260412_tools_catalog.sql` — tools catalog + default templates
 8. `20260412_user_settings.sql` — persisted per-user settings/preferences
+9. `20260412_availability_sessions.sql` — availability session history (status, GPS, PIN, timestamps)
 
 ## Code Generation
 ```bash

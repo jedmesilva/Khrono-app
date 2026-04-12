@@ -38,6 +38,7 @@ import { PincodeSheet } from "@/components/PincodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
+import { useAvailability, type SessionStatus } from "@/context/AvailabilityContext";
 import { supabase } from "@/lib/supabase";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -534,31 +535,63 @@ function AnimatedToggle({ value, onValueChange }: { value: boolean; onValueChang
 
 // ─── MAIN HIRE SHEET ────────────────────────────────────────────────────────
 
+function statusLabel(status: SessionStatus): string {
+  switch (status) {
+    case "active":   return "Disponível";
+    case "pending":  return "Pendente";
+    case "paused":   return "Sem conexão";
+    case "starting": return "Iniciando...";
+    case "ending":   return "Encerrando...";
+    default:         return "Indisponível";
+  }
+}
+
+function statusColor(status: SessionStatus): string {
+  switch (status) {
+    case "active":   return "#18a06b";
+    case "pending":  return "#e09030";
+    case "paused":   return "#e05050";
+    case "starting":
+    case "ending":   return "#888888";
+    default:         return "#888888";
+  }
+}
+
+function statusIcon(status: SessionStatus): "check-circle" | "clock" | "wifi-off" | "loader" | "slash" {
+  switch (status) {
+    case "active":   return "check-circle";
+    case "pending":  return "clock";
+    case "paused":   return "wifi-off";
+    case "starting":
+    case "ending":   return "loader";
+    default:         return "slash";
+  }
+}
+
+function statusBannerMessage(status: SessionStatus): string {
+  switch (status) {
+    case "active":   return "Sessão ativa · você está disponível para contratações.";
+    case "pending":  return "Aguardando conexão · sessão será confirmada ao reconectar.";
+    case "paused":   return "Sem internet · sessão pausada. Reconectando...";
+    case "starting": return "Iniciando sessão...";
+    case "ending":   return "Encerrando sessão...";
+    default:         return "Você está indisponível e não pode receber contratos.";
+  }
+}
+
 export function HireSheet({ open, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { setPendingProvider } = useConfirmation();
   const { colors } = useTheme();
+  const { status: sessionStatus, sessionPin, startSession, endSession } = useAvailability();
   const [activeTab, setActiveTab] = useState<HireTab>("direta");
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
-  const [disponivel, setDisponivel] = useState(false);
-  const [sessionPin, setSessionPin] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
 
-  const generateSessionPin = () => String(Math.floor(1000 + Math.random() * 9000));
-
-  const startSession = () => {
-    const pin = generateSessionPin();
-    setSessionPin(pin);
-    setDisponivel(true);
-  };
-
-  const endSession = () => {
-    setDisponivel(false);
-    setSessionPin(null);
-    setPincodeSheetOpen(false);
-  };
+  const disponivel = sessionStatus !== "idle";
+  const isTransitioning = sessionStatus === "starting" || sessionStatus === "ending";
 
   const subRef = useRef<BottomSheetModal>(null);
 
@@ -621,12 +654,13 @@ export function HireSheet({ open, onClose }: Props) {
       setPendingProvider(provider);
       subRef.current?.dismiss();
       endSession();
+      setPincodeSheetOpen(false);
       setTimeout(() => {
         onClose();
         router.push("/contract-confirm");
       }, 300);
     },
-    [setPendingProvider, onClose, router]
+    [setPendingProvider, onClose, router, endSession]
   );
 
   const renderBackdrop = useCallback(
@@ -767,19 +801,27 @@ export function HireSheet({ open, onClose }: Props) {
               <View style={styles.availHeaderRow}>
                 <Text style={styles.availTitle}>Disponibilidade</Text>
                 <View style={styles.toggleRow}>
-                  <Text style={[styles.toggleLabel, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
-                    {disponivel ? "Disponível" : "Indisponível"}
+                  <Text style={[styles.toggleLabel, { color: statusColor(sessionStatus) }]}>
+                    {statusLabel(sessionStatus)}
                   </Text>
                   <AnimatedToggle
                     value={disponivel}
                     onValueChange={(val) => {
+                      if (isTransitioning) return;
                       if (!val) {
                         setDialog({
                           title: "Encerrar sessão?",
                           message: "Você ficará indisponível e o PINCODE atual será invalidado.",
                           buttons: [
                             { text: "Cancelar", style: "cancel" },
-                            { text: "Encerrar", style: "destructive", onPress: endSession },
+                            {
+                              text: "Encerrar",
+                              style: "destructive",
+                              onPress: () => {
+                                endSession();
+                                setPincodeSheetOpen(false);
+                              },
+                            },
                           ],
                         });
                       } else {
@@ -793,18 +835,16 @@ export function HireSheet({ open, onClose }: Props) {
               <View style={[
                 styles.availStatusBanner,
                 disponivel
-                  ? { backgroundColor: "#18a06b10", borderColor: "#18a06b30" }
+                  ? { backgroundColor: statusColor(sessionStatus) + "12", borderColor: statusColor(sessionStatus) + "35" }
                   : { backgroundColor: colors.card, borderColor: colors.cardBorder },
               ]}>
                 <Feather
-                  name={disponivel ? "check-circle" : "slash"}
+                  name={statusIcon(sessionStatus)}
                   size={13}
-                  color={disponivel ? "#18a06b" : colors.textMuted}
+                  color={disponivel ? statusColor(sessionStatus) : colors.textMuted}
                 />
-                <Text style={[styles.availStatusMsg, { color: disponivel ? "#18a06b" : colors.textMuted }]}>
-                  {disponivel
-                    ? "Sessão ativa · disponível para contratações."
-                    : "Você está indisponível e não pode receber contratos."}
+                <Text style={[styles.availStatusMsg, { color: disponivel ? statusColor(sessionStatus) : colors.textMuted }]}>
+                  {statusBannerMessage(sessionStatus)}
                 </Text>
               </View>
 

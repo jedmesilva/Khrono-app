@@ -30,6 +30,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { UserCatalogProvider } from "@/context/UserCatalogContext";
 import { LocationProvider } from "@/context/LocationContext";
 import { UserSettingsProvider } from "@/context/UserSettingsContext";
+import { AvailabilityProvider } from "@/context/AvailabilityContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -135,23 +136,25 @@ export default function RootLayout() {
               <BottomSheetModalProvider>
                 <AuthProvider>
                   <UserSettingsProvider>
-                    <LocationProvider>
-                      <CatalogProvider>
-                        <UserCatalogProvider>
-                          <ContractsProvider>
-                            <WalletProvider>
-                              <ConfirmationProvider>
-                                <DocumentsProvider>
-                                  <ServicesProvider>
-                                    <RootLayoutNav />
-                                  </ServicesProvider>
-                                </DocumentsProvider>
-                              </ConfirmationProvider>
-                            </WalletProvider>
-                          </ContractsProvider>
-                        </UserCatalogProvider>
-                      </CatalogProvider>
-                    </LocationProvider>
+                    <AvailabilityProvider>
+                      <LocationProvider>
+                        <CatalogProvider>
+                          <UserCatalogProvider>
+                            <ContractsProvider>
+                              <WalletProvider>
+                                <ConfirmationProvider>
+                                  <DocumentsProvider>
+                                    <ServicesProvider>
+                                      <RootLayoutNav />
+                                    </ServicesProvider>
+                                  </DocumentsProvider>
+                                </ConfirmationProvider>
+                              </WalletProvider>
+                            </ContractsProvider>
+                          </UserCatalogProvider>
+                        </CatalogProvider>
+                      </LocationProvider>
+                    </AvailabilityProvider>
                   </UserSettingsProvider>
                 </AuthProvider>
               </BottomSheetModalProvider>
