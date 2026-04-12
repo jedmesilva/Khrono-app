@@ -35,6 +35,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { ConnectingFeedback } from "@/components/ConnectingFeedback";
 import { PincodeSheet } from "@/components/PincodeSheet";
+import { QRCodeSheet } from "@/components/QRCodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
@@ -659,7 +660,7 @@ export function HireSheet({ open, onClose }: Props) {
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
-  const [pincodeInitialMode, setPincodeInitialMode] = useState<"pin" | "qr">("pin");
+  const [qrSheetOpen, setQrSheetOpen] = useState(false);
 
   const disponivel = sessionStatus !== "idle";
   const isTransitioning = sessionStatus === "starting" || sessionStatus === "ending";
@@ -775,19 +776,19 @@ export function HireSheet({ open, onClose }: Props) {
   const availOptions: {
     label: string;
     desc: string;
-    sheetMode?: "pin" | "qr";
+    sheetTarget?: "pin" | "qr";
     icon: React.ReactNode;
   }[] = [
     {
       label: "Meu PINCODE",
       desc: "Informe seu código para contratação direta",
-      sheetMode: "pin",
+      sheetTarget: "pin",
       icon: <Feather name="hash" size={24} color={colors.textSecondary} />,
     },
     {
       label: "Gerar QRCODE",
       desc: "Mostre o QR Code para ser escaneado",
-      sheetMode: "qr",
+      sheetTarget: "qr",
       icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={colors.textSecondary} />,
     },
     {
@@ -894,6 +895,7 @@ export function HireSheet({ open, onClose }: Props) {
                               onPress: () => {
                                 endSession();
                                 setPincodeSheetOpen(false);
+                                setQrSheetOpen(false);
                               },
                             },
                           ],
@@ -932,10 +934,12 @@ export function HireSheet({ open, onClose }: Props) {
                     ]}
                     onPress={() => {
                       if (!disponivel) return;
-                      if (opt.sheetMode) {
+                      if (opt.sheetTarget === "pin") {
                         Haptics.selectionAsync();
-                        setPincodeInitialMode(opt.sheetMode);
                         setPincodeSheetOpen(true);
+                      } else if (opt.sheetTarget === "qr") {
+                        Haptics.selectionAsync();
+                        setQrSheetOpen(true);
                       } else {
                         setDialog({
                           title: "Em breve",
@@ -1054,9 +1058,17 @@ export function HireSheet({ open, onClose }: Props) {
         <PincodeSheet
           visible={pincodeSheetOpen}
           pinCode={sessionPin}
-          qrPayload={qrPayload}
-          initialMode={pincodeInitialMode}
           onClose={() => setPincodeSheetOpen(false)}
+          onRegenerate={regeneratePin}
+        />
+      )}
+
+      {sessionPin && (
+        <QRCodeSheet
+          visible={qrSheetOpen}
+          pinCode={sessionPin}
+          qrPayload={qrPayload}
+          onClose={() => setQrSheetOpen(false)}
           onRegenerate={regeneratePin}
         />
       )}

@@ -4,7 +4,6 @@ import {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -14,22 +13,24 @@ import {
   Text,
   View,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
+import { type QRPayload } from "@/context/AvailabilityContext";
 
 type Props = {
   visible: boolean;
   pinCode: string;
+  qrPayload: QRPayload | null;
   onClose: () => void;
   onRegenerate: () => Promise<void>;
 };
 
-export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props) {
+export function QRCodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
-  const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [confirmRegen, setConfirmRegen] = useState(false);
 
@@ -44,10 +45,9 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
   useEffect(() => {
     setConfirmRegen(false);
     setRegenerating(false);
-    setCopied(false);
   }, [pinCode]);
 
-  const snapPoints = useMemo(() => ["62%"], []);
+  const snapPoints = useMemo(() => ["68%"], []);
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -78,13 +78,6 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
     []
   );
 
-  const handleCopy = async () => {
-    await Clipboard.setStringAsync(pinCode);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handleRegenPress = () => {
     if (!confirmRegen) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -106,7 +99,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
     }
   };
 
-  const digits = pinCode.split("");
+  const qrValue = qrPayload ? JSON.stringify(qrPayload) : null;
 
   return (
     <BottomSheetModal
@@ -123,12 +116,12 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: "#e0603012", borderColor: "#e0603025" }]}>
-            <Feather name="hash" size={20} color="#e06030" />
+          <View style={[styles.iconWrap, { backgroundColor: "#6030e012", borderColor: "#6030e025" }]}>
+            <Feather name="maximize" size={20} color="#6030e0" />
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>Meu PINCODE</Text>
+          <Text style={[styles.title, { color: colors.text }]}>QR Code</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Válido para uma única contratação nesta sessão
+            Peça ao contratante para escanear o código abaixo
           </Text>
         </View>
 
@@ -138,70 +131,64 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
         </View>
 
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>SEU PINCODE</Text>
-          <View style={styles.digitsRow}>
-            {digits.map((d, i) => (
-              <View
-                key={i}
-                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: "#e0603030" }]}
-              >
-                <Text style={styles.digitText}>{d}</Text>
-              </View>
-            ))}
+          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>QR CODE</Text>
+
+          {qrValue ? (
+            <View style={[styles.qrWrap, { backgroundColor: "#ffffff" }]}>
+              <QRCode
+                value={qrValue}
+                size={190}
+                color="#1a1a1a"
+                backgroundColor="#ffffff"
+                ecl="M"
+              />
+            </View>
+          ) : (
+            <View style={[styles.qrUnavailable, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Feather name="wifi-off" size={28} color={colors.textMuted} />
+              <Text style={[styles.qrUnavailableText, { color: colors.textMuted }]}>
+                QR Code disponível{"\n"}ao conectar com internet
+              </Text>
+            </View>
+          )}
+
+          <View style={[styles.pinPill, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <Feather name="hash" size={11} color={colors.textMuted} />
+            <Text style={[styles.pinPillText, { color: colors.textSecondary }]}>PIN: </Text>
+            <Text style={[styles.pinPillCode, { color: "#e06030" }]}>{pinCode}</Text>
           </View>
-          <Text style={[styles.cardHint, { color: colors.textDim }]}>
-            Informe este código ao contratante
-          </Text>
         </View>
 
         <Pressable
           style={({ pressed }) => [
-            styles.actionBtn,
-            { backgroundColor: colors.card, borderColor: colors.cardBorder },
-            pressed && { opacity: 0.7 },
-          ]}
-          onPress={handleCopy}
-        >
-          <Feather
-            name={copied ? "check" : "copy"}
-            size={15}
-            color={copied ? "#18a06b" : colors.textSecondary}
-          />
-          <Text style={[styles.actionBtnText, { color: copied ? "#18a06b" : colors.textSecondary }]}>
-            {copied ? "Copiado!" : "Copiar código"}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [
             styles.regenBtn,
-            confirmRegen && { borderColor: "#e06030", backgroundColor: "#e0603010" },
+            confirmRegen && { borderColor: "#6030e0", backgroundColor: "#6030e010" },
             (pressed || regenerating) && { opacity: 0.7 },
           ]}
           onPress={handleRegenPress}
           disabled={regenerating}
         >
           {regenerating ? (
-            <ActivityIndicator size="small" color="#e06030" />
+            <ActivityIndicator size="small" color="#6030e0" />
           ) : (
             <Feather
               name="refresh-cw"
               size={14}
-              color={confirmRegen ? "#e06030" : colors.textMuted}
+              color={confirmRegen ? "#6030e0" : colors.textMuted}
             />
           )}
-          <Text style={[styles.regenBtnText, { color: confirmRegen ? "#e06030" : colors.textMuted }]}>
+          <Text style={[styles.regenBtnText, { color: confirmRegen ? "#6030e0" : colors.textMuted }]}>
             {regenerating
-              ? "Gerando novo código..."
+              ? "Gerando novo QR Code..."
               : confirmRegen
               ? "Toque novamente para confirmar"
-              : "Gerar novo PINCODE"}
+              : "Gerar novo QR Code"}
           </Text>
         </Pressable>
 
         {confirmRegen && (
           <Text style={[styles.regenWarning, { color: colors.textDim }]}>
-            O código atual será invalidado e não poderá mais ser usado.
+            O QR Code e o PINCODE atuais serão invalidados.
           </Text>
         )}
       </BottomSheetScrollView>
@@ -276,42 +263,42 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: "uppercase",
   },
-  digitsRow: {
-    flexDirection: "row",
+  qrWrap: {
+    borderRadius: 16,
+    padding: 16,
+  },
+  qrUnavailable: {
+    width: 190,
+    height: 190,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
   },
-  digitBox: {
-    width: 58,
-    height: 72,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  digitText: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 36,
-    color: "#e06030",
-    lineHeight: 42,
-  },
-  cardHint: {
+  qrUnavailableText: {
     fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    letterSpacing: 0.2,
+    fontSize: 11,
     textAlign: "center",
+    lineHeight: 16,
   },
-  actionBtn: {
+  pinPill: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
+    gap: 4,
     borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
   },
-  actionBtnText: {
-    fontFamily: "Sora_600SemiBold",
+  pinPillText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+  },
+  pinPillCode: {
+    fontFamily: "DMSans_700Bold",
     fontSize: 13,
+    letterSpacing: 2,
   },
   regenBtn: {
     flexDirection: "row",
