@@ -272,17 +272,10 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Polling fallback: recarrega contratos a cada 30 s caso o realtime não dispare
-    // (acontece quando a tabela não está na publication supabase_realtime)
-    const pollInterval = setInterval(() => {
-      if (userIdRef.current) loadContracts(userIdRef.current);
-    }, 30_000);
-
     return () => {
       subscription.unsubscribe();
       if (contractorChannel) supabase.removeChannel(contractorChannel);
       if (hiredChannel) supabase.removeChannel(hiredChannel);
-      clearInterval(pollInterval);
     };
   }, [loadContracts]);
 
