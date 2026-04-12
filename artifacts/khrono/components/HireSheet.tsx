@@ -52,17 +52,25 @@ function getInitials(name: string): string {
     .join("");
 }
 
-async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
+async function markPinAsUsed(pinId: string) {
+  await supabase
+    .from("provider_pins")
+    .update({ status: "used", used_at: new Date().toISOString() })
+    .eq("id", pinId);
+}
+
+async function lookupProviderByPin(pin: string): Promise<{ provider: ProviderData; pinId: string } | null> {
   const { data: pinRow, error: pinErr } = await supabase
     .from("provider_pins")
-    .select("profile_id")
+    .select("id, profile_id")
     .eq("pin", pin)
-    .eq("is_active", true)
+    .eq("status", "active")
     .single();
 
   if (pinErr || !pinRow) return null;
 
   const profileId = pinRow.profile_id as string;
+  const pinId = pinRow.id as string;
 
   const [profileRes, provRes, servicesRes] = await Promise.all([
     supabase.from("profiles").select("id, name, first_name").eq("id", profileId).single(),
@@ -78,22 +86,25 @@ async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
   const name = profile.name || profile.first_name;
 
   return {
-    name,
-    initials: getInitials(name),
-    nota: parseFloat(String(prov.nota)),
-    avaliacoes: prov.avaliacoes,
-    distancia: 1.5,
-    totalContracts: prov.total_contracts,
-    verified: prov.verified,
-    profileId,
-    services: (servicesRes.data ?? []).map((s: any, idx: number) => ({
-      id: idx + 1,
-      serviceId: s.id as string,
-      nome: s.nome,
-      hourlyRate: Number(s.valor_hora ?? 50),
-      nota: parseFloat(String(s.nota)),
-      avaliacoes: s.avaliacoes,
-    })),
+    pinId,
+    provider: {
+      name,
+      initials: getInitials(name),
+      nota: parseFloat(String(prov.nota)),
+      avaliacoes: prov.avaliacoes,
+      distancia: 1.5,
+      totalContracts: prov.total_contracts,
+      verified: prov.verified,
+      profileId,
+      services: (servicesRes.data ?? []).map((s: any, idx: number) => ({
+        id: idx + 1,
+        serviceId: s.id as string,
+        nome: s.nome,
+        hourlyRate: Number(s.valor_hora ?? 50),
+        nota: parseFloat(String(s.nota)),
+        avaliacoes: s.avaliacoes,
+      })),
+    },
   };
 }
 
@@ -120,7 +131,7 @@ function PincodeContent({
   colors: ColorPalette;
 }) {
   const [pin, setPin] = useState("");
-  const [found, setFound] = useState<ProviderData | null>(null);
+  const [found, setFound] = useState<{ provider: ProviderData; pinId: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const styles = useMemo(() => createSubStyles(colors), [colors]);
 
@@ -139,10 +150,10 @@ function PincodeContent({
     if (loading) return;
     setLoading(true);
     try {
-      const provider = await lookupProviderByPin(pin);
-      if (provider) {
+      const result = await lookupProviderByPin(pin);
+      if (result) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        setFound(provider);
+        setFound({ provider: result.provider, pinId: result.pinId });
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         onShowDialog({ title: "PIN não encontrado", message: "Verifique o código e tente novamente." });
@@ -155,36 +166,39 @@ function PincodeContent({
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!found) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onFoundProvider(found);
+    // Mark the used PIN before navigating — provider's context will auto-generate a new one
+    await markPinAsUsed(found.pinId);
+    onFoundProvider(found.provider);
   };
 
   if (found) {
+    const p = found.provider;
     return (
       <View>
         <Text style={styles.title}>Usuário encontrado</Text>
         <View style={styles.userCard}>
           <View style={styles.userAvatar}>
-            <Text style={styles.userAvatarText}>{found.initials}</Text>
+            <Text style={styles.userAvatarText}>{p.initials}</Text>
           </View>
           <View style={styles.userNameRow}>
-            <Text style={styles.userName}>{found.name}</Text>
-            {found.verified && <VerifiedBadge variant="full" />}
+            <Text style={styles.userName}>{p.name}</Text>
+            {p.verified && <VerifiedBadge variant="full" />}
           </View>
           <View style={styles.infoChipsRow}>
             <View style={styles.infoChip}>
               <Feather name="briefcase" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{found.totalContracts ?? 0} contratos</Text>
+              <Text style={styles.infoChipText}>{p.totalContracts ?? 0} contratos</Text>
             </View>
             <View style={styles.infoChip}>
               <Feather name="tool" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{found.services.length} {found.services.length === 1 ? "serviço" : "serviços"}</Text>
+              <Text style={styles.infoChipText}>{p.services.length} {p.services.length === 1 ? "serviço" : "serviços"}</Text>
             </View>
             <View style={styles.infoChip}>
               <Feather name="map-pin" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{found.distancia} km</Text>
+              <Text style={styles.infoChipText}>{p.distancia} km</Text>
             </View>
           </View>
         </View>
@@ -306,10 +320,11 @@ function QrcodeContent({
       if (/^\d{4,6}$/.test(data.trim())) {
         setValidating(true);
         try {
-          const provider = await lookupProviderByPin(data.trim());
-          if (provider) {
+          const result = await lookupProviderByPin(data.trim());
+          if (result) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            onFoundProvider(provider);
+            await markPinAsUsed(result.pinId);
+            onFoundProvider(result.provider);
           } else {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             onShowDialog({
@@ -584,7 +599,7 @@ export function HireSheet({ open, onClose }: Props) {
   const router = useRouter();
   const { setPendingProvider } = useConfirmation();
   const { colors } = useTheme();
-  const { status: sessionStatus, sessionPin, startSession, endSession } = useAvailability();
+  const { status: sessionStatus, sessionPin, startSession, endSession, regeneratePin } = useAvailability();
   const [activeTab, setActiveTab] = useState<HireTab>("direta");
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -984,6 +999,7 @@ export function HireSheet({ open, onClose }: Props) {
           visible={pincodeSheetOpen}
           pinCode={sessionPin}
           onClose={() => setPincodeSheetOpen(false)}
+          onRegenerate={regeneratePin}
         />
       )}
     </>

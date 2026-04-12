@@ -27,6 +27,7 @@ type AvailabilityContextType = {
   sessionId: string | null;
   startSession: () => Promise<void>;
   endSession: () => Promise<void>;
+  regeneratePin: () => Promise<void>;
 };
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -38,6 +39,7 @@ const AvailabilityContext = createContext<AvailabilityContextType>({
   sessionId: null,
   startSession: async () => {},
   endSession: async () => {},
+  regeneratePin: async () => {},
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -78,11 +80,13 @@ export function AvailabilityProvider({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPin, setSessionPin] = useState<string | null>(null);
 
-  // Refs so NetInfo listener always has the latest values without re-subscribing
+  // Refs — always hold the latest values for use inside callbacks/listeners
   const statusRef = useRef<SessionStatus>("idle");
   const sessionIdRef = useRef<string | null>(null);
+  const pinIdRef = useRef<string | null>(null);          // DB id of the current active PIN row
   const pendingPayloadRef = useRef<Record<string, any> | null>(null);
   const profileIdRef = useRef<string | null>(null);
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   function applyStatus(s: SessionStatus) {
     statusRef.current = s;
@@ -102,17 +106,98 @@ export function AvailabilityProvider({
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         profileIdRef.current = session?.user?.id ?? null;
-        // End any active session when user logs out
         if (!session) {
           applyStatus("idle");
           applySessionId(null);
           setSessionPin(null);
+          pinIdRef.current = null;
           pendingPayloadRef.current = null;
+          teardownRealtimePin();
         }
       }
     );
     return () => subscription.unsubscribe();
   }, []);
+
+  // ── Realtime PIN subscription ──────────────────────────────────────────────
+  // Watches for when a contractor marks our PIN as "used" so we auto-regenerate
+
+  function setupRealtimePin(profileId: string) {
+    teardownRealtimePin();
+
+    const channel = supabase
+      .channel(`pin-watch-${profileId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "provider_pins",
+          filter: `profile_id=eq.${profileId}`,
+        },
+        async (payload: any) => {
+          if (payload.new?.status === "used") {
+            // A contractor used our PIN → generate a fresh one automatically
+            await insertNewPin(profileId, sessionIdRef.current);
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+  }
+
+  function teardownRealtimePin() {
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+      realtimeChannelRef.current = null;
+    }
+  }
+
+  // ── Insert a new active PIN into the DB ────────────────────────────────────
+  async function insertNewPin(
+    profileId: string,
+    sessionId: string | null
+  ): Promise<string | null> {
+    const pin = generatePin();
+    const { data, error } = await supabase
+      .from("provider_pins")
+      .insert({
+        profile_id: profileId,
+        pin,
+        status: "active",
+        session_id: sessionId,
+      })
+      .select("id")
+      .single();
+
+    if (error || !data) return null;
+
+    pinIdRef.current = data.id;
+    setSessionPin(pin);
+    return pin;
+  }
+
+  // ── Invalidate a specific PIN or all active PINs for the user ─────────────
+  async function invalidatePins(
+    profileId: string,
+    specificPinId?: string | null
+  ) {
+    const now = new Date().toISOString();
+    if (specificPinId) {
+      await supabase
+        .from("provider_pins")
+        .update({ status: "invalidated", invalidated_at: now })
+        .eq("id", specificPinId);
+    } else {
+      // Invalidate ALL active PINs for this user (session end)
+      await supabase
+        .from("provider_pins")
+        .update({ status: "invalidated", invalidated_at: now })
+        .eq("profile_id", profileId)
+        .eq("status", "active");
+    }
+  }
 
   // ── Network listener ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -120,10 +205,8 @@ export function AvailabilityProvider({
       const online = state.isConnected && state.isInternetReachable !== false;
 
       if (!online) {
-        // Lost connection while active → pause
         if (statusRef.current === "active") {
           applyStatus("paused");
-          // Best-effort update to Supabase (may fail — that's fine)
           if (sessionIdRef.current) {
             supabase
               .from("availability_sessions")
@@ -135,27 +218,32 @@ export function AvailabilityProvider({
         return;
       }
 
-      // ── Reconnected ──────────────────────────────────────────────────────
+      // ── Reconnected ────────────────────────────────────────────────────────
       const cur = statusRef.current;
+      const profileId = profileIdRef.current;
+      if (!profileId) return;
 
       if (cur === "pending" && pendingPayloadRef.current) {
-        // Had a session that was never saved → insert now as active
+        // Session was never saved → insert now
         const payload = { ...pendingPayloadRef.current, status: "active" };
         const { data, error } = await supabase
           .from("availability_sessions")
           .insert(payload)
           .select("id")
           .single();
+
         if (!error && data) {
           pendingPayloadRef.current = null;
           applySessionId(data.id);
+          // Now save the PIN that was generated locally
+          await insertNewPin(profileId, data.id);
+          setupRealtimePin(profileId);
           applyStatus("active");
         }
         return;
       }
 
       if (cur === "paused" && sessionIdRef.current) {
-        // Had an active session that was paused → re-activate
         const { error } = await supabase
           .from("availability_sessions")
           .update({ status: "active" })
@@ -178,17 +266,13 @@ export function AvailabilityProvider({
 
     applyStatus("starting");
 
-    const pin = generatePin();
-    setSessionPin(pin);
-
     const [netState, gps] = await Promise.all([NetInfo.fetch(), getGps()]);
     const online =
       netState.isConnected && netState.isInternetReachable !== false;
     const now = new Date().toISOString();
 
-    const payload = {
+    const sessionPayload = {
       profile_id: profileId,
-      session_pin: pin,
       lat: gps.lat,
       lng: gps.lng,
       location_accuracy: gps.accuracy,
@@ -196,27 +280,38 @@ export function AvailabilityProvider({
     };
 
     if (!online) {
-      // Save locally — will sync when internet is restored
-      pendingPayloadRef.current = payload;
+      // Store locally; generate PIN locally to show user, will sync on reconnect
+      pendingPayloadRef.current = sessionPayload;
+      const pin = generatePin();
+      setSessionPin(pin);
       applyStatus("pending");
       return;
     }
 
-    // Insert directly as active
-    const { data, error } = await supabase
+    // Insert session
+    const { data: sessionData, error: sessionError } = await supabase
       .from("availability_sessions")
-      .insert({ ...payload, status: "active" })
+      .insert({ ...sessionPayload, status: "active" })
       .select("id")
       .single();
 
-    if (error || !data) {
-      // Couldn't save — treat as pending
-      pendingPayloadRef.current = payload;
+    if (sessionError || !sessionData) {
+      // Fallback to pending
+      pendingPayloadRef.current = sessionPayload;
+      const pin = generatePin();
+      setSessionPin(pin);
       applyStatus("pending");
       return;
     }
 
-    applySessionId(data.id);
+    applySessionId(sessionData.id);
+
+    // Insert PIN linked to this session
+    await insertNewPin(profileId, sessionData.id);
+
+    // Start watching for PIN usage
+    setupRealtimePin(profileId);
+
     applyStatus("active");
   }, []);
 
@@ -229,6 +324,12 @@ export function AvailabilityProvider({
 
     const now = new Date().toISOString();
     const id = sessionIdRef.current;
+    const profileId = profileIdRef.current;
+
+    // Invalidate all active PINs for this user
+    if (profileId) {
+      await invalidatePins(profileId);
+    }
 
     if (id) {
       await supabase
@@ -237,25 +338,49 @@ export function AvailabilityProvider({
         .eq("id", id);
     }
 
-    // If still pending (never synced), record it as no_connection for history
-    if ((cur === "pending" || cur === "paused") && !id && pendingPayloadRef.current) {
+    // If still pending (never synced), record as no_connection for history
+    if ((cur === "pending" || cur === "paused") && !id && pendingPayloadRef.current && profileId) {
       await supabase
         .from("availability_sessions")
         .insert({ ...pendingPayloadRef.current, status: "no_connection", ended_at: now })
         .then(() => {});
     }
 
+    teardownRealtimePin();
     pendingPayloadRef.current = null;
+    pinIdRef.current = null;
     applySessionId(null);
     setSessionPin(null);
     applyStatus("idle");
+  }, []);
+
+  // ── Regenerate PIN (manual) ────────────────────────────────────────────────
+  const regeneratePin = useCallback(async () => {
+    const profileId = profileIdRef.current;
+    if (!profileId) return;
+    const cur = statusRef.current;
+    if (cur !== "active" && cur !== "pending") return;
+
+    // Invalidate current PIN
+    if (pinIdRef.current) {
+      await invalidatePins(profileId, pinIdRef.current);
+    }
+    pinIdRef.current = null;
+
+    if (cur === "active") {
+      await insertNewPin(profileId, sessionIdRef.current);
+    } else {
+      // Offline / pending — just generate locally
+      const pin = generatePin();
+      setSessionPin(pin);
+    }
   }, []);
 
   const isAvailable = status === "active";
 
   return (
     <AvailabilityContext.Provider
-      value={{ status, isAvailable, sessionPin, sessionId, startSession, endSession }}
+      value={{ status, isAvailable, sessionPin, sessionId, startSession, endSession, regeneratePin }}
     >
       {children}
     </AvailabilityContext.Provider>

@@ -108,6 +108,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 7. `20260412_tools_catalog.sql` — tools catalog + default templates
 8. `20260412_user_settings.sql` — persisted per-user settings/preferences
 9. `20260412_availability_sessions.sql` — availability session history (status, GPS, PIN, timestamps)
+10. `20260412_provider_pins_status.sql` — PIN lifecycle: adds `status` (active/used/invalidated), `session_id`, `used_at`, `invalidated_at` columns
 
 ## Code Generation
 ```bash

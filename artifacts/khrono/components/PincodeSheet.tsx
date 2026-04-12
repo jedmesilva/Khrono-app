@@ -8,6 +8,7 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -21,13 +22,16 @@ type Props = {
   visible: boolean;
   pinCode: string;
   onClose: () => void;
+  onRegenerate: () => Promise<void>;
 };
 
-export function PincodeSheet({ visible, pinCode, onClose }: Props) {
+export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
   const [copied, setCopied] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [confirmRegen, setConfirmRegen] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -36,6 +40,12 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
       ref.current?.dismiss();
     }
   }, [visible]);
+
+  // Reset confirm state when pin changes (new pin generated)
+  useEffect(() => {
+    setConfirmRegen(false);
+    setRegenerating(false);
+  }, [pinCode]);
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -71,6 +81,30 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRegenPress = () => {
+    if (!confirmRegen) {
+      // First tap — ask confirmation
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setConfirmRegen(true);
+      // Auto-cancel confirm after 4s
+      setTimeout(() => setConfirmRegen(false), 4000);
+      return;
+    }
+    // Second tap — confirm, execute
+    handleConfirmRegen();
+  };
+
+  const handleConfirmRegen = async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setRegenerating(true);
+    setConfirmRegen(false);
+    try {
+      await onRegenerate();
+    } finally {
+      setRegenerating(false);
+    }
   };
 
   const digits = pinCode.split("");
@@ -136,6 +170,44 @@ export function PincodeSheet({ visible, pinCode, onClose }: Props) {
           </Text>
         </Pressable>
 
+        {/* Regenerate button */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.regenBtn,
+            confirmRegen && { borderColor: "#e06030", backgroundColor: "#e0603010" },
+            (pressed || regenerating) && { opacity: 0.7 },
+          ]}
+          onPress={handleRegenPress}
+          disabled={regenerating}
+        >
+          {regenerating ? (
+            <ActivityIndicator size="small" color="#e06030" />
+          ) : (
+            <Feather
+              name="refresh-cw"
+              size={14}
+              color={confirmRegen ? "#e06030" : colors.textMuted}
+            />
+          )}
+          <Text
+            style={[
+              styles.regenBtnText,
+              { color: confirmRegen ? "#e06030" : colors.textMuted },
+            ]}
+          >
+            {regenerating
+              ? "Gerando novo código..."
+              : confirmRegen
+              ? "Toque novamente para confirmar"
+              : "Gerar novo PINCODE"}
+          </Text>
+        </Pressable>
+
+        {confirmRegen && (
+          <Text style={[styles.regenWarning, { color: colors.textDim }]}>
+            O código atual será invalidado e não poderá mais ser usado.
+          </Text>
+        )}
       </BottomSheetView>
     </BottomSheetModal>
   );
@@ -241,9 +313,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
     paddingVertical: 14,
+    marginBottom: 10,
   },
   copyBtnText: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
+  },
+  regenBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 13,
+    borderStyle: "dashed",
+    borderColor: "#88888830",
+    backgroundColor: "transparent",
+    marginBottom: 8,
+  },
+  regenBtnText: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 12,
+    letterSpacing: 0.1,
+  },
+  regenWarning: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 10,
+    textAlign: "center",
+    lineHeight: 15,
+    letterSpacing: 0.1,
+    paddingHorizontal: 8,
   },
 });
