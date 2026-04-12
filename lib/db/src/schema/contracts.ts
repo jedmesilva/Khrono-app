@@ -16,7 +16,6 @@ import { skillsCatalogTable } from "./catalog";
 
 export const providerProfilesTable = pgTable("provider_profiles", {
   profileId: uuid("profile_id").primaryKey().references(() => profilesTable.id, { onDelete: "cascade" }),
-  valorBase: decimal("valor_base", { precision: 10, scale: 2 }).notNull().default("50.00"),
   nota: decimal("nota", { precision: 3, scale: 2 }).notNull().default("0.00"),
   avaliacoes: integer("avaliacoes").notNull().default(0),
   totalContracts: integer("total_contracts").notNull().default(0),
