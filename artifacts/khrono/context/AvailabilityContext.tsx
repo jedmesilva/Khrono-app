@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import * as ExpoLocation from "expo-location";
-import * as ExpoCrypto from "expo-crypto";
+import { sha256 } from "js-sha256";
 import * as Device from "expo-device";
 import { supabase } from "@/lib/supabase";
 
@@ -61,25 +61,13 @@ function generatePin(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
-async function makeChecksum(
-  profileId: string,
-  sessionId: string,
-  pin: string
-): Promise<string> {
-  const digest = await ExpoCrypto.digestStringAsync(
-    ExpoCrypto.CryptoDigestAlgorithm.SHA256,
-    profileId + sessionId + pin
-  );
-  return digest.substring(0, 8);
+function makeChecksum(profileId: string, sessionId: string, pin: string): string {
+  return sha256(profileId + sessionId + pin).substring(0, 8);
 }
 
-export async function verifyQRChecksum(payload: QRPayload): Promise<boolean> {
+export function verifyQRChecksum(payload: QRPayload): boolean {
   try {
-    const digest = await ExpoCrypto.digestStringAsync(
-      ExpoCrypto.CryptoDigestAlgorithm.SHA256,
-      payload.pid + payload.sid + payload.pin
-    );
-    return digest.substring(0, 8) === payload.chk;
+    return sha256(payload.pid + payload.sid + payload.pin).substring(0, 8) === payload.chk;
   } catch {
     return false;
   }
@@ -225,7 +213,7 @@ export function AvailabilityProvider({
 
     // Build QR payload with checksum (only possible when sessionId is known)
     if (sessionId) {
-      const chk = await makeChecksum(profileId, sessionId, pin);
+      const chk = makeChecksum(profileId, sessionId, pin);
       setQrPayload({
         type: "khrono-qr",
         v: 1,

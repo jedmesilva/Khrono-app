@@ -331,7 +331,7 @@ function QrcodeContent({
           setValidating(true);
           try {
             // 1. Verify checksum client-side (no network needed)
-            const checksumOk = await verifyQRChecksum(parsed);
+            const checksumOk = verifyQRChecksum(parsed);
             if (!checksumOk) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
               onShowDialog({

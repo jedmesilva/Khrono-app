@@ -68,6 +68,7 @@
     "expo-crypto": "^55.0.14",
     "expo-device": "^55.0.14",
     "expo-document-picker": "^55.0.9",
+    "js-sha256": "^0.11.1",
     "react-native-qrcode-svg": "^6.3.21"
   }
 }
