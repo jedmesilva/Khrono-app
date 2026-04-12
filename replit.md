@@ -88,6 +88,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `tools_catalog` — 21 vehicle/tool/equipment templates (public read)
 - `user_skills` — skills linked to a user profile
 - `user_services` — services linked to a user profile
+- `user_settings` — per-user persisted preferences for notifications, theme, haptics, 2FA, biometrics, and facial recognition
 - `contracts` — service contracts between users
 - `contract_time_entries` — time tracking events
 - `wallets` — one per user, BRL currency
@@ -102,6 +103,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 5. `20260409_wallet_tables.sql` — wallet system
 6. `20260412_service_schema_redesign.sql` — valor_hora, provider_tools, service_skills/tools, dropped old columns
 7. `20260412_tools_catalog.sql` — tools catalog + default templates
+8. `20260412_user_settings.sql` — persisted per-user settings/preferences
 
 ## Code Generation
 ```bash

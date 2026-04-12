@@ -29,6 +29,7 @@ import { ServicesProvider } from "@/context/ServicesContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { UserCatalogProvider } from "@/context/UserCatalogContext";
 import { LocationProvider } from "@/context/LocationContext";
+import { UserSettingsProvider } from "@/context/UserSettingsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -133,23 +134,25 @@ export default function RootLayout() {
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
-                  <LocationProvider>
-                    <CatalogProvider>
-                      <UserCatalogProvider>
-                        <ContractsProvider>
-                          <WalletProvider>
-                            <ConfirmationProvider>
-                              <DocumentsProvider>
-                                <ServicesProvider>
-                                  <RootLayoutNav />
-                                </ServicesProvider>
-                              </DocumentsProvider>
-                            </ConfirmationProvider>
-                          </WalletProvider>
-                        </ContractsProvider>
-                      </UserCatalogProvider>
-                    </CatalogProvider>
-                  </LocationProvider>
+                  <UserSettingsProvider>
+                    <LocationProvider>
+                      <CatalogProvider>
+                        <UserCatalogProvider>
+                          <ContractsProvider>
+                            <WalletProvider>
+                              <ConfirmationProvider>
+                                <DocumentsProvider>
+                                  <ServicesProvider>
+                                    <RootLayoutNav />
+                                  </ServicesProvider>
+                                </DocumentsProvider>
+                              </ConfirmationProvider>
+                            </WalletProvider>
+                          </ContractsProvider>
+                        </UserCatalogProvider>
+                      </CatalogProvider>
+                    </LocationProvider>
+                  </UserSettingsProvider>
                 </AuthProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>

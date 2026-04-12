@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
+import { useUserSettings } from "@/context/UserSettingsContext";
 
 type ToggleRowProps = {
   icon: keyof typeof Feather.glyphMap;
@@ -104,13 +106,8 @@ export default function DefinicoesScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
-  const { colors, isDark, toggleTheme } = useTheme();
-
-  const [notifPush, setNotifPush] = useState(true);
-  const [notifContratos, setNotifContratos] = useState(true);
-  const [notifAgenda, setNotifAgenda] = useState(false);
-  const [biometria, setBiometria] = useState(false);
-  const [haptics, setHaptics] = useState(true);
+  const { colors, isDark } = useTheme();
+  const { settings, isLoading, isSaving, error, updateSetting } = useUserSettings();
 
   const sectionStyle = useMemo(
     () => ({
@@ -147,8 +144,8 @@ export default function DefinicoesScreen() {
             icon="bell"
             label="Notificações push"
             sublabel="Receber alertas no dispositivo"
-            value={notifPush}
-            onValueChange={setNotifPush}
+            value={settings.notification_push_enabled}
+            onValueChange={(value) => updateSetting("notification_push_enabled", value)}
             colors={colors}
           />
           <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
@@ -156,8 +153,8 @@ export default function DefinicoesScreen() {
             icon="file-text"
             label="Novos contratos"
             sublabel="Quando alguém te contratar"
-            value={notifContratos}
-            onValueChange={setNotifContratos}
+            value={settings.notification_contracts_enabled}
+            onValueChange={(value) => updateSetting("notification_contracts_enabled", value)}
             colors={colors}
           />
           <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
@@ -165,8 +162,8 @@ export default function DefinicoesScreen() {
             icon="calendar"
             label="Lembretes de agenda"
             sublabel="Antes de um serviço agendado iniciar"
-            value={notifAgenda}
-            onValueChange={setNotifAgenda}
+            value={settings.notification_schedule_enabled}
+            onValueChange={(value) => updateSetting("notification_schedule_enabled", value)}
             colors={colors}
           />
         </View>
@@ -176,10 +173,30 @@ export default function DefinicoesScreen() {
         <View style={sectionStyle}>
           <ToggleRow
             icon="shield"
-            label="Autenticação biométrica"
-            sublabel="Usar impressão digital ou Face ID"
-            value={biometria}
-            onValueChange={setBiometria}
+            label="Autenticação de dois fatores"
+            sublabel="Solicitar uma etapa extra ao entrar"
+            value={settings.two_factor_enabled}
+            onValueChange={(value) => updateSetting("two_factor_enabled", value)}
+            accentGreen
+            colors={colors}
+          />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
+          <ToggleRow
+            icon="lock"
+            label="Biometria"
+            sublabel="Usar impressão digital quando disponível"
+            value={settings.biometric_auth_enabled}
+            onValueChange={(value) => updateSetting("biometric_auth_enabled", value)}
+            accentGreen
+            colors={colors}
+          />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
+          <ToggleRow
+            icon="camera"
+            label="Reconhecimento facial"
+            sublabel="Permitir login e verificações com Face ID/facial"
+            value={settings.facial_recognition_enabled}
+            onValueChange={(value) => updateSetting("facial_recognition_enabled", value)}
             accentGreen
             colors={colors}
           />
@@ -192,8 +209,8 @@ export default function DefinicoesScreen() {
             icon="smartphone"
             label="Vibração"
             sublabel="Feedback tátil nas interações"
-            value={haptics}
-            onValueChange={setHaptics}
+            value={settings.haptics_enabled}
+            onValueChange={(value) => updateSetting("haptics_enabled", value)}
             colors={colors}
           />
           <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
@@ -202,11 +219,20 @@ export default function DefinicoesScreen() {
             label="Tema escuro"
             sublabel={isDark ? "Tema escuro ativado" : "Tema claro ativado"}
             value={isDark}
-            onValueChange={toggleTheme}
+            onValueChange={(value) => updateSetting("theme_preference", value ? "dark" : "light")}
             accentGreen
             colors={colors}
           />
         </View>
+
+        {(isLoading || isSaving || error) && (
+          <View style={staticStyles.statusRow}>
+            {isLoading && <ActivityIndicator size="small" color={colors.accent} />}
+            <Text style={[staticStyles.statusText, { color: error ? colors.accent : colors.textDim }]}>
+              {error ?? (isLoading ? "Carregando definições..." : "Salvando definições...")}
+            </Text>
+          </View>
+        )}
 
         {/* Suporte */}
         <SectionHeader title="SUPORTE" colors={colors} />
@@ -318,6 +344,17 @@ const staticStyles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 28,
     gap: 4,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 18,
+  },
+  statusText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
   },
   aboutLogoWrap: {
     width: 52,

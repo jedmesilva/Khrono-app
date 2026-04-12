@@ -9,6 +9,8 @@ import React, {
 
 const STORAGE_KEY = "@khrono_theme";
 
+export type ThemePreference = "light" | "dark" | "system";
+
 export type ColorPalette = {
   accent: string;
   accentGreen: string;
@@ -92,37 +94,49 @@ export const darkColors: ColorPalette = {
 
 type ThemeContextValue = {
   isDark: boolean;
+  themePreference: ThemePreference;
   colors: ColorPalette;
   toggleTheme: () => void;
+  setThemeMode: (mode: ThemePreference) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
   isDark: false,
+  themePreference: "light",
   colors: lightColors,
   toggleTheme: () => {},
+  setThemeMode: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false);
+  const [themePreference, setThemePreference] = useState<ThemePreference>("light");
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (val === "dark") setIsDark(true);
+      if (val === "dark" || val === "light" || val === "system") {
+        setThemePreference(val);
+      }
     });
   }, []);
 
+  const setThemeMode = useCallback((mode: ThemePreference) => {
+    setThemePreference(mode);
+    AsyncStorage.setItem(STORAGE_KEY, mode);
+  }, []);
+
   const toggleTheme = useCallback(() => {
-    setIsDark((prev) => {
-      const next = !prev;
-      AsyncStorage.setItem(STORAGE_KEY, next ? "dark" : "light");
+    setThemePreference((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      AsyncStorage.setItem(STORAGE_KEY, next);
       return next;
     });
   }, []);
 
+  const isDark = themePreference === "dark";
   const colors = isDark ? darkColors : lightColors;
 
   return (
-    <ThemeContext.Provider value={{ isDark, colors, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDark, themePreference, colors, toggleTheme, setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
