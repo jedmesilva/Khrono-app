@@ -227,52 +227,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Fetch a single contract by ID and apply a surgical state update —
-  // only the affected card re-renders, no loading flicker for the whole screen.
-  const applyRealtimeChange = useCallback(async (contractId: string, userId: string) => {
-    const { data, error } = await supabase
-      .from("contracts")
-      .select(CONTRACT_SELECT)
-      .eq("id", contractId)
-      .maybeSingle();
-
-    if (error) {
-      console.warn("[ContractsContext] realtime fetch error:", error.message);
-      return;
-    }
-
-    // Contract was deleted or not found — remove from active list
-    if (!data) {
-      setActiveContracts((prev) => prev.filter((c) => c.id !== contractId));
-      return;
-    }
-
-    const updated = mapDbToContract(data, userId);
-    const isActive = ["active", "paused", "pending_signature", "accepted"].includes(updated.status);
-
-    if (isActive) {
-      setActiveContracts((prev) => {
-        const exists = prev.some((c) => c.id === contractId);
-        if (exists) {
-          // Update only the changed contract in place
-          return prev.map((c) => (c.id === contractId ? updated : c));
-        }
-        // New contract arrived (e.g. hired party receives it for the first time)
-        return [updated, ...prev];
-      });
-      // If it moved from history to active, remove from history
-      setHistory((prev) => prev.filter((c) => c.id !== contractId));
-    } else {
-      // Contract ended/cancelled — move it out of active list into history
-      setActiveContracts((prev) => prev.filter((c) => c.id !== contractId));
-      setHistory((prev) => {
-        const exists = prev.some((c) => c.id === contractId);
-        if (exists) return prev.map((c) => (c.id === contractId ? updated : c));
-        return [updated, ...prev].slice(0, 30);
-      });
-    }
-  }, []);
-
   useEffect(() => {
     let contractorChannel: ReturnType<typeof supabase.channel> | null = null;
     let hiredChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -283,15 +237,9 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       userIdRef.current = user.id;
       await loadContracts(user.id);
 
-      const handleChange = async (payload: any) => {
-        const contractId: string | undefined = payload?.new?.id ?? payload?.old?.id;
-        if (!userIdRef.current) return;
-        if (contractId) {
-          await applyRealtimeChange(contractId, userIdRef.current);
-        } else {
-          // Fallback: sem ID no payload, faz refetch silencioso (sem loading)
-          await loadContracts(userIdRef.current, { showLoading: false });
-        }
+      // Refetch silencioso: atualiza os contratos sem mostrar loading/skeleton
+      const handleChange = async () => {
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
       };
 
       contractorChannel = supabase
@@ -317,10 +265,8 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const broadcastCh = supabase
         .channel("khrono-contract-events")
         .on("broadcast", { event: "contract-created" }, async (msg) => {
-          if (msg.payload?.hired_id === user.id && msg.payload?.contract_id) {
-            await applyRealtimeChange(msg.payload.contract_id, user.id);
-          } else if (msg.payload?.hired_id === user.id && userIdRef.current) {
-            await loadContracts(userIdRef.current, { showLoading: false });
+          if (msg.payload?.hired_id === user.id) {
+            await handleChange();
           }
         })
         .subscribe((s) => {
@@ -353,7 +299,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         broadcastChannelRef.current = null;
       }
     };
-  }, [loadContracts, applyRealtimeChange]);
+  }, [loadContracts]);
 
   const startContract = useCallback(
     async (contractData: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string }, initialStatus: "active" | "pending_signature" = "active"): Promise<string> => {
