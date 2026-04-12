@@ -1066,7 +1066,6 @@ export function HireSheet({ open, onClose }: Props) {
       {sessionPin && (
         <QRCodeSheet
           visible={qrSheetOpen}
-          pinCode={sessionPin}
           qrPayload={qrPayload}
           onClose={() => setQrSheetOpen(false)}
           onRegenerate={regeneratePin}

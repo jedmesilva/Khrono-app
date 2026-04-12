@@ -21,13 +21,12 @@ import { type QRPayload } from "@/context/AvailabilityContext";
 
 type Props = {
   visible: boolean;
-  pinCode: string;
   qrPayload: QRPayload | null;
   onClose: () => void;
   onRegenerate: () => Promise<void>;
 };
 
-export function QRCodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate }: Props) {
+export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
@@ -45,7 +44,7 @@ export function QRCodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate
   useEffect(() => {
     setConfirmRegen(false);
     setRegenerating(false);
-  }, [pinCode]);
+  }, [qrPayload]);
 
   const snapPoints = useMemo(() => ["68%"], []);
 
@@ -152,11 +151,6 @@ export function QRCodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate
             </View>
           )}
 
-          <View style={[styles.pinPill, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Feather name="hash" size={11} color={colors.textMuted} />
-            <Text style={[styles.pinPillText, { color: colors.textSecondary }]}>PIN: </Text>
-            <Text style={[styles.pinPillCode, { color: "#e06030" }]}>{pinCode}</Text>
-          </View>
         </View>
 
         <Pressable
