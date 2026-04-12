@@ -76,6 +76,12 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `artifacts/khrono/server/prepare-dev-port.js` clears stale Expo Metro processes on port 5000 before startup.
 - `artifacts/khrono/server/expo-proxy.js` tolerates an already-running preview proxy on port 22861 to avoid restart failures from orphaned background processes.
 
+## Availability Readiness
+- Prestadores só podem iniciar disponibilidade quando têm pelo menos 1 serviço ativo em `provider_services`.
+- Se o perfil ainda não estiver pronto, a ativação abre `ProfileReadinessSheet` em vez de criar sessão, PIN ou QR Code.
+- A aba de perfil exibe um card de checklist enquanto falta serviço ativo; o card some quando o prestador já pode receber contratos.
+- Ao salvar um novo serviço, a lista de serviços e a prontidão do perfil são atualizadas imediatamente.
+
 ## Supabase Schema (migration history retained)
 
 ### Core Tables

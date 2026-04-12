@@ -1077,6 +1077,12 @@ export function HireSheet({ open, onClose }: Props) {
           onRegenerate={regeneratePin}
         />
       )}
+
+      <ProfileReadinessSheet
+        visible={readinessSheetOpen}
+        readiness={profileReadiness}
+        onClose={() => setReadinessSheetOpen(false)}
+      />
     </>
   );
 }

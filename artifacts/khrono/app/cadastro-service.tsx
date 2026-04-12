@@ -21,6 +21,7 @@ import { type Skill, type Tool, type VerificationType } from "@/constants/profil
 import { useCatalog, type CatalogService } from "@/context/CatalogContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
 import { useServices, formatMonthYear } from "@/context/ServicesContext";
+import { useAvailability } from "@/context/AvailabilityContext";
 import { supabase } from "@/lib/supabase";
 
 const DRAFT_KEY = "@khrono/service_draft";
@@ -123,6 +124,7 @@ export default function CadastroServiceScreen() {
   );
 
   const userTools: Tool[] = myTools;
+  const { refreshProfileReadiness } = useAvailability();
 
   const filteredTemplates = query.length > 0
     ? catalogServices.filter((t) => normalize(t.nome).includes(normalize(query)) || normalize(t.category ?? "").includes(normalize(query)))
@@ -245,6 +247,7 @@ export default function CadastroServiceScreen() {
       }
 
       await refresh();
+      await refreshProfileReadiness();
     } catch (e) {
       console.warn("[cadastro-service] save error:", e);
     } finally {

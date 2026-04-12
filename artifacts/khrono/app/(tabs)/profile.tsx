@@ -17,6 +17,8 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { SkillListCard } from "@/components/SkillListCard";
 import { ToolListCard } from "@/components/ToolListCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { ProfileReadinessSheet } from "@/components/ProfileReadinessSheet";
+import { useAvailability } from "@/context/AvailabilityContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCatalog } from "@/context/CatalogContext";
 import { useContracts } from "@/context/ContractsContext";
@@ -283,11 +285,13 @@ export default function ProfileScreen() {
   const { userSkills } = useUserCatalog();
   const { skills: catalogSkills } = useCatalog();
   const { location, saveLocation } = useLocation();
+  const { profileReadiness, refreshProfileReadiness } = useAvailability();
   const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
+  const [readinessSheetOpen, setReadinessSheetOpen] = useState(false);
   const [memberSince, setMemberSince] = useState<string>("");
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
@@ -324,6 +328,15 @@ export default function ProfileScreen() {
   const verifiedSkillsCount = mappedSkills.filter((s) => s.verified !== null).length;
   const verifiedToolsCount = myTools.filter((t) => t.verified !== null).length;
   const hasVerified = verifiedSkillsCount > 0 || verifiedToolsCount > 0;
+  const activeServicesCount = myServices.filter((service) => service.active).length;
+  const hasActiveService = activeServicesCount > 0;
+  const shouldShowReadinessCard = profileReadiness.checked
+    ? !profileReadiness.ready
+    : !hasActiveService;
+
+  useEffect(() => {
+    refreshProfileReadiness();
+  }, [refreshProfileReadiness, activeServicesCount, myServices.length]);
 
   function handleVerifiedPress(type: VerificationType, context?: "service") {
     const baseMessage =
@@ -463,6 +476,76 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {shouldShowReadinessCard ? (
+          <Pressable
+            style={[
+              styles.readinessCard,
+              { backgroundColor: colors.card, borderColor: "#e0903035" },
+            ]}
+            onPress={async () => {
+              await refreshProfileReadiness();
+              setLocationSheetOpen(false);
+              setReadinessSheetOpen(true);
+            }}
+          >
+            <View style={styles.readinessTopRow}>
+              <View style={[styles.readinessIconWrap, { backgroundColor: "#e0903012", borderColor: "#e0903030" }]}>
+                <Feather name="alert-circle" size={18} color="#e09030" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.readinessTitle, { color: colors.text }]}>
+                  Complete seu perfil para receber contratos
+                </Text>
+                <Text style={[styles.readinessSubtitle, { color: colors.textMuted }]}>
+                  Cadastre pelo menos 1 serviço ativo antes de ficar disponível.
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={16} color={colors.chevron} />
+            </View>
+
+            <View style={[styles.readinessProgressBg, { backgroundColor: colors.surface }]}>
+              <View
+                style={[
+                  styles.readinessProgressFill,
+                  { width: hasActiveService ? "100%" : "0%" },
+                ]}
+              />
+            </View>
+
+            <View style={styles.readinessCheckRow}>
+              <View
+                style={[
+                  styles.readinessCheckIcon,
+                  {
+                    backgroundColor: hasActiveService ? "#18a06b12" : "#e0903012",
+                    borderColor: hasActiveService ? "#18a06b30" : "#e0903030",
+                  },
+                ]}
+              >
+                <Feather
+                  name={hasActiveService ? "check" : "x"}
+                  size={12}
+                  color={hasActiveService ? "#18a06b" : "#e09030"}
+                />
+              </View>
+              <Text style={[styles.readinessCheckText, { color: colors.textSecondary }]}>
+                {hasActiveService
+                  ? `${activeServicesCount} serviço ativo cadastrado`
+                  : "Nenhum serviço ativo cadastrado"}
+              </Text>
+              {!hasActiveService ? (
+                <Pressable
+                  style={[styles.readinessAction, { borderColor: "#e0603040" }]}
+                  onPress={() => router.push("/cadastro-service")}
+                >
+                  <Text style={styles.readinessActionText}>Adicionar</Text>
+                  <Feather name="arrow-right" size={11} color="#e06030" />
+                </Pressable>
+              ) : null}
+            </View>
+          </Pressable>
+        ) : null}
+
         {/* Location card */}
         <Pressable style={[styles.locationCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setLocationSheetOpen(true)}>
           <View style={[styles.locationIconWrap, location.mode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" } : { backgroundColor: "#e0603015", borderColor: "#e0603030" }]}>
@@ -573,6 +656,11 @@ export default function ProfileScreen() {
           saveLocation(mode, address, radius);
         }}
       />
+      <ProfileReadinessSheet
+        visible={readinessSheetOpen}
+        readiness={profileReadiness}
+        onClose={() => setReadinessSheetOpen(false)}
+      />
     </View>
   );
 }
@@ -598,6 +686,19 @@ const styles = StyleSheet.create({
   statValue: { fontFamily: "DMSans_500Medium", fontSize: 22 },
   statLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },
   statDivider: { width: 1, height: 32, marginHorizontal: 8 },
+
+  readinessCard: { borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 12, gap: 12 },
+  readinessTopRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  readinessIconWrap: { width: 42, height: 42, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  readinessTitle: { fontFamily: "Sora_700Bold", fontSize: 14, letterSpacing: -0.2 },
+  readinessSubtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 16, marginTop: 2 },
+  readinessProgressBg: { height: 6, borderRadius: 3, overflow: "hidden" },
+  readinessProgressFill: { height: "100%", borderRadius: 3, backgroundColor: "#18a06b" },
+  readinessCheckRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  readinessCheckIcon: { width: 24, height: 24, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  readinessCheckText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 12, lineHeight: 17 },
+  readinessAction: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
+  readinessActionText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#e06030" },
 
   locationCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 12 },
   locationIconWrap: { width: 44, height: 44, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
