@@ -14,6 +14,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useSharedValue as usePulseValue, withRepeat, withSequence } from "react-native-reanimated";
 import {
   ActivityIndicator,
   Keyboard,
