@@ -63,15 +63,14 @@ async function markPinAsUsed(pinId: string) {
 async function fetchProviderProfile(profileId: string, pinId: string): Promise<{ provider: ProviderData; pinId: string } | null> {
   const [profileRes, provRes, servicesRes] = await Promise.all([
     supabase.from("profiles").select("id, name, first_name").eq("id", profileId).single(),
-    supabase.from("provider_profiles").select("nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
+    supabase.from("provider_profiles").select("nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).maybeSingle(),
     supabase.from("provider_services").select("id, nome, valor_hora, nota, avaliacoes").eq("profile_id", profileId).eq("is_active", true).order("sort_order"),
   ]);
 
   if (profileRes.error || !profileRes.data) return null;
-  if (provRes.error || !provRes.data) return null;
 
   const profile = profileRes.data;
-  const prov = provRes.data;
+  const prov = provRes.data ?? { nota: 0, avaliacoes: 0, total_contracts: 0, verified: false };
   const name = profile.name || profile.first_name;
 
   return {
