@@ -293,6 +293,35 @@ export function AvailabilityProvider({
     }
   }
 
+  // ── Polling fallback: detecta PIN usado quando realtime não dispara ──────────
+  // Sem REPLICA IDENTITY FULL na tabela provider_pins, o filtro de UPDATE
+  // por profile_id não funciona no WAL (só o PK + colunas alteradas são enviados).
+  // Este polling verifica o PIN ativo a cada 10 s e regenera se foi consumido.
+  useEffect(() => {
+    if (status !== "active") return;
+
+    const interval = setInterval(async () => {
+      const pinId = pinIdRef.current;
+      const profileId = profileIdRef.current;
+      const sessionId = sessionIdRef.current;
+      if (!pinId || !profileId) return;
+
+      const { data } = await supabase
+        .from("provider_pins")
+        .select("status")
+        .eq("id", pinId)
+        .single();
+
+      if (data?.status === "used" || data?.status === "invalidated") {
+        pinIdRef.current = null;
+        setQrPayload(null);
+        await insertNewPin(profileId, sessionId);
+      }
+    }, 10_000);
+
+    return () => clearInterval(interval);
+  }, [status]);
+
   // ── Network listener ───────────────────────────────────────────────────────
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(async (state) => {

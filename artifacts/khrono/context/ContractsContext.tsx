@@ -177,9 +177,9 @@ function mapDbToContract(c: any, userId: string): Contract {
 
 const CONTRACT_SELECT = `
   *,
-  contractor:profiles!contracts_contractor_id_fkey(id, name, first_name),
-  hired:profiles!contracts_hired_id_fkey(id, name, first_name, provider_profiles(nota, avaliacoes, total_contracts)),
-  service:provider_services!contracts_service_id_fkey(id, nome, nota, avaliacoes, valor_hora)
+  contractor:profiles!contractor_id(id, name, first_name),
+  hired:profiles!hired_id(id, name, first_name, provider_profiles(nota, avaliacoes, total_contracts)),
+  service:provider_services!service_id(id, nome, nota, avaliacoes, valor_hora)
 `;
 
 export function ContractsProvider({ children }: { children: React.ReactNode }) {
@@ -208,10 +208,14 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           .limit(30),
       ]);
 
-      if (!activeRes.error && activeRes.data) {
+      if (activeRes.error) {
+        console.warn("[ContractsContext] active contracts query error:", activeRes.error.message, activeRes.error.details);
+      } else if (activeRes.data) {
         setActiveContracts(activeRes.data.map((c) => mapDbToContract(c, userId)));
       }
-      if (!historyRes.error && historyRes.data) {
+      if (historyRes.error) {
+        console.warn("[ContractsContext] history contracts query error:", historyRes.error.message, historyRes.error.details);
+      } else if (historyRes.data) {
         setHistory(historyRes.data.map((c) => mapDbToContract(c, userId)));
       }
     } catch (e) {
@@ -268,10 +272,17 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Polling fallback: recarrega contratos a cada 30 s caso o realtime não dispare
+    // (acontece quando a tabela não está na publication supabase_realtime)
+    const pollInterval = setInterval(() => {
+      if (userIdRef.current) loadContracts(userIdRef.current);
+    }, 30_000);
+
     return () => {
       subscription.unsubscribe();
       if (contractorChannel) supabase.removeChannel(contractorChannel);
       if (hiredChannel) supabase.removeChannel(hiredChannel);
+      clearInterval(pollInterval);
     };
   }, [loadContracts]);
 
