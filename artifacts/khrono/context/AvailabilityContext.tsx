@@ -73,6 +73,18 @@ async function makeChecksum(
   return digest.substring(0, 8);
 }
 
+export async function verifyQRChecksum(payload: QRPayload): Promise<boolean> {
+  try {
+    const digest = await ExpoCrypto.digestStringAsync(
+      ExpoCrypto.CryptoDigestAlgorithm.SHA256,
+      payload.pid + payload.sid + payload.pin
+    );
+    return digest.substring(0, 8) === payload.chk;
+  } catch {
+    return false;
+  }
+}
+
 async function getGps(): Promise<{
   lat: number | null;
   lng: number | null;

@@ -23,7 +23,6 @@ import {
   View,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import * as ExpoCrypto from "expo-crypto";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -39,7 +38,7 @@ import { PincodeSheet } from "@/components/PincodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
-import { useAvailability, type SessionStatus, type QRPayload } from "@/context/AvailabilityContext";
+import { useAvailability, verifyQRChecksum, type SessionStatus, type QRPayload } from "@/context/AvailabilityContext";
 import { supabase } from "@/lib/supabase";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -107,14 +106,6 @@ async function lookupProviderByPin(pin: string): Promise<{ provider: ProviderDat
 
   if (pinErr || !pinRow) return null;
   return fetchProviderProfile(pinRow.profile_id as string, pinRow.id as string);
-}
-
-async function verifyQRChecksum(payload: QRPayload): Promise<boolean> {
-  const digest = await ExpoCrypto.digestStringAsync(
-    ExpoCrypto.CryptoDigestAlgorithm.SHA256,
-    payload.pid + payload.sid + payload.pin
-  );
-  return digest.substring(0, 8) === payload.chk;
 }
 
 async function lookupProviderByQRPayload(payload: QRPayload): Promise<{ provider: ProviderData; pinId: string } | null> {
