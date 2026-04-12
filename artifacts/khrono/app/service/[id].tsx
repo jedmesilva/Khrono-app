@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -14,8 +15,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
+import { useUserCatalog } from "@/context/UserCatalogContext";
 import { useTheme } from "@/context/ThemeContext";
-import { MY_PROFILE, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { Skill, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { formatMonthYear } from "@/context/ServicesContext";
 
 type ExpandedCard = "rating" | "reviews" | "contracts" | null;
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -32,7 +35,8 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
 
 export default function ServiceDetailScreen() {
   const { colors } = useTheme();
-  const { isActive, toggleActive } = useServices();
+  const { isActive, toggleActive, myServices, myTools, isLoading } = useServices();
+  const { userSkills } = useUserCatalog();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
@@ -41,7 +45,31 @@ export default function ServiceDetailScreen() {
   const [expanded, setExpanded] = useState<ExpandedCard>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
 
-  const service = MY_PROFILE.services.find((s) => s.id === id);
+  const mappedSkills: Skill[] = useMemo(
+    () =>
+      userSkills.map((entry) => ({
+        id: entry.skill_id,
+        name: entry.skill?.nome ?? "",
+        type: entry.skill?.category ?? "",
+        description: entry.skill?.description ?? "",
+        verified: entry.skill?.verified
+          ? ({ type: "documentation" } as { type: VerificationType })
+          : null,
+        isNew: false,
+        addedAt: formatMonthYear(entry.createdAt),
+      })),
+    [userSkills]
+  );
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
+        <ActivityIndicator color="#e06030" />
+      </View>
+    );
+  }
+
+  const service = myServices.find((s) => s.id === id);
 
   if (!service) {
     return (
@@ -55,23 +83,26 @@ export default function ServiceDetailScreen() {
   }
 
   const active = isActive(service.id);
-  const skill = MY_PROFILE.skills.find((s) => s.id === service.skillId);
-  const tools = MY_PROFILE.tools.filter((t) => service.toolIds.includes(t.id));
+  const skill = mappedSkills.find(
+    (s) => s.name.toLowerCase() === (service.skillId ?? "").toLowerCase()
+  );
+  const tools = myTools.filter((t) => service.toolIds.includes(t.id));
 
   function handleVerifiedPress(type: VerificationType, context?: "service") {
-    const message = context === "service"
-      ? type === "documentation" ? "Serviço verificado por documentação e histórico de contratos na plataforma Krono."
-        : type === "community" ? "Serviço verificado pela comunidade com base em avaliações e contratos."
-        : "Verificação do serviço em análise pela equipe Krono."
-      : type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
-        : type === "community" ? "Verificado por avaliações da comunidade de usuários."
-        : "Verificação em análise pela equipe Krono.";
+    const message =
+      context === "service"
+        ? type === "documentation" ? "Serviço verificado por documentação e histórico de contratos na plataforma Krono."
+          : type === "community" ? "Serviço verificado pela comunidade com base em avaliações e contratos."
+          : "Verificação do serviço em análise pela equipe Krono."
+        : type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
+          : type === "community" ? "Verificado por avaliações da comunidade de usuários."
+          : "Verificação em análise pela equipe Krono.";
     setDialog({ title: VERIFICATION_LABELS[type], message });
   }
 
   function handleMoreOptions() {
     setDialog({
-      title: service.name,
+      title: service!.name,
       buttons: [
         {
           label: "Editar service",
@@ -83,7 +114,7 @@ export default function ServiceDetailScreen() {
           onPress: () => {
             setDialog({
               title: "Excluir service?",
-              message: `"${service.name}" será removido do seu perfil permanentemente.`,
+              message: `"${service!.name}" será removido do seu perfil permanentemente.`,
               buttons: [
                 { label: "Cancelar", onPress: () => setDialog(null) },
                 {
@@ -129,7 +160,7 @@ export default function ServiceDetailScreen() {
           </Pressable>
         </View>
 
-        {/* Linha de metadata: categoria + status + preço */}
+        {/* Linha de metadata: categoria + status + toggle */}
         <View style={styles.metaRow}>
           <View style={styles.metaBadgesLeft}>
             {skill?.type && (
@@ -160,7 +191,9 @@ export default function ServiceDetailScreen() {
         {/* Preço em destaque */}
         <View style={[styles.priceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>VALOR POR HORA</Text>
-          <Text style={[styles.priceValue, { color: active ? "#e06030" : colors.textDim }]}>R${service.hourlyRate}<Text style={styles.priceUnit}>/h</Text></Text>
+          <Text style={[styles.priceValue, { color: active ? "#e06030" : colors.textDim }]}>
+            R${service.hourlyRate}<Text style={styles.priceUnit}>/h</Text>
+          </Text>
         </View>
 
         {/* Detalhes */}
@@ -174,12 +207,12 @@ export default function ServiceDetailScreen() {
             <View style={[styles.detailDivider, { backgroundColor: colors.divider }]} />
             <View style={styles.detailItem}>
               <Text style={[styles.detailItemLabel, { color: colors.textDim }]}>ADICIONADO EM</Text>
-              <Text style={[styles.detailItemValue, { color: colors.text }]}>{service.addedAt}</Text>
+              <Text style={[styles.detailItemValue, { color: colors.text }]}>{service.addedAt || "—"}</Text>
             </View>
           </View>
         </View>
 
-        {/* Composição: mesma linguagem visual do card */}
+        {/* Composição */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>COMPOSIÇÃO</Text>
 
@@ -197,7 +230,9 @@ export default function ServiceDetailScreen() {
                     <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
                   )}
                 </View>
-                <Text style={[styles.compDetail, { color: colors.textMuted }]}>{skill.type} · adicionada {skill.addedAt}</Text>
+                <Text style={[styles.compDetail, { color: colors.textMuted }]}>
+                  {skill.type}{skill.addedAt ? ` · adicionada ${skill.addedAt}` : ""}
+                </Text>
               </View>
             </View>
           ) : (
@@ -263,7 +298,9 @@ export default function ServiceDetailScreen() {
                 label: "AVALIAÇÕES",
                 expandContent: (
                   <View>
-                    {service.reviewsList.map((r, i) => (
+                    {service.reviewsList.length === 0 ? (
+                      <Text style={[styles.perfExpandedText, { color: colors.textDim }]}>sem avaliações ainda</Text>
+                    ) : service.reviewsList.map((r, i) => (
                       <View key={i} style={[styles.reviewItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.surface }]}>
                         <View style={styles.reviewItemHeader}>
                           <Text style={[styles.reviewAuthor, { color: colors.text }]}>{r.author}</Text>
@@ -282,7 +319,9 @@ export default function ServiceDetailScreen() {
                 label: "CONTRATOS",
                 expandContent: (
                   <View>
-                    {service.contractsList.map((c, i) => (
+                    {service.contractsList.length === 0 ? (
+                      <Text style={[styles.perfExpandedText, { color: colors.textDim }]}>sem contratos registrados</Text>
+                    ) : service.contractsList.map((c, i) => (
                       <View key={i} style={[styles.contractItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.surface }]}>
                         <View style={styles.contractRow}>
                           <Text style={[styles.contractClient, { color: colors.text }]}>{c.client}</Text>
@@ -371,7 +410,6 @@ const styles = StyleSheet.create({
   compItem: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 2 },
   compIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 },
   compBody: { flex: 1, gap: 2 },
-  compTypeLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1, textTransform: "uppercase" },
   compNameRow: { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" },
   compName: { fontFamily: "Sora_600SemiBold", fontSize: 13, flexShrink: 1 },
   compDetail: { fontFamily: "DMSans_400Regular", fontSize: 10 },

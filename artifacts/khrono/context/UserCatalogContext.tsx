@@ -11,6 +11,7 @@ import type { CatalogSkill, CatalogService } from "./CatalogContext";
 export type UserSkillEntry = {
   id: string;
   skill_id: string;
+  createdAt: string;
   skill: CatalogSkill;
 };
 
@@ -44,7 +45,7 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
     const [skillsRes, servicesRes] = await Promise.all([
       supabase
         .from("user_skills")
-        .select("id, skill_id, skill:skills_catalog(*)")
+        .select("id, skill_id, created_at, skill:skills_catalog(*)")
         .eq("profile_id", uid),
       supabase
         .from("user_services")
@@ -57,6 +58,7 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
         skillsRes.data.map((row: any) => ({
           id: row.id,
           skill_id: row.skill_id,
+          createdAt: row.created_at ?? "",
           skill: row.skill as CatalogSkill,
         }))
       );
@@ -102,13 +104,18 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
     const { data, error } = await supabase
       .from("user_skills")
       .insert({ profile_id: userId, skill_id: skillId })
-      .select("id, skill_id, skill:skills_catalog(*)")
+      .select("id, skill_id, created_at, skill:skills_catalog(*)")
       .single();
 
     if (!error && data) {
       setUserSkills((prev) => [
         ...prev,
-        { id: data.id, skill_id: data.skill_id, skill: (data as any).skill },
+        {
+          id: data.id,
+          skill_id: data.skill_id,
+          createdAt: (data as any).created_at ?? "",
+          skill: (data as any).skill,
+        },
       ]);
     }
   }, [userId]);
