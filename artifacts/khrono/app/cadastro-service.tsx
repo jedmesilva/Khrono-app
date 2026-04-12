@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -17,9 +17,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CadastroDone } from "@/components/CadastroDone";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
-import { MY_PROFILE, Skill, Tool } from "@/constants/profile-data";
+import { type Skill, type Tool, type VerificationType } from "@/constants/profile-data";
 import { useCatalog, type CatalogService } from "@/context/CatalogContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
+import { useServices, formatMonthYear } from "@/context/ServicesContext";
 import { supabase } from "@/lib/supabase";
 
 const DRAFT_KEY = "@khrono/service_draft";
@@ -101,11 +102,27 @@ export default function CadastroServiceScreen() {
   }
 
   const { services: catalogServices, isLoading: catalogLoading } = useCatalog();
-  const { addService } = useUserCatalog();
+  const { userSkills: rawUserSkills } = useUserCatalog();
+  const { myTools, providerProfile, refresh } = useServices();
   const [isSaving, setIsSaving] = useState(false);
 
-  const userSkills = MY_PROFILE.skills;
-  const userTools = MY_PROFILE.tools;
+  const userSkills: Skill[] = useMemo(
+    () =>
+      rawUserSkills.map((entry) => ({
+        id: entry.skill_id,
+        name: entry.skill?.nome ?? "",
+        type: entry.skill?.category ?? "",
+        description: entry.skill?.description ?? "",
+        verified: entry.skill?.verified
+          ? ({ type: "documentation" } as { type: VerificationType })
+          : null,
+        isNew: false,
+        addedAt: formatMonthYear(entry.createdAt),
+      })),
+    [rawUserSkills]
+  );
+
+  const userTools: Tool[] = myTools;
 
   const filteredTemplates = query.length > 0
     ? catalogServices.filter((t) => normalize(t.nome).includes(normalize(query)) || normalize(t.category ?? "").includes(normalize(query)))
@@ -195,19 +212,32 @@ export default function CadastroServiceScreen() {
     const finalName = draft.serviceName;
     setIsSaving(true);
     try {
-      if (draft.selectedServiceId) {
-        await addService(draft.selectedServiceId);
-      } else {
-        // Custom service: insert into catalog as unverified, then link to user
-        const { data: newService } = await supabase
-          .from("services_catalog")
-          .insert({ nome: draft.serviceName.trim(), description: draft.serviceDescription.trim() || null, status: "active", verified: false })
-          .select("id")
-          .single();
-        if (newService) {
-          await addService(newService.id);
-        }
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const hourlyRate = Number(draft.hourlyRateInput) || 50;
+      const valorBase = providerProfile?.valorBase ?? 50;
+      const multiplicador = (hourlyRate / valorBase).toFixed(3);
+
+      const firstSkill = draft.selectedSkillIds.length > 0
+        ? (userSkills.find((s) => s.id === draft.selectedSkillIds[0])?.name ?? null)
+        : null;
+
+      const toolsData = draft.selectedToolIds
+        .map((tid) => userTools.find((t) => t.id === tid))
+        .filter(Boolean)
+        .map((t) => ({ nome: t!.name, tipo: t!.type }));
+
+      await supabase.from("provider_services").insert({
+        profile_id: user.id,
+        nome: draft.serviceName.trim(),
+        multiplicador,
+        skill: firstSkill,
+        tools: toolsData,
+        is_active: true,
+      });
+
+      await refresh();
     } catch (e) {
       console.warn("[cadastro-service] save error:", e);
     } finally {
