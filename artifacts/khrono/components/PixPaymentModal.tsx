@@ -73,6 +73,7 @@ export function PixPaymentModal({
   const pixKey = buildPixKey(providerName);
   const isAberto = tipoContrato === "aberto";
   const confirmedRef = useRef(false);
+  const closingRef = useRef(false);
 
   useEffect(() => {
     if (visible) {
@@ -97,6 +98,7 @@ export function PixPaymentModal({
   }
 
   function handleClose() {
+    closingRef.current = true;
     ref.current?.dismiss();
     onClose();
   }
@@ -109,10 +111,11 @@ export function PixPaymentModal({
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
       onDismiss={() => {
-        if (!confirmedRef.current) {
+        if (!confirmedRef.current && !closingRef.current) {
           onClose();
         }
         confirmedRef.current = false;
+        closingRef.current = false;
       }}
     >
       <BottomSheetScrollView

@@ -127,7 +127,7 @@ export default function ContractDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { activeContracts, history, endContract, cancelContract } = useContracts();
+  const { activeContracts, history, endContract, cancelContract, acceptContract, beginContract } = useContracts();
 
   const contract = [...activeContracts, ...history].find(c => c.id === id);
 
@@ -171,6 +171,26 @@ export default function ContractDetailScreen() {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [contract?.status, contract?.agendado, contract?.startedAt]);
+
+  const handleAcceptContract = useCallback(async () => {
+    if (!contract) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    try {
+      await acceptContract(contract.id);
+    } catch (e) {
+      console.warn("[ContractDetail] acceptContract error:", e);
+    }
+  }, [acceptContract, contract?.id]);
+
+  const handleBeginContract = useCallback(async () => {
+    if (!contract) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    try {
+      await beginContract(contract.id);
+    } catch (e) {
+      console.warn("[ContractDetail] beginContract error:", e);
+    }
+  }, [beginContract, contract?.id]);
 
   if (!contract) {
     return (
@@ -532,7 +552,7 @@ export default function ContractDetailScreen() {
         {isPending && !isHiring && (
           <Pressable
             style={[styles.encerrarBtn, { backgroundColor: "#18a06b", borderColor: "#18a06b" }]}
-            onPress={() => {}}
+            onPress={handleAcceptContract}
           >
             <Text style={[styles.encerrarBtnText, { color: "#fff" }]}>✓  aceitar contrato</Text>
           </Pressable>
@@ -542,7 +562,7 @@ export default function ContractDetailScreen() {
         {isAccepted && (
           <Pressable
             style={[styles.encerrarBtn, { backgroundColor: cor, borderColor: cor }]}
-            onPress={() => {}}
+            onPress={handleBeginContract}
           >
             <Text style={[styles.encerrarBtnText, { color: "#fff" }]}>▶  iniciar contrato</Text>
           </Pressable>

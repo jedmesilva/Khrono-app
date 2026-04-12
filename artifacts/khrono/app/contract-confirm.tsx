@@ -42,7 +42,7 @@ export default function ContractConfirmScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
-  const { startContract, cancelContract } = useContracts();
+  const { startContract } = useContracts();
   const { cards } = useWallet();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -176,6 +176,16 @@ export default function ContractConfirmScreen() {
       );
     } finally {
       setConfirmLoading(false);
+    }
+  };
+
+  const finishPixFlow = () => {
+    const id = activeContractId;
+    setPixPaymentAberta(false);
+    setActiveContractId(null);
+    setPendingProvider(null);
+    if (id) {
+      router.replace(`/contract-detail/${id}` as any);
     }
   };
 
@@ -529,19 +539,8 @@ export default function ContractConfirmScreen() {
       {/* ── PIX PAYMENT MODAL ── */}
       <PixPaymentModal
         visible={pixPaymentAberta}
-        onClose={async () => {
-          if (activeContractId) await cancelContract(activeContractId);
-          setActiveContractId(null);
-          setPixPaymentAberta(false);
-        }}
-        onConfirm={() => {
-          const id = activeContractId;
-          setPixPaymentAberta(false);
-          setActiveContractId(null);
-          if (id) {
-            router.replace(`/contract-detail/${id}` as any);
-          }
-        }}
+        onClose={finishPixFlow}
+        onConfirm={finishPixFlow}
         providerName={provider.name}
         amount={tipoContrato === "definido" ? Number(valorTotal ?? 0) : valorHora}
         tipoContrato={tipoContrato}

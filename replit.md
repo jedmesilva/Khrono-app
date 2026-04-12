@@ -63,7 +63,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 
 ### Secrets (in Replit Secrets)
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase public anon key (used in app)
-- `EXPO_SUPABASE_ACESS_TOKEN` — Supabase Management API token for applying remote SQL migrations
+- `EXPO_SUPABASE_ACCESS_TOKEN` — Supabase Management API token for applying remote SQL migrations
 - `EXPO_SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key for privileged server-side/database maintenance
 - `DATABASE_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` — Replit PostgreSQL
 
@@ -113,6 +113,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 8. `20260412_user_settings.sql` — persisted per-user settings/preferences
 9. `20260412_availability_sessions.sql` — availability session history (status, GPS, PIN, timestamps)
 10. `20260412_provider_pins_status.sql` — PIN lifecycle: adds `status` (active/used/invalidated), `session_id`, `used_at`, `invalidated_at` columns
+11. `20260412_fix_contract_status_and_provider_pins.sql` — restores `accepted` in the contract status check and recreates provider PIN RLS policies for active PIN/QR lookup and PIN consumption
 
 ## Code Generation
 ```bash
