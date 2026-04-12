@@ -142,10 +142,12 @@ const KEYPAD_ROWS = [
 function PincodeContent({
   onFoundProvider,
   onShowDialog,
+  onNotifyPin,
   colors,
 }: {
   onFoundProvider: (p: ProviderData) => void;
   onShowDialog: (d: DialogState) => void;
+  onNotifyPin?: (profileId: string) => void;
   colors: ColorPalette;
 }) {
   const [pin, setPin] = useState("");
@@ -187,8 +189,8 @@ function PincodeContent({
   const handleContinue = async () => {
     if (!found) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Mark the used PIN before navigating — provider's context will auto-generate a new one
     await markPinAsUsed(found.pinId);
+    if (found.provider.profileId) onNotifyPin?.(found.provider.profileId);
     onFoundProvider(found.provider);
   };
 
@@ -308,10 +310,12 @@ const CORNERS = [
 function QrcodeContent({
   onFoundProvider,
   onShowDialog,
+  onNotifyPin,
   colors,
 }: {
   onFoundProvider: (p: ProviderData) => void;
   onShowDialog: (d: DialogState) => void;
+  onNotifyPin?: (profileId: string) => void;
   colors: ColorPalette;
 }) {
   const styles = useMemo(() => createSubStyles(colors), [colors]);
@@ -348,6 +352,7 @@ function QrcodeContent({
             if (result) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               await markPinAsUsed(result.pinId);
+              if (result.provider.profileId) onNotifyPin?.(result.provider.profileId);
               onFoundProvider(result.provider);
             } else {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -380,6 +385,7 @@ function QrcodeContent({
           if (result) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             await markPinAsUsed(result.pinId);
+            if (result.provider.profileId) onNotifyPin?.(result.provider.profileId);
             onFoundProvider(result.provider);
           } else {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -655,7 +661,7 @@ export function HireSheet({ open, onClose }: Props) {
   const router = useRouter();
   const { setPendingProvider } = useConfirmation();
   const { colors } = useTheme();
-  const { status: sessionStatus, sessionPin, qrPayload, startSession, endSession, regeneratePin, profileReadiness, refreshProfileReadiness } = useAvailability();
+  const { status: sessionStatus, sessionPin, qrPayload, startSession, endSession, regeneratePin, profileReadiness, refreshProfileReadiness, notifyPinUsed } = useAvailability();
   const [activeTab, setActiveTab] = useState<HireTab>("direta");
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -1035,6 +1041,7 @@ export function HireSheet({ open, onClose }: Props) {
               <PincodeContent
                 onFoundProvider={handleFoundProvider}
                 onShowDialog={setDialog}
+                onNotifyPin={notifyPinUsed}
                 colors={colors}
               />
             )}
@@ -1042,6 +1049,7 @@ export function HireSheet({ open, onClose }: Props) {
               <QrcodeContent
                 onFoundProvider={handleFoundProvider}
                 onShowDialog={setDialog}
+                onNotifyPin={notifyPinUsed}
                 colors={colors}
               />
             )}
