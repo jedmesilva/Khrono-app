@@ -1,11 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
-  Animated,
-  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -37,27 +35,19 @@ function formatValor(ms: number, rate: number) {
   return ((ms / 1000 / 3600) * rate).toFixed(2);
 }
 
-function formatTimer(s: number) {
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-}
 
-type Etapa = "confirmacao" | "aguardando" | "ativo";
 
 export default function ContractConfirmScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
-  const { startContract, acceptContract, cancelContract, endContract } = useContracts();
+  const { startContract, cancelContract } = useContracts();
   const { cards } = useWallet();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   // ── ALL HOOKS MUST BE BEFORE ANY CONDITIONAL RETURN ──
-  const [etapa, setEtapa] = useState<Etapa>("confirmacao");
   const [tipoContrato, setTipoContrato] = useState<"aberto" | "definido">("aberto");
   const [duracaoIdx, setDuracaoIdx] = useState(1);
   const [servicoSelecionado, setServicoselecionado] = useState<ProviderService | null>(null);
@@ -78,11 +68,8 @@ export default function ContractConfirmScreen() {
     d.setDate(d.getDate() + 1);
     return d;
   });
-  const [segundos, setSegundos] = useState(0);
   const [activeContractId, setActiveContractId] = useState<string | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
-
-  const spinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!pendingProvider) {
@@ -94,33 +81,10 @@ export default function ContractConfirmScreen() {
     }
   }, [pendingProvider]);
 
-  useEffect(() => {
-    if (etapa !== "aguardando") return;
-    spinAnim.setValue(0);
-    const anim = Animated.loop(
-      Animated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    anim.start();
-    return () => anim.stop();
-  }, [etapa]);
-
-  useEffect(() => {
-    if (etapa !== "ativo") return;
-    const id = setInterval(() => setSegundos(s => s + 1), 1000);
-    return () => clearInterval(id);
-  }, [etapa]);
-
   // ── CONDITIONAL RENDER AFTER ALL HOOKS ──
   if (!pendingProvider) return null;
   const provider = pendingProvider;
   const servico = servicoSelecionado ?? provider.services[0];
-
-  const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
 
   const valorHora = servico?.hourlyRate ?? 50;
   const duracaoSelecionada = DURACOES[duracaoIdx];
@@ -131,8 +95,6 @@ export default function ContractConfirmScreen() {
     ? `${customHoras > 0 ? customHoras + "h " : ""}${customMinutos > 0 ? customMinutos + "min" : ""}`.trim() || "0min"
     : duracaoSelecionada.label;
   const valorTotal = tipoContrato === "definido" ? formatValor(duracaoMs, valorHora) : null;
-  const timerRestante = tipoContrato === "definido" ? Math.max(0, duracaoMs / 1000 - segundos) : null;
-  const progresso = tipoContrato === "definido" ? Math.min(1, segundos / (duracaoMs / 1000)) : null;
 
   const labelValor = (() => {
     const isCash = metodoPagamento === "dinheiro";
@@ -202,7 +164,8 @@ export default function ContractConfirmScreen() {
       if (metodoPagamento === "pix") {
         setPixPaymentAberta(true);
       } else {
-        setEtapa("aguardando");
+        setPendingProvider(null);
+        router.replace(`/contract-detail/${id}` as any);
       }
     } catch (e: any) {
       console.warn("[ContractConfirm] confirmar error:", e);
@@ -216,24 +179,6 @@ export default function ContractConfirmScreen() {
     }
   };
 
-  const aceitar = async () => {
-    if (!activeContractId) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    try {
-      await acceptContract(activeContractId);
-      router.replace(`/contract-detail/${activeContractId}` as any);
-    } catch (e) {
-      console.warn("[ContractConfirm] aceitar error:", e);
-    }
-  };
-
-  const encerrar = () => {
-    if (activeContractId) endContract(activeContractId);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setPendingProvider(null);
-    router.back();
-  };
-
   const goBack = () => {
     setPendingProvider(null);
     router.back();
@@ -244,7 +189,7 @@ export default function ContractConfirmScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Pressable
-          onPress={etapa === "aguardando" ? () => setEtapa("confirmacao") : etapa === "ativo" ? encerrar : goBack}
+          onPress={goBack}
           style={styles.backBtn}
           hitSlop={12}
         >
@@ -254,13 +199,12 @@ export default function ContractConfirmScreen() {
       </View>
 
       {/* ── CONFIRMAÇÃO ── */}
-      {etapa === "confirmacao" && (
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
           <Text style={styles.sectionLabel}>você está contratando:</Text>
 
           {/* Provider card */}
@@ -560,7 +504,6 @@ export default function ContractConfirmScreen() {
             <Text style={styles.cancelBtnText}>Cancelar</Text>
           </Pressable>
         </ScrollView>
-      )}
 
       {/* ── SERVICE SELECTION SHEET ── */}
       <ServiceSelectionSheet
@@ -593,7 +536,10 @@ export default function ContractConfirmScreen() {
         }}
         onConfirm={() => {
           setPixPaymentAberta(false);
-          setEtapa("aguardando");
+          if (activeContractId) {
+            setPendingProvider(null);
+            router.replace(`/contract-detail/${activeContractId}` as any);
+          }
         }}
         providerName={provider.name}
         amount={tipoContrato === "definido" ? Number(valorTotal ?? 0) : valorHora}
@@ -616,113 +562,6 @@ export default function ContractConfirmScreen() {
         }}
       />
 
-      {/* ── AGUARDANDO ── */}
-      {etapa === "aguardando" && (
-        <View style={[styles.waitingContainer, { paddingBottom: insets.bottom + 24 }]}>
-          <View style={styles.spinnerWrap}>
-            <Animated.View style={[styles.spinnerRing, { transform: [{ rotate: spin }] }]} />
-            <View style={styles.spinnerAvatar}>
-              <Text style={styles.spinnerAvatarText}>{provider.initials}</Text>
-            </View>
-          </View>
-
-          <Text style={styles.waitTitle}>Aguardando confirmação</Text>
-          <Text style={styles.waitSub}>{provider.name} está sendo notificado</Text>
-          <Text style={styles.waitMeta}>
-            {servico?.nome} · {tipoContrato === "definido"
-              ? `${duracaoLabel} · R$${valorTotal}`
-              : `Tempo em aberto · R$${valorHora.toFixed(0)}/h`}
-          </Text>
-
-          <View style={styles.simCard}>
-            <Text style={styles.simLabel}>simular resposta do contratado:</Text>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <Pressable onPress={aceitar} style={styles.simAcceptBtn}>
-                <Feather name="check" size={14} color={"#18a06b"} />
-                <Text style={styles.simAcceptText}>Aceitar</Text>
-              </Pressable>
-              <Pressable
-                onPress={async () => {
-                  if (activeContractId) await cancelContract(activeContractId);
-                  setActiveContractId(null);
-                  setEtapa("confirmacao");
-                }}
-                style={styles.simRejectBtn}
-              >
-                <Text style={styles.simRejectText}>Recusar</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          <Pressable
-            onPress={async () => {
-              if (activeContractId) await cancelContract(activeContractId);
-              setActiveContractId(null);
-              goBack();
-            }}
-            style={[styles.cancelBtn, { width: "100%" }]}
-          >
-            <Text style={styles.cancelBtnText}>Cancelar solicitação</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* ── ATIVO ── */}
-      {etapa === "ativo" && (
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.activeBadge}>
-            <View style={styles.activeDot} />
-            <Text style={styles.activeBadgeText}>contrato ativo</Text>
-          </View>
-
-          <View style={styles.activeProviderRow}>
-            <View style={[styles.avatar, { borderColor: "#18a06b" }]}>
-              <Text style={styles.avatarText}>{provider.initials}</Text>
-            </View>
-            <View>
-              <Text style={styles.providerName}>{provider.name}</Text>
-              <Text style={styles.activeSkillText}>{servico?.nome}</Text>
-            </View>
-          </View>
-
-          {tipoContrato === "aberto" ? (
-            <View style={styles.timerWrap}>
-              <Text style={styles.timerLabel}>tempo decorrido</Text>
-              <Text style={styles.timerValue}>{formatTimer(segundos)}</Text>
-              <Text style={styles.timerAmount}>
-                R${((segundos / 3600) * valorHora).toFixed(2)}
-              </Text>
-              <Text style={styles.timerAmountLabel}>{labelValor}</Text>
-            </View>
-          ) : (
-            <View style={styles.timerWrap}>
-              <Text style={styles.timerLabel}>tempo restante</Text>
-              <Text style={[styles.timerValue, (timerRestante ?? 0) < 600 && { color: "#ff4444" }]}>
-                {formatTimer(timerRestante ?? 0)}
-              </Text>
-              <View style={styles.progressBarWrap}>
-                <View style={[
-                  styles.progressFill,
-                  {
-                    width: `${Math.round((progresso ?? 0) * 100)}%` as any,
-                    backgroundColor: (timerRestante ?? 0) < 600 ? "#ff4444" : "#e06030",
-                  }
-                ]} />
-              </View>
-              <Text style={styles.timerAmount}>R${valorTotal}</Text>
-              <Text style={styles.timerAmountLabel}>{labelValor}</Text>
-            </View>
-          )}
-
-          <Pressable onPress={encerrar} style={styles.endBtn}>
-            <Text style={styles.endBtnText}>■  encerrar contrato</Text>
-          </Pressable>
-        </ScrollView>
-      )}
     </View>
   );
 }

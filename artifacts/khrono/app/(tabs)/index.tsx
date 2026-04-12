@@ -80,7 +80,7 @@ function ContractCardSkeleton() {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { activeContracts, isLoading, endContract } = useContracts();
+  const { activeContracts, isLoading, endContract, acceptContract, beginContract } = useContracts();
   const { colors } = useTheme();
   const isWeb = Platform.OS === "web";
   const [notifOpen, setNotifOpen] = useState(false);
@@ -124,6 +124,30 @@ export default function HomeScreen() {
       });
     },
     [endContract]
+  );
+
+  const handleAccept = useCallback(
+    async (id: string) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      try {
+        await acceptContract(id);
+      } catch (e) {
+        console.warn("[HomeScreen] acceptContract error:", e);
+      }
+    },
+    [acceptContract]
+  );
+
+  const handleBegin = useCallback(
+    async (id: string) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      try {
+        await beginContract(id);
+      } catch (e) {
+        console.warn("[HomeScreen] beginContract error:", e);
+      }
+    },
+    [beginContract]
   );
 
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -208,6 +232,8 @@ export default function HomeScreen() {
                   key={c.id}
                   contract={c}
                   onStop={handleStop}
+                  onAccept={handleAccept}
+                  onBegin={handleBegin}
                   onPress={() => router.push(`/contract-detail/${c.id}` as any)}
                 />
               ))}
