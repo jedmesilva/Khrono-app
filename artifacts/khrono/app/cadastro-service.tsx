@@ -216,29 +216,33 @@ export default function CadastroServiceScreen() {
       if (!user) throw new Error("Not authenticated");
 
       const hourlyRate = Number(draft.hourlyRateInput) || 50;
-      const valorBase = providerProfile?.valorBase ?? 50;
-      const multiplicador = (hourlyRate / valorBase).toFixed(3);
 
-      const firstSkillId = draft.selectedSkillIds.length > 0 ? draft.selectedSkillIds[0] : null;
-      const firstSkill = firstSkillId
-        ? (userSkills.find((s) => s.id === firstSkillId)?.name ?? null)
-        : null;
+      const { data: newService, error: serviceError } = await supabase
+        .from("provider_services")
+        .insert({
+          profile_id: user.id,
+          nome: draft.serviceName.trim(),
+          valor_hora: hourlyRate,
+          is_active: true,
+        })
+        .select("id")
+        .single();
 
-      const toolsData = draft.selectedToolIds
-        .map((tid) => userTools.find((t) => t.id === tid))
-        .filter(Boolean)
-        .map((t) => ({ id: t!.id, nome: t!.name, tipo: t!.type }));
+      if (serviceError || !newService) throw serviceError ?? new Error("Failed to create service");
 
-      await supabase.from("provider_services").insert({
-        profile_id: user.id,
-        nome: draft.serviceName.trim(),
-        multiplicador,
-        valor_hora: hourlyRate,
-        skill: firstSkill,
-        skill_catalog_id: firstSkillId,
-        tools: toolsData,
-        is_active: true,
-      });
+      const serviceId = newService.id;
+
+      if (draft.selectedSkillIds.length > 0) {
+        await supabase.from("service_skills").insert(
+          draft.selectedSkillIds.map((skillId) => ({ service_id: serviceId, skill_id: skillId }))
+        );
+      }
+
+      if (draft.selectedToolIds.length > 0) {
+        await supabase.from("service_tools").insert(
+          draft.selectedToolIds.map((toolId) => ({ service_id: serviceId, tool_id: toolId }))
+        );
+      }
 
       await refresh();
     } catch (e) {

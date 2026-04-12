@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -14,7 +15,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
-import { PROVIDERS, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool } from "@/constants/profile-data";
+import { supabase } from "@/lib/supabase";
+import { formatMonthYear } from "@/context/ServicesContext";
 
 type ExpandedCard = "rating" | "reviews" | "contracts" | null;
 
@@ -28,6 +31,110 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
   );
 }
 
+function getInitials(name: string): string {
+  return (name ?? "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+type ServiceData = {
+  id: string;
+  name: string;
+  hourlyRate: number;
+  nota: number;
+  avaliacoes: number;
+  contracts: number;
+  isNew: boolean;
+  verified: { type: VerificationType } | null;
+  skills: Skill[];
+  tools: Tool[];
+};
+
+type ProviderMini = {
+  id: string;
+  name: string;
+  initials: string;
+  nota: number;
+  avaliacoes: number;
+};
+
+async function fetchServiceData(serviceId: string, profileId: string): Promise<{ service: ServiceData; provider: ProviderMini } | null> {
+  const [serviceRes, profileRes, ppRes, contractsRes] = await Promise.all([
+    supabase.from("provider_services")
+      .select(`id, nome, valor_hora, nota, avaliacoes, is_active, created_at, service_skills(skill_id, skill:skills_catalog(id, nome, category, description, verified)), service_tools(tool_id, tool:provider_tools(id, nome, tipo, details, is_available, created_at))`)
+      .eq("id", serviceId)
+      .single(),
+    supabase.from("profiles").select("id, name, first_name").eq("id", profileId).single(),
+    supabase.from("provider_profiles").select("nota, avaliacoes").eq("profile_id", profileId).single(),
+    supabase.from("contracts").select("id").eq("service_id", serviceId),
+  ]);
+
+  if (!serviceRes.data) return null;
+
+  const row = serviceRes.data as any;
+  const profile = profileRes.data;
+  const pp = ppRes.data;
+
+  const skills: Skill[] = (row.service_skills ?? []).map((ss: any) => {
+    const cs = ss.skill as any;
+    return {
+      id: cs?.id ?? ss.skill_id,
+      name: cs?.nome ?? "",
+      type: cs?.category ?? "",
+      description: cs?.description ?? "",
+      verified: cs?.verified ? ({ type: "documentation" as VerificationType }) : null,
+      isNew: false,
+      addedAt: "",
+    };
+  });
+
+  const tools: Tool[] = (row.service_tools ?? []).map((st: any) => {
+    const t = st.tool as any;
+    const tipo = t?.tipo ?? "equipamento";
+    const tipoNorm = tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const icon: "truck" | "tool" | "box" = tipoNorm === "veiculo" ? "truck" : tipoNorm === "ferramenta" ? "tool" : "box";
+    return {
+      id: t?.id ?? st.tool_id,
+      name: t?.nome ?? "",
+      type: tipo,
+      icon,
+      details: t?.details ?? "",
+      available: Boolean(t?.is_available),
+      verified: null,
+      addedAt: formatMonthYear(t?.created_at),
+    };
+  });
+
+  const contractsCount = contractsRes.data?.length ?? 0;
+
+  const service: ServiceData = {
+    id: row.id,
+    name: row.nome,
+    hourlyRate: Number(row.valor_hora ?? 50),
+    nota: Number(row.nota ?? 0),
+    avaliacoes: Number(row.avaliacoes ?? 0),
+    contracts: contractsCount,
+    isNew: contractsCount < 10,
+    verified: null,
+    skills,
+    tools,
+  };
+
+  const providerName = profile?.name ?? profile?.first_name ?? "Prestador";
+  const provider: ProviderMini = {
+    id: profileId,
+    name: providerName,
+    initials: getInitials(providerName),
+    nota: Number(pp?.nota ?? 0),
+    avaliacoes: Number(pp?.avaliacoes ?? 0),
+  };
+
+  return { service, provider };
+}
+
 export default function ProviderServiceScreen() {
   const { colors } = useTheme();
   const { serviceId, profileId } = useLocalSearchParams<{ serviceId: string; profileId: string }>();
@@ -35,25 +142,18 @@ export default function ProviderServiceScreen() {
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
+  const [data, setData] = useState<{ service: ServiceData; provider: ProviderMini } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expanded, setExpanded] = useState<ExpandedCard>(null);
   const [dialog, setDialog] = useState<{ title: string; message?: string } | null>(null);
 
-  const provider = PROVIDERS.find((p) => p.id === profileId);
-  const service = provider?.services.find((s) => s.id === serviceId);
-
-  if (!provider || !service) {
-    return (
-      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
-        <Text style={[styles.errorText, { color: colors.textSecondary }]}>Service não encontrado.</Text>
-      </View>
-    );
-  }
-
-  const skill = provider.skills.find((s) => s.id === service.skillId);
-  const tools = provider.tools.filter((t) => service.toolIds.includes(t.id));
+  useEffect(() => {
+    if (!serviceId || !profileId) { setIsLoading(false); return; }
+    fetchServiceData(serviceId, profileId)
+      .then((result) => setData(result))
+      .catch((err) => console.warn("[provider-service] fetch error:", err))
+      .finally(() => setIsLoading(false));
+  }, [serviceId, profileId]);
 
   function handleVerifiedPress(type: VerificationType, context?: "service") {
     const baseMessage = type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
@@ -68,6 +168,27 @@ export default function ProviderServiceScreen() {
   }
 
   function toggleCard(card: ExpandedCard) { setExpanded((prev) => (prev === card ? null : card)); }
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
+        <ActivityIndicator color="#e06030" />
+      </View>
+    );
+  }
+
+  if (!data) {
+    return (
+      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <Feather name="arrow-left" size={18} color="#e06030" />
+        </Pressable>
+        <Text style={[styles.errorText, { color: colors.textSecondary }]}>Service não encontrado.</Text>
+      </View>
+    );
+  }
+
+  const { service, provider } = data;
 
   return (
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
@@ -87,8 +208,10 @@ export default function ProviderServiceScreen() {
           </View>
         </View>
 
-        {/* Provider mini card */}
-        <Pressable style={[styles.providerMini, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push(`/user-profile/${provider.id}` as any)}>
+        <Pressable
+          style={[styles.providerMini, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+          onPress={() => router.push(`/user-profile/${provider.id}` as any)}
+        >
           <View style={styles.providerMiniAvatar}>
             <Text style={styles.providerMiniAvatarText}>{provider.initials}</Text>
           </View>
@@ -96,35 +219,42 @@ export default function ProviderServiceScreen() {
             <Text style={[styles.providerMiniName, { color: colors.text }]}>{provider.name}</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <Feather name="star" size={9} color="#e06030" />
-              <Text style={[styles.providerMiniMeta, { color: colors.textSecondary }]}>{provider.rating.toFixed(1)} · {provider.avaliacoes} avaliações</Text>
+              <Text style={[styles.providerMiniMeta, { color: colors.textSecondary }]}>
+                {provider.nota > 0 ? provider.nota.toFixed(1) : "—"} · {provider.avaliacoes} avaliações
+              </Text>
             </View>
           </View>
           <Feather name="chevron-right" size={13} color={colors.chevron} />
         </Pressable>
 
-        {/* Composition */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>COMPOSIÇÃO</Text>
 
-          {skill && (
+          {service.skills.length > 0 && (
             <View style={styles.compositionRow}>
               <View style={[styles.compIcon, { borderColor: "#e0603025", backgroundColor: "#e0603010" }]}>
                 <Feather name="star" size={13} color="#e06030" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.compLabel, { color: colors.textMuted }]}>Skill</Text>
-                <View style={styles.compNameRow}>
-                  <Text style={styles.compSkillName}>{skill.name}</Text>
-                  {skill.verified && (
-                    <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
-                  )}
-                </View>
-                <Text style={[styles.skillDesc, { color: colors.textSecondary }]}>{skill.description}</Text>
+                <Text style={[styles.compLabel, { color: colors.textMuted }]}>Skills</Text>
+                {service.skills.map((sk) => (
+                  <View key={sk.id}>
+                    <View style={styles.compNameRow}>
+                      <Text style={styles.compSkillName}>{sk.name}</Text>
+                      {sk.verified && (
+                        <VerifiedBadge onPress={() => sk.verified && handleVerifiedPress(sk.verified.type)} />
+                      )}
+                    </View>
+                    {sk.description ? (
+                      <Text style={[styles.skillDesc, { color: colors.textSecondary }]}>{sk.description}</Text>
+                    ) : null}
+                  </View>
+                ))}
               </View>
             </View>
           )}
 
-          {tools.length > 0 && (
+          {service.tools.length > 0 ? (
             <View style={[styles.compositionRow, { marginTop: 12 }]}>
               <View style={[styles.compIcon, { borderColor: "#18a06b25", backgroundColor: "#18a06b10" }]}>
                 <Feather name="key" size={13} color="#18a06b" />
@@ -132,7 +262,7 @@ export default function ProviderServiceScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={[styles.compLabel, { color: colors.textMuted }]}>Tools</Text>
                 <View style={{ gap: 6, marginTop: 2 }}>
-                  {tools.map((tool) => (
+                  {service.tools.map((tool) => (
                     <View key={tool.id}>
                       <View style={styles.compNameRow}>
                         <Text style={styles.compToolName}>{tool.name}</Text>
@@ -140,15 +270,15 @@ export default function ProviderServiceScreen() {
                           <VerifiedBadge onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)} />
                         )}
                       </View>
-                      <Text style={[styles.toolDetails, { color: colors.textDim }]}>{tool.details}</Text>
+                      {tool.details ? (
+                        <Text style={[styles.toolDetails, { color: colors.textDim }]}>{tool.details}</Text>
+                      ) : null}
                     </View>
                   ))}
                 </View>
               </View>
             </View>
-          )}
-
-          {tools.length === 0 && (
+          ) : (
             <View style={[styles.compositionRow, { marginTop: 12 }]}>
               <View style={[styles.compIcon, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
                 <Feather name="key" size={13} color={colors.textDim} />
@@ -161,52 +291,39 @@ export default function ProviderServiceScreen() {
           )}
         </View>
 
-        {/* Performance cards */}
         {!service.isNew ? (
           <View style={styles.performanceGrid}>
             {([
-              { key: "rating" as const, value: service.rating.toFixed(1), label: "NOTA", expandContent: (
-                <View style={{ gap: 8, alignItems: "flex-start" }}>
-                  <StarRow rating={Math.round(service.rating)} size={14} />
-                  <Text style={[styles.perfExpandedText, { color: colors.textSecondary }]}>Baseado em {service.reviews} avaliações</Text>
-                </View>
-              )},
-              { key: "reviews" as const, value: String(service.reviews), label: "AVALIAÇÕES", expandContent: (
-                <View>
-                  {service.reviewsList.map((r, i) => (
-                    <View key={i} style={[styles.reviewItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.surface }]}>
-                      <View style={styles.reviewItemHeader}>
-                        <Text style={[styles.reviewAuthor, { color: colors.text }]}>{r.author}</Text>
-                        <StarRow rating={r.rating} size={9} />
-                      </View>
-                      <Text style={[styles.reviewText, { color: colors.textSecondary }]}>{r.text}</Text>
-                      <Text style={[styles.reviewDate, { color: colors.textDim }]}>{r.date}</Text>
-                    </View>
-                  ))}
-                </View>
-              )},
-              { key: "contracts" as const, value: String(service.contracts), label: "CONTRATOS", expandContent: (
-                <View>
-                  {service.contractsList.map((c, i) => (
-                    <View key={i} style={[styles.contractItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.surface }]}>
-                      <View style={styles.contractRow}>
-                        <Text style={[styles.contractClient, { color: colors.text }]}>{c.client}</Text>
-                        <Text style={styles.contractValue}>{c.value}</Text>
-                      </View>
-                      <Text style={[styles.contractMeta, { color: colors.textMuted }]}>{c.date} · {c.duration}</Text>
-                    </View>
-                  ))}
-                </View>
-              )},
+              { key: "rating" as const, value: service.nota.toFixed(1), label: "NOTA" },
+              { key: "reviews" as const, value: String(service.avaliacoes), label: "AVALIAÇÕES" },
+              { key: "contracts" as const, value: String(service.contracts), label: "CONTRATOS" },
             ]).map((item) => (
-              <Pressable key={item.key} style={[styles.perfCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }, expanded === item.key && { borderColor: colors.surfaceBorder }]} onPress={() => toggleCard(item.key)}>
+              <Pressable
+                key={item.key}
+                style={[styles.perfCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }, expanded === item.key && { borderColor: colors.surfaceBorder }]}
+                onPress={() => toggleCard(item.key)}
+              >
                 <View style={styles.perfCardHeader}>
                   <Text style={[styles.perfCardValue, { color: colors.text }]}>{item.value}</Text>
                   <Feather name={expanded === item.key ? "chevron-up" : "chevron-down"} size={12} color={colors.textMuted} />
                 </View>
                 <Text style={[styles.perfCardLabel, { color: colors.textMuted }]}>{item.label}</Text>
                 {expanded === item.key && (
-                  <View style={[styles.perfExpanded, { borderTopColor: colors.surface }]}>{item.expandContent}</View>
+                  <View style={[styles.perfExpanded, { borderTopColor: colors.surface }]}>
+                    {item.key === "rating" && (
+                      <View style={{ gap: 8, alignItems: "flex-start" }}>
+                        <StarRow rating={Math.round(service.nota)} size={14} />
+                        <Text style={[styles.perfExpandedText, { color: colors.textSecondary }]}>
+                          Baseado em {service.avaliacoes} avaliações
+                        </Text>
+                      </View>
+                    )}
+                    {item.key !== "rating" && (
+                      <Text style={[styles.perfExpandedText, { color: colors.textSecondary }]}>
+                        {item.value} {item.label.toLowerCase()}
+                      </Text>
+                    )}
+                  </View>
                 )}
               </Pressable>
             ))}
@@ -232,7 +349,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 4 },
   header: { flexDirection: "row", alignItems: "flex-start", gap: 14, marginBottom: 16 },
   backBtn: { padding: 4, marginTop: 2, flexShrink: 0 },
-  serviceTitle: { fontFamily: "Sora_700Bold", fontSize: 20, marginBottom: 4 },
+  serviceTitle: { fontFamily: "Sora_700Bold", fontSize: 20, marginBottom: 4, flex: 1 },
   serviceRate: { fontFamily: "DMSans_500Medium", fontSize: 14, color: "#e06030" },
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
   providerMini: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 16 },
@@ -258,16 +375,6 @@ const styles = StyleSheet.create({
   perfCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" },
   perfExpanded: { marginTop: 16, borderTopWidth: 1, paddingTop: 14 },
   perfExpandedText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
-  reviewItem: { paddingVertical: 12 },
-  reviewItemHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-  reviewAuthor: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
-  reviewText: { fontFamily: "Sora_400Regular", fontSize: 12, lineHeight: 18, marginBottom: 6 },
-  reviewDate: { fontFamily: "DMSans_400Regular", fontSize: 10 },
-  contractItem: { paddingVertical: 10 },
-  contractRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  contractClient: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
-  contractValue: { fontFamily: "DMSans_500Medium", fontSize: 12, color: "#18a06b" },
-  contractMeta: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   emptyPerf: { alignItems: "center", paddingVertical: 50, gap: 10 },
   emptyPerfText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   emptyPerfSub: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },

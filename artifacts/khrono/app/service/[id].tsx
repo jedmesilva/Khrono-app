@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -15,10 +15,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
-import { useUserCatalog } from "@/context/UserCatalogContext";
+import { useCatalog } from "@/context/CatalogContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Skill, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
-import { formatMonthYear } from "@/context/ServicesContext";
 
 type ExpandedCard = "rating" | "reviews" | "contracts" | null;
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -36,7 +35,7 @@ function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
 export default function ServiceDetailScreen() {
   const { colors } = useTheme();
   const { isActive, toggleActive, myServices, myTools, isLoading } = useServices();
-  const { userSkills } = useUserCatalog();
+  const { skills: catalogSkills } = useCatalog();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
@@ -44,22 +43,6 @@ export default function ServiceDetailScreen() {
 
   const [expanded, setExpanded] = useState<ExpandedCard>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
-
-  const mappedSkills: Skill[] = useMemo(
-    () =>
-      userSkills.map((entry) => ({
-        id: entry.skill_id,
-        name: entry.skill?.nome ?? "",
-        type: entry.skill?.category ?? "",
-        description: entry.skill?.description ?? "",
-        verified: entry.skill?.verified
-          ? ({ type: "documentation" } as { type: VerificationType })
-          : null,
-        isNew: false,
-        addedAt: formatMonthYear(entry.createdAt),
-      })),
-    [userSkills]
-  );
 
   if (isLoading) {
     return (
@@ -83,9 +66,22 @@ export default function ServiceDetailScreen() {
   }
 
   const active = isActive(service.id);
-  const skill = mappedSkills.find(
-    (s) => s.name.toLowerCase() === (service.skillId ?? "").toLowerCase()
-  );
+  const skills: Skill[] = service.skillIds
+    .map((skillId) => {
+      const cs = catalogSkills.find((s) => s.id === skillId);
+      if (!cs) return null;
+      return {
+        id: cs.id,
+        name: cs.nome,
+        type: cs.category ?? "",
+        description: cs.description ?? "",
+        verified: cs.verified ? ({ type: "documentation" as VerificationType }) : null,
+        isNew: false,
+        addedAt: "",
+      } as Skill;
+    })
+    .filter((s): s is Skill => s !== null);
+  const skill = skills[0] ?? null;
   const tools = myTools.filter((t) => service.toolIds.includes(t.id));
 
   function handleVerifiedPress(type: VerificationType, context?: "service") {

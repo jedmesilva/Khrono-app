@@ -18,6 +18,7 @@ import { SkillListCard } from "@/components/SkillListCard";
 import { ToolListCard } from "@/components/ToolListCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useAuth } from "@/context/AuthContext";
+import { useCatalog } from "@/context/CatalogContext";
 import { useContracts } from "@/context/ContractsContext";
 import { useServices } from "@/context/ServicesContext";
 import { formatMonthYear } from "@/context/ServicesContext";
@@ -280,6 +281,7 @@ export default function ProfileScreen() {
   const { isActive, myServices, myTools } = useServices();
   const { history } = useContracts();
   const { userSkills } = useUserCatalog();
+  const { skills: catalogSkills } = useCatalog();
   const { location, saveLocation } = useLocation();
   const [view, setView] = useState<ViewState>("main");
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
@@ -525,16 +527,28 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.list}>
               {myServices.map((sv) => {
-                const skill = sv.skillCatalogId
-                  ? mappedSkills.find((s) => s.id === sv.skillCatalogId)
-                  : mappedSkills.find((s) => s.name.toLowerCase() === (sv.skillId ?? "").toLowerCase());
+                const skills: Skill[] = sv.skillIds
+                  .map((skillId) => {
+                    const cs = catalogSkills.find((s) => s.id === skillId);
+                    if (!cs) return null;
+                    return {
+                      id: cs.id,
+                      name: cs.nome,
+                      type: cs.category ?? "",
+                      description: cs.description ?? "",
+                      verified: cs.verified ? ({ type: "documentation" as VerificationType }) : null,
+                      isNew: false,
+                      addedAt: "",
+                    } as Skill;
+                  })
+                  .filter((s): s is Skill => s !== null);
                 const tools = myTools.filter((t) => sv.toolIds.includes(t.id));
                 const active = isActive(sv.id);
                 return (
                   <ServiceCard
                     key={sv.id}
                     service={sv}
-                    skill={skill}
+                    skills={skills}
                     tools={tools}
                     active={active}
                     colors={colors}
