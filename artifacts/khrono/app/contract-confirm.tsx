@@ -535,10 +535,11 @@ export default function ContractConfirmScreen() {
           setPixPaymentAberta(false);
         }}
         onConfirm={() => {
+          const id = activeContractId;
           setPixPaymentAberta(false);
-          if (activeContractId) {
-            setPendingProvider(null);
-            router.replace(`/contract-detail/${activeContractId}` as any);
+          setActiveContractId(null);
+          if (id) {
+            router.replace(`/contract-detail/${id}` as any);
           }
         }}
         providerName={provider.name}

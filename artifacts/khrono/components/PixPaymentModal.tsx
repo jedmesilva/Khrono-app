@@ -72,6 +72,7 @@ export function PixPaymentModal({
   const [copied, setCopied] = useState(false);
   const pixKey = buildPixKey(providerName);
   const isAberto = tipoContrato === "aberto";
+  const confirmedRef = useRef(false);
 
   useEffect(() => {
     if (visible) {
@@ -89,6 +90,7 @@ export function PixPaymentModal({
   }
 
   function handleConfirm() {
+    confirmedRef.current = true;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     ref.current?.dismiss();
     onConfirm();
@@ -106,7 +108,12 @@ export function PixPaymentModal({
       backdropComponent={renderBackdrop}
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
-      onDismiss={onClose}
+      onDismiss={() => {
+        if (!confirmedRef.current) {
+          onClose();
+        }
+        confirmedRef.current = false;
+      }}
     >
       <BottomSheetScrollView
         contentContainerStyle={[

@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Platform,
   Pressable,
@@ -131,8 +132,13 @@ export default function HomeScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       try {
         await acceptContract(id);
-      } catch (e) {
+      } catch (e: any) {
         console.warn("[HomeScreen] acceptContract error:", e);
+        Alert.alert(
+          "Erro ao aceitar contrato",
+          e?.message ?? "Não foi possível aceitar o contrato. Tente novamente.",
+          [{ text: "OK" }]
+        );
       }
     },
     [acceptContract]
@@ -143,8 +149,13 @@ export default function HomeScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       try {
         await beginContract(id);
-      } catch (e) {
+      } catch (e: any) {
         console.warn("[HomeScreen] beginContract error:", e);
+        Alert.alert(
+          "Erro ao iniciar contrato",
+          e?.message ?? "Não foi possível iniciar o contrato. Tente novamente.",
+          [{ text: "OK" }]
+        );
       }
     },
     [beginContract]

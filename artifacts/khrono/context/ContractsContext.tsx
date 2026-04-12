@@ -356,16 +356,25 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   const acceptContract = useCallback(
     async (id: string) => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) throw new Error("Usuário não autenticado");
 
-      await Promise.all([
-        supabase.from("contracts").update({ status: "accepted" }).eq("id", id),
-        supabase.from("contract_time_entries").insert({
-          contract_id: id,
-          event: "accepted",
-          triggered_by: user.id,
-        }),
-      ]).catch((e) => console.warn("[ContractsContext] acceptContract error:", e));
+      const { error: updateError } = await supabase
+        .from("contracts")
+        .update({ status: "accepted" })
+        .eq("id", id);
+
+      if (updateError) {
+        console.warn("[ContractsContext] acceptContract update error:", updateError.message, updateError.code);
+        throw new Error(updateError.message);
+      }
+
+      const { error: entryError } = await supabase
+        .from("contract_time_entries")
+        .insert({ contract_id: id, event: "accepted", triggered_by: user.id });
+
+      if (entryError) {
+        console.warn("[ContractsContext] acceptContract entry error:", entryError.message);
+      }
 
       if (userIdRef.current) await loadContracts(userIdRef.current);
     },
@@ -375,18 +384,27 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   const beginContract = useCallback(
     async (id: string) => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) throw new Error("Usuário não autenticado");
 
       const startedAt = new Date().toISOString();
 
-      await Promise.all([
-        supabase.from("contracts").update({ status: "active", started_at: startedAt }).eq("id", id),
-        supabase.from("contract_time_entries").insert({
-          contract_id: id,
-          event: "started",
-          triggered_by: user.id,
-        }),
-      ]).catch((e) => console.warn("[ContractsContext] beginContract error:", e));
+      const { error: updateError } = await supabase
+        .from("contracts")
+        .update({ status: "active", started_at: startedAt })
+        .eq("id", id);
+
+      if (updateError) {
+        console.warn("[ContractsContext] beginContract update error:", updateError.message, updateError.code);
+        throw new Error(updateError.message);
+      }
+
+      const { error: entryError } = await supabase
+        .from("contract_time_entries")
+        .insert({ contract_id: id, event: "started", triggered_by: user.id });
+
+      if (entryError) {
+        console.warn("[ContractsContext] beginContract entry error:", entryError.message);
+      }
 
       if (userIdRef.current) await loadContracts(userIdRef.current);
     },
