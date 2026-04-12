@@ -48,6 +48,7 @@ type AvailabilityContextType = {
   endSession: () => Promise<void>;
   regeneratePin: () => Promise<void>;
   refreshProfileReadiness: () => Promise<ProfileReadiness>;
+  notifyPinUsed: (profileId: string) => void;
 };
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -63,6 +64,7 @@ const AvailabilityContext = createContext<AvailabilityContextType>({
   endSession: async () => {},
   regeneratePin: async () => {},
   refreshProfileReadiness: async () => ({ ready: false, missing: [], checked: false }),
+  notifyPinUsed: () => {},
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -137,6 +139,8 @@ export function AvailabilityProvider({
   const pendingPayloadRef = useRef<Record<string, any> | null>(null);
   const profileIdRef = useRef<string | null>(null);
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const broadcastReadyRef = useRef(false);
 
   function applyStatus(s: SessionStatus) {
     statusRef.current = s;
@@ -293,34 +297,33 @@ export function AvailabilityProvider({
     }
   }
 
-  // ── Polling fallback: detecta PIN usado quando realtime não dispara ──────────
-  // Sem REPLICA IDENTITY FULL na tabela provider_pins, o filtro de UPDATE
-  // por profile_id não funciona no WAL (só o PK + colunas alteradas são enviados).
-  // Este polling verifica o PIN ativo a cada 10 s e regenera se foi consumido.
+  // ── Broadcast channel: notificação em tempo real de PIN usado ────────────────
+  // Substitui o polling anterior. O contratante envia um broadcast via
+  // notifyPinUsed() assim que marca o PIN como utilizado. O prestador
+  // recebe instantaneamente e gera um novo PIN sem qualquer delay.
   useEffect(() => {
-    if (status !== "active") return;
-
-    const interval = setInterval(async () => {
-      const pinId = pinIdRef.current;
-      const profileId = profileIdRef.current;
-      const sessionId = sessionIdRef.current;
-      if (!pinId || !profileId) return;
-
-      const { data } = await supabase
-        .from("provider_pins")
-        .select("status")
-        .eq("id", pinId)
-        .single();
-
-      if (data?.status === "used" || data?.status === "invalidated") {
+    const ch = supabase
+      .channel("khrono-availability-events")
+      .on("broadcast", { event: "pin-used" }, async (msg) => {
+        const profileId = profileIdRef.current;
+        if (!profileId) return;
+        if (msg.payload?.profile_id !== profileId) return;
         pinIdRef.current = null;
         setQrPayload(null);
-        await insertNewPin(profileId, sessionId);
-      }
-    }, 10_000);
+        await insertNewPin(profileId, sessionIdRef.current);
+      })
+      .subscribe((s) => {
+        broadcastReadyRef.current = s === "SUBSCRIBED";
+      });
 
-    return () => clearInterval(interval);
-  }, [status]);
+    broadcastChannelRef.current = ch;
+
+    return () => {
+      broadcastReadyRef.current = false;
+      supabase.removeChannel(ch);
+      broadcastChannelRef.current = null;
+    };
+  }, []);
 
   // ── Network listener ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -492,6 +495,12 @@ export function AvailabilityProvider({
     }
   }, []);
 
+  const notifyPinUsed = useCallback((profileId: string) => {
+    const ch = broadcastChannelRef.current;
+    if (!ch || !broadcastReadyRef.current) return;
+    ch.send({ type: "broadcast", event: "pin-used", payload: { profile_id: profileId } });
+  }, []);
+
   const isAvailable = status === "active";
 
   return (
@@ -507,6 +516,7 @@ export function AvailabilityProvider({
         endSession,
         regeneratePin,
         refreshProfileReadiness,
+        notifyPinUsed,
       }}
     >
       {children}

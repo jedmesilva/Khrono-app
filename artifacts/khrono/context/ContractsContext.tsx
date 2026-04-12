@@ -187,6 +187,8 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistory] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const userIdRef = useRef<string | null>(null);
+  const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const broadcastReadyRef = useRef(false);
 
   const loadContracts = useCallback(async (userId: string) => {
     setIsLoading(true);
@@ -256,6 +258,20 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           handleChange
         )
         .subscribe();
+
+      // Broadcast channel: recebe notificações instantâneas quando um contrato
+      // é criado para este usuário como contratado, sem depender de REPLICA IDENTITY.
+      const broadcastCh = supabase
+        .channel("khrono-contract-events")
+        .on("broadcast", { event: "contract-created" }, async (msg) => {
+          if (msg.payload?.hired_id === user.id) {
+            await handleChange();
+          }
+        })
+        .subscribe((s) => {
+          broadcastReadyRef.current = s === "SUBSCRIBED";
+        });
+      broadcastChannelRef.current = broadcastCh;
     };
 
     init();
@@ -276,6 +292,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
       if (contractorChannel) supabase.removeChannel(contractorChannel);
       if (hiredChannel) supabase.removeChannel(hiredChannel);
+      if (broadcastChannelRef.current) {
+        broadcastReadyRef.current = false;
+        supabase.removeChannel(broadcastChannelRef.current);
+        broadcastChannelRef.current = null;
+      }
     };
   }, [loadContracts]);
 
@@ -351,6 +372,17 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       await Promise.all(sideEffects);
 
       if (userIdRef.current) await loadContracts(userIdRef.current);
+
+      // Notifica em tempo real o prestador contratado via broadcast,
+      // sem depender de REPLICA IDENTITY FULL no banco.
+      const hiredId = contractData.person.profileId;
+      if (hiredId && broadcastChannelRef.current && broadcastReadyRef.current) {
+        broadcastChannelRef.current.send({
+          type: "broadcast",
+          event: "contract-created",
+          payload: { hired_id: hiredId },
+        });
+      }
 
       return contract.id;
     },
