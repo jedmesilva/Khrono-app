@@ -76,6 +76,25 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `artifacts/khrono/server/prepare-dev-port.js` clears stale Expo Metro processes on port 5000 before startup.
 - `artifacts/khrono/server/expo-proxy.js` tolerates an already-running preview proxy on port 22861 to avoid restart failures from orphaned background processes.
 
+## Real-time Architecture
+
+### Contrato criado (hired party)
+- `ContractsContext` ouve `postgres_changes` (INSERT em `contracts` filtrado por `hired_id`) — funciona com REPLICA IDENTITY FULL.
+- Após `startContract`, o contratante também envia um broadcast Supabase (`khrono-contract-events`, evento `contract-created`, payload `{ hired_id }`).
+- O contratado ouve o broadcast e chama `loadContracts` imediatamente, sem depender apenas do postgres_changes.
+
+### PIN usado / regeneração
+- `AvailabilityContext` ouve `postgres_changes` (UPDATE em `provider_pins` filtrado por `profile_id`) — funciona com REPLICA IDENTITY FULL.
+- Quando o contratante usa o PIN, chama `notifyPinUsed(profileId)` (exposto via `useAvailability()`), que envia broadcast Supabase (`khrono-availability-events`, evento `pin-used`, payload `{ profile_id }`).
+- O prestador recebe o broadcast e regenera o PIN instantaneamente.
+- O polling de 10s foi removido — não há mais re-render periódico do QR Code / PIN.
+
+### Banco configurado (aplicado via Management API)
+- `ALTER TABLE contracts REPLICA IDENTITY FULL` ✅
+- `ALTER TABLE provider_pins REPLICA IDENTITY FULL` ✅
+- `ALTER TABLE availability_sessions REPLICA IDENTITY FULL` ✅
+- As três tabelas já estavam na publicação `supabase_realtime`.
+
 ## Availability Readiness
 - Prestadores só podem iniciar disponibilidade quando têm pelo menos 1 serviço ativo em `provider_services`.
 - Se o perfil ainda não estiver pronto, a ativação abre `ProfileReadinessSheet` em vez de criar sessão, PIN ou QR Code.
