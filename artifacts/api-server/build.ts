@@ -6,35 +6,11 @@ import { rm, readFile } from "fs/promises";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// server deps to bundle to reduce openat(2) syscalls
-// which helps cold start times without risking some
-// packages that are not bundle compatible
 const allowlist = [
-  "@google/generative-ai",
-  "axios",
-  "connect-pg-simple",
   "cors",
-  "date-fns",
-  "drizzle-orm",
-  "drizzle-zod",
   "express",
-  "express-rate-limit",
-  "express-session",
-  "jsonwebtoken",
-  "memorystore",
-  "multer",
-  "nanoid",
-  "nodemailer",
-  "openai",
-  "passport",
-  "passport-local",
-  "pg",
   "pino",
   "pino-http",
-  "stripe",
-  "uuid",
-  "ws",
-  "xlsx",
   "zod",
   "zod-validation-error",
 ];
