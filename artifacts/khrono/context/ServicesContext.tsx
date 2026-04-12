@@ -24,29 +24,26 @@ export function formatMonthYear(iso: string): string {
   return `${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function iconForType(tipo: string): "truck" | "tool" | "box" {
+function iconForTipo(tipo: string): "truck" | "tool" | "box" {
   const t = (tipo ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   if (t === "veiculo") return "truck";
   if (t === "ferramenta") return "tool";
   return "box";
 }
 
-function mapRowToService(row: any, valorBase: number, contractsCount: number): Service {
-  const rawTools: any[] = Array.isArray(row.tools) ? row.tools : [];
-  const toolIds = rawTools
-    .map((t: any) => (typeof t === "string" ? t : (t.id ?? t.nome ?? "")))
-    .filter(Boolean);
+function mapRowToService(row: any, contractsCount: number): Service {
+  const skillIds: string[] = (row.service_skills ?? []).map((ss: any) => ss.skill_id as string);
+  const toolIds: string[] = (row.service_tools ?? []).map((st: any) => st.tool_id as string);
 
   return {
     id: row.id,
     name: row.nome,
-    skillId: row.skill ?? "",
-    skillCatalogId: row.skill_catalog_id ?? null,
+    skillIds,
     toolIds,
     rating: Number(row.nota ?? 0),
     reviews: Number(row.avaliacoes ?? 0),
     contracts: contractsCount,
-    hourlyRate: row.valor_hora ?? Math.round(Number(valorBase) * Number(row.multiplicador ?? 1)),
+    hourlyRate: Number(row.valor_hora ?? 50),
     isNew: contractsCount < 10,
     active: Boolean(row.is_active),
     verified: null,
@@ -56,32 +53,17 @@ function mapRowToService(row: any, valorBase: number, contractsCount: number): S
   };
 }
 
-function aggregateTools(serviceRows: any[]): Tool[] {
-  const seen = new Set<string>();
-  const tools: Tool[] = [];
-  for (const sv of serviceRows) {
-    const rawTools: any[] = Array.isArray(sv.tools) ? sv.tools : [];
-    for (const t of rawTools) {
-      const nome = typeof t === "string" ? t : (t.nome ?? "");
-      const tipo = typeof t === "string" ? "" : (t.tipo ?? "");
-      const id = typeof t === "string" ? t : (t.id ?? t.nome ?? "");
-      const key = id || nome;
-      if (key && !seen.has(key)) {
-        seen.add(key);
-        tools.push({
-          id: key,
-          name: nome || key,
-          type: tipo || "Ferramenta",
-          icon: iconForType(tipo),
-          details: "",
-          available: true,
-          verified: null,
-          addedAt: formatMonthYear(sv.created_at),
-        });
-      }
-    }
-  }
-  return tools;
+function mapRowToTool(row: any): Tool {
+  return {
+    id: row.id,
+    name: row.nome,
+    type: row.tipo ?? "equipamento",
+    icon: iconForTipo(row.tipo),
+    details: row.details ?? "",
+    available: Boolean(row.is_available),
+    verified: null,
+    addedAt: formatMonthYear(row.created_at),
+  };
 }
 
 interface ServicesContextType {
@@ -106,10 +88,14 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
   const loadData = useCallback(async (userId: string) => {
     setIsLoading(true);
     try {
-      const [servicesRes, ppRes, contractsRes] = await Promise.all([
+      const [servicesRes, ppRes, contractsRes, toolsRes] = await Promise.all([
         supabase
           .from("provider_services")
-          .select("*")
+          .select(`
+            *,
+            service_skills(skill_id),
+            service_tools(tool_id)
+          `)
           .eq("profile_id", userId)
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: false }),
@@ -123,13 +109,16 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
           .select("service_id")
           .eq("hired_id", userId)
           .not("service_id", "is", null),
+        supabase
+          .from("provider_tools")
+          .select("*")
+          .eq("profile_id", userId)
+          .order("created_at", { ascending: false }),
       ]);
-
-      const valorBase = ppRes.data ? Number(ppRes.data.valor_base ?? 50) : 50;
 
       if (ppRes.data) {
         setProviderProfile({
-          valorBase,
+          valorBase: Number(ppRes.data.valor_base ?? 50),
           nota: Number(ppRes.data.nota ?? 0),
           avaliacoes: Number(ppRes.data.avaliacoes ?? 0),
           totalContracts: Number(ppRes.data.total_contracts ?? 0),
@@ -147,9 +136,15 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (servicesRes.data) {
-        const rows = servicesRes.data;
-        setMyServices(rows.map((row) => mapRowToService(row, valorBase, contractsCountMap[row.id] ?? 0)));
-        setMyTools(aggregateTools(rows));
+        setMyServices(
+          servicesRes.data.map((row) =>
+            mapRowToService(row, contractsCountMap[row.id] ?? 0)
+          )
+        );
+      }
+
+      if (toolsRes.data) {
+        setMyTools(toolsRes.data.map(mapRowToTool));
       }
     } catch (e) {
       console.warn("[ServicesContext] loadData error:", e);

@@ -39,8 +39,7 @@ export interface ContractRecord {
 export interface Service {
   id: string;
   name: string;
-  skillId: string;
-  skillCatalogId: string | null;
+  skillIds: string[];
   toolIds: string[];
   rating: number;
   reviews: number;
@@ -95,16 +94,15 @@ export const PROVIDERS: ProviderProfile[] = [
       { id: "cm-s2", name: "Gesseiro", type: "Construção", description: "Aplicação de gesso, texturas e acabamentos decorativos em paredes e tetos.", verified: { type: "community" as VerificationType }, isNew: false, addedAt: "Jan 2023" },
     ],
     tools: [
-      { id: "cm-t1", name: "Rolo 23cm", type: "Ferramenta", icon: "tool" as const, details: "Rolo para pintura de alta cobertura", available: true, verified: null, addedAt: "Jan 2023" },
-      { id: "cm-t2", name: "Escada 6m", type: "Equipamento", icon: "box" as const, details: "Escada alumínio extensível 6 metros", available: true, verified: { type: "community" as VerificationType }, addedAt: "Jan 2023" },
-      { id: "cm-t3", name: "Desempenadeira", type: "Ferramenta", icon: "tool" as const, details: "Desempenadeira inox 50cm para gesso", available: true, verified: null, addedAt: "Jan 2023" },
+      { id: "cm-t1", name: "Rolo 23cm", type: "ferramenta", icon: "tool" as const, details: "Rolo para pintura de alta cobertura", available: true, verified: null, addedAt: "Jan 2023" },
+      { id: "cm-t2", name: "Escada 6m", type: "equipamento", icon: "box" as const, details: "Escada alumínio extensível 6 metros", available: true, verified: { type: "community" as VerificationType }, addedAt: "Jan 2023" },
+      { id: "cm-t3", name: "Desempenadeira", type: "ferramenta", icon: "tool" as const, details: "Desempenadeira inox 50cm para gesso", available: true, verified: null, addedAt: "Jan 2023" },
     ],
     services: [
       {
         id: "cm-sv1",
         name: "Pintura Residencial",
-        skillId: "cm-s1",
-        skillCatalogId: null,
+        skillIds: ["cm-s1"],
         toolIds: ["cm-t1", "cm-t2"],
         rating: 4.8,
         reviews: 42,
@@ -128,8 +126,7 @@ export const PROVIDERS: ProviderProfile[] = [
       {
         id: "cm-sv2",
         name: "Gessaria",
-        skillId: "cm-s2",
-        skillCatalogId: null,
+        skillIds: ["cm-s2"],
         toolIds: ["cm-t3"],
         rating: 4.5,
         reviews: 8,
@@ -167,14 +164,13 @@ export const PROVIDERS: ProviderProfile[] = [
       { id: "jr-s2", name: "Nutricionista", type: "Bem-estar", description: "Consultoria nutricional com planos alimentares personalizados.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Jun 2022" },
     ],
     tools: [
-      { id: "jr-t1", name: "Kit de Treino", type: "Equipamento", icon: "box" as const, details: "Halteres, elásticos e colchonete", available: true, verified: { type: "documentation" as VerificationType }, addedAt: "Jun 2022" },
+      { id: "jr-t1", name: "Kit de Treino", type: "equipamento", icon: "box" as const, details: "Halteres, elásticos e colchonete", available: true, verified: { type: "documentation" as VerificationType }, addedAt: "Jun 2022" },
     ],
     services: [
       {
         id: "jr-sv1",
         name: "Personal Training",
-        skillId: "jr-s1",
-        skillCatalogId: null,
+        skillIds: ["jr-s1"],
         toolIds: ["jr-t1"],
         rating: 5.0,
         reviews: 128,
@@ -198,8 +194,7 @@ export const PROVIDERS: ProviderProfile[] = [
       {
         id: "jr-sv2",
         name: "Consultoria Nutricional",
-        skillId: "jr-s2",
-        skillCatalogId: null,
+        skillIds: ["jr-s2"],
         toolIds: [],
         rating: 4.9,
         reviews: 34,
@@ -236,15 +231,14 @@ export const PROVIDERS: ProviderProfile[] = [
       { id: "pa-s1", name: "Eletricista", type: "Construção", description: "Instalações elétricas residenciais e comerciais, com certificação NR10.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Mar 2023" },
     ],
     tools: [
-      { id: "pa-t1", name: "Alicate Amperímetro", type: "Ferramenta", icon: "tool" as const, details: "Alicate digital profissional", available: true, verified: null, addedAt: "Mar 2023" },
-      { id: "pa-t2", name: "Kit Cabos", type: "Equipamento", icon: "box" as const, details: "Cabos elétricos PP 10m, 16A, 25A", available: true, verified: null, addedAt: "Mar 2023" },
+      { id: "pa-t1", name: "Alicate Amperímetro", type: "ferramenta", icon: "tool" as const, details: "Alicate digital profissional", available: true, verified: null, addedAt: "Mar 2023" },
+      { id: "pa-t2", name: "Kit Cabos", type: "equipamento", icon: "box" as const, details: "Cabos elétricos PP 10m, 16A, 25A", available: true, verified: null, addedAt: "Mar 2023" },
     ],
     services: [
       {
         id: "pa-sv1",
         name: "Instalação Elétrica",
-        skillId: "pa-s1",
-        skillCatalogId: null,
+        skillIds: ["pa-s1"],
         toolIds: ["pa-t1", "pa-t2"],
         rating: 4.7,
         reviews: 31,
@@ -266,8 +260,7 @@ export const PROVIDERS: ProviderProfile[] = [
       {
         id: "pa-sv2",
         name: "Manutenção Elétrica",
-        skillId: "pa-s1",
-        skillCatalogId: null,
+        skillIds: ["pa-s1"],
         toolIds: ["pa-t1"],
         rating: 4.6,
         reviews: 12,
@@ -302,14 +295,13 @@ export const PROVIDERS: ProviderProfile[] = [
       { id: "im-s1", name: "Cuidadora", type: "Cuidados", description: "Cuidados com idosos e pessoas com necessidades especiais, com experiência em ambiente hospitalar.", verified: { type: "documentation" as VerificationType }, isNew: false, addedAt: "Aug 2022" },
     ],
     tools: [
-      { id: "im-t1", name: "Cadeira de Rodas", type: "Equipamento", icon: "box" as const, details: "Cadeira dobrável, confortável", available: true, verified: { type: "community" as VerificationType }, addedAt: "Aug 2022" },
+      { id: "im-t1", name: "Cadeira de Rodas", type: "equipamento", icon: "box" as const, details: "Cadeira dobrável, confortável", available: true, verified: { type: "community" as VerificationType }, addedAt: "Aug 2022" },
     ],
     services: [
       {
         id: "im-sv1",
         name: "Cuidados com Idosos",
-        skillId: "im-s1",
-        skillCatalogId: null,
+        skillIds: ["im-s1"],
         toolIds: [],
         rating: 4.9,
         reviews: 77,
@@ -333,8 +325,7 @@ export const PROVIDERS: ProviderProfile[] = [
       {
         id: "im-sv2",
         name: "Acompanhamento Hospitalar",
-        skillId: "im-s1",
-        skillCatalogId: null,
+        skillIds: ["im-s1"],
         toolIds: ["im-t1"],
         rating: 4.8,
         reviews: 22,
@@ -400,7 +391,7 @@ export const MY_PROFILE = {
     {
       id: "t1",
       name: "Honda Civic 2019",
-      type: "Veículo",
+      type: "veiculo",
       icon: "truck" as const,
       details: "Prata · 4 portas · Ar condicionado",
       available: true,
@@ -410,7 +401,7 @@ export const MY_PROFILE = {
     {
       id: "t2",
       name: "Kit Furadeira Bosch",
-      type: "Ferramenta",
+      type: "ferramenta",
       icon: "tool" as const,
       details: "Furadeira + bits + nível + parafusadeira",
       available: true,
@@ -420,7 +411,7 @@ export const MY_PROFILE = {
     {
       id: "t3",
       name: "Carrinho de Mudança",
-      type: "Equipamento",
+      type: "equipamento",
       icon: "box" as const,
       details: "Capacidade 200kg · Com cintas",
       available: false,
@@ -432,8 +423,7 @@ export const MY_PROFILE = {
     {
       id: "sv1",
       name: "Montagem com Transporte",
-      skillId: "s1",
-        skillCatalogId: null,
+      skillIds: ["s1"],
       toolIds: ["t1", "t2"],
       rating: 4.9,
       reviews: 28,
@@ -444,24 +434,9 @@ export const MY_PROFILE = {
       verified: { type: "documentation" as VerificationType },
       addedAt: "Mar 2024",
       reviewsList: [
-        {
-          author: "Bruno Souza",
-          rating: 5,
-          text: "Excelente trabalho, montou tudo rápido e com cuidado.",
-          date: "08/11/2024",
-        },
-        {
-          author: "Ana Pereira",
-          rating: 5,
-          text: "Super recomendo, muito profissional.",
-          date: "01/11/2024",
-        },
-        {
-          author: "Rafael Lima",
-          rating: 4,
-          text: "Bom trabalho, pontual e organizado.",
-          date: "20/10/2024",
-        },
+        { author: "Bruno Souza", rating: 5, text: "Excelente trabalho, montou tudo rápido e com cuidado.", date: "08/11/2024" },
+        { author: "Ana Pereira", rating: 5, text: "Super recomendo, muito profissional.", date: "01/11/2024" },
+        { author: "Rafael Lima", rating: 4, text: "Bom trabalho, pontual e organizado.", date: "20/10/2024" },
       ],
       contractsList: [
         { client: "Bruno Souza", date: "08/11/2024", duration: "2h", value: "R$160" },
@@ -472,8 +447,7 @@ export const MY_PROFILE = {
     {
       id: "sv2",
       name: "Mudança Completa",
-      skillId: "s2",
-        skillCatalogId: null,
+      skillIds: ["s2"],
       toolIds: ["t1", "t3"],
       rating: 4.7,
       reviews: 12,
@@ -484,18 +458,8 @@ export const MY_PROFILE = {
       verified: { type: "community" as VerificationType },
       addedAt: "Mar 2024",
       reviewsList: [
-        {
-          author: "Mariana Costa",
-          rating: 5,
-          text: "Cuidadoso com os móveis, ótimo serviço.",
-          date: "05/10/2024",
-        },
-        {
-          author: "Felipe Andrade",
-          rating: 4,
-          text: "Chegou no horário, serviço bem feito.",
-          date: "22/09/2024",
-        },
+        { author: "Mariana Costa", rating: 5, text: "Cuidadoso com os móveis, ótimo serviço.", date: "05/10/2024" },
+        { author: "Felipe Andrade", rating: 4, text: "Chegou no horário, serviço bem feito.", date: "22/09/2024" },
       ],
       contractsList: [
         { client: "Mariana Costa", date: "05/10/2024", duration: "4h", value: "R$240" },
@@ -505,8 +469,7 @@ export const MY_PROFILE = {
     {
       id: "sv3",
       name: "Pintura Residencial",
-      skillId: "s3",
-        skillCatalogId: null,
+      skillIds: ["s3"],
       toolIds: [],
       rating: 0,
       reviews: 0,

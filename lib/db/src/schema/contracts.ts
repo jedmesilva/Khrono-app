@@ -12,6 +12,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { profilesTable } from "./profiles";
+import { skillsCatalogTable } from "./catalog";
 
 export const providerProfilesTable = pgTable("provider_profiles", {
   profileId: uuid("profile_id").primaryKey().references(() => profilesTable.id, { onDelete: "cascade" }),
@@ -36,14 +37,38 @@ export const providerServicesTable = pgTable("provider_services", {
   id: uuid("id").primaryKey().defaultRandom(),
   profileId: uuid("profile_id").notNull().references(() => profilesTable.id, { onDelete: "cascade" }),
   nome: text("nome").notNull(),
-  multiplicador: decimal("multiplicador", { precision: 5, scale: 3 }).notNull().default("1.000"),
-  skill: text("skill"),
-  tools: jsonb("tools").notNull().default([]),
+  valorHora: decimal("valor_hora", { precision: 10, scale: 2 }).notNull().default("50.00"),
   nota: decimal("nota", { precision: 3, scale: 2 }).notNull().default("0.00"),
   avaliacoes: integer("avaliacoes").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const providerToolsTable = pgTable("provider_tools", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  profileId: uuid("profile_id").notNull().references(() => profilesTable.id, { onDelete: "cascade" }),
+  nome: text("nome").notNull(),
+  tipo: text("tipo").notNull(),
+  details: text("details"),
+  isAvailable: boolean("is_available").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const serviceSkillsTable = pgTable("service_skills", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  serviceId: uuid("service_id").notNull().references(() => providerServicesTable.id, { onDelete: "cascade" }),
+  skillId: uuid("skill_id").notNull().references(() => skillsCatalogTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const serviceToolsTable = pgTable("service_tools", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  serviceId: uuid("service_id").notNull().references(() => providerServicesTable.id, { onDelete: "cascade" }),
+  toolId: uuid("tool_id").notNull().references(() => providerToolsTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const contractsTable = pgTable("contracts", {
@@ -54,7 +79,7 @@ export const contractsTable = pgTable("contracts", {
   status: text("status").notNull().default("active"),
   ratePerHour: decimal("rate_per_hour", { precision: 10, scale: 2 }).notNull(),
   duracaoTotal: bigint("duracao_total", { mode: "number" }),
-  serviceId: uuid("service_id"),
+  serviceId: uuid("service_id").references(() => providerServicesTable.id, { onDelete: "set null" }),
   serviceName: text("service_name"),
   paymentMethod: text("payment_method"),
   paymentCardLabel: text("payment_card_label"),
@@ -86,10 +111,23 @@ export const insertContractSchema = createInsertSchema(contractsTable).omit({
   createdAt: true,
   updatedAt: true,
 });
+export const insertProviderServiceSchema = createInsertSchema(providerServicesTable).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertProviderToolSchema = createInsertSchema(providerToolsTable).omit({
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type InsertContract = z.infer<typeof insertContractSchema>;
+export type InsertProviderService = z.infer<typeof insertProviderServiceSchema>;
+export type InsertProviderTool = z.infer<typeof insertProviderToolSchema>;
 export type ContractRow = typeof contractsTable.$inferSelect;
 export type ProviderProfileRow = typeof providerProfilesTable.$inferSelect;
 export type ProviderPinRow = typeof providerPinsTable.$inferSelect;
 export type ProviderServiceRow = typeof providerServicesTable.$inferSelect;
+export type ProviderToolRow = typeof providerToolsTable.$inferSelect;
 export type ProviderLocationRow = typeof providerLocationsTable.$inferSelect;
+export type ServiceSkillRow = typeof serviceSkillsTable.$inferSelect;
+export type ServiceToolRow = typeof serviceToolsTable.$inferSelect;
