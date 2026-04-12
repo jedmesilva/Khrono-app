@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import {
   BottomSheetModal,
   BottomSheetBackdrop,
-  BottomSheetView,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
@@ -14,38 +14,44 @@ import {
   Text,
   View,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
+import { type QRPayload } from "@/context/AvailabilityContext";
+
+type ViewMode = "pin" | "qr";
 
 type Props = {
   visible: boolean;
   pinCode: string;
+  qrPayload: QRPayload | null;
   onClose: () => void;
   onRegenerate: () => Promise<void>;
 };
 
-export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props) {
+export function PincodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
+  const [mode, setMode] = useState<ViewMode>("pin");
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [confirmRegen, setConfirmRegen] = useState(false);
 
   useEffect(() => {
-    if (visible) {
-      ref.current?.present();
-    } else {
-      ref.current?.dismiss();
-    }
+    if (visible) ref.current?.present();
+    else ref.current?.dismiss();
   }, [visible]);
 
-  // Reset confirm state when pin changes (new pin generated)
+  // Reset states when a new PIN is generated
   useEffect(() => {
     setConfirmRegen(false);
     setRegenerating(false);
+    setCopied(false);
   }, [pinCode]);
+
+  const snapPoints = useMemo(() => ["70%"], []);
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -85,14 +91,11 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
 
   const handleRegenPress = () => {
     if (!confirmRegen) {
-      // First tap — ask confirmation
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setConfirmRegen(true);
-      // Auto-cancel confirm after 4s
       setTimeout(() => setConfirmRegen(false), 4000);
       return;
     }
-    // Second tap — confirm, execute
     handleConfirmRegen();
   };
 
@@ -108,18 +111,23 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
   };
 
   const digits = pinCode.split("");
+  const qrValue = qrPayload ? JSON.stringify(qrPayload) : null;
 
   return (
     <BottomSheetModal
       ref={ref}
-      enableDynamicSizing
+      snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
     >
-      <BottomSheetView style={[styles.container, { paddingBottom: Math.max(insets.bottom, 28) }]}>
+      <BottomSheetScrollView
+        contentContainerStyle={[styles.container, { paddingBottom: Math.max(insets.bottom, 28) }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
           <View style={[styles.iconWrap, { backgroundColor: "#e0603012", borderColor: "#e0603025" }]}>
             <Feather name="hash" size={20} color="#e06030" />
@@ -130,45 +138,108 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           </Text>
         </View>
 
+        {/* Status */}
         <View style={[styles.statusRow, { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }]}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
 
-        <View style={[styles.pinCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-          <Text style={[styles.pinLabel, { color: colors.textMuted }]}>SEU PINCODE</Text>
-          <View style={styles.digitsRow}>
-            {digits.map((d, i) => (
-              <View
-                key={i}
-                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: "#e0603030" }]}
-              >
-                <Text style={styles.digitText}>{d}</Text>
-              </View>
-            ))}
-          </View>
-          <Text style={[styles.pinHint, { color: colors.textDim }]}>
-            Este código expira após a primeira contratação
-          </Text>
+        {/* Mode tabs */}
+        <View style={[styles.modeTabs, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <Pressable
+            style={[styles.modeTab, mode === "pin" && { backgroundColor: "#e06030" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setMode("pin");
+            }}
+          >
+            <Feather name="hash" size={13} color={mode === "pin" ? "#fff" : colors.textSecondary} />
+            <Text style={[styles.modeTabText, { color: mode === "pin" ? "#fff" : colors.textSecondary }]}>
+              Código
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.modeTab, mode === "qr" && { backgroundColor: "#e06030" }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setMode("qr");
+            }}
+          >
+            <Feather name="maximize" size={13} color={mode === "qr" ? "#fff" : colors.textSecondary} />
+            <Text style={[styles.modeTabText, { color: mode === "qr" ? "#fff" : colors.textSecondary }]}>
+              QR Code
+            </Text>
+          </Pressable>
         </View>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.copyBtn,
-            { backgroundColor: colors.card, borderColor: colors.cardBorder },
-            pressed && { opacity: 0.7 },
-          ]}
-          onPress={handleCopy}
-        >
-          <Feather
-            name={copied ? "check" : "copy"}
-            size={15}
-            color={copied ? "#18a06b" : colors.textSecondary}
-          />
-          <Text style={[styles.copyBtnText, { color: copied ? "#18a06b" : colors.textSecondary }]}>
-            {copied ? "Copiado!" : "Copiar código"}
-          </Text>
-        </Pressable>
+        {/* PIN view */}
+        {mode === "pin" && (
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>SEU PINCODE</Text>
+            <View style={styles.digitsRow}>
+              {digits.map((d, i) => (
+                <View
+                  key={i}
+                  style={[styles.digitBox, { backgroundColor: colors.card, borderColor: "#e0603030" }]}
+                >
+                  <Text style={styles.digitText}>{d}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={[styles.cardHint, { color: colors.textDim }]}>
+              Informe este código ao contratante
+            </Text>
+          </View>
+        )}
+
+        {/* QR Code view */}
+        {mode === "qr" && (
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>QR CODE</Text>
+            {qrValue ? (
+              <View style={[styles.qrWrap, { backgroundColor: "#ffffff" }]}>
+                <QRCode
+                  value={qrValue}
+                  size={180}
+                  color="#1a1a1a"
+                  backgroundColor="#ffffff"
+                  ecl="M"
+                />
+              </View>
+            ) : (
+              <View style={[styles.qrUnavailable, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+                <Feather name="wifi-off" size={28} color={colors.textMuted} />
+                <Text style={[styles.qrUnavailableText, { color: colors.textMuted }]}>
+                  QR Code disponível{"\n"}ao conectar com internet
+                </Text>
+              </View>
+            )}
+            <Text style={[styles.cardHint, { color: colors.textDim }]}>
+              Peça ao contratante para escanear
+            </Text>
+          </View>
+        )}
+
+        {/* Copy button (only on PIN mode) */}
+        {mode === "pin" && (
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionBtn,
+              { backgroundColor: colors.card, borderColor: colors.cardBorder },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={handleCopy}
+          >
+            <Feather
+              name={copied ? "check" : "copy"}
+              size={15}
+              color={copied ? "#18a06b" : colors.textSecondary}
+            />
+            <Text style={[styles.actionBtnText, { color: copied ? "#18a06b" : colors.textSecondary }]}>
+              {copied ? "Copiado!" : "Copiar código"}
+            </Text>
+          </Pressable>
+        )}
 
         {/* Regenerate button */}
         <Pressable
@@ -189,12 +260,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
               color={confirmRegen ? "#e06030" : colors.textMuted}
             />
           )}
-          <Text
-            style={[
-              styles.regenBtnText,
-              { color: confirmRegen ? "#e06030" : colors.textMuted },
-            ]}
-          >
+          <Text style={[styles.regenBtnText, { color: confirmRegen ? "#e06030" : colors.textMuted }]}>
             {regenerating
               ? "Gerando novo código..."
               : confirmRegen
@@ -208,7 +274,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
             O código atual será invalidado e não poderá mais ser usado.
           </Text>
         )}
-      </BottomSheetView>
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 }
@@ -217,11 +283,12 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     paddingTop: 8,
+    gap: 10,
   },
   header: {
     alignItems: "center",
-    marginBottom: 16,
-    gap: 8,
+    marginBottom: 4,
+    gap: 6,
   },
   iconWrap: {
     width: 48,
@@ -252,7 +319,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    marginBottom: 16,
   },
   statusDot: {
     width: 7,
@@ -266,16 +332,35 @@ const styles = StyleSheet.create({
     color: "#18a06b",
     letterSpacing: 0.3,
   },
-  pinCard: {
+  modeTabs: {
+    flexDirection: "row",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 4,
+    gap: 4,
+  },
+  modeTab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 12,
+  },
+  modeTabText: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 12,
+  },
+  card: {
     borderWidth: 1,
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,
     alignItems: "center",
-    marginBottom: 12,
     gap: 16,
   },
-  pinLabel: {
+  cardLabel: {
     fontFamily: "DMSans_400Regular",
     fontSize: 9,
     letterSpacing: 2,
@@ -299,13 +384,32 @@ const styles = StyleSheet.create({
     color: "#e06030",
     lineHeight: 42,
   },
-  pinHint: {
+  qrWrap: {
+    borderRadius: 16,
+    padding: 16,
+  },
+  qrUnavailable: {
+    width: 180,
+    height: 180,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  qrUnavailableText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    textAlign: "center",
+    lineHeight: 16,
+  },
+  cardHint: {
     fontFamily: "DMSans_400Regular",
     fontSize: 10,
     letterSpacing: 0.2,
     textAlign: "center",
   },
-  copyBtn: {
+  actionBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -313,9 +417,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
     paddingVertical: 14,
-    marginBottom: 10,
   },
-  copyBtnText: {
+  actionBtnText: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
   },
@@ -330,7 +433,6 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderColor: "#88888830",
     backgroundColor: "transparent",
-    marginBottom: 8,
   },
   regenBtnText: {
     fontFamily: "DMSans_500Medium",
@@ -344,5 +446,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     letterSpacing: 0.1,
     paddingHorizontal: 8,
+    marginTop: -4,
   },
 });

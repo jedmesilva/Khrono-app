@@ -8,6 +8,8 @@ import React, {
 } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import * as ExpoLocation from "expo-location";
+import * as ExpoCrypto from "expo-crypto";
+import * as Device from "expo-device";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -20,11 +22,21 @@ export type SessionStatus =
   | "paused"     // estava ativo, perdeu internet
   | "ending";    // processando toggle OFF
 
+export type QRPayload = {
+  type: "khrono-qr";
+  v: number;      // schema version
+  pin: string;
+  pid: string;    // profileId
+  sid: string;    // sessionId
+  chk: string;    // sha256(pid+sid+pin)[0..8]
+};
+
 type AvailabilityContextType = {
   status: SessionStatus;
   isAvailable: boolean;
   sessionPin: string | null;
   sessionId: string | null;
+  qrPayload: QRPayload | null;
   startSession: () => Promise<void>;
   endSession: () => Promise<void>;
   regeneratePin: () => Promise<void>;
@@ -37,6 +49,7 @@ const AvailabilityContext = createContext<AvailabilityContextType>({
   isAvailable: false,
   sessionPin: null,
   sessionId: null,
+  qrPayload: null,
   startSession: async () => {},
   endSession: async () => {},
   regeneratePin: async () => {},
@@ -46,6 +59,18 @@ const AvailabilityContext = createContext<AvailabilityContextType>({
 
 function generatePin(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+async function makeChecksum(
+  profileId: string,
+  sessionId: string,
+  pin: string
+): Promise<string> {
+  const digest = await ExpoCrypto.digestStringAsync(
+    ExpoCrypto.CryptoDigestAlgorithm.SHA256,
+    profileId + sessionId + pin
+  );
+  return digest.substring(0, 8);
 }
 
 async function getGps(): Promise<{
@@ -69,6 +94,16 @@ async function getGps(): Promise<{
   }
 }
 
+function getDeviceInfo(): Record<string, string | number | null> {
+  return {
+    device_name: Device.deviceName ?? null,
+    model: Device.modelName ?? null,
+    os: Device.osName ?? null,
+    os_version: Device.osVersion ?? null,
+    device_type: Device.deviceType ?? null,
+  };
+}
+
 // ─── Provider ────────────────────────────────────────────────────────────────
 
 export function AvailabilityProvider({
@@ -79,11 +114,11 @@ export function AvailabilityProvider({
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPin, setSessionPin] = useState<string | null>(null);
+  const [qrPayload, setQrPayload] = useState<QRPayload | null>(null);
 
-  // Refs — always hold the latest values for use inside callbacks/listeners
   const statusRef = useRef<SessionStatus>("idle");
   const sessionIdRef = useRef<string | null>(null);
-  const pinIdRef = useRef<string | null>(null);          // DB id of the current active PIN row
+  const pinIdRef = useRef<string | null>(null);
   const pendingPayloadRef = useRef<Record<string, any> | null>(null);
   const profileIdRef = useRef<string | null>(null);
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -110,6 +145,7 @@ export function AvailabilityProvider({
           applyStatus("idle");
           applySessionId(null);
           setSessionPin(null);
+          setQrPayload(null);
           pinIdRef.current = null;
           pendingPayloadRef.current = null;
           teardownRealtimePin();
@@ -120,7 +156,6 @@ export function AvailabilityProvider({
   }, []);
 
   // ── Realtime PIN subscription ──────────────────────────────────────────────
-  // Watches for when a contractor marks our PIN as "used" so we auto-regenerate
 
   function setupRealtimePin(profileId: string) {
     teardownRealtimePin();
@@ -137,7 +172,6 @@ export function AvailabilityProvider({
         },
         async (payload: any) => {
           if (payload.new?.status === "used") {
-            // A contractor used our PIN → generate a fresh one automatically
             await insertNewPin(profileId, sessionIdRef.current);
           }
         }
@@ -154,12 +188,13 @@ export function AvailabilityProvider({
     }
   }
 
-  // ── Insert a new active PIN into the DB ────────────────────────────────────
+  // ── Insert a new active PIN and build QR payload ───────────────────────────
   async function insertNewPin(
     profileId: string,
     sessionId: string | null
   ): Promise<string | null> {
     const pin = generatePin();
+
     const { data, error } = await supabase
       .from("provider_pins")
       .insert({
@@ -175,10 +210,26 @@ export function AvailabilityProvider({
 
     pinIdRef.current = data.id;
     setSessionPin(pin);
+
+    // Build QR payload with checksum (only possible when sessionId is known)
+    if (sessionId) {
+      const chk = await makeChecksum(profileId, sessionId, pin);
+      setQrPayload({
+        type: "khrono-qr",
+        v: 1,
+        pin,
+        pid: profileId,
+        sid: sessionId,
+        chk,
+      });
+    } else {
+      setQrPayload(null);
+    }
+
     return pin;
   }
 
-  // ── Invalidate a specific PIN or all active PINs for the user ─────────────
+  // ── Invalidate a specific PIN or all active PINs ───────────────────────────
   async function invalidatePins(
     profileId: string,
     specificPinId?: string | null
@@ -190,7 +241,6 @@ export function AvailabilityProvider({
         .update({ status: "invalidated", invalidated_at: now })
         .eq("id", specificPinId);
     } else {
-      // Invalidate ALL active PINs for this user (session end)
       await supabase
         .from("provider_pins")
         .update({ status: "invalidated", invalidated_at: now })
@@ -218,13 +268,11 @@ export function AvailabilityProvider({
         return;
       }
 
-      // ── Reconnected ────────────────────────────────────────────────────────
       const cur = statusRef.current;
       const profileId = profileIdRef.current;
       if (!profileId) return;
 
       if (cur === "pending" && pendingPayloadRef.current) {
-        // Session was never saved → insert now
         const payload = { ...pendingPayloadRef.current, status: "active" };
         const { data, error } = await supabase
           .from("availability_sessions")
@@ -235,7 +283,8 @@ export function AvailabilityProvider({
         if (!error && data) {
           pendingPayloadRef.current = null;
           applySessionId(data.id);
-          // Now save the PIN that was generated locally
+          // Invalidate the locally-generated PIN (no DB row) and create a proper one
+          setQrPayload(null);
           await insertNewPin(profileId, data.id);
           setupRealtimePin(profileId);
           applyStatus("active");
@@ -270,6 +319,7 @@ export function AvailabilityProvider({
     const online =
       netState.isConnected && netState.isInternetReachable !== false;
     const now = new Date().toISOString();
+    const deviceInfo = getDeviceInfo();
 
     const sessionPayload = {
       profile_id: profileId,
@@ -277,18 +327,18 @@ export function AvailabilityProvider({
       lng: gps.lng,
       location_accuracy: gps.accuracy,
       started_at: now,
+      metadata: { device: deviceInfo },
     };
 
     if (!online) {
-      // Store locally; generate PIN locally to show user, will sync on reconnect
       pendingPayloadRef.current = sessionPayload;
       const pin = generatePin();
       setSessionPin(pin);
+      setQrPayload(null); // QR unavailable offline (no sessionId yet)
       applyStatus("pending");
       return;
     }
 
-    // Insert session
     const { data: sessionData, error: sessionError } = await supabase
       .from("availability_sessions")
       .insert({ ...sessionPayload, status: "active" })
@@ -296,22 +346,17 @@ export function AvailabilityProvider({
       .single();
 
     if (sessionError || !sessionData) {
-      // Fallback to pending
       pendingPayloadRef.current = sessionPayload;
       const pin = generatePin();
       setSessionPin(pin);
+      setQrPayload(null);
       applyStatus("pending");
       return;
     }
 
     applySessionId(sessionData.id);
-
-    // Insert PIN linked to this session
     await insertNewPin(profileId, sessionData.id);
-
-    // Start watching for PIN usage
     setupRealtimePin(profileId);
-
     applyStatus("active");
   }, []);
 
@@ -326,7 +371,6 @@ export function AvailabilityProvider({
     const id = sessionIdRef.current;
     const profileId = profileIdRef.current;
 
-    // Invalidate all active PINs for this user
     if (profileId) {
       await invalidatePins(profileId);
     }
@@ -338,7 +382,6 @@ export function AvailabilityProvider({
         .eq("id", id);
     }
 
-    // If still pending (never synced), record as no_connection for history
     if ((cur === "pending" || cur === "paused") && !id && pendingPayloadRef.current && profileId) {
       await supabase
         .from("availability_sessions")
@@ -351,26 +394,26 @@ export function AvailabilityProvider({
     pinIdRef.current = null;
     applySessionId(null);
     setSessionPin(null);
+    setQrPayload(null);
     applyStatus("idle");
   }, []);
 
-  // ── Regenerate PIN (manual) ────────────────────────────────────────────────
+  // ── Regenerate PIN ─────────────────────────────────────────────────────────
   const regeneratePin = useCallback(async () => {
     const profileId = profileIdRef.current;
     if (!profileId) return;
     const cur = statusRef.current;
     if (cur !== "active" && cur !== "pending") return;
 
-    // Invalidate current PIN
     if (pinIdRef.current) {
       await invalidatePins(profileId, pinIdRef.current);
     }
     pinIdRef.current = null;
+    setQrPayload(null);
 
     if (cur === "active") {
       await insertNewPin(profileId, sessionIdRef.current);
     } else {
-      // Offline / pending — just generate locally
       const pin = generatePin();
       setSessionPin(pin);
     }
@@ -380,7 +423,16 @@ export function AvailabilityProvider({
 
   return (
     <AvailabilityContext.Provider
-      value={{ status, isAvailable, sessionPin, sessionId, startSession, endSession, regeneratePin }}
+      value={{
+        status,
+        isAvailable,
+        sessionPin,
+        sessionId,
+        qrPayload,
+        startSession,
+        endSession,
+        regeneratePin,
+      }}
     >
       {children}
     </AvailabilityContext.Provider>
