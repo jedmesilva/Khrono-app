@@ -23,6 +23,7 @@ import {
   View,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ExpoCrypto from "expo-crypto";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -38,7 +39,7 @@ import { PincodeSheet } from "@/components/PincodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderData, useConfirmation } from "@/context/ConfirmationContext";
-import { useAvailability, type SessionStatus } from "@/context/AvailabilityContext";
+import { useAvailability, type SessionStatus, type QRPayload } from "@/context/AvailabilityContext";
 import { supabase } from "@/lib/supabase";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -59,19 +60,7 @@ async function markPinAsUsed(pinId: string) {
     .eq("id", pinId);
 }
 
-async function lookupProviderByPin(pin: string): Promise<{ provider: ProviderData; pinId: string } | null> {
-  const { data: pinRow, error: pinErr } = await supabase
-    .from("provider_pins")
-    .select("id, profile_id")
-    .eq("pin", pin)
-    .eq("status", "active")
-    .single();
-
-  if (pinErr || !pinRow) return null;
-
-  const profileId = pinRow.profile_id as string;
-  const pinId = pinRow.id as string;
-
+async function fetchProviderProfile(profileId: string, pinId: string): Promise<{ provider: ProviderData; pinId: string } | null> {
   const [profileRes, provRes, servicesRes] = await Promise.all([
     supabase.from("profiles").select("id, name, first_name").eq("id", profileId).single(),
     supabase.from("provider_profiles").select("nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
@@ -106,6 +95,43 @@ async function lookupProviderByPin(pin: string): Promise<{ provider: ProviderDat
       })),
     },
   };
+}
+
+async function lookupProviderByPin(pin: string): Promise<{ provider: ProviderData; pinId: string } | null> {
+  const { data: pinRow, error: pinErr } = await supabase
+    .from("provider_pins")
+    .select("id, profile_id")
+    .eq("pin", pin)
+    .eq("status", "active")
+    .single();
+
+  if (pinErr || !pinRow) return null;
+  return fetchProviderProfile(pinRow.profile_id as string, pinRow.id as string);
+}
+
+async function verifyQRChecksum(payload: QRPayload): Promise<boolean> {
+  const digest = await ExpoCrypto.digestStringAsync(
+    ExpoCrypto.CryptoDigestAlgorithm.SHA256,
+    payload.pid + payload.sid + payload.pin
+  );
+  return digest.substring(0, 8) === payload.chk;
+}
+
+async function lookupProviderByQRPayload(payload: QRPayload): Promise<{ provider: ProviderData; pinId: string } | null> {
+  const { data: pinRow, error: pinErr } = await supabase
+    .from("provider_pins")
+    .select("id, profile_id, session_id")
+    .eq("pin", payload.pin)
+    .eq("profile_id", payload.pid)
+    .eq("status", "active")
+    .single();
+
+  if (pinErr || !pinRow) return null;
+
+  // Validate session_id matches what's in the QR payload
+  if (pinRow.session_id !== payload.sid) return null;
+
+  return fetchProviderProfile(pinRow.profile_id as string, pinRow.id as string);
 }
 
 type HireMethod = "PINCODE" | "QRCODE" | "NFC" | "LINK";
@@ -305,18 +331,56 @@ function QrcodeContent({
     async ({ data }: { type: string; data: string }) => {
       if (scanned || validating) return;
       setScanned(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
+      // ── Try Khrono QR payload (primary path) ──────────────────────────────
       try {
-        const parsed = JSON.parse(data);
-        if (parsed.type === "khrono-qr" && parsed.provider) {
-          onFoundProvider(parsed.provider as ProviderData);
+        const parsed = JSON.parse(data) as QRPayload;
+        if (parsed.type === "khrono-qr" && parsed.v === 1 && parsed.pid && parsed.sid && parsed.pin && parsed.chk) {
+          setValidating(true);
+          try {
+            // 1. Verify checksum client-side (no network needed)
+            const checksumOk = await verifyQRChecksum(parsed);
+            if (!checksumOk) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              onShowDialog({
+                title: "QR Code inválido",
+                message: "A assinatura do QR Code não é válida. Peça ao prestador para mostrar um código novo.",
+              });
+              setTimeout(() => setScanned(false), 3000);
+              return;
+            }
+
+            // 2. Validate against Supabase (pin active + session_id matches)
+            const result = await lookupProviderByQRPayload(parsed);
+            if (result) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              await markPinAsUsed(result.pinId);
+              onFoundProvider(result.provider);
+            } else {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              onShowDialog({
+                title: "QR Code expirado",
+                message: "Este código não está mais ativo. Peça ao prestador para gerar um novo.",
+              });
+              setTimeout(() => setScanned(false), 500);
+            }
+          } catch {
+            onShowDialog({
+              title: "Erro de conexão",
+              message: "Não foi possível validar o QR Code. Tente novamente.",
+            });
+            setTimeout(() => setScanned(false), 500);
+          } finally {
+            setValidating(false);
+          }
           return;
         }
       } catch {
-        // not JSON — ignore
+        // not a Khrono JSON payload — fall through to PIN fallback
       }
 
+      // ── Fallback: raw digit PIN ────────────────────────────────────────────
       if (/^\d{4,6}$/.test(data.trim())) {
         setValidating(true);
         try {
@@ -599,11 +663,12 @@ export function HireSheet({ open, onClose }: Props) {
   const router = useRouter();
   const { setPendingProvider } = useConfirmation();
   const { colors } = useTheme();
-  const { status: sessionStatus, sessionPin, startSession, endSession, regeneratePin } = useAvailability();
+  const { status: sessionStatus, sessionPin, qrPayload, startSession, endSession, regeneratePin } = useAvailability();
   const [activeTab, setActiveTab] = useState<HireTab>("direta");
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
+  const [pincodeInitialMode, setPincodeInitialMode] = useState<"pin" | "qr">("pin");
 
   const disponivel = sessionStatus !== "idle";
   const isTransitioning = sessionStatus === "starting" || sessionStatus === "ending";
@@ -716,29 +781,32 @@ export function HireSheet({ open, onClose }: Props) {
     },
   ];
 
-  const availOptions = [
+  const availOptions: {
+    label: string;
+    desc: string;
+    sheetMode?: "pin" | "qr";
+    icon: React.ReactNode;
+  }[] = [
     {
       label: "Meu PINCODE",
       desc: "Informe seu código para contratação direta",
-      pin: sessionPin,
-      icon: null,
+      sheetMode: "pin",
+      icon: <Feather name="hash" size={24} color={colors.textSecondary} />,
     },
     {
       label: "Gerar QRCODE",
       desc: "Mostre o QR Code para ser escaneado",
-      pin: null,
+      sheetMode: "qr",
       icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={colors.textSecondary} />,
     },
     {
       label: "Compartilhar LINK",
       desc: "Copie e compartilhe o link de contratação",
-      pin: null,
       icon: <Feather name="link" size={24} color={colors.textSecondary} />,
     },
     {
       label: "Iniciar APROXIMAÇÃO",
       desc: "Ative o NFC e aproxime os dois dispositivos",
-      pin: null,
       icon: <Feather name="wifi" size={24} color={colors.textSecondary} />,
     },
   ];
@@ -873,8 +941,9 @@ export function HireSheet({ open, onClose }: Props) {
                     ]}
                     onPress={() => {
                       if (!disponivel) return;
-                      if (opt.pin) {
+                      if (opt.sheetMode) {
                         Haptics.selectionAsync();
+                        setPincodeInitialMode(opt.sheetMode);
                         setPincodeSheetOpen(true);
                       } else {
                         setDialog({
@@ -885,11 +954,7 @@ export function HireSheet({ open, onClose }: Props) {
                     }}
                   >
                     <View style={styles.availIcon}>
-                      {opt.pin ? (
-                        <Feather name="hash" size={24} color={colors.textSecondary} />
-                      ) : (
-                        opt.icon
-                      )}
+                      {opt.icon}
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.availLabel}>{opt.label}</Text>
@@ -998,6 +1063,8 @@ export function HireSheet({ open, onClose }: Props) {
         <PincodeSheet
           visible={pincodeSheetOpen}
           pinCode={sessionPin}
+          qrPayload={qrPayload}
+          initialMode={pincodeInitialMode}
           onClose={() => setPincodeSheetOpen(false)}
           onRegenerate={regeneratePin}
         />

@@ -28,20 +28,25 @@ type Props = {
   qrPayload: QRPayload | null;
   onClose: () => void;
   onRegenerate: () => Promise<void>;
+  initialMode?: ViewMode;
 };
 
-export function PincodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate }: Props) {
+export function PincodeSheet({ visible, pinCode, qrPayload, onClose, onRegenerate, initialMode = "pin" }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
-  const [mode, setMode] = useState<ViewMode>("pin");
+  const [mode, setMode] = useState<ViewMode>(initialMode);
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [confirmRegen, setConfirmRegen] = useState(false);
 
   useEffect(() => {
-    if (visible) ref.current?.present();
-    else ref.current?.dismiss();
+    if (visible) {
+      setMode(initialMode);
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
   }, [visible]);
 
   // Reset states when a new PIN is generated
