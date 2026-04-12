@@ -22,8 +22,9 @@ supabase/
 
 ### Tech Stack
 - **Frontend**: React Native, Expo SDK 54, Expo Router, React Query
-- **Auth & Database**: Supabase (hosted PostgreSQL + Supabase Auth)
-- **API Server**: Express + TypeScript (tsx), Drizzle ORM
+- **Auth & App Data**: Supabase client integration retained for the imported mobile app
+- **Replit Database**: Built-in PostgreSQL provisioned and available via `DATABASE_URL`
+- **API Server**: Express + TypeScript (tsx)
 - **Tooling**: pnpm workspaces, TypeScript, Orval codegen
 
 ## Running the App
@@ -47,10 +48,10 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - All app data reads/writes go through `@supabase/supabase-js` client
 - Auth: Supabase Auth (email/phone OTP)
 
-### Replit PostgreSQL (secondary — API server)
-- Used by the Express `api-server` via Drizzle ORM
-- Schema in `lib/db/src/schema/`
-- Push schema: `pnpm --filter @workspace/db run push`
+### Replit PostgreSQL
+- Provisioned for the migrated Replit environment
+- Available to server-side code through `DATABASE_URL`
+- No Drizzle schema package is currently present in this import
 
 ## Environment Variables & Secrets
 
@@ -62,9 +63,13 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 
 ### Secrets (in Replit Secrets)
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase public anon key (used in app)
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role (server-side only)
-- `SUPABASE_ACCESS_TOKEN` — Supabase Personal Access Token (management API / migrations)
 - `DATABASE_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` — Replit PostgreSQL
+
+## Migration Notes
+- Dependencies were installed from the existing `pnpm-lock.yaml`.
+- The main Replit workflow starts Expo Metro on port 5000.
+- A root Expo route now redirects to `/auth` so the Replit preview opens to a rendered screen instead of a blank root route.
+- No Supabase Edge Function calls are present in the imported codebase.
 
 ## Supabase Schema (all migrations applied)
 
