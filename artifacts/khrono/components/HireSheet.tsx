@@ -35,6 +35,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { ConnectingFeedback } from "@/components/ConnectingFeedback";
 import { PincodeSheet } from "@/components/PincodeSheet";
+import { ProfileReadinessSheet } from "@/components/ProfileReadinessSheet";
 import { QRCodeSheet } from "@/components/QRCodeSheet";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
@@ -654,12 +655,13 @@ export function HireSheet({ open, onClose }: Props) {
   const router = useRouter();
   const { setPendingProvider } = useConfirmation();
   const { colors } = useTheme();
-  const { status: sessionStatus, sessionPin, qrPayload, startSession, endSession, regeneratePin } = useAvailability();
+  const { status: sessionStatus, sessionPin, qrPayload, startSession, endSession, regeneratePin, profileReadiness, refreshProfileReadiness } = useAvailability();
   const [activeTab, setActiveTab] = useState<HireTab>("direta");
   const [subMode, setSubMode] = useState<HireMethod | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
   const [qrSheetOpen, setQrSheetOpen] = useState(false);
+  const [readinessSheetOpen, setReadinessSheetOpen] = useState(false);
 
   const disponivel = sessionStatus !== "idle";
   const isTransitioning = sessionStatus === "starting" || sessionStatus === "ending";
@@ -880,7 +882,7 @@ export function HireSheet({ open, onClose }: Props) {
                   </Text>
                   <AnimatedToggle
                     value={disponivel}
-                    onValueChange={(val) => {
+                    onValueChange={async (val) => {
                       if (isTransitioning) return;
                       if (!val) {
                         setDialog({
@@ -900,6 +902,11 @@ export function HireSheet({ open, onClose }: Props) {
                           ],
                         });
                       } else {
+                        const readiness = await refreshProfileReadiness();
+                        if (!readiness.ready) {
+                          setReadinessSheetOpen(true);
+                          return;
+                        }
                         startSession();
                       }
                     }}

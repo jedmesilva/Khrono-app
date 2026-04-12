@@ -31,15 +31,23 @@ export type QRPayload = {
   chk: string;    // sha256(pid+sid+pin)[0..8]
 };
 
+export type ProfileReadiness = {
+  ready: boolean;
+  missing: string[];
+  checked: boolean; // false while the first check hasn't finished
+};
+
 type AvailabilityContextType = {
   status: SessionStatus;
   isAvailable: boolean;
   sessionPin: string | null;
   sessionId: string | null;
   qrPayload: QRPayload | null;
+  profileReadiness: ProfileReadiness;
   startSession: () => Promise<void>;
   endSession: () => Promise<void>;
   regeneratePin: () => Promise<void>;
+  refreshProfileReadiness: () => Promise<ProfileReadiness>;
 };
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -50,9 +58,11 @@ const AvailabilityContext = createContext<AvailabilityContextType>({
   sessionPin: null,
   sessionId: null,
   qrPayload: null,
+  profileReadiness: { ready: false, missing: [], checked: false },
   startSession: async () => {},
   endSession: async () => {},
   regeneratePin: async () => {},
+  refreshProfileReadiness: async () => ({ ready: false, missing: [], checked: false }),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -115,6 +125,11 @@ export function AvailabilityProvider({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPin, setSessionPin] = useState<string | null>(null);
   const [qrPayload, setQrPayload] = useState<QRPayload | null>(null);
+  const [profileReadiness, setProfileReadiness] = useState<ProfileReadiness>({
+    ready: false,
+    missing: [],
+    checked: false,
+  });
 
   const statusRef = useRef<SessionStatus>("idle");
   const sessionIdRef = useRef<string | null>(null);
@@ -132,10 +147,36 @@ export function AvailabilityProvider({
     setSessionId(id);
   }
 
+  // ── Profile readiness check ────────────────────────────────────────────────
+  const refreshProfileReadiness = useCallback(async (): Promise<ProfileReadiness> => {
+    const profileId = profileIdRef.current;
+    if (!profileId) {
+      const result: ProfileReadiness = { ready: false, missing: ["Adicione pelo menos 1 serviço"], checked: true };
+      setProfileReadiness(result);
+      return result;
+    }
+
+    const { data, error } = await supabase
+      .from("provider_services")
+      .select("id")
+      .eq("profile_id", profileId)
+      .eq("is_active", true)
+      .limit(1);
+
+    const hasService = !error && Array.isArray(data) && data.length > 0;
+    const missing: string[] = [];
+    if (!hasService) missing.push("Adicione pelo menos 1 serviço ativo");
+
+    const result: ProfileReadiness = { ready: missing.length === 0, missing, checked: true };
+    setProfileReadiness(result);
+    return result;
+  }, []);
+
   // ── Load current user ──────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       profileIdRef.current = user?.id ?? null;
+      if (user?.id) refreshProfileReadiness();
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -149,11 +190,14 @@ export function AvailabilityProvider({
           pinIdRef.current = null;
           pendingPayloadRef.current = null;
           teardownRealtimePin();
+          setProfileReadiness({ ready: false, missing: [], checked: false });
+        } else {
+          refreshProfileReadiness();
         }
       }
     );
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refreshProfileReadiness]);
 
   // ── Realtime PIN subscription ──────────────────────────────────────────────
 
@@ -429,9 +473,11 @@ export function AvailabilityProvider({
         sessionPin,
         sessionId,
         qrPayload,
+        profileReadiness,
         startSession,
         endSession,
         regeneratePin,
+        refreshProfileReadiness,
       }}
     >
       {children}
