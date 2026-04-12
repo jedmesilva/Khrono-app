@@ -525,9 +525,9 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.list}>
               {myServices.map((sv) => {
-                const skill = mappedSkills.find(
-                  (s) => s.name.toLowerCase() === (sv.skillId ?? "").toLowerCase()
-                );
+                const skill = sv.skillCatalogId
+                  ? mappedSkills.find((s) => s.id === sv.skillCatalogId)
+                  : mappedSkills.find((s) => s.name.toLowerCase() === (sv.skillId ?? "").toLowerCase());
                 const tools = myTools.filter((t) => sv.toolIds.includes(t.id));
                 const active = isActive(sv.id);
                 return (

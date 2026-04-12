@@ -40,6 +40,7 @@ export interface Service {
   id: string;
   name: string;
   skillId: string;
+  skillCatalogId: string | null;
   toolIds: string[];
   rating: number;
   reviews: number;
@@ -103,6 +104,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "cm-sv1",
         name: "Pintura Residencial",
         skillId: "cm-s1",
+        skillCatalogId: null,
         toolIds: ["cm-t1", "cm-t2"],
         rating: 4.8,
         reviews: 42,
@@ -127,6 +129,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "cm-sv2",
         name: "Gessaria",
         skillId: "cm-s2",
+        skillCatalogId: null,
         toolIds: ["cm-t3"],
         rating: 4.5,
         reviews: 8,
@@ -171,6 +174,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "jr-sv1",
         name: "Personal Training",
         skillId: "jr-s1",
+        skillCatalogId: null,
         toolIds: ["jr-t1"],
         rating: 5.0,
         reviews: 128,
@@ -195,6 +199,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "jr-sv2",
         name: "Consultoria Nutricional",
         skillId: "jr-s2",
+        skillCatalogId: null,
         toolIds: [],
         rating: 4.9,
         reviews: 34,
@@ -239,6 +244,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "pa-sv1",
         name: "Instalação Elétrica",
         skillId: "pa-s1",
+        skillCatalogId: null,
         toolIds: ["pa-t1", "pa-t2"],
         rating: 4.7,
         reviews: 31,
@@ -261,6 +267,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "pa-sv2",
         name: "Manutenção Elétrica",
         skillId: "pa-s1",
+        skillCatalogId: null,
         toolIds: ["pa-t1"],
         rating: 4.6,
         reviews: 12,
@@ -302,6 +309,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "im-sv1",
         name: "Cuidados com Idosos",
         skillId: "im-s1",
+        skillCatalogId: null,
         toolIds: [],
         rating: 4.9,
         reviews: 77,
@@ -326,6 +334,7 @@ export const PROVIDERS: ProviderProfile[] = [
         id: "im-sv2",
         name: "Acompanhamento Hospitalar",
         skillId: "im-s1",
+        skillCatalogId: null,
         toolIds: ["im-t1"],
         rating: 4.8,
         reviews: 22,
@@ -424,6 +433,7 @@ export const MY_PROFILE = {
       id: "sv1",
       name: "Montagem com Transporte",
       skillId: "s1",
+        skillCatalogId: null,
       toolIds: ["t1", "t2"],
       rating: 4.9,
       reviews: 28,
@@ -463,6 +473,7 @@ export const MY_PROFILE = {
       id: "sv2",
       name: "Mudança Completa",
       skillId: "s2",
+        skillCatalogId: null,
       toolIds: ["t1", "t3"],
       rating: 4.7,
       reviews: 12,
@@ -495,6 +506,7 @@ export const MY_PROFILE = {
       id: "sv3",
       name: "Pintura Residencial",
       skillId: "s3",
+        skillCatalogId: null,
       toolIds: [],
       rating: 0,
       reviews: 0,

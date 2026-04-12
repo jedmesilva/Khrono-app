@@ -31,22 +31,23 @@ function iconForType(tipo: string): "truck" | "tool" | "box" {
   return "box";
 }
 
-function mapRowToService(row: any, valorBase: number): Service {
+function mapRowToService(row: any, valorBase: number, contractsCount: number): Service {
   const rawTools: any[] = Array.isArray(row.tools) ? row.tools : [];
   const toolIds = rawTools
-    .map((t: any) => (typeof t === "string" ? t : t.nome ?? ""))
+    .map((t: any) => (typeof t === "string" ? t : (t.id ?? t.nome ?? "")))
     .filter(Boolean);
 
   return {
     id: row.id,
     name: row.nome,
     skillId: row.skill ?? "",
+    skillCatalogId: row.skill_catalog_id ?? null,
     toolIds,
     rating: Number(row.nota ?? 0),
     reviews: Number(row.avaliacoes ?? 0),
-    contracts: Number(row.avaliacoes ?? 0),
-    hourlyRate: Math.round(Number(valorBase) * Number(row.multiplicador ?? 1)),
-    isNew: Number(row.avaliacoes ?? 0) === 0,
+    contracts: contractsCount,
+    hourlyRate: row.valor_hora ?? Math.round(Number(valorBase) * Number(row.multiplicador ?? 1)),
+    isNew: contractsCount < 10,
     active: Boolean(row.is_active),
     verified: null,
     addedAt: formatMonthYear(row.created_at),
@@ -63,11 +64,13 @@ function aggregateTools(serviceRows: any[]): Tool[] {
     for (const t of rawTools) {
       const nome = typeof t === "string" ? t : (t.nome ?? "");
       const tipo = typeof t === "string" ? "" : (t.tipo ?? "");
-      if (nome && !seen.has(nome)) {
-        seen.add(nome);
+      const id = typeof t === "string" ? t : (t.id ?? t.nome ?? "");
+      const key = id || nome;
+      if (key && !seen.has(key)) {
+        seen.add(key);
         tools.push({
-          id: nome,
-          name: nome,
+          id: key,
+          name: nome || key,
           type: tipo || "Ferramenta",
           icon: iconForType(tipo),
           details: "",
@@ -103,7 +106,7 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
   const loadData = useCallback(async (userId: string) => {
     setIsLoading(true);
     try {
-      const [servicesRes, ppRes] = await Promise.all([
+      const [servicesRes, ppRes, contractsRes] = await Promise.all([
         supabase
           .from("provider_services")
           .select("*")
@@ -115,6 +118,11 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
           .select("*")
           .eq("profile_id", userId)
           .single(),
+        supabase
+          .from("contracts")
+          .select("service_id")
+          .eq("hired_id", userId)
+          .not("service_id", "is", null),
       ]);
 
       const valorBase = ppRes.data ? Number(ppRes.data.valor_base ?? 50) : 50;
@@ -129,9 +137,18 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
         });
       }
 
+      const contractsCountMap: Record<string, number> = {};
+      if (contractsRes.data) {
+        for (const c of contractsRes.data) {
+          if (c.service_id) {
+            contractsCountMap[c.service_id] = (contractsCountMap[c.service_id] ?? 0) + 1;
+          }
+        }
+      }
+
       if (servicesRes.data) {
         const rows = servicesRes.data;
-        setMyServices(rows.map((row) => mapRowToService(row, valorBase)));
+        setMyServices(rows.map((row) => mapRowToService(row, valorBase, contractsCountMap[row.id] ?? 0)));
         setMyTools(aggregateTools(rows));
       }
     } catch (e) {

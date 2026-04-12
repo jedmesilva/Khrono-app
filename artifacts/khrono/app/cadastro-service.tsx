@@ -219,20 +219,23 @@ export default function CadastroServiceScreen() {
       const valorBase = providerProfile?.valorBase ?? 50;
       const multiplicador = (hourlyRate / valorBase).toFixed(3);
 
-      const firstSkill = draft.selectedSkillIds.length > 0
-        ? (userSkills.find((s) => s.id === draft.selectedSkillIds[0])?.name ?? null)
+      const firstSkillId = draft.selectedSkillIds.length > 0 ? draft.selectedSkillIds[0] : null;
+      const firstSkill = firstSkillId
+        ? (userSkills.find((s) => s.id === firstSkillId)?.name ?? null)
         : null;
 
       const toolsData = draft.selectedToolIds
         .map((tid) => userTools.find((t) => t.id === tid))
         .filter(Boolean)
-        .map((t) => ({ nome: t!.name, tipo: t!.type }));
+        .map((t) => ({ id: t!.id, nome: t!.name, tipo: t!.type }));
 
       await supabase.from("provider_services").insert({
         profile_id: user.id,
         nome: draft.serviceName.trim(),
         multiplicador,
+        valor_hora: hourlyRate,
         skill: firstSkill,
+        skill_catalog_id: firstSkillId,
         tools: toolsData,
         is_active: true,
       });
