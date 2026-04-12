@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -15,7 +16,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CadastroDone } from "@/components/CadastroDone";
 import { ToolListCard } from "@/components/ToolListCard";
+import { useCatalog, type CatalogTool } from "@/context/CatalogContext";
+import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
+import { supabase } from "@/lib/supabase";
 
 interface ToolTemplate {
   id: string;
@@ -32,30 +36,6 @@ const TOOL_TYPES = [
   { id: "equipamento", label: "Equipamento", icon: "box" as const },
 ];
 
-const TOOL_TEMPLATES: ToolTemplate[] = [
-  { id: "tv01", name: "Carro", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Veículo de passeio para transporte de pessoas ou pequenas cargas." },
-  { id: "tv02", name: "Moto", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Motocicleta para deslocamentos rápidos e entregas ágeis." },
-  { id: "tv03", name: "Van", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Van para transporte de cargas médias, mudanças e grupos." },
-  { id: "tv04", name: "Caminhão", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Caminhão para transporte de cargas pesadas e mudanças de grande porte." },
-  { id: "tv05", name: "Pickup", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Caminhonete para transporte de cargas leves e materiais de construção." },
-  { id: "tv06", name: "Bicicleta", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Bicicleta para entregas locais e deslocamentos de curta distância." },
-  { id: "tv07", name: "Scooter", type: "veiculo", typeLabel: "Veículo", icon: "truck", description: "Scooter elétrica ou a gasolina para entregas rápidas e mobilidade urbana." },
-  { id: "tf01", name: "Furadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Furadeira elétrica para perfuração em paredes, madeira e metal." },
-  { id: "tf02", name: "Serra Circular", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Serra circular para cortes precisos em madeira e outros materiais." },
-  { id: "tf03", name: "Parafusadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Parafusadeira elétrica para montagem e fixação rápida de peças." },
-  { id: "tf04", name: "Esmerilhadeira", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Esmerilhadeira angular para corte, desbaste e polimento de metais." },
-  { id: "tf05", name: "Martelo", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Martelo para fixação, demolição leve e trabalhos manuais em geral." },
-  { id: "tf06", name: "Chave de Fenda", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Jogo de chaves de fenda para aperto e soltura de parafusos de diferentes tipos." },
-  { id: "tf07", name: "Nível a Laser", type: "ferramenta", typeLabel: "Ferramenta", icon: "tool", description: "Nível a laser para nivelamento e alinhamento preciso em instalações." },
-  { id: "te01", name: "Escada", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Escada extensível ou de degraus para trabalhos em altura." },
-  { id: "te02", name: "Carrinho de Mudança", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Carrinho plataforma para movimentação de móveis e caixas pesadas." },
-  { id: "te03", name: "Betoneira", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Betoneira elétrica para mistura de concreto e argamassa em obras." },
-  { id: "te04", name: "Compressor de Ar", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Compressor de ar para pintura a pistola, limpeza e ferramentas pneumáticas." },
-  { id: "te05", name: "Gerador", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Gerador de energia para uso em locais sem tomada ou em quedas de energia." },
-  { id: "te06", name: "Andaime", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Andaime tubular para trabalhos em fachadas, tetos e ambientes elevados." },
-  { id: "te07", name: "Aspirador Industrial", type: "equipamento", typeLabel: "Equipamento", icon: "box", description: "Aspirador de alta potência para limpeza de obras, pós e resíduos pesados." },
-];
-
 const TOTAL_STEPS = 2;
 type Step = 1 | 2 | "done";
 type Step1Sub = "search" | "new_form";
@@ -64,8 +44,29 @@ function normalize(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+function typeLabel(tipo: string) {
+  return TOOL_TYPES.find((t) => t.id === tipo)?.label ?? "Equipamento";
+}
+
+function typeIcon(tipo: string): "truck" | "tool" | "box" {
+  return TOOL_TYPES.find((t) => t.id === tipo)?.icon ?? "box";
+}
+
+function mapCatalogTool(tool: CatalogTool): ToolTemplate {
+  return {
+    id: tool.id,
+    name: tool.nome,
+    type: tool.tipo,
+    typeLabel: typeLabel(tool.tipo),
+    icon: typeIcon(tool.tipo),
+    description: tool.description ?? "",
+  };
+}
+
 export default function CadastroToolScreen() {
   const { colors } = useTheme();
+  const { tools: catalogTools, isLoading: catalogLoading } = useCatalog();
+  const { refresh } = useServices();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
@@ -77,18 +78,24 @@ export default function CadastroToolScreen() {
   const [query, setQuery] = useState("");
   const [details, setDetails] = useState("");
   const [available, setAvailable] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const toolTemplates = React.useMemo(
+    () => catalogTools.map(mapCatalogTool),
+    [catalogTools]
+  );
 
   const currentStep = step === "done" ? TOTAL_STEPS : (step as number);
   const progress = currentStep / TOTAL_STEPS;
 
   const filteredTemplates = query.length > 0
-    ? TOOL_TEMPLATES.filter((t) =>
+    ? toolTemplates.filter((t) =>
         normalize(t.name).includes(normalize(query)) ||
         normalize(t.typeLabel).includes(normalize(query))
       )
-    : TOOL_TEMPLATES;
+    : toolTemplates;
 
-  const hasExactMatch = query.length > 0 && TOOL_TEMPLATES.some((t) => normalize(t.name) === normalize(query));
+  const hasExactMatch = query.length > 0 && toolTemplates.some((t) => normalize(t.name) === normalize(query));
   const showCreateOnly = query.length > 1 && filteredTemplates.length === 0;
   const showCreateAtBottom = query.length > 1 && filteredTemplates.length > 0 && !hasExactMatch;
 
@@ -121,8 +128,29 @@ export default function CadastroToolScreen() {
     setStep(2);
   }
 
-  function handleDetailsNext() {
-    setStep("done");
+  async function handleDetailsNext() {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { error } = await supabase.from("provider_tools").insert({
+        profile_id: user.id,
+        nome: toolName.trim(),
+        tipo: toolType,
+        details: details.trim() || null,
+        is_available: available,
+      });
+
+      if (error) throw error;
+      await refresh();
+    } catch (e) {
+      console.warn("[cadastro-tool] save error:", e);
+    } finally {
+      setIsSaving(false);
+      setStep("done");
+    }
   }
 
   function handleReset() {
@@ -204,56 +232,62 @@ export default function CadastroToolScreen() {
             )}
           </View>
 
-          {showCreateOnly && (
-            <Pressable
-              style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
-              onPress={handleCreateNew}
-            >
-              <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
-                <Feather name="plus" size={18} color="#e06030" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.createOptionLabel}>Criar tool</Text>
-                <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
-              </View>
-              <Feather name="chevron-right" size={16} color="#e06030" />
-            </Pressable>
-          )}
+          {catalogLoading ? (
+            <ActivityIndicator color="#e06030" style={{ marginTop: 32 }} />
+          ) : (
+            <>
+              {showCreateOnly && (
+                <Pressable
+                  style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
+                  onPress={handleCreateNew}
+                >
+                  <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                    <Feather name="plus" size={18} color="#e06030" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.createOptionLabel}>Criar tool</Text>
+                    <Text style={[styles.createOptionName, { color: colors.text }]} numberOfLines={1}>"{query}"</Text>
+                  </View>
+                  <Feather name="chevron-right" size={16} color="#e06030" />
+                </Pressable>
+              )}
 
-          {query.length === 0 && (
-            <Text style={[styles.listLabel, { color: colors.textMuted }]}>SUGESTÕES POPULARES</Text>
-          )}
-          {query.length > 0 && filteredTemplates.length > 0 && (
-            <Text style={[styles.listLabel, { color: colors.textMuted }]}>
-              {filteredTemplates.length} RESULTADO{filteredTemplates.length !== 1 ? "S" : ""}
-            </Text>
-          )}
-
-          <View style={styles.templateList}>
-            {filteredTemplates.map((t) => (
-              <ToolListCard
-                key={t.id}
-                name={t.name}
-                iconName={t.icon}
-                description={t.description}
-                badge={t.typeLabel}
-                onPress={() => handleSelectTemplate(t)}
-              />
-            ))}
-
-            {showCreateAtBottom && (
-              <Pressable
-                style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
-                onPress={handleCreateNew}
-              >
-                <Feather name="plus-circle" size={14} color="#e06030" />
-                <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
-                  Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como nova tool
+              {query.length === 0 && (
+                <Text style={[styles.listLabel, { color: colors.textMuted }]}>SUGESTÕES POPULARES</Text>
+              )}
+              {query.length > 0 && filteredTemplates.length > 0 && (
+                <Text style={[styles.listLabel, { color: colors.textMuted }]}>
+                  {filteredTemplates.length} RESULTADO{filteredTemplates.length !== 1 ? "S" : ""}
                 </Text>
-                <Feather name="chevron-right" size={14} color={colors.chevron} />
-              </Pressable>
-            )}
-          </View>
+              )}
+
+              <View style={styles.templateList}>
+                {filteredTemplates.map((t) => (
+                  <ToolListCard
+                    key={t.id}
+                    name={t.name}
+                    iconName={t.icon}
+                    description={t.description}
+                    badge={t.typeLabel}
+                    onPress={() => handleSelectTemplate(t)}
+                  />
+                ))}
+
+                {showCreateAtBottom && (
+                  <Pressable
+                    style={[styles.createOptionCardSmall, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+                    onPress={handleCreateNew}
+                  >
+                    <Feather name="plus-circle" size={14} color="#e06030" />
+                    <Text style={[styles.createOptionSmallText, { color: colors.textSecondary }]}>
+                      Criar "<Text style={{ color: "#e06030" }}>{query}</Text>" como nova tool
+                    </Text>
+                    <Feather name="chevron-right" size={14} color={colors.chevron} />
+                  </Pressable>
+                )}
+              </View>
+            </>
+          )}
         </ScrollView>
       )}
 
@@ -378,11 +412,11 @@ export default function CadastroToolScreen() {
           </ScrollView>
 
           <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
-            <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }]} onPress={handleDetailsNext}>
+            <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }, isSaving && styles.primaryBtnDisabled]} onPress={handleDetailsNext} disabled={isSaving}>
               <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
             </Pressable>
-            <Pressable style={[styles.primaryBtn, { flex: 1 }]} onPress={handleDetailsNext}>
-              <Text style={styles.primaryBtnText}>Concluir</Text>
+            <Pressable style={[styles.primaryBtn, { flex: 1 }, isSaving && styles.primaryBtnDisabled]} onPress={handleDetailsNext} disabled={isSaving}>
+              {isSaving ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.primaryBtnText}>Concluir</Text>}
             </Pressable>
           </View>
         </>
