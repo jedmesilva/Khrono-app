@@ -1,7 +1,7 @@
 # Krono App — Replit Environment
 
 ## Project Overview
-Krono is a service marketplace mobile app (React Native/Expo) connecting contractors with service providers. Monorepo with pnpm workspaces.
+Krono is a service marketplace mobile app (React Native/Expo) connecting contractors with service providers. It is preserved as an imported pnpm monorepo and adapted to run in Replit without rewriting the application.
 
 ## Architecture
 
@@ -9,22 +9,21 @@ Krono is a service marketplace mobile app (React Native/Expo) connecting contrac
 ```
 artifacts/
   khrono/          # Expo/React Native mobile app (main product)
-  api-server/      # Express API server (port 8080)
+  api-server/      # Express API server package (port 8080 when run separately)
   mockup-sandbox/  # Vite component preview server (port 8081)
 lib/
-  db/              # Drizzle ORM schema + PostgreSQL (Replit DB)
-  api-spec/        # OpenAPI spec (source of truth)
+  api-spec/        # OpenAPI spec (source of truth for generated API packages)
   api-zod/         # Generated Zod schemas
   api-client-react/ # Generated React Query hooks
 supabase/
-  migrations/      # SQL migration history (applied to Supabase)
+  migrations/      # SQL migration history from the original Supabase project
 ```
 
 ### Tech Stack
 - **Frontend**: React Native, Expo SDK 54, Expo Router, React Query
-- **Auth & App Data**: Supabase client integration retained for the imported mobile app
-- **Replit Database**: Built-in PostgreSQL provisioned and available via `DATABASE_URL`
-- **API Server**: Express + TypeScript (tsx)
+- **Auth & App Data**: Existing Supabase client integration retained for the imported mobile app
+- **Replit Database**: Built-in PostgreSQL provisioned and available via `DATABASE_URL` for future server-side work
+- **API Server**: Express + TypeScript package is present but not part of the main preview workflow
 - **Tooling**: pnpm workspaces, TypeScript, Orval codegen
 
 ## Running the App
@@ -34,50 +33,50 @@ supabase/
 node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/khrono run dev
 ```
 - Expo Metro runs on port 5000
-- Proxy bridges port 22861 → 5000 for the Replit preview
+- Proxy bridges port 22861 → 5000 for Expo packager access
+- The root route renders the existing auth entry screen so the Replit preview opens to a usable page
 
-### Other workflows
-- `artifacts/api-server: API Server` — Express API on port 8080
-- `artifacts/mockup-sandbox: Component Preview Server` — Vite on port 8081
+### Other packages
+- `artifacts/api-server` — Express API package
+- `artifacts/mockup-sandbox` — Vite component preview package
 
 ## Database
 
-### Supabase (primary — auth + app data)
+### Supabase (current app auth + app data)
 - Project: `hbekmqzdoxcsznykuxdj` (Krono app)
 - URL: `https://hbekmqzdoxcsznykuxdj.supabase.co`
-- All app data reads/writes go through `@supabase/supabase-js` client
-- Auth: Supabase Auth (email/phone OTP)
+- The imported mobile app uses `@supabase/supabase-js` with the public anon key and Supabase RLS policies
+- No Supabase Edge Functions or `functions.invoke` calls were found in the imported codebase
 
 ### Replit PostgreSQL
 - Provisioned for the migrated Replit environment
 - Available to server-side code through `DATABASE_URL`
-- No Drizzle schema package is currently present in this import
+- This import does not include an active Drizzle schema/config or `db:push` script, so no database push step is available without adding new server-side architecture
 
 ## Environment Variables & Secrets
 
-### Env vars (non-sensitive, in .replit [userenv.shared])
+### Env vars (non-sensitive, shared)
 - `EXPO_PUBLIC_SUPABASE_URL` — Supabase project URL
 - `PORT` — Main app port (5000)
-- `EXPO_METRO_PORT` — Metro bundler port (22861)
+- `EXPO_METRO_PORT` — Metro/proxy support port (22861)
 - `NODE_ENV` — development
 
-### Secrets (in Replit Secrets)
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase public anon key (used in app)
-- `EXPO_SUPABASE_ACCESS_TOKEN` — Supabase Management API token for applying remote SQL migrations
-- `EXPO_SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key for privileged server-side/database maintenance
-- `DATABASE_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` — Replit PostgreSQL
+### Secrets
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase public anon key used by the mobile app
+- `DATABASE_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` — Replit PostgreSQL connection values
 
 ## Migration Notes
 - Dependencies were installed from the existing `pnpm-lock.yaml`.
-- The main Replit workflow starts Expo Metro on port 5000.
-- A root Expo route now redirects to `/auth` so the Replit preview opens to a rendered screen instead of a blank root route.
+- Expo dependency versions were aligned with Expo SDK 54 expectations to remove compatibility warnings on startup.
+- The main Replit workflow starts Expo Metro on port 5000 and now runs without startup errors.
+- The root Expo route renders the existing auth screen directly, so the Replit preview opens to a working page.
+- The Supabase-to-Postgres checklist was reviewed. A full conversion would require rewriting the app's auth/data layer and replacing Supabase RLS/Auth behavior, so the existing Supabase architecture was preserved for this import.
 - No Supabase Edge Function calls are present in the imported codebase.
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY` is required and is stored in Replit Secrets.
+- Required runtime Supabase configuration is stored via environment/secrets rather than hardcoded in app source files.
 - `artifacts/khrono/server/prepare-dev-port.js` clears stale Expo Metro processes on port 5000 before startup.
 - `artifacts/khrono/server/expo-proxy.js` tolerates an already-running preview proxy on port 22861 to avoid restart failures from orphaned background processes.
-- The Supabase-to-Postgres checklist was reviewed. This import has no Drizzle schema/config or `db:push` script, and Supabase Auth/Data calls are part of the existing mobile app architecture, so they were preserved to avoid a rewrite.
 
-## Supabase Schema (all migrations applied)
+## Supabase Schema (migration history retained)
 
 ### Core Tables
 - `profiles` — user profiles (created by auth trigger)
@@ -87,33 +86,18 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `provider_locations` — provider service location (realtime/fixed)
 - `service_skills` — N:N service ↔ skills_catalog
 - `service_tools` — N:N service ↔ provider_tools
-- `skills_catalog` — 20 skill types (public read)
-- `services_catalog` — 20 service types (public read)
-- `tools_catalog` — 21 vehicle/tool/equipment templates (public read)
+- `skills_catalog` — skill types (public read)
+- `services_catalog` — service types (public read)
+- `tools_catalog` — vehicle/tool/equipment templates (public read)
 - `user_skills` — skills linked to a user profile
 - `user_services` — services linked to a user profile
-- `user_settings` — per-user persisted preferences for notifications, theme, haptics, 2FA, biometrics, and facial recognition
+- `user_settings` — per-user persisted preferences
 - `contracts` — service contracts between users
 - `contract_time_entries` — time tracking events
 - `wallets` — one per user, BRL currency
-- `wallet_cards` — saved payment cards (metadata only)
+- `wallet_cards` — saved payment cards metadata
 - `wallet_transactions` — deposit/withdrawal/payment history
-
-### New Tables
-- `availability_sessions` — histórico de sessões de disponibilidade do prestador (status, GPS, PIN, timestamps)
-
-### Applied Migrations (in order)
-1. `20260408_catalog_tables.sql` — skills/services catalogs + user link tables
-2. `20260409_contracts_schema_fixes.sql` — status constraints, indexes
-3. `20260409_fix_contracts_and_trigger.sql` — auth trigger, profile backfill
-4. `20260409_provider_locations.sql` — provider location table
-5. `20260409_wallet_tables.sql` — wallet system
-6. `20260412_service_schema_redesign.sql` — valor_hora, provider_tools, service_skills/tools, dropped old columns
-7. `20260412_tools_catalog.sql` — tools catalog + default templates
-8. `20260412_user_settings.sql` — persisted per-user settings/preferences
-9. `20260412_availability_sessions.sql` — availability session history (status, GPS, PIN, timestamps)
-10. `20260412_provider_pins_status.sql` — PIN lifecycle: adds `status` (active/used/invalidated), `session_id`, `used_at`, `invalidated_at` columns
-11. `20260412_fix_contract_status_and_provider_pins.sql` — restores `accepted` in the contract status check and recreates provider PIN RLS policies for active PIN/QR lookup and PIN consumption
+- `availability_sessions` — provider availability session history
 
 ## Code Generation
 ```bash

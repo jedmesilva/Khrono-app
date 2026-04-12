@@ -1,5 +1,5 @@
-import { Redirect } from "expo-router";
+import EntradaScreen from "./auth/index";
 
 export default function Index() {
-  return <Redirect href="/auth" />;
+  return <EntradaScreen />;
 }

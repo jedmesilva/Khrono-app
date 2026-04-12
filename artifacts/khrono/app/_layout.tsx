@@ -45,11 +45,12 @@ function AuthGuard() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "auth";
+    const inRootEntry = segments.length === 0 || segments[0] === "index";
     const inSignupFlow = ["boas-vindas", "senha", "nome", "verificacao", "nova-senha", "codigo-recuperacao"].includes(segments[1] as string);
 
-    if (!isAuthenticated && !inAuthGroup) {
+    if (!isAuthenticated && !inAuthGroup && !inRootEntry) {
       router.replace("/auth");
-    } else if (isAuthenticated && inAuthGroup && !inSignupFlow) {
+    } else if (isAuthenticated && ((inAuthGroup && !inSignupFlow) || inRootEntry)) {
       router.replace("/(tabs)");
     }
   }, [isAuthenticated, isLoading, segments]);
