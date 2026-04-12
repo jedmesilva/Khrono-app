@@ -1,162 +1,67 @@
-# Khrono Workspace
+# Khrono - App de Contratos
 
-## Overview
+A cross-platform time-based contracts application (Khrono) built as a TypeScript pnpm monorepo.
 
-pnpm workspace monorepo using TypeScript. This is **Khrono** — a cross-platform time-based contracts mobile app (Expo/React Native) with a supporting Express API server and shared libraries.
+## Architecture
 
-## Stack
-
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **Mobile app**: Expo 54 / React Native 0.81 / Expo Router 6
-- **API framework**: Express 5
-- **Database**: PostgreSQL (Replit built-in) + Drizzle ORM
-- **Auth & direct DB (mobile)**: Supabase (`@supabase/supabase-js`) — uses EXPO_PUBLIC_ anon keys
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
-
-## Running the App
+### Monorepo Structure
 
 ```
-pnpm install
+artifacts/
+  khrono/          - Expo 54 / React Native mobile app (main app)
+  api-server/      - Express 5 backend API server
+  mockup-sandbox/  - Vite + React UI prototyping sandbox
+
+lib/
+  db/              - Drizzle ORM schema + Replit PostgreSQL connection
+  api-spec/        - OpenAPI spec + Orval codegen
+  api-zod/         - Auto-generated Zod schemas
+  api-client-react/ - Auto-generated React Query hooks
 ```
 
-The main workflow ("Start application") runs:
-```
-node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/khrono run dev
-```
+### Key Technologies
+- **Mobile App**: Expo 54, React Native 0.81, Expo Router 6
+- **Auth & Mobile DB**: Supabase (auth + real-time for mobile app)
+- **Backend**: Express 5, Node.js, TypeScript
+- **Database**: Replit PostgreSQL via Drizzle ORM
+- **Monorepo**: pnpm workspaces
+- **Validation**: Zod
+- **ORM**: Drizzle ORM
 
-- Expo Metro bundler runs on port 5000
-- expo-proxy.js listens on port 22861 (exposed as external port 80) and proxies to Metro
-- The app serves both web (browser preview) and mobile (scan QR code with Expo Go)
+### Database
+- **Development/Production DB**: Replit-managed PostgreSQL (via `DATABASE_URL`)
+- **Mobile Auth**: Supabase (using public anon key `EXPO_PUBLIC_SUPABASE_*`)
+- Schema location: `lib/db/src/schema/`
+  - `profiles.ts` - User profiles
+  - `contracts.ts` - Contracts, provider profiles, services, locations
+  - `catalog.ts` - Skills and services catalogs
+  - `wallet.ts` - Wallets, cards, transactions
 
-## Environment Variables
-
-- `DATABASE_URL` — Replit PostgreSQL (auto-provided by Replit)
-- `EXPO_PUBLIC_SUPABASE_URL` — Supabase project URL (public, safe to expose)
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon key (public, safe to expose in mobile apps)
-
-## Structure
-
-```text
-workspace/
-├── artifacts/
-│   ├── khrono/             # Expo React Native mobile app (main product)
-│   │   ├── app/            # Expo Router screens
-│   │   ├── components/     # Reusable UI components
-│   │   ├── context/        # React contexts (Auth, Contracts, Catalog, etc.)
-│   │   ├── lib/supabase.ts # Supabase client (auth + DB for mobile)
-│   │   ├── metro.config.js # Metro bundler config (CORS for Replit proxy)
-│   │   └── server/         # expo-proxy.js + static serve
-│   ├── api-server/         # Express API server (REST backend)
-│   └── mockup-sandbox/     # Vite sandbox for UI prototyping
-├── lib/
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts
-├── supabase/               # DB migrations (Supabase SQL schema)
-├── pnpm-workspace.yaml
-├── tsconfig.base.json
-├── tsconfig.json
-└── package.json
-```
-
-## TypeScript & Composite Projects
-
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references.
-
-- **Always typecheck from the root** — run `pnpm run typecheck`
-- **`emitDeclarationOnly`** — only `.d.ts` files during typecheck; JS bundling by esbuild/tsx/vite
-- **Project references** — packages declare their cross-package dependencies via `references`
-
-## Root Scripts
-
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly`
-
-## Packages
-
-### `artifacts/khrono` (`@workspace/khrono`)
-
-Expo React Native mobile app — cross-platform time-based contracts app.
-
-**Design system:** light background `#F8F5F2`, cards `#ffffff`, accent orange `#e06030`, accent green `#18a06b`, typography Sora (display/prices) + DM Sans (body/UI). Border radii: cards 24, icon containers 22, chips/badges 20.
-
-**Key screens:**
-- `app/(tabs)/index.tsx` — Home: live active contract cards with timers
-- `app/(tabs)/hire.tsx` — Hire tab
-- `app/contract-confirm.tsx` — Full contract confirmation flow
-- `app/contract-detail/[id].tsx` — Contract detail view
-- `app/history.tsx` — Contract history
-- `app/auth/` — Auth screens (login, signup, password recovery)
-
-**Contexts (`context/`):**
-- `AuthContext.tsx` — Supabase auth state management
-- `ContractsContext.tsx` — Active contracts + history, Supabase persistence
-- `CatalogContext.tsx` — Skills + services catalog from Supabase
-- `UserCatalogContext.tsx` — Per-user skills/services CRUD
-- `HireSheetContext.tsx` — Controls HireSheet open/close
-- `ConfirmationContext.tsx` — Passes provider data to contract-confirm
-
-**Database tables (Supabase + Drizzle schema):**
-- `profiles` — user profiles
-- `provider_profiles` — provider-specific info (rates, rating, verified)
-- `provider_pins` — PIN-to-provider mapping
-- `provider_services` — services each provider offers
-- `contracts` — time-based contracts between users
-- `skills_catalog` — canonical skill templates
-- `services_catalog` — canonical service templates
-- `user_skills` — junction: user ↔ skills_catalog
-- `user_services` — junction: user ↔ services_catalog
-
-**DB push:**
-```
+### Push DB Schema
+```bash
 pnpm --filter @workspace/db run push
 ```
 
-### `artifacts/api-server` (`@workspace/api-server`)
+## Running the App
 
-Express 5 API server with Drizzle ORM for structured backend operations.
+The `Start application` workflow runs:
+1. `node artifacts/khrono/server/expo-proxy.js` - Proxies port 22861 → Metro on port 5000
+2. `PORT=5000 pnpm --filter @workspace/khrono run dev` - Starts Expo Metro bundler
 
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App: `src/app.ts` — CORS, JSON parsing, routes at `/api`, Expo Metro proxy
-- Routes: `src/routes/health.ts` — `GET /api/healthz`
-- `pnpm --filter @workspace/api-server run dev` — dev server
-- `pnpm --filter @workspace/api-server run build` — esbuild bundle
+The app is accessible via the Replit preview pane (web version via React Native Web).
 
-### `lib/db` (`@workspace/db`)
+## Environment Variables
+- `EXPO_PUBLIC_SUPABASE_URL` - Supabase project URL (public, safe to expose)
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key (public, safe to expose)
+- `DATABASE_URL` - Replit PostgreSQL connection string (secret, managed by Replit)
+- `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` - Replit PG credentials
 
-Drizzle ORM schema + PostgreSQL connection. Uses `DATABASE_URL` (Replit auto-provision).
+## Port Configuration
+- Port 5000: Metro bundler / main app entry point
+- Port 22861: Expo proxy (tunnels to Metro)
+- Port 8080/8081: Reserved for API server
 
-- `src/schema/profiles.ts` — profiles table
-- `src/schema/contracts.ts` — contracts + provider tables
-- `src/schema/catalog.ts` — catalog tables
-- `drizzle.config.ts` — requires `DATABASE_URL`
-
-### `lib/api-spec` (`@workspace/api-spec`)
-
-OpenAPI 3.1 spec + Orval codegen. Run: `pnpm --filter @workspace/api-spec run codegen`
-
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from OpenAPI spec.
-
-### `lib/api-client-react` (`@workspace/api-client-react`)
-
-Generated React Query hooks from OpenAPI spec.
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts. Run: `pnpm --filter @workspace/scripts run <script>`
-
-## Test Provider
-
-- Name: Jedme Silva
-- PIN: `1257`
-- Supabase profile ID: `a1884c2a-f50e-4343-9dd3-33b99af82360`
-- Services: Montagem de Móveis + Desmontagem e Transporte
+## Notes
+- The Supabase client is used in the mobile app for auth and real-time data (appropriate pattern for mobile)
+- The Replit PostgreSQL database has the same schema as Supabase (synced via Drizzle)
+- The API server (`api-server`) uses the Replit PostgreSQL via Drizzle ORM for server-side operations
