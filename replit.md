@@ -72,6 +72,10 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - The main Replit workflow starts Expo Metro on port 5000.
 - A root Expo route now redirects to `/auth` so the Replit preview opens to a rendered screen instead of a blank root route.
 - No Supabase Edge Function calls are present in the imported codebase.
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` is required and is stored in Replit Secrets.
+- `artifacts/khrono/server/prepare-dev-port.js` clears stale Expo Metro processes on port 5000 before startup.
+- `artifacts/khrono/server/expo-proxy.js` tolerates an already-running preview proxy on port 22861 to avoid restart failures from orphaned background processes.
+- The Supabase-to-Postgres checklist was reviewed. This import has no Drizzle schema/config or `db:push` script, and Supabase Auth/Data calls are part of the existing mobile app architecture, so they were preserved to avoid a rewrite.
 
 ## Supabase Schema (all migrations applied)
 

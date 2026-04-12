@@ -88,6 +88,16 @@ function startProxy() {
   proxy.listen(PROXY_PORT, "0.0.0.0", () => {
     console.log(`Expo proxy: port ${PROXY_PORT} → Metro on port ${METRO_PORT}`);
   });
+
+  proxy.on("error", (err) => {
+    if (err && err.code === "EADDRINUSE") {
+      console.warn(`Expo proxy: port ${PROXY_PORT} is already in use; continuing with the existing proxy.`);
+      process.exit(0);
+    }
+
+    console.error(`Expo proxy: ${err.message}`);
+    process.exit(1);
+  });
 }
 
 waitForMetro();
