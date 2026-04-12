@@ -10,7 +10,6 @@ import { supabase } from "@/lib/supabase";
 import type { Service, Tool, VerificationType } from "@/constants/profile-data";
 
 export type ProviderProfileStats = {
-  valorBase: number;
   nota: number;
   avaliacoes: number;
   totalContracts: number;
@@ -118,7 +117,6 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
 
       if (ppRes.data) {
         setProviderProfile({
-          valorBase: Number(ppRes.data.valor_base ?? 50),
           nota: Number(ppRes.data.nota ?? 0),
           avaliacoes: Number(ppRes.data.avaliacoes ?? 0),
           totalContracts: Number(ppRes.data.total_contracts ?? 0),

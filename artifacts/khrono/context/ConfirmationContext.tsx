@@ -4,7 +4,7 @@ export type ProviderService = {
   id: number;
   serviceId: string;
   nome: string;
-  multiplicador: number;
+  hourlyRate: number;
   avaliacoes: number;
   nota: number;
   skill?: string;
@@ -17,7 +17,6 @@ export type ProviderData = {
   nota: number;
   avaliacoes: number;
   distancia: number;
-  valorBase: number;
   totalContracts?: number;
   services: ProviderService[];
   profileId?: string;

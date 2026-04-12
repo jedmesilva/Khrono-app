@@ -65,8 +65,8 @@ async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
 
   const [profileRes, provRes, servicesRes] = await Promise.all([
     supabase.from("profiles").select("id, name, first_name").eq("id", profileId).single(),
-    supabase.from("provider_profiles").select("valor_base, nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
-    supabase.from("provider_services").select("*").eq("profile_id", profileId).eq("is_active", true).order("sort_order"),
+    supabase.from("provider_profiles").select("nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
+    supabase.from("provider_services").select("id, nome, valor_hora, nota, avaliacoes").eq("profile_id", profileId).eq("is_active", true).order("sort_order"),
   ]);
 
   if (profileRes.error || !profileRes.data) return null;
@@ -82,7 +82,6 @@ async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
     nota: parseFloat(String(prov.nota)),
     avaliacoes: prov.avaliacoes,
     distancia: 1.5,
-    valorBase: parseFloat(String(prov.valor_base)),
     totalContracts: prov.total_contracts,
     verified: prov.verified,
     profileId,
@@ -90,9 +89,7 @@ async function lookupProviderByPin(pin: string): Promise<ProviderData | null> {
       id: idx + 1,
       serviceId: s.id as string,
       nome: s.nome,
-      multiplicador: parseFloat(String(s.multiplicador)),
-      skill: s.skill ?? "",
-      tools: Array.isArray(s.tools) ? s.tools : [],
+      hourlyRate: Number(s.valor_hora ?? 50),
       nota: parseFloat(String(s.nota)),
       avaliacoes: s.avaliacoes,
     })),

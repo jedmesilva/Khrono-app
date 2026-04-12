@@ -16,7 +16,6 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   services: ProviderService[];
-  valorBase: number;
   selectedId: number | null;
   onSelect: (service: ProviderService) => void;
 };
@@ -25,7 +24,6 @@ export function ServiceSelectionSheet({
   visible,
   onClose,
   services,
-  valorBase,
   selectedId,
   onSelect,
 }: Props) {
@@ -105,7 +103,7 @@ export function ServiceSelectionSheet({
         <View style={styles.list}>
           {services.map((s) => {
             const ativo = s.id === selectedId;
-            const valor = (valorBase * s.multiplicador).toFixed(0);
+            const valor = (s.hourlyRate ?? 50).toFixed(0);
             return (
               <Pressable
                 key={s.id}

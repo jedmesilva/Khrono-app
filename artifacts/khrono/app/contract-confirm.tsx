@@ -122,7 +122,7 @@ export default function ContractConfirmScreen() {
 
   const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
 
-  const valorHora = provider.valorBase * (servico?.multiplicador ?? 1);
+  const valorHora = servico?.hourlyRate ?? 50;
   const duracaoSelecionada = DURACOES[duracaoIdx];
   const duracaoMs = customAtivo
     ? (customHoras * 60 + customMinutos) * 60 * 1000
@@ -335,7 +335,7 @@ export default function ContractConfirmScreen() {
             </View>
             {servico && (
               <Text style={[styles.optionRate, { color: "#e06030" }]}>
-                R${(provider.valorBase * servico.multiplicador).toFixed(0)}/h
+                R${(servico.hourlyRate ?? 50).toFixed(0)}/h
               </Text>
             )}
             <Feather name="chevron-right" size={14} color={colors.textDim} />
@@ -567,7 +567,6 @@ export default function ContractConfirmScreen() {
         visible={serviceSheetAberta}
         onClose={() => setServiceSheetAberta(false)}
         services={provider.services}
-        valorBase={provider.valorBase}
         selectedId={servico?.id ?? null}
         onSelect={(s) => setServicoselecionado(s)}
       />

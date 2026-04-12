@@ -179,7 +179,7 @@ const CONTRACT_SELECT = `
   *,
   contractor:profiles!contracts_contractor_id_fkey(id, name, first_name),
   hired:profiles!contracts_hired_id_fkey(id, name, first_name, provider_profiles(nota, avaliacoes, total_contracts)),
-  service:provider_services!contracts_service_id_fkey(id, nome, nota, avaliacoes, skill, tools, multiplicador)
+  service:provider_services!contracts_service_id_fkey(id, nome, nota, avaliacoes, valor_hora)
 `;
 
 export function ContractsProvider({ children }: { children: React.ReactNode }) {
