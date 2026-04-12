@@ -10,7 +10,7 @@ integrations = ["javascript_database:1.0.0"]
   [[mcp.servers]]
   name = "supabase"
   command = "npx"
-  args = ["-y", "@supabase/mcp-server-supabase@latest", "--access-token", "sbp_d5f1e9a42ebf753b39d8b5c66cc6ee51b5130cbb", "--project-ref", "hbekmqzdoxcsznykuxdj"]
+  args = ["-y", "@supabase/mcp-server-supabase@latest", "--access-token", "sbp_0be20780dcb74841270992b3585a287afaba8374", "--project-ref", "hbekmqzdoxcsznykuxdj"]
 
   [workflows]
 runButton = "Project"
