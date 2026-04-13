@@ -140,7 +140,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
         </View>
 
         {/* PIN Card */}
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>SEU PINCODE</Text>
           <View style={styles.digitsRow}>
             {digits.map((d, i) => (
@@ -272,7 +272,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   card: {
-    borderWidth: 1,
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,

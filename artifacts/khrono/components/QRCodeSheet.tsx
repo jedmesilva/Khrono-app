@@ -132,7 +132,7 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
         </View>
 
         {/* QR Card */}
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>QR CODE</Text>
 
           {qrValue ? (
@@ -252,7 +252,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   card: {
-    borderWidth: 1,
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,
