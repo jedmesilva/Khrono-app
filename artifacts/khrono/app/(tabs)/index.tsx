@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { ContractCard } from "@/components/ContractCard";
+import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
 import { useAuth } from "@/context/AuthContext";
@@ -105,6 +106,7 @@ export default function HomeScreen() {
   const avatarColor = getAvatarColor(user?.name || "K");
   const initials = getInitials(user?.name || "K");
   const [notifOpen, setNotifOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
   const [now, setNow] = useState(Date.now());
@@ -184,7 +186,7 @@ export default function HomeScreen() {
             style={styles.greetingRow}
             onPress={() => {
               Haptics.selectionAsync();
-              router.push("/(tabs)/profile" as any);
+              setMenuOpen(true);
             }}
             hitSlop={8}
           >
@@ -269,6 +271,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
+      <MenuSheet visible={menuOpen} onClose={() => setMenuOpen(false)} />
       <AppDialog
         visible={!!dialog}
         title={dialog?.title ?? ""}
