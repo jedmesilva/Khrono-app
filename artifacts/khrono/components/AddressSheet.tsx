@@ -115,7 +115,7 @@ export function AddressSheet({
 
   const inputRef = useRef<TextInput>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const snapPoints = useMemo(() => ["92%"], []);
+  const snapPoints = useMemo(() => ["100%"], []);
 
   useEffect(() => {
     if (visible) {
@@ -124,11 +124,16 @@ export function AddressSheet({
       setSuggestions([]);
       setLoading(false);
       loadHistory().then(setHistory);
-      setTimeout(() => inputRef.current?.focus(), 300);
     } else {
       ref.current?.dismiss();
     }
   }, [visible]);
+
+  const handleSheetChange = useCallback((index: number) => {
+    if (index === 0) {
+      setTimeout(() => inputRef.current?.focus(), 80);
+    }
+  }, []);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -282,6 +287,7 @@ export function AddressSheet({
       }}
       handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
       onDismiss={onClose}
+      onChange={handleSheetChange}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
@@ -308,6 +314,7 @@ export function AddressSheet({
             autoCapitalize="words"
             returnKeyType="search"
             clearButtonMode="while-editing"
+            autoFocus
           />
           {loading && (
             <ActivityIndicator size="small" color={ORANGE} style={{ marginLeft: 4 }} />
