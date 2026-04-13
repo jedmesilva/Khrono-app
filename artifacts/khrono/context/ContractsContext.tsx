@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import * as Haptics from "expo-haptics";
 import { supabase } from "@/lib/supabase";
 
 export type ContractTool = {
@@ -189,6 +190,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   const userIdRef = useRef<string | null>(null);
   const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const broadcastReadyRef = useRef(false);
+  const lastNewContractVibratedAt = useRef(0);
 
   const loadContracts = useCallback(async (userId: string, { showLoading = true }: { showLoading?: boolean } = {}) => {
     if (showLoading) setIsLoading(true);
@@ -256,7 +258,16 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "contracts", filter: `hired_id=eq.${user.id}` },
-          handleChange
+          async (payload: any) => {
+            if (payload?.eventType === "INSERT") {
+              const now = Date.now();
+              if (now - lastNewContractVibratedAt.current > 2000) {
+                lastNewContractVibratedAt.current = now;
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+              }
+            }
+            await handleChange();
+          }
         )
         .subscribe();
 
@@ -266,6 +277,12 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .channel("khrono-contract-events")
         .on("broadcast", { event: "contract-created" }, async (msg) => {
           if (msg.payload?.hired_id === user.id) {
+            // Vibra ao receber o broadcast (debounce de 2s para não vibrar duplo com o postgres_changes)
+            const now = Date.now();
+            if (now - lastNewContractVibratedAt.current > 2000) {
+              lastNewContractVibratedAt.current = now;
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+            }
             await handleChange();
           }
         })

@@ -81,7 +81,7 @@ function ContractCardSkeleton() {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { activeContracts, isLoading, endContract, acceptContract, beginContract } = useContracts();
+  const { activeContracts, isLoading, acceptContract, beginContract } = useContracts();
   const { colors } = useTheme();
   const isWeb = Platform.OS === "web";
   const [notifOpen, setNotifOpen] = useState(false);
@@ -111,21 +111,6 @@ export default function HomeScreen() {
       const hours = (now - c.startedAt) / 1000 / 3600;
       return sum + hours * c.ratePerHour;
     }, 0);
-
-  const handleStop = useCallback(
-    (id: string) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setDialog({
-        title: "Encerrar contrato?",
-        message: "O valor será calculado e registrado no histórico.",
-        buttons: [
-          { text: "Cancelar", style: "cancel" },
-          { text: "Encerrar", style: "destructive", onPress: () => endContract(id) },
-        ],
-      });
-    },
-    [endContract]
-  );
 
   const handleAccept = useCallback(
     async (id: string) => {
@@ -242,7 +227,6 @@ export default function HomeScreen() {
                 <ContractCard
                   key={c.id}
                   contract={c}
-                  onStop={handleStop}
                   onAccept={handleAccept}
                   onBegin={handleBegin}
                   onPress={() => router.push(`/contract-detail/${c.id}` as any)}

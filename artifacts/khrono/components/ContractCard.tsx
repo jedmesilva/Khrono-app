@@ -1,8 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Animated,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -40,7 +38,7 @@ function getValueLabel(contract: Contract): string {
 
 type Props = {
   contract: Contract;
-  onStop: (id: string) => void;
+  onStop?: (id: string) => void;
   onAccept?: (id: string) => void;
   onBegin?: (id: string) => void;
   onPress?: () => void;
@@ -88,16 +86,6 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
     : null;
   const quaseAcabando = !isScheduled && isTimer && restante !== null && restante < 1000 * 60 * 10;
   const alertColor = "#ff4444";
-
-  const stopScale = useRef(new Animated.Value(1)).current;
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(stopScale, { toValue: 0.95, duration: 80, useNativeDriver: true }),
-      Animated.timing(stopScale, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start();
-    onStop(contract.id);
-  };
 
   const displayColor = quaseAcabando ? alertColor : accentColor;
 
@@ -257,23 +245,6 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
         </Pressable>
       )}
 
-      {/* Botão: Encerrar (active) */}
-      {isActive && (
-        <Animated.View style={{ transform: [{ scale: stopScale }] }}>
-          <Pressable
-            style={[
-              styles.stopBtn,
-              { borderColor: (quaseAcabando ? alertColor : accentColor) + "40" },
-            ]}
-            onPress={handlePress}
-          >
-            <Feather name="square" size={12} color={quaseAcabando ? alertColor : accentColor} />
-            <Text style={[styles.stopText, { color: quaseAcabando ? alertColor : accentColor }]}>
-              ENCERRAR
-            </Text>
-          </Pressable>
-        </Animated.View>
-      )}
     </Pressable>
   );
 }
