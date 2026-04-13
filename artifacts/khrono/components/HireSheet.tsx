@@ -151,7 +151,6 @@ function PincodeContent({
   colors: ColorPalette;
 }) {
   const [pin, setPin] = useState("");
-  const [found, setFound] = useState<{ provider: ProviderData; pinId: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const styles = useMemo(() => createSubStyles(colors), [colors]);
 
@@ -173,7 +172,9 @@ function PincodeContent({
       const result = await lookupProviderByPin(pin);
       if (result) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        setFound({ provider: result.provider, pinId: result.pinId });
+        await markPinAsUsed(result.pinId);
+        if (result.provider.profileId) onNotifyPin?.(result.provider.profileId);
+        onFoundProvider(result.provider);
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         onShowDialog({ title: "PIN não encontrado", message: "Verifique o código e tente novamente." });
@@ -185,56 +186,6 @@ function PincodeContent({
       setLoading(false);
     }
   };
-
-  const handleContinue = async () => {
-    if (!found) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await markPinAsUsed(found.pinId);
-    if (found.provider.profileId) onNotifyPin?.(found.provider.profileId);
-    onFoundProvider(found.provider);
-  };
-
-  if (found) {
-    const p = found.provider;
-    return (
-      <View>
-        <Text style={styles.title}>Usuário encontrado</Text>
-        <View style={styles.userCard}>
-          <View style={styles.userAvatar}>
-            <Text style={styles.userAvatarText}>{p.initials}</Text>
-          </View>
-          <View style={styles.userNameRow}>
-            <Text style={styles.userName}>{p.name}</Text>
-            {p.verified && <VerifiedBadge variant="full" />}
-          </View>
-          <View style={styles.infoChipsRow}>
-            <View style={styles.infoChip}>
-              <Feather name="briefcase" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{p.totalContracts ?? 0} contratos</Text>
-            </View>
-            <View style={styles.infoChip}>
-              <Feather name="tool" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{p.services.length} {p.services.length === 1 ? "serviço" : "serviços"}</Text>
-            </View>
-            <View style={styles.infoChip}>
-              <Feather name="map-pin" size={10} color={colors.textSecondary} />
-              <Text style={styles.infoChipText}>{p.distancia} km</Text>
-            </View>
-          </View>
-        </View>
-        <Text style={styles.confirmDesc}>
-          Confirme o usuário para definir os detalhes do contrato.
-        </Text>
-        <Pressable style={styles.primaryBtn} onPress={handleContinue}>
-          <Feather name="arrow-right" size={16} color="#fff" />
-          <Text style={styles.primaryBtnText}>Confirmar</Text>
-        </Pressable>
-        <Pressable style={styles.ghostBtn} onPress={() => setFound(null)}>
-          <Text style={styles.ghostBtnText}>Voltar</Text>
-        </Pressable>
-      </View>
-    );
-  }
 
   if (loading) {
     return (
