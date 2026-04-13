@@ -20,6 +20,7 @@ import { ScheduleSheet } from "@/components/ScheduleSheet";
 import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
 import { PixPaymentModal } from "@/components/PixPaymentModal";
 import { ServiceSelectionSheet } from "@/components/ServiceSelectionSheet";
+import { formatCurrency, formatRate } from "@/lib/format";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -32,7 +33,7 @@ const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
 function formatValor(ms: number, rate: number) {
-  return ((ms / 1000 / 3600) * rate).toFixed(2);
+  return formatCurrency((ms / 1000 / 3600) * rate);
 }
 
 
@@ -289,7 +290,7 @@ export default function ContractConfirmScreen() {
             </View>
             {servico && (
               <Text style={[styles.optionRate, { color: "#e06030" }]}>
-                R${(servico.hourlyRate ?? 50).toFixed(0)}/h
+                {formatRate(servico.hourlyRate ?? 50)}
               </Text>
             )}
             <Feather name="chevron-right" size={14} color={colors.textDim} />
@@ -427,7 +428,7 @@ export default function ContractConfirmScreen() {
                 {tipoContrato === "definido" ? "valor total" : "valor por hora"}
               </Text>
               <Text style={styles.valueSummaryAmount}>
-                {tipoContrato === "definido" ? `R$${valorTotal}` : `R$${valorHora.toFixed(0)}/h`}
+                {tipoContrato === "definido" ? valorTotal : formatRate(valorHora)}
               </Text>
               <Text style={styles.valueSummaryMeta} numberOfLines={1}>
                 {servico?.nome} · {agendado ? formatAgendamento() : "Agora"}

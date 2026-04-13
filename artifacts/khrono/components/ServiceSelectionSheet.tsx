@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { ProviderService } from "@/context/ConfirmationContext";
+import { formatRate } from "@/lib/format";
 
 type Props = {
   visible: boolean;
@@ -103,7 +104,6 @@ export function ServiceSelectionSheet({
         <View style={styles.list}>
           {services.map((s) => {
             const ativo = s.id === selectedId;
-            const valor = (s.hourlyRate ?? 50).toFixed(0);
             return (
               <Pressable
                 key={s.id}
@@ -149,7 +149,7 @@ export function ServiceSelectionSheet({
                 </View>
 
                 <Text style={[styles.serviceRate, ativo && { color: "#e06030" }]}>
-                  R${valor}/h
+                  {formatRate(s.hourlyRate ?? 50)}
                 </Text>
               </Pressable>
             );

@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Service, Skill, Tool, VerificationType } from "../constants/profile-data";
+import { formatRateValue } from "@/lib/format";
 
 interface ServiceCardProps {
   service: Service;
@@ -91,7 +92,7 @@ export function ServiceCard({ service, skills, tools, active, colors, onPress, o
 
       <View style={[styles.footer, { borderTopColor: colors.divider }]}>
         <View style={styles.priceBlock}>
-          <Text style={[styles.price, { color: active ? "#e06030" : colors.textMuted }]}>R${service.hourlyRate}</Text>
+          <Text style={[styles.price, { color: active ? "#e06030" : colors.textMuted }]}>{formatRateValue(service.hourlyRate)}</Text>
           <Text style={[styles.perHour, { color: colors.textDim }]}>/hora</Text>
         </View>
         {!service.isNew ? (

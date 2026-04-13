@@ -7,6 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
+import { formatCurrency } from "@/lib/format";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -188,7 +189,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
                 <Feather name="zap" size={28} color="#e06030" style={styles.qrIcon} />
               </View>
               <Text style={styles.qrAmount}>
-                R$ {parsedAmount.toFixed(2).replace(".", ",")}
+                {formatCurrency(parsedAmount)}
               </Text>
               <Text style={styles.qrSub}>Escaneie com qualquer app de banco</Text>
             </View>
@@ -225,7 +226,7 @@ export function PixDepositModal({ visible, onClose }: Props) {
             </View>
             <Text style={styles.successTitle}>Depósito em análise</Text>
             <Text style={styles.successSub}>
-              R$ {parsedAmount.toFixed(2).replace(".", ",")} será creditado{"\n"}em breve na sua carteira.
+              {formatCurrency(parsedAmount)} será creditado{"\n"}em breve na sua carteira.
             </Text>
             <Pressable style={styles.doneBtn} onPress={handleClose}>
               <Text style={styles.doneBtnText}>Concluir</Text>

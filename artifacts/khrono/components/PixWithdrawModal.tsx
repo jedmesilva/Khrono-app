@@ -6,6 +6,7 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
+import { formatCurrency } from "@/lib/format";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -159,7 +160,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             </View>
 
             <Text style={styles.balanceHint}>
-              Saldo disponível: R$ {balance.toFixed(2)}
+              Saldo disponível: {formatCurrency(balance)}
             </Text>
 
             <Text style={[styles.fieldLabel, { marginTop: 20 }]}>TIPO DE CHAVE</Text>
@@ -213,7 +214,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             <View style={styles.confirmCard}>
               <View style={styles.confirmRow}>
                 <Text style={styles.confirmLabel}>VALOR</Text>
-                <Text style={styles.confirmValue}>R$ {parsedAmount.toFixed(2)}</Text>
+                <Text style={styles.confirmValue}>{formatCurrency(parsedAmount)}</Text>
               </View>
               <View style={styles.confirmDivider} />
               <View style={styles.confirmRow}>
@@ -247,7 +248,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             </View>
             <Text style={styles.successTitle}>Pix enviado!</Text>
             <Text style={styles.successSub}>
-              R$ {parsedAmount.toFixed(2)} transferido para{"\n"}{pixKey}
+              {formatCurrency(parsedAmount)} transferido para{"\n"}{pixKey}
             </Text>
             <Pressable style={styles.doneBtn} onPress={handleClose}>
               <Text style={styles.doneBtnText}>Concluir</Text>

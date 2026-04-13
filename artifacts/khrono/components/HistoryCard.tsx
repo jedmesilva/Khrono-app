@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
+import { formatCurrency } from "@/lib/format";
 
 type Props = {
   contract: Contract;
@@ -46,7 +47,7 @@ export function HistoryCard({ contract, onPress }: Props) {
       </View>
       <View style={styles.right}>
         <Text style={[styles.amount, { color: colors.textSecondary }]}>
-          R${contract.totalAmount?.toFixed(0)}
+          {formatCurrency(contract.totalAmount ?? 0)}
         </Text>
         <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : "#18a06b99" }]}>
           {isHiring ? "pago" : "recebido"}

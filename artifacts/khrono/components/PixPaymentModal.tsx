@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
+import { formatCurrency } from "@/lib/format";
 
 type Props = {
   visible: boolean;
@@ -160,7 +161,7 @@ export function PixPaymentModal({
               <>
                 <Text style={styles.amountLabel}>VALOR/HORA</Text>
                 <Text style={styles.amountValue}>
-                  R$ {amount.toFixed(2).replace(".", ",")}
+                  {formatCurrency(amount)}
                 </Text>
                 <Text style={styles.amountNote}>
                   Valor final calculado ao encerrar o contrato
@@ -170,7 +171,7 @@ export function PixPaymentModal({
               <>
                 <Text style={styles.amountLabel}>VALOR TOTAL</Text>
                 <Text style={styles.amountValue}>
-                  R$ {amount.toFixed(2).replace(".", ",")}
+                  {formatCurrency(amount)}
                 </Text>
               </>
             )}

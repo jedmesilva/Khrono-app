@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
+import { formatRateValue } from "@/lib/format";
 
 const EXPLORE_USERS = [
   { id: "1", name: "Felipe Andrade", initials: "FA", skills: ["Montador de Móveis", "Carregador"], rating: 4.9, reviews: 28, ratePerHour: 60, location: "Belo Horizonte, MG", available: true },
@@ -119,7 +120,7 @@ export default function ExploreScreen() {
                   </View>
                 </View>
                 <View style={styles.rateWrap}>
-                  <Text style={styles.rateText}>R${u.ratePerHour}</Text>
+                  <Text style={styles.rateText}>{formatRateValue(u.ratePerHour)}</Text>
                   <Text style={[styles.rateUnit, { color: colors.textSecondary }]}>/h</Text>
                 </View>
               </View>

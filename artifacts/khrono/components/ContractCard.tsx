@@ -9,6 +9,7 @@ import {
 
 import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
+import { formatCurrency, formatRate } from "@/lib/format";
 
 function getValueLabel(contract: Contract): string {
   const isHiring = contract.role === "hiring";
@@ -61,7 +62,7 @@ function formatElapsed(ms: number) {
 
 function formatValue(ms: number, rate: number) {
   const hours = ms / 1000 / 3600;
-  return (hours * rate).toFixed(2);
+  return formatCurrency(hours * rate);
 }
 
 export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: Props) {
@@ -210,7 +211,7 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
                 {getValueLabel(contract)}
               </Text>
               <Text style={[styles.valueText, { color: displayColor }]}>
-                R${formatValue(contract.duracaoTotal, contract.ratePerHour)}
+                {formatValue(contract.duracaoTotal, contract.ratePerHour)}
               </Text>
             </View>
           </View>
@@ -241,8 +242,8 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
               ]}
             >
               {isPending || isAccepted || isPendingState
-                ? "R$0,00"
-                : `R$${formatValue(elapsed, contract.ratePerHour)}`}
+                ? formatCurrency(0)
+                : formatValue(elapsed, contract.ratePerHour)}
             </Text>
           </View>
         </View>
@@ -263,7 +264,7 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
       {/* Rate */}
       <View style={styles.rateRow}>
         <Text style={[styles.rateText, { color: colors.textDim }]}>
-          R${contract.ratePerHour}/h
+          {formatRate(contract.ratePerHour)}
         </Text>
       </View>
 

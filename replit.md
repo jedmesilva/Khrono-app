@@ -125,6 +125,18 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 - `wallet_transactions` — deposit/withdrawal/payment history
 - `availability_sessions` — provider availability session history
 
+## Currency Formatting
+
+All monetary values throughout the app use a single utility at `artifacts/khrono/lib/format.ts`:
+
+- `formatCurrency(value)` → `R$ 1.234,56` — for totals, accumulated values, balances, Pix amounts
+- `formatRateValue(value)` → `R$ 50` — for hourly rate when `/h` or `/hora` is in a separate Text element
+- `formatRate(value)` → `R$ 50/h` — for hourly rate as a combined string
+
+Uses `Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })` — no manual `.toFixed()` or `.replace(".", ",")` patterns in the UI layer.
+
+Files updated: `StatsBar`, `ContractCard`, `HistoryCard`, `ServiceCard`, `ServiceSelectionSheet`, `PixWithdrawModal`, `PixDepositModal`, `PixPaymentModal`, `ContractsContext`, `app/service/[id]`, `app/provider-service/[serviceId]`, `app/contract-confirm`, `app/contract-detail/[id]`, `app/(tabs)/index`, `app/(tabs)/wallet`, `app/(tabs)/explore`.
+
 ## Code Generation
 ```bash
 pnpm --filter @workspace/api-spec run codegen

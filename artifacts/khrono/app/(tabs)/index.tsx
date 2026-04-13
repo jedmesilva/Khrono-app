@@ -22,6 +22,7 @@ import { StatsBar } from "@/components/StatsBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts, isContractRunning } from "@/context/ContractsContext";
 import { useNotifications } from "@/context/NotificationsContext";
+import { formatCurrency } from "@/lib/format";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
@@ -211,9 +212,9 @@ export default function HomeScreen() {
           <StatsBar
             style={styles.summaryBar}
             items={[
-              { label: "A PAGAR", value: `R$${totalPagar.toFixed(2)}`, color: "#e06030" },
+              { label: "A PAGAR", value: formatCurrency(totalPagar), color: "#e06030" },
               { label: "ATIVOS", value: activeContracts.length, align: "center" },
-              { label: "A RECEBER", value: `R$${totalReceber.toFixed(2)}`, color: "#18a06b", align: "flex-end" },
+              { label: "A RECEBER", value: formatCurrency(totalReceber), color: "#18a06b", align: "flex-end" },
             ]}
           />
         )}

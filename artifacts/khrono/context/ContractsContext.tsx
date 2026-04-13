@@ -9,6 +9,7 @@ import React, {
 import * as Haptics from "expo-haptics";
 import { supabase } from "@/lib/supabase";
 import { useNotifications } from "@/context/NotificationsContext";
+import { formatCurrency } from "@/lib/format";
 
 export type ContractTool = {
   nome: string;
@@ -811,7 +812,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         await loadContracts(userIdRef.current, { showLoading: false });
 
       const otherPartyId = contract.person.profileId;
-      const amountLabel = `R$${totalAmount.toFixed(2)}`;
+      const amountLabel = formatCurrency(totalAmount);
       const reason = contract.endReason ?? "Encerrado com acordo mútuo";
 
       if (otherPartyId) {

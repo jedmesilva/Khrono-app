@@ -18,6 +18,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool } from "@/constants/profile-data";
 import { supabase } from "@/lib/supabase";
 import { formatMonthYear } from "@/context/ServicesContext";
+import { formatRate } from "@/lib/format";
 
 type ExpandedCard = "rating" | "reviews" | "contracts" | null;
 
@@ -204,7 +205,7 @@ export default function ProviderServiceScreen() {
                 <VerifiedBadge onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")} />
               )}
             </View>
-            <Text style={styles.serviceRate}>R${service.hourlyRate}/h</Text>
+            <Text style={styles.serviceRate}>{formatRate(service.hourlyRate)}</Text>
           </View>
         </View>
 

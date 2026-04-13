@@ -18,6 +18,7 @@ import { PixWithdrawModal } from "@/components/PixWithdrawModal";
 import { useTheme } from "@/context/ThemeContext";
 import { useWallet } from "@/context/WalletContext";
 import { useContracts } from "@/context/ContractsContext";
+import { formatCurrency } from "@/lib/format";
 
 type CardBandeira = "Visa" | "Mastercard";
 
@@ -57,7 +58,7 @@ export default function WalletScreen() {
 
   const topPadding = isWeb ? insets.top + 67 : insets.top;
   const fmt = (val: number) =>
-    showBalance ? `R$ ${val.toFixed(2).replace(".", ",")}` : "R$ ••••••";
+    showBalance ? formatCurrency(val) : "R$ ••••••";
   const formatBalance = fmt;
 
   return (
@@ -87,13 +88,13 @@ export default function WalletScreen() {
             <View style={[styles.statChip, { borderColor: "#e0603025", backgroundColor: "#e0603010" }]}>
               <Text style={[styles.statChipLabel, { color: "#e06030" }]}>PAGO</Text>
               <Text style={[styles.statChipValue, { color: "#e06030" }]}>
-                {showBalance ? `R$ ${totalPaid.toFixed(2)}` : "••••"}
+                {showBalance ? formatCurrency(totalPaid) : "••••"}
               </Text>
             </View>
             <View style={[styles.statChip, { borderColor: "#18a06b25", backgroundColor: "#18a06b10" }]}>
               <Text style={[styles.statChipLabel, { color: "#18a06b" }]}>RECEBIDO</Text>
               <Text style={[styles.statChipValue, { color: "#18a06b" }]}>
-                {showBalance ? `R$ ${totalReceived.toFixed(2)}` : "••••"}
+                {showBalance ? formatCurrency(totalReceived) : "••••"}
               </Text>
             </View>
           </View>

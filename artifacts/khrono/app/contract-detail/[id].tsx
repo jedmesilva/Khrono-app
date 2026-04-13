@@ -20,6 +20,7 @@ import { AppDialog } from "@/components/AppDialog";
 import { ReasonSheet } from "@/components/ReasonSheet";
 import { useTheme } from "@/context/ThemeContext";
 import { Contract, useContracts, isContractRunning } from "@/context/ContractsContext";
+import { formatCurrency, formatRate } from "@/lib/format";
 
 type SheetActionRowProps = {
   icon: React.ReactNode;
@@ -359,8 +360,8 @@ export default function ContractDetailScreen() {
   const valorHora = contract.ratePerHour;
   const valorAcumulado =
     isTimer && contract.duracaoTotal
-      ? ((contract.duracaoTotal / 1000 / 3600) * valorHora).toFixed(2)
-      : ((elapsed / 1000 / 3600) * valorHora).toFixed(2);
+      ? formatCurrency((contract.duracaoTotal / 1000 / 3600) * valorHora)
+      : formatCurrency((elapsed / 1000 / 3600) * valorHora);
 
   const restante =
     isTimer && isRunning && contract.duracaoTotal
@@ -724,7 +725,7 @@ export default function ContractDetailScreen() {
                   />
                 </View>
                 <Text style={[styles.timerAmount, { color: cor }]}>
-                  R${valorAcumulado}
+                  {valorAcumulado}
                 </Text>
                 <Text
                   style={[
@@ -752,7 +753,7 @@ export default function ContractDetailScreen() {
                   ]}
                 >
                   {isRunning || isEnded || isPendingEnd
-                    ? `R$${valorAcumulado}`
+                    ? valorAcumulado
                     : "—"}
                 </Text>
                 <Text
@@ -854,7 +855,7 @@ export default function ContractDetailScreen() {
                   )}
                 </View>
                 <Text style={[styles.servicoRate, { color: cor }]}>
-                  R${contract.servico.ratePerHour.toFixed(0)}/h
+                  {formatRate(contract.servico.ratePerHour)}
                 </Text>
               </View>
             </View>
@@ -886,7 +887,7 @@ export default function ContractDetailScreen() {
                 ? [
                     {
                       label: "Valor/hora",
-                      valor: `R$${valorHora.toFixed(0)}/h`,
+                      valor: formatRate(valorHora),
                       corValor: cor,
                     },
                   ]
@@ -908,7 +909,7 @@ export default function ContractDetailScreen() {
                     },
                     {
                       label: "Valor",
-                      valor: `R$${valorAcumulado}`,
+                      valor: valorAcumulado,
                       corValor: cor,
                     },
                   ]

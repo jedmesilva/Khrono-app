@@ -18,6 +18,7 @@ import { useServices } from "@/context/ServicesContext";
 import { useCatalog } from "@/context/CatalogContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Skill, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { formatRateValue } from "@/lib/format";
 
 type ExpandedCard = "rating" | "reviews" | "contracts" | null;
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
@@ -188,7 +189,7 @@ export default function ServiceDetailScreen() {
         <View style={[styles.priceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>VALOR POR HORA</Text>
           <Text style={[styles.priceValue, { color: active ? "#e06030" : colors.textDim }]}>
-            R${service.hourlyRate}<Text style={styles.priceUnit}>/h</Text>
+            {formatRateValue(service.hourlyRate)}<Text style={styles.priceUnit}>/h</Text>
           </Text>
         </View>
 
