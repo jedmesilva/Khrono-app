@@ -16,13 +16,27 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { ContractCard } from "@/components/ContractCard";
-import { MenuSheet } from "@/components/MenuSheet";
 import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts, isContractRunning } from "@/context/ContractsContext";
 import { useNotifications } from "@/context/NotificationsContext";
 import { formatCurrency } from "@/lib/format";
+
+const AVATAR_COLORS = ["#e06030", "#18a06b", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
@@ -84,9 +98,13 @@ export default function HomeScreen() {
   const { activeContracts, isLoading, acceptContract, beginContract } = useContracts();
   const { unreadCount } = useNotifications();
   const { colors } = useTheme();
+  const { user } = useAuth();
   const isWeb = Platform.OS === "web";
+
+  const displayName = user?.firstName || user?.name || "você";
+  const avatarColor = getAvatarColor(user?.name || "K");
+  const initials = getInitials(user?.name || "K");
   const [notifOpen, setNotifOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
 
   const [now, setNow] = useState(Date.now());
@@ -162,15 +180,15 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: "#e06030" }}>r</Text>ono
-          </Text>
+          <View style={styles.greeting}>
+            <Text style={[styles.greetingHi, { color: colors.textDim }]}>Olá,</Text>
+            <Text style={[styles.greetingName, { color: colors.text }]}>{displayName}!</Text>
+          </View>
           <View style={styles.headerActions}>
             <Pressable
               onPress={() => {
                 Haptics.selectionAsync();
                 setNotifOpen(true);
-                setMenuOpen(false);
               }}
               style={styles.headerBtn}
               hitSlop={8}
@@ -185,13 +203,13 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => {
                 Haptics.selectionAsync();
-                setMenuOpen(true);
-                setNotifOpen(false);
+                router.push("/(tabs)/profile" as any);
               }}
-              style={styles.headerBtn}
               hitSlop={8}
             >
-              <Feather name="menu" size={20} color={colors.textSecondary} />
+              <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
             </Pressable>
           </View>
         </View>
@@ -252,7 +270,6 @@ export default function HomeScreen() {
       </ScrollView>
 
       <NotificationsSheet visible={notifOpen} onClose={() => setNotifOpen(false)} />
-      <MenuSheet visible={menuOpen} onClose={() => setMenuOpen(false)} />
       <AppDialog
         visible={!!dialog}
         title={dialog?.title ?? ""}
@@ -306,10 +323,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  logo: {
+  greeting: {
+    gap: 0,
+  },
+  greetingHi: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 12,
+    letterSpacing: 0.2,
+  },
+  greetingName: {
     fontFamily: "Sora_700Bold",
-    fontSize: 24,
+    fontSize: 22,
     letterSpacing: -0.5,
+  },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 13,
+    color: "#fff",
+    letterSpacing: 0.5,
   },
   headerActions: {
     flexDirection: "row",
