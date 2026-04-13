@@ -63,6 +63,7 @@ node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/
 
 ### Secrets
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase public anon key used by the mobile app
+- `SUPABASE_ACCESS_TOKEN` — Supabase personal access token used by the MCP server integration
 - `DATABASE_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` — Replit PostgreSQL connection values
 
 ## Migration Notes
