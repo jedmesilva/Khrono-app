@@ -16,6 +16,7 @@ import { HistoryCard } from "@/components/HistoryCard";
 import { StatsBar } from "@/components/StatsBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 
 type Filter = "all" | "hiring" | "hired";
 
@@ -54,11 +55,10 @@ export default function HistoryScreen() {
     <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
-          <Feather name="arrow-left" size={20} color={colors.accent} />
+        <Pressable onPress={() => router.back()} style={GlobalStyles.backButton} hitSlop={12}>
+          <Feather name="arrow-left" size={16} color={colors.iconBack} />
         </Pressable>
         <Text style={[styles.title, { color: colors.text }]}>Histórico</Text>
-        <View style={{ width: 36 }} />
       </View>
 
       {/* Stats */}
@@ -138,15 +138,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 16,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
   },
   title: {
     fontFamily: "Sora_600SemiBold",
