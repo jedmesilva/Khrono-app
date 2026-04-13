@@ -7,13 +7,10 @@ import {
 import * as Haptics from "expo-haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  KeyboardAvoidingView,
   PanResponder,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import Animated, {
@@ -27,6 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { LocationMode } from "@/constants/profile-data";
+import { AddressSheet, AddressResult } from "@/components/AddressSheet";
 
 export type { LocationMode };
 
@@ -306,8 +304,8 @@ export function LocationSheet({
   const [address, setAddress] = useState(fixedAddress);
   const [radius, setRadius] = useState(serviceRadius);
   const [saved, setSaved] = useState(false);
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false);
 
-  const addressInputRef = useRef<TextInput>(null);
   const snapPoints = useMemo(() => ["80%"], []);
 
   useEffect(() => {
@@ -322,11 +320,9 @@ export function LocationSheet({
     }
   }, [visible]);
 
-  useEffect(() => {
-    if (selectedMode === "fixed") {
-      setTimeout(() => addressInputRef.current?.focus(), 200);
-    }
-  }, [selectedMode]);
+  const handleAddressSelect = useCallback((result: AddressResult) => {
+    setAddress(result.label);
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -360,6 +356,7 @@ export function LocationSheet({
   };
 
   return (
+    <>
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
@@ -377,11 +374,7 @@ export function LocationSheet({
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
-        <BottomSheetScrollView
+      <BottomSheetScrollView
           contentContainerStyle={[
             styles.content,
             { paddingBottom: Math.max(insets.bottom, 24) },
@@ -433,33 +426,34 @@ export function LocationSheet({
               </View>
             </View>
           ) : (
-            <View
-              style={[
-                styles.addressRow,
-                { borderColor: address.length > 0 ? ORANGE : colors.inputBorder },
+            <Pressable
+              style={({ pressed }) => [
+                styles.addressDisplay,
+                pressed && styles.addressDisplayPressed,
+                address.length > 0 && styles.addressDisplayFilled,
               ]}
+              onPress={() => setAddressSheetOpen(true)}
             >
               <Feather
                 name="map-pin"
                 size={15}
                 color={address.length > 0 ? ORANGE : colors.textMuted}
               />
-              <TextInput
-                ref={addressInputRef}
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Ex: Belo Horizonte, MG"
-                placeholderTextColor={colors.textDim}
-                style={[styles.addressInput, { color: colors.text }]}
-                autoCapitalize="words"
-                returnKeyType="done"
+              <Text
+                style={[
+                  styles.addressDisplayText,
+                  address.length === 0 && styles.addressDisplayPlaceholder,
+                ]}
+                numberOfLines={1}
+              >
+                {address.length > 0 ? address : "Toque para definir a localização"}
+              </Text>
+              <Feather
+                name={address.length > 0 ? "edit-2" : "chevron-right"}
+                size={14}
+                color={address.length > 0 ? ORANGE : colors.chevron}
               />
-              {address.length > 0 && (
-                <Pressable onPress={() => setAddress("")} hitSlop={8}>
-                  <Feather name="x" size={16} color={colors.textMuted} />
-                </Pressable>
-              )}
-            </View>
+            </Pressable>
           )}
 
           {/* Radius slider */}
@@ -497,8 +491,16 @@ export function LocationSheet({
             </Text>
           </Pressable>
         </BottomSheetScrollView>
-      </KeyboardAvoidingView>
     </BottomSheetModal>
+
+    <AddressSheet
+      visible={addressSheetOpen}
+      onClose={() => setAddressSheetOpen(false)}
+      onSelect={handleAddressSelect}
+      title="Localização fixa"
+      placeholder="Ex: Belo Horizonte, MG"
+    />
+  </>
   );
 }
 
@@ -572,21 +574,33 @@ function createStyles(colors: ColorPalette) {
       marginTop: 1,
     },
 
-    addressRow: {
+    addressDisplay: {
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
       backgroundColor: colors.inputBg,
       borderWidth: 1,
+      borderColor: colors.inputBorder,
       borderRadius: 12,
       paddingHorizontal: 14,
       height: 50,
     },
-    addressInput: {
+    addressDisplayPressed: {
+      backgroundColor: colors.rowPressed,
+    },
+    addressDisplayFilled: {
+      borderColor: ORANGE,
+      backgroundColor: ORANGE_LIGHT,
+    },
+    addressDisplayText: {
       flex: 1,
-      fontFamily: "DMSans_400Regular",
+      fontFamily: "DMSans_500Medium",
       fontSize: 14,
       color: colors.text,
+    },
+    addressDisplayPlaceholder: {
+      color: colors.textDim,
+      fontFamily: "DMSans_400Regular",
     },
 
     sliderCard: {
