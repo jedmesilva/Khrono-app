@@ -547,20 +547,20 @@ export default function ProfileScreen() {
 
         {/* Location card */}
         <Pressable style={[styles.locationCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setLocationSheetOpen(true)}>
-          <View style={[styles.locationIconWrap, location.mode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b30" } : { backgroundColor: "#e0603015", borderColor: "#e0603030" }]}>
-            <Feather name={location.mode === "realtime" ? "navigation" : "map-pin"} size={18} color={location.mode === "realtime" ? "#18a06b" : "#e06030"} />
+          <View style={[styles.locationIconWrap, { backgroundColor: colors.menuIconBg, borderColor: colors.surfaceBorder }]}>
+            <Feather name={location.mode === "realtime" ? "navigation" : "map-pin"} size={18} color={colors.iconBack} />
           </View>
           <View style={{ flex: 1 }}>
             <View style={styles.locationTopRow}>
               <Text style={[styles.locationLabel, { color: colors.textMuted }]}>Localização de serviço</Text>
-              <View style={[styles.locationModeBadge, location.mode === "realtime" ? { backgroundColor: "#18a06b15", borderColor: "#18a06b25" } : { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
-                <Text style={[styles.locationModeBadgeText, { color: location.mode === "realtime" ? "#18a06b" : "#e06030" }]}>
+              <View style={[styles.locationModeBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                <Text style={[styles.locationModeBadgeText, { color: colors.textSecondary }]}>
                   {location.mode === "realtime" ? "Tempo real" : "Fixa"}
                 </Text>
               </View>
             </View>
             <Text style={[styles.locationAddress, { color: colors.textSecondary }]}>
-              {location.mode === "realtime" ? "GPS ativo" : (location.fixedAddress || "—")}{" · raio "}{formatRadius(location.serviceRadiusMeters)}
+              {location.mode === "realtime" ? "Minha localização" : (location.fixedAddress || "—")}{" · raio "}{formatRadius(location.serviceRadiusMeters)}
             </Text>
           </View>
           <Feather name="chevron-right" size={16} color={colors.chevron} />

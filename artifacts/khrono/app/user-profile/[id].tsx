@@ -92,13 +92,13 @@ function ServiceAreaCard({ locationMode, serviceRadius, fixedAddress, colors }: 
   return (
     <View style={[areaStyles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
       <View style={areaStyles.topRow}>
-        <View style={[areaStyles.iconWrap, isRealtime ? { backgroundColor: "#18a06b15", borderColor: "#18a06b25" } : { backgroundColor: "#e0603015", borderColor: "#e0603025" }]}>
-          {isRealtime ? <PulsingDot size={7} /> : <Feather name="map-pin" size={14} color="#e06030" />}
+        <View style={[areaStyles.iconWrap, { backgroundColor: colors.menuIconBg, borderColor: colors.surfaceBorder }]}>
+          <Feather name={isRealtime ? "navigation" : "map-pin"} size={14} color={colors.iconBack} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[areaStyles.areaLabel, { color: colors.textSecondary }]}>Área de atendimento</Text>
           <Text style={[areaStyles.areaDesc, { color: colors.textMuted }]}>
-            {isRealtime ? "Localização em tempo real" : fixedAddress || "Localização fixa"}
+            {isRealtime ? "Minha localização" : fixedAddress || "Localização fixa"}
             {" · raio "}{formatRadius(serviceRadius)}
           </Text>
         </View>
