@@ -237,44 +237,53 @@ export function AvailabilityProvider({
   }
 
   // ── Insert a new active PIN and build QR payload ───────────────────────────
+  // Retries up to 10 times if the generated PIN collides with an already-active
+  // PIN (DB unique partial index on provider_pins(pin) WHERE status='active').
   async function insertNewPin(
     profileId: string,
     sessionId: string | null
   ): Promise<string | null> {
-    const pin = generatePin();
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const pin = generatePin();
 
-    const { data, error } = await supabase
-      .from("provider_pins")
-      .insert({
-        profile_id: profileId,
-        pin,
-        status: "active",
-        session_id: sessionId,
-      })
-      .select("id")
-      .single();
+      const { data, error } = await supabase
+        .from("provider_pins")
+        .insert({
+          profile_id: profileId,
+          pin,
+          status: "active",
+          session_id: sessionId,
+        })
+        .select("id")
+        .single();
 
-    if (error || !data) return null;
+      // 23505 = unique_violation: another active PIN has the same value — retry
+      if (error?.code === "23505") continue;
+      if (error || !data) return null;
 
-    pinIdRef.current = data.id;
-    setSessionPin(pin);
+      pinIdRef.current = data.id;
+      setSessionPin(pin);
 
-    // Build QR payload with checksum (only possible when sessionId is known)
-    if (sessionId) {
-      const chk = makeChecksum(profileId, sessionId, pin);
-      setQrPayload({
-        type: "khrono-qr",
-        v: 1,
-        pin,
-        pid: profileId,
-        sid: sessionId,
-        chk,
-      });
-    } else {
-      setQrPayload(null);
+      // Build QR payload with checksum (only possible when sessionId is known)
+      if (sessionId) {
+        const chk = makeChecksum(profileId, sessionId, pin);
+        setQrPayload({
+          type: "khrono-qr",
+          v: 1,
+          pin,
+          pid: profileId,
+          sid: sessionId,
+          chk,
+        });
+      } else {
+        setQrPayload(null);
+      }
+
+      return pin;
     }
 
-    return pin;
+    // Exhausted all retries (astronomically unlikely with 9 000 possible values)
+    return null;
   }
 
   // ── Invalidate a specific PIN or all active PINs ───────────────────────────
