@@ -22,7 +22,7 @@ export function StatsBar({ items, style }: Props) {
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.card, borderColor: colors.cardBorder },
+        { backgroundColor: colors.card },
         style,
       ]}
     >
@@ -45,7 +45,6 @@ export function StatsBar({ items, style }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
     borderRadius: 24,
     padding: 14,
     flexDirection: "row",
