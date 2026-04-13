@@ -793,8 +793,8 @@ export function HireSheet({ open, onClose }: Props) {
       icon: <Feather name="hash" size={24} color={colors.textSecondary} />,
     },
     {
-      label: "Gerar QRCODE",
-      desc: "Mostre o QR Code para ser escaneado",
+      label: "Meu QRCODE",
+      desc: "Exiba o QR Code para ser escaneado pelo contratante",
       sheetTarget: "qr",
       icon: <MaterialCommunityIcons name="qrcode-scan" size={24} color={colors.textSecondary} />,
     },
