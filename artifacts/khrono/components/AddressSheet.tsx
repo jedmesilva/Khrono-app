@@ -288,8 +288,9 @@ export function AddressSheet({
       handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
       onDismiss={onClose}
       onChange={handleSheetChange}
-      keyboardBehavior="interactive"
+      keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
       <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         {/* Header */}
