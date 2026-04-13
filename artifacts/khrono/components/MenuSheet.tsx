@@ -33,6 +33,14 @@ type Props = {
   onClose: () => void;
 };
 
+const AVATAR_COLORS = ["#e06030", "#18a06b", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
 function getInitials(name: string, contact: string): string {
   const source = name.trim() || contact.trim();
   if (!source) return "?";
@@ -50,6 +58,7 @@ export function MenuSheet({ visible, onClose }: Props) {
   const userName = user?.name?.trim() || user?.firstName?.trim() || "Minha conta";
   const userContact = user?.contact?.trim() || (isLoading ? "Carregando conta..." : "Dados da conta");
   const initials = getInitials(userName, userContact);
+  const avatarColor = user?.name ? getAvatarColor(user.name) : "#e06030";
 
   const snapPoints = useMemo(() => ["58%"], []);
 
@@ -156,8 +165,8 @@ export function MenuSheet({ visible, onClose }: Props) {
               setTimeout(() => router.push("/conta"), 300);
             }}
           >
-            <View style={[staticStyles.avatar, { backgroundColor: colors.menuIconBg, borderColor: colors.chevron }]}>
-              <Text style={[staticStyles.avatarText, { color: colors.iconBack }]}>{initials}</Text>
+            <View style={[staticStyles.avatar, { backgroundColor: avatarColor }]}>
+              <Text style={staticStyles.avatarText}>{initials}</Text>
             </View>
             <View style={staticStyles.userInfo}>
               <Text style={[staticStyles.userName, { color: colors.text }]} numberOfLines={1}>{userName}</Text>
@@ -246,16 +255,17 @@ const staticStyles = StyleSheet.create({
     gap: 12,
   },
   avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderWidth: 1,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 12,
+    fontFamily: "Sora_700Bold",
+    fontSize: 13,
+    color: "#fff",
+    letterSpacing: 0.5,
   },
   userInfo: {
     flex: 1,
