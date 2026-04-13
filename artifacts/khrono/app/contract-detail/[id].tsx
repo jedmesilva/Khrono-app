@@ -880,6 +880,14 @@ export default function ContractDetailScreen() {
   const showScheduledRow =
     (isAccepted || isScheduled) && !!contract.scheduledFor;
 
+  const roleLabelText = isHiring
+    ? isPending || isAccepted
+      ? "Você está contratando"
+      : "Você contratou"
+    : isRunning || isPaused || isPendingEnd || isPendingCancel
+    ? "Você é contratado de"
+    : "Você foi contratado por";
+
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
   // ── Status config ──
@@ -1023,7 +1031,7 @@ export default function ContractDetailScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[s.roleLabel, { color: roleTextLabel }]}>
-              {isHiring ? "Você está contratando" : "Você foi contratado por"}
+              {roleLabelText}
             </Text>
             <Text style={[s.roleName, { color: roleNameColor }]}>
               {contract.person.name}
