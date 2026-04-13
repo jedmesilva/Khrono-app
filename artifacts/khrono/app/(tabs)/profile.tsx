@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   profileName: { fontFamily: "Sora_700Bold", fontSize: 20, flexShrink: 1 },
   sinceText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 
-  statsCard: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 20, padding: 18, marginBottom: 12 },
+  statsCard: { flexDirection: "row", alignItems: "center", borderRadius: 20, padding: 18, marginBottom: 12 },
   statItem: { flex: 1, alignItems: "center", gap: 2 },
   statValue: { fontFamily: "DMSans_500Medium", fontSize: 22 },
   statLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
   readinessAction: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
   readinessActionText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#e06030" },
 
-  locationCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 12 },
+  locationCard: { flexDirection: "row", alignItems: "center", gap: 14, borderRadius: 20, padding: 16, marginBottom: 12 },
   locationIconWrap: { width: 44, height: 44, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   locationTopRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 3 },
   locationLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" },
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   locationAddress: { fontFamily: "Sora_400Regular", fontSize: 12 },
 
   compactRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
-  compactCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 20, padding: 14 },
+  compactCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 20, padding: 14 },
   compactIcon: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   compactTitle: { fontFamily: "Sora_700Bold", fontSize: 13 },
   compactMeta: { fontFamily: "DMSans_400Regular", fontSize: 9 },
