@@ -619,9 +619,11 @@ export function HireSheet({ open, onClose }: Props) {
   const [pincodeSheetOpen, setPincodeSheetOpen] = useState(false);
   const [qrSheetOpen, setQrSheetOpen] = useState(false);
   const [readinessSheetOpen, setReadinessSheetOpen] = useState(false);
+  const [optimisticOn, setOptimisticOn] = useState(false);
 
   const disponivel = sessionStatus !== "idle";
   const isTransitioning = sessionStatus === "starting" || sessionStatus === "ending";
+  const toggleValue = optimisticOn || disponivel;
 
   const subRef = useRef<BottomSheetModal>(null);
 
@@ -837,9 +839,9 @@ export function HireSheet({ open, onClose }: Props) {
                     {statusLabel(sessionStatus)}
                   </Text>
                   <AnimatedToggle
-                    value={disponivel}
+                    value={toggleValue}
                     onValueChange={async (val) => {
-                      if (isTransitioning) return;
+                      if (isTransitioning || optimisticOn) return;
                       if (!val) {
                         setDialog({
                           title: "Encerrar sessão?",
@@ -858,12 +860,17 @@ export function HireSheet({ open, onClose }: Props) {
                           ],
                         });
                       } else {
-                        const readiness = await refreshProfileReadiness();
-                        if (!readiness.ready) {
-                          setReadinessSheetOpen(true);
-                          return;
+                        setOptimisticOn(true);
+                        try {
+                          const readiness = await refreshProfileReadiness();
+                          if (!readiness.ready) {
+                            setReadinessSheetOpen(true);
+                            return;
+                          }
+                          startSession();
+                        } finally {
+                          setOptimisticOn(false);
                         }
-                        startSession();
                       }
                     }}
                   />
