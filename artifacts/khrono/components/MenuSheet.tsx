@@ -16,7 +16,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -34,12 +33,23 @@ type Props = {
   onClose: () => void;
 };
 
+function getInitials(name: string, contact: string): string {
+  const source = name.trim() || contact.trim();
+  if (!source) return "?";
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
 export function MenuSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { logout, user, isLoading } = useAuth();
   const { colors } = useTheme();
   const ref = useRef<BottomSheetModal>(null);
   const [logoutDialog, setLogoutDialog] = useState(false);
+  const userName = user?.name?.trim() || user?.firstName?.trim() || "Minha conta";
+  const userContact = user?.contact?.trim() || (isLoading ? "Carregando conta..." : "Dados da conta");
+  const initials = getInitials(userName, userContact);
 
   const snapPoints = useMemo(() => ["58%"], []);
 
@@ -147,13 +157,13 @@ export function MenuSheet({ visible, onClose }: Props) {
             }}
           >
             <View style={[staticStyles.avatar, { backgroundColor: colors.menuIconBg, borderColor: colors.chevron }]}>
-              <Text style={[staticStyles.avatarText, { color: colors.textMuted }]}>EU</Text>
+              <Text style={[staticStyles.avatarText, { color: colors.iconBack }]}>{initials}</Text>
             </View>
             <View style={staticStyles.userInfo}>
-              <Text style={[staticStyles.userName, { color: colors.text }]}>Minha conta</Text>
-              <Text style={[staticStyles.userSub, { color: colors.textDim }]}>ID #K-00142</Text>
+              <Text style={[staticStyles.userName, { color: colors.text }]} numberOfLines={1}>{userName}</Text>
+              <Text style={[staticStyles.userSub, { color: colors.textDim }]} numberOfLines={1}>{userContact}</Text>
             </View>
-            <VerifiedBadge />
+            <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
 
           <View style={[staticStyles.divider, { backgroundColor: colors.divider }]} />
