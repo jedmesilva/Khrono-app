@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 
 export type ReasonSheetMode = "end" | "cancel";
 
@@ -191,21 +192,11 @@ export function ReasonSheet({ visible, mode, onClose, onConfirm }: Props) {
               },
             ]}
           >
-            <View
-              style={[
-                styles.iconWrap,
-                {
-                  backgroundColor: isEnd
-                    ? "#18a06b15"
-                    : "#e0603012",
-                  borderColor: isEnd ? "#18a06b30" : "#e0603025",
-                },
-              ]}
-            >
+            <View style={[GlobalStyles.iconWrap, { backgroundColor: colors.menuIconBg }]}>
               <Feather
                 name={reason.icon}
                 size={16}
-                color={isEnd ? "#18a06b" : "#e06030"}
+                color={colors.textSecondary}
               />
             </View>
             <View style={styles.itemContent}>
@@ -262,15 +253,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 16,
     borderWidth: 1,
-  },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
   },
   itemContent: {
     flex: 1,

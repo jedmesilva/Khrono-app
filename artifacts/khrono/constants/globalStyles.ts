@@ -8,4 +8,12 @@ export const GlobalStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
 });

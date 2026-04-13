@@ -607,24 +607,11 @@ function HelpSheetContent({
               },
             ]}
           >
-            <View
-              style={[
-                s.iconWrap,
-                {
-                  backgroundColor: a.destructive
-                    ? "#e0504410"
-                    : colors.accent + "12",
-                  borderWidth: 1,
-                  borderColor: a.destructive
-                    ? "#e0504428"
-                    : colors.accent + "28",
-                },
-              ]}
-            >
+            <View style={[GlobalStyles.iconWrap, { backgroundColor: colors.menuIconBg }]}>
               <Feather
                 name={a.icon as any}
                 size={17}
-                color={a.destructive ? "#e05050" : colors.accent}
+                color={colors.textSecondary}
               />
             </View>
             <View style={{ flex: 1 }}>
