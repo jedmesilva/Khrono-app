@@ -1,4 +1,5 @@
 const { getDefaultConfig } = require("expo/metro-config");
+const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
@@ -18,6 +19,25 @@ config.server = {
       req.headers["referer"] = `http://localhost:5000/`;
       return middleware(req, res, next);
     };
+  },
+};
+
+const workspaceRoot = path.resolve(__dirname, "../..");
+const pnpmStoreRoot = path.resolve(workspaceRoot, "node_modules/.pnpm");
+
+config.watchFolders = [workspaceRoot];
+
+config.resolver = {
+  ...config.resolver,
+  blockList: [
+    new RegExp(`${pnpmStoreRoot.replace(/[/\\]/g, "[/\\\\]")}[/\\\\].*_tmp_\\d+`),
+  ],
+};
+
+config.watcher = {
+  ...config.watcher,
+  watchman: {
+    deferStates: ["hg.update"],
   },
 };
 
