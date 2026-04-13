@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 import { formatRateValue } from "@/lib/format";
 
 const EXPLORE_USERS = [
@@ -152,7 +153,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
   header: { marginBottom: 20 },
-  pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
   searchBar: {
     flexDirection: "row", alignItems: "center", gap: 10,
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16,

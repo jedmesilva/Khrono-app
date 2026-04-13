@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CadastroDone } from "@/components/CadastroDone";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 import { type Skill, type Tool, type VerificationType } from "@/constants/profile-data";
 import { useCatalog, type CatalogService } from "@/context/CatalogContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
@@ -332,7 +333,7 @@ export default function CadastroServiceScreen() {
             Escolha um da lista ou escreva o nome do que você oferece.
           </Text>
 
-          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
+          <View style={[GlobalStyles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
             <Feather name="search" size={15} color={query.length > 0 ? "#e06030" : colors.textMuted} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
@@ -437,7 +438,7 @@ export default function CadastroServiceScreen() {
 
           <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
             <Pressable
-              style={[styles.primaryBtn, { flex: 1 }, !draft.serviceName.trim() && styles.primaryBtnDisabled]}
+              style={[GlobalStyles.primaryBtn, { flex: 1 }, !draft.serviceName.trim() && styles.primaryBtnDisabled]}
               onPress={handleNewFormNext}
               disabled={!draft.serviceName.trim()}
             >
@@ -519,7 +520,7 @@ export default function CadastroServiceScreen() {
             <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }]} onPress={handleSkillsNext}>
               <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
             </Pressable>
-            <Pressable style={[styles.primaryBtn, { flex: 1 }]} onPress={handleSkillsNext}>
+            <Pressable style={[GlobalStyles.primaryBtn, { flex: 1 }]} onPress={handleSkillsNext}>
               <Text style={styles.primaryBtnText}>Próximo</Text>
             </Pressable>
           </View>
@@ -612,7 +613,7 @@ export default function CadastroServiceScreen() {
             <Pressable style={[styles.skipBtn, { borderColor: colors.inputBorder }]} onPress={handleToolsNext}>
               <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
             </Pressable>
-            <Pressable style={[styles.primaryBtn, { flex: 1 }]} onPress={handleToolsNext}>
+            <Pressable style={[GlobalStyles.primaryBtn, { flex: 1 }]} onPress={handleToolsNext}>
               <Text style={styles.primaryBtnText}>Próximo</Text>
             </Pressable>
           </View>
@@ -711,7 +712,7 @@ export default function CadastroServiceScreen() {
               <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
             </Pressable>
             <Pressable
-              style={[styles.primaryBtn, { flex: 1 }, (!draft.hourlyRateInput || isSaving) && styles.primaryBtnDisabled]}
+              style={[GlobalStyles.primaryBtn, { flex: 1 }, (!draft.hourlyRateInput || isSaving) && styles.primaryBtnDisabled]}
               onPress={handleHourlyRateNext}
               disabled={!draft.hourlyRateInput || isSaving}
             >
@@ -858,7 +859,6 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
-  inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
   listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
@@ -905,7 +905,6 @@ const styles = StyleSheet.create({
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
   skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
-  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
   rateInputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1.5, borderRadius: 18, paddingHorizontal: 20, paddingVertical: 18, gap: 8, marginBottom: 28 },

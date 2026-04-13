@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 
 interface SecondaryAction {
   label: string;
@@ -57,7 +58,6 @@ const styles = StyleSheet.create({
   doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030", alignItems: "center", justifyContent: "center", marginBottom: 8 },
   doneTitle: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center" },
   doneSub: { fontFamily: "Sora_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 12 },
-  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center", width: "100%" },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
   secondaryBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#e0603012", borderWidth: 1, borderColor: "#e0603030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, width: "100%", justifyContent: "center" },
   secondaryBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#e06030" },

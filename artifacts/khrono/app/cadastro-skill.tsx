@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CadastroDone } from "@/components/CadastroDone";
 import { SkillListCard } from "@/components/SkillListCard";
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 import { useCatalog } from "@/context/CatalogContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
 import { supabase } from "@/lib/supabase";
@@ -173,7 +174,7 @@ export default function CadastroSkillScreen() {
             Escolha uma da lista ou escreva o nome da skill que você oferece.
           </Text>
 
-          <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
+          <View style={[GlobalStyles.inputWrap, { backgroundColor: colors.inputBg, borderColor: query.length > 0 ? "#e0603050" : colors.inputBorder }]}>
             <Feather name="search" size={15} color={query.length > 0 ? "#e06030" : colors.textMuted} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
@@ -262,7 +263,7 @@ export default function CadastroSkillScreen() {
               Confirme o nome da skill que você quer adicionar.
             </Text>
 
-            <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+            <View style={[GlobalStyles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
                 value={skillName}
@@ -277,7 +278,7 @@ export default function CadastroSkillScreen() {
 
           <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
             <Pressable
-              style={[styles.primaryBtn, { flex: 1 }, !skillName.trim() && styles.primaryBtnDisabled]}
+              style={[GlobalStyles.primaryBtn, { flex: 1 }, !skillName.trim() && styles.primaryBtnDisabled]}
               onPress={handleNewFormNext}
               disabled={!skillName.trim()}
             >
@@ -332,7 +333,7 @@ export default function CadastroSkillScreen() {
               )}
             </Pressable>
             <Pressable
-              style={[styles.primaryBtn, { flex: 1 }, isSaving && styles.primaryBtnDisabled]}
+              style={[GlobalStyles.primaryBtn, { flex: 1 }, isSaving && styles.primaryBtnDisabled]}
               onPress={handleFinish}
               disabled={isSaving}
             >
@@ -359,7 +360,6 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
-  inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, gap: 10, marginBottom: 20 },
   inputIcon: { flexShrink: 0 },
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
   listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
@@ -377,7 +377,6 @@ const styles = StyleSheet.create({
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
   skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
-  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32, alignItems: "center", justifyContent: "center" },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
 });

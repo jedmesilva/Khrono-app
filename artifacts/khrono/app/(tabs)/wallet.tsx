@@ -16,6 +16,7 @@ import { HistoryCard } from "@/components/HistoryCard";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 import { useWallet } from "@/context/WalletContext";
 import { useContracts } from "@/context/ContractsContext";
 import { formatCurrency } from "@/lib/format";
@@ -236,7 +237,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
   header: { marginBottom: 24 },
-  pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
   balanceCard: { borderRadius: 24, padding: 24, marginBottom: 14, gap: 12 },
   balanceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
   balanceRow: { flexDirection: "row", alignItems: "center", gap: 12 },
