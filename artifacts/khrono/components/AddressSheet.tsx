@@ -1,11 +1,7 @@
 import { Feather } from "@expo/vector-icons";
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-  BottomSheetFlatList,
-} from "@gorhom/bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
+import { StatusBar } from "expo-status-bar";
 import React, {
   useCallback,
   useEffect,
@@ -15,6 +11,10 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -80,7 +80,8 @@ async function searchNominatim(query: string): Promise<AddressResult[]> {
     const city =
       addr.city || addr.town || addr.village || addr.municipality || addr.county || "";
     const state = addr.state || "";
-    const label = city && state ? `${city}, ${state}` : item.display_name.split(",")[0].trim();
+    const label =
+      city && state ? `${city}, ${state}` : item.display_name.split(",")[0].trim();
     return {
       label,
       fullLabel: item.display_name,
@@ -104,7 +105,6 @@ export function AddressSheet({
   placeholder = "Ex: Belo Horizonte, MG",
 }: Props) {
   const insets = useSafeAreaInsets();
-  const ref = useRef<BottomSheetModal>(null);
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -115,25 +115,15 @@ export function AddressSheet({
 
   const inputRef = useRef<TextInput>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const snapPoints = useMemo(() => ["100%"], []);
 
   useEffect(() => {
     if (visible) {
-      ref.current?.present();
       setQuery("");
       setSuggestions([]);
       setLoading(false);
       loadHistory().then(setHistory);
-    } else {
-      ref.current?.dismiss();
     }
   }, [visible]);
-
-  const handleSheetChange = useCallback((index: number) => {
-    if (index === 0) {
-      setTimeout(() => inputRef.current?.focus(), 80);
-    }
-  }, []);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -175,18 +165,9 @@ export function AddressSheet({
     setHistory([]);
   }, []);
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.7}
-        pressBehavior="close"
-      />
-    ),
-    []
-  );
+  const handleShow = useCallback(() => {
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
 
   const listItems: ListItem[] = useMemo(() => {
     const isTyping = query.trim().length >= 2;
@@ -273,32 +254,32 @@ export function AddressSheet({
   );
 
   return (
-    <BottomSheetModal
-      ref={ref}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      backgroundStyle={{
-        backgroundColor: colors.sheetBg,
-        borderTopLeftRadius: 26,
-        borderTopRightRadius: 26,
-        borderTopWidth: 1,
-        borderColor: colors.sheetBorder,
-      }}
-      handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
-      onDismiss={onClose}
-      onChange={handleSheetChange}
-      keyboardBehavior="extend"
-      keyboardBlurBehavior="restore"
-      android_keyboardInputMode="adjustResize"
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+      onShow={handleShow}
+      statusBarTranslucent
     >
-      <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-        {/* Header */}
-        <View style={styles.header}>
+      <StatusBar style="auto" />
+      <KeyboardAvoidingView
+        style={[styles.root, { backgroundColor: colors.sheetBg }]}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {/* Safe area top + header */}
+        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
           <Text style={styles.title}>{title}</Text>
+          <Pressable
+            onPress={onClose}
+            style={({ pressed }) => [styles.closeBtn, pressed && styles.closeBtnPressed]}
+            hitSlop={8}
+          >
+            <Feather name="x" size={20} color={colors.text} />
+          </Pressable>
         </View>
 
-        {/* Input */}
+        {/* Search input */}
         <View style={styles.inputWrap}>
           <Feather
             name="search"
@@ -327,31 +308,42 @@ export function AddressSheet({
           )}
         </View>
 
-        {/* Results */}
-        <BottomSheetFlatList
+        {/* Results list */}
+        <FlatList
           data={listItems}
           keyExtractor={(item, i) =>
-            item.type === "section" ? "section" : item.type === "empty" ? "empty" : `${item.type}-${i}`
+            item.type === "section"
+              ? "section"
+              : item.type === "empty"
+              ? "empty"
+              : `${item.type}-${i}`
           }
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: Math.max(insets.bottom, 16) },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         />
-      </View>
-    </BottomSheetModal>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
-    container: {
+    root: {
       flex: 1,
     },
-    header: {
+    topBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       paddingHorizontal: 20,
-      paddingTop: 4,
       paddingBottom: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.divider,
     },
     title: {
       fontFamily: "Sora_700Bold",
@@ -359,18 +351,32 @@ function createStyles(colors: ColorPalette) {
       color: colors.text,
       letterSpacing: -0.3,
     },
+    closeBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.inputBg,
+      borderWidth: 1,
+      borderColor: colors.inputBorder,
+    },
+    closeBtnPressed: {
+      backgroundColor: colors.rowPressed,
+    },
     inputWrap: {
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
       marginHorizontal: 16,
+      marginTop: 14,
+      marginBottom: 4,
       paddingHorizontal: 14,
       height: 50,
       backgroundColor: colors.inputBg,
       borderWidth: 1,
       borderColor: colors.inputBorder,
       borderRadius: 14,
-      marginBottom: 8,
     },
     input: {
       flex: 1,
@@ -379,7 +385,7 @@ function createStyles(colors: ColorPalette) {
     },
     listContent: {
       paddingHorizontal: 16,
-      paddingTop: 4,
+      paddingTop: 8,
     },
     sectionRow: {
       flexDirection: "row",

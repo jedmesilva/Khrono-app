@@ -356,7 +356,6 @@ export function LocationSheet({
   };
 
   return (
-    <>
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
@@ -491,16 +490,15 @@ export function LocationSheet({
             </Text>
           </Pressable>
         </BottomSheetScrollView>
-    </BottomSheetModal>
 
-    <AddressSheet
-      visible={addressSheetOpen}
-      onClose={() => setAddressSheetOpen(false)}
-      onSelect={handleAddressSelect}
-      title="Localização fixa"
-      placeholder="Ex: Belo Horizonte, MG"
-    />
-  </>
+      <AddressSheet
+        visible={addressSheetOpen}
+        onClose={() => setAddressSheetOpen(false)}
+        onSelect={handleAddressSelect}
+        title="Localização fixa"
+        placeholder="Ex: Belo Horizonte, MG"
+      />
+    </BottomSheetModal>
   );
 }
 
