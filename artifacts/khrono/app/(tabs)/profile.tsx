@@ -445,8 +445,7 @@ export default function ProfileScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View style={styles.header}>
-          <Text style={[styles.logo, { color: colors.text }]}>K<Text style={{ color: "#e06030" }}>r</Text>ono</Text>
-          <Text style={[styles.headerSub, { color: colors.textMuted }]}>perfil</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>Perfil</Text>
         </View>
 
         <View style={styles.avatarSection}>
@@ -669,9 +668,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
-  logo: { fontFamily: "Sora_700Bold", fontSize: 20 },
-  headerSub: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.8, textTransform: "uppercase" },
+  header: { marginBottom: 24 },
+  pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
 
   avatarSection: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
   avatarLarge: { width: 72, height: 72, borderRadius: 22, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },

@@ -317,9 +317,7 @@ export default function ContractDetailScreen() {
           >
             <Feather name="arrow-left" size={20} color="#e06030" />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            K<Text style={{ color: "#e06030" }}>r</Text>ono
-          </Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Contrato</Text>
         </View>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text
@@ -420,9 +418,7 @@ export default function ContractDetailScreen() {
           >
             <Feather name="arrow-left" size={20} color="#e06030" />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            K<Text style={{ color: "#e06030" }}>r</Text>ono
-          </Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Contrato</Text>
         </View>
         <Pressable
           onPress={() => router.replace("/(tabs)" as any)}

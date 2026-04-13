@@ -54,10 +54,7 @@ export default function ExploreScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View style={styles.header}>
-          <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: "#e06030" }}>r</Text>ono
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textDim }]}>explorar</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>Explorar</Text>
         </View>
 
         <View style={[styles.searchBar, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
@@ -154,9 +151,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  logo: { fontFamily: "Sora_700Bold", fontSize: 24, letterSpacing: -0.5 },
-  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  header: { marginBottom: 20 },
+  pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
   searchBar: {
     flexDirection: "row", alignItems: "center", gap: 10,
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16,

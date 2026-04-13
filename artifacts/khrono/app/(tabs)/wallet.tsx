@@ -69,10 +69,7 @@ export default function WalletScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.logo, { color: colors.text }]}>
-            K<Text style={{ color: "#e06030" }}>r</Text>ono
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textDim }]}>carteira</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>Carteira</Text>
         </View>
 
         {/* Balance card */}
@@ -238,9 +235,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
-  logo: { fontFamily: "Sora_700Bold", fontSize: 24, letterSpacing: -0.5 },
-  subtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  header: { marginBottom: 24 },
+  pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
   balanceCard: { borderRadius: 24, padding: 24, marginBottom: 14, gap: 12 },
   balanceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
   balanceRow: { flexDirection: "row", alignItems: "center", gap: 12 },
