@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
+import { GlobalStyles, cardColors } from "@/constants/globalStyles";
 
 interface ToolListCardProps {
   name: string;
@@ -28,7 +29,7 @@ export function ToolListCard({
 
   return (
     <Wrapper
-      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: available ? 1 : 0.55 }]}
+      style={[GlobalStyles.cardRow, cardColors(colors), { opacity: available ? 1 : 0.55 }]}
       {...(onPress ? { onPress } : {})}
     >
       <View style={[styles.iconWrap, { backgroundColor: available ? "#e0603012" : colors.surface, borderColor: available ? "#e0603028" : colors.surfaceBorder }]}>
@@ -58,7 +59,6 @@ export function ToolListCard({
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 24, padding: 16 },
   iconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   name: { fontFamily: "Sora_700Bold", fontSize: 15, flexShrink: 1 },
