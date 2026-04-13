@@ -19,7 +19,7 @@ This is a **pnpm monorepo** with the following packages:
 ## Tech Stack
 - **Mobile**: Expo SDK 54, React Native 0.81, expo-router (file-based routing)
 - **Backend**: Express.js v5, pino logging
-- **Database/Auth**: Supabase (PostgreSQL, Auth, Realtime)
+- **Database/Auth**: Supabase (PostgreSQL, Auth, Realtime, RLS)
 - **State/Data**: TanStack Query v5
 - **Language**: TypeScript throughout
 
@@ -45,7 +45,8 @@ All secrets are stored in Replit Secrets (never hardcoded):
 ## Database
 - **Supabase** is used for authentication, realtime subscriptions, and the primary database
 - Migrations are in `supabase/migrations/` and must be applied via the Supabase dashboard or CLI
-- A Replit PostgreSQL database was provisioned but is not actively used (Supabase handles all data)
+- The Replit PostgreSQL database is provisioned but not actively used (Supabase handles all data)
+- Supabase Row Level Security (RLS) policies protect all data at the database level
 
 ## Key Features
 - Provider/contractor marketplace with real-time contracts
@@ -56,6 +57,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 - Skills, services, and tools catalog
 
 ## Architecture Notes
-- The Supabase client (`lib/supabase.ts`) runs on the client (mobile) side, using the public anon key + Supabase RLS for security
-- All sensitive operations are protected by Supabase Row Level Security (RLS) policies
+- The Supabase client (`artifacts/khrono/lib/supabase.ts`) runs on the mobile client using the public anon key + RLS for security — this is the correct and secure architecture for React Native apps
+- All sensitive operations are protected by Supabase Row Level Security (RLS) policies defined in `supabase/migrations/`
 - The Express API server (`artifacts/api-server`) handles backend routes and proxies Expo Metro traffic
+- Push notifications are sent via Expo's push notification service
