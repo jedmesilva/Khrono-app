@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
   readinessActionText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#e06030" },
 
   locationCard: { flexDirection: "row", alignItems: "center", gap: 14, borderRadius: 20, padding: 16, marginBottom: 12 },
-  locationIconWrap: { width: 44, height: 44, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  locationIconWrap: { width: 44, height: 44, borderRadius: 13, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   locationTopRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 3 },
   locationLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" },
   locationModeBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
 
   compactRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
   compactCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 20, padding: 14 },
-  compactIcon: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  compactIcon: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   compactTitle: { fontFamily: "Sora_700Bold", fontSize: 13 },
   compactMeta: { fontFamily: "DMSans_400Regular", fontSize: 9 },
 
