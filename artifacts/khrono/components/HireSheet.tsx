@@ -160,7 +160,7 @@ function PincodeContent({
       setPin((p) => p.slice(0, -1));
       return;
     }
-    if (pin.length < 6) {
+    if (pin.length < 4) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setPin((p) => p + d);
     }
@@ -253,7 +253,7 @@ function PincodeContent({
       <Text style={styles.desc}>Digite o código do usuário para iniciar o contrato</Text>
 
       <View style={styles.pinRow}>
-        {[0, 1, 2, 3, 4, 5].map((i) => (
+        {[0, 1, 2, 3].map((i) => (
           <View
             key={i}
             style={[styles.pinDigit, pin.length > i && styles.pinDigitFilled]}
@@ -1229,14 +1229,14 @@ function createSubStyles(colors: ColorPalette) {
     primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
     ghostBtn: { borderWidth: 1, borderRadius: 14, padding: 14, alignItems: "center", borderColor: colors.surfaceBorder },
     ghostBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13, color: colors.textSecondary },
-    pinRow: { flexDirection: "row", gap: 10, justifyContent: "center", marginBottom: 28 },
+    pinRow: { flexDirection: "row", gap: 14, justifyContent: "center", marginBottom: 28 },
     pinDigit: {
-      width: 40, height: 48, borderRadius: 10, borderWidth: 1,
+      width: 64, height: 76, borderRadius: 22, borderWidth: 1.5,
       alignItems: "center", justifyContent: "center",
       backgroundColor: colors.inputBg, borderColor: colors.inputBorder,
     },
     pinDigitFilled: { borderColor: "#e0603060", backgroundColor: "#e0603010" },
-    pinDigitText: { color: "#e06030", fontSize: 20, fontFamily: "DMSans_500Medium" },
+    pinDigitText: { color: "#e06030", fontSize: 34, fontFamily: "DMSans_500Medium", lineHeight: 40 },
     keypadGrid: { gap: 10, marginBottom: 24 },
     keypadRow: { flexDirection: "row", gap: 10 },
     keypadBtn: {
