@@ -21,10 +21,9 @@ import { NotificationsSheet } from "@/components/NotificationsSheet";
 import { StatsBar } from "@/components/StatsBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts, isContractRunning } from "@/context/ContractsContext";
+import { useNotifications } from "@/context/NotificationsContext";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
-
-const UNREAD_COUNT = 2;
 
 function SkeletonBlock({ width, height, borderRadius = 8, style }: {
   width: number | string;
@@ -82,6 +81,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { activeContracts, isLoading, acceptContract, beginContract } = useContracts();
+  const { unreadCount } = useNotifications();
   const { colors } = useTheme();
   const isWeb = Platform.OS === "web";
   const [notifOpen, setNotifOpen] = useState(false);
@@ -175,9 +175,9 @@ export default function HomeScreen() {
               hitSlop={8}
             >
               <Feather name="bell" size={20} color={colors.textSecondary} />
-              {UNREAD_COUNT > 0 && (
+              {unreadCount > 0 && (
                 <View style={[styles.badge, { borderColor: colors.background }]}>
-                  <Text style={styles.badgeText}>{UNREAD_COUNT}</Text>
+                  <Text style={styles.badgeText}>{unreadCount > 99 ? "99+" : unreadCount}</Text>
                 </View>
               )}
             </Pressable>

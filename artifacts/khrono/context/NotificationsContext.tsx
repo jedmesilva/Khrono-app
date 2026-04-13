@@ -1,6 +1,7 @@
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { useRouter } from "expo-router";
 import React, {
   createContext,
   useCallback,
@@ -121,6 +122,7 @@ export function NotificationsProvider({
   children: React.ReactNode;
 }) {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [pushToken, setPushToken] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState(false);
@@ -130,9 +132,15 @@ export function NotificationsProvider({
     null
   );
   const foregroundListenerRef = useRef<Notifications.Subscription | null>(null);
-  const responsListenerRef = useRef<Notifications.Subscription | null>(null);
+  const responseListenerRef = useRef<Notifications.Subscription | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
+
+  // ── Sync OS badge count whenever unread count changes ────────────────────────
+
+  useEffect(() => {
+    Notifications.setBadgeCountAsync(unreadCount).catch(() => {});
+  }, [unreadCount]);
 
   // ── Load notifications from Supabase ────────────────────────────────────────
 
@@ -220,6 +228,7 @@ export function NotificationsProvider({
       setNotifications([]);
       setPushToken(null);
       setHasPermission(false);
+      Notifications.setBadgeCountAsync(0).catch(() => {});
       if (realtimeChannelRef.current) {
         supabase.removeChannel(realtimeChannelRef.current);
         realtimeChannelRef.current = null;
@@ -251,13 +260,21 @@ export function NotificationsProvider({
         );
       });
 
-    responsListenerRef.current =
+    responseListenerRef.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data as Record<
           string,
           any
         >;
         console.log("[Notifications] User tapped notification:", data);
+
+        // Navigate to the relevant contract when the user taps a notification
+        if (data?.contract_id) {
+          router.push(`/contract-detail/${data.contract_id}` as any);
+        } else {
+          // Fallback: open home tab where the notifications sheet lives
+          router.push("/(tabs)" as any);
+        }
       });
 
     return () => {
@@ -266,9 +283,9 @@ export function NotificationsProvider({
           foregroundListenerRef.current
         );
       }
-      if (responsListenerRef.current) {
+      if (responseListenerRef.current) {
         Notifications.removeNotificationSubscription(
-          responsListenerRef.current
+          responseListenerRef.current
         );
       }
     };
@@ -350,6 +367,7 @@ export function NotificationsProvider({
           data,
           sound: "default" as const,
           priority: "high" as const,
+          badge: 1,
         }));
 
         await fetch("https://exp.host/--/api/v2/push/send", {

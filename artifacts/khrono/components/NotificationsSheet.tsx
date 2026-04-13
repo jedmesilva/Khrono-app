@@ -40,6 +40,8 @@ function getNotifMeta(type: string): NotifMeta {
       return { icon: "play-circle", color: "#e06030" };
     case "contract_ended":
       return { icon: "flag", color: "#18a06b" };
+    case "contract_cancelled":
+      return { icon: "x-circle", color: "#e06030" };
     case "payment":
       return { icon: "dollar-sign", color: "#18a06b" };
     case "rating":

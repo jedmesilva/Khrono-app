@@ -419,7 +419,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       return contract.id;
     },
-    [loadContracts]
+    [loadContracts, sendPushNotification]
   );
 
   const acceptContract = useCallback(
@@ -492,8 +492,24 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+      // Notify the contractor that the provider has started working
+      const { data: contractRow } = await supabase
+        .from("contracts")
+        .select("contractor_id")
+        .eq("id", id)
+        .single();
+      if (contractRow?.contractor_id) {
+        sendPushNotification(
+          contractRow.contractor_id,
+          "Serviço iniciado!",
+          "O prestador começou a trabalhar no seu contrato.",
+          { contract_id: id },
+          "contract_started"
+        ).catch(() => {});
+      }
     },
-    [loadContracts]
+    [loadContracts, sendPushNotification]
   );
 
   const cancelContract = useCallback(
@@ -508,6 +524,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           .from("contracts")
           .update({ status: "cancelled", ended_at: new Date().toISOString() })
           .eq("id", id);
+        await supabase.from("contract_time_entries").insert({
+          contract_id: id,
+          event: "cancelled",
+          triggered_by: user.id,
+        });
       } catch (e) {
         console.warn("[ContractsContext] cancelContract error:", e);
       }
@@ -516,9 +537,24 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       if (contract) {
         const cancelled: Contract = { ...contract, status: "ended", endedAt: Date.now(), totalAmount: contract.totalAmount ?? 0 };
         setHistory((h) => [cancelled, ...h]);
+
+        // Notify the other party about the cancellation
+        const otherPartyId = contract.person.profileId;
+        if (otherPartyId) {
+          const isHiring = contract.role === "hiring";
+          sendPushNotification(
+            otherPartyId,
+            "Contrato cancelado",
+            isHiring
+              ? "O contratante cancelou o contrato."
+              : "Você cancelou o contrato.",
+            { contract_id: id },
+            "contract_cancelled"
+          ).catch(() => {});
+        }
       }
     },
-    [activeContracts]
+    [activeContracts, sendPushNotification]
   );
 
   const endContract = useCallback(
@@ -554,9 +590,25 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
             triggered_by: user.id,
           }),
         ]).catch((e) => console.warn("[ContractsContext] endContract error:", e));
+
+        // Notify the other party that the contract ended
+        const otherPartyId = contract.person.profileId;
+        if (otherPartyId) {
+          const isHiring = contract.role === "hiring";
+          const amountLabel = `R$${totalAmount.toFixed(2)}`;
+          sendPushNotification(
+            otherPartyId,
+            "Contrato encerrado",
+            isHiring
+              ? `O contrato foi encerrado. Valor: ${amountLabel}.`
+              : `O contratante encerrou o serviço. Valor: ${amountLabel}.`,
+            { contract_id: id },
+            "contract_ended"
+          ).catch(() => {});
+        }
       });
     },
-    [activeContracts]
+    [activeContracts, sendPushNotification]
   );
 
   return (
