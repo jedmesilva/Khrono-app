@@ -1167,6 +1167,14 @@ export default function ContractDetailScreen() {
                 colors={colors}
               />
             )}
+            {isEnded && !!contract.endedAt && (
+              <DetailRow
+                icon={<Feather name="check-circle" size={14} color={colors.textMuted} />}
+                label="Conclusão"
+                value={formatData(contract.endedAt)}
+                colors={colors}
+              />
+            )}
             <DetailRow
               icon={
                 <Feather
