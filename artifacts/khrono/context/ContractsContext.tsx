@@ -56,6 +56,7 @@ export type Contract = {
   };
   paymentMethod?: "cartao" | "pix" | "dinheiro" | "saldo";
   paymentCardLabel?: string;
+  paymentStatus: "pending" | "paid" | "failed";
   agendado?: boolean;
   agendadoLabel?: string;
   tools?: ContractTool[];
@@ -195,6 +196,7 @@ function mapDbToContract(c: any, userId: string): Contract {
       : undefined,
     paymentMethod: mapPaymentMethodToUi(c.payment_method),
     paymentCardLabel: c.payment_card_label ?? undefined,
+    paymentStatus: (c.payment_status as "pending" | "paid" | "failed") ?? "pending",
     agendado: c.agendado ?? false,
     ratePerHour: Number(c.hourly_rate),
     startedAt: c.started_at ? new Date(c.started_at).getTime() : 0,
@@ -803,6 +805,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           status: "ended",
           ended_at: new Date(endedAt).toISOString(),
           total_amount: totalAmount,
+          payment_status: contract.paymentMethod !== "dinheiro" ? "paid" : "pending",
         })
         .eq("id", id);
 

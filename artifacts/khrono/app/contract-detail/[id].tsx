@@ -93,6 +93,27 @@ function paymentIconName(pm?: string): "credit-card" | "zap" | "layers" | "dolla
   }
 }
 
+function getPaymentStatusInfo(
+  paymentMethod: Contract["paymentMethod"],
+  paymentStatus: Contract["paymentStatus"],
+  personName: string,
+  isHiring: boolean,
+  isEnded: boolean
+): { text: string; tone: "green" | "amber" | "red" | "muted" } {
+  if (paymentMethod === "dinheiro") {
+    return {
+      text: isHiring
+        ? `À pagar para ${personName}`
+        : `À receber de ${personName}`,
+      tone: "muted",
+    };
+  }
+  if (paymentStatus === "paid") return { text: "Pago", tone: "green" };
+  if (paymentStatus === "failed") return { text: "Falha no pagamento", tone: "red" };
+  if (isEnded) return { text: "Pendente", tone: "amber" };
+  return { text: "Na conclusão do serviço", tone: "muted" };
+}
+
 function getValueLabel(contract: Contract): string {
   if (contract.status === "ended") {
     return contract.role === "hiring" ? "pago" : "recebido";
@@ -394,12 +415,16 @@ function DetailRow({
   icon,
   label,
   value,
+  sub,
+  subColor,
   last,
   colors,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  sub?: string;
+  subColor?: string;
   last?: boolean;
   colors: ColorPalette;
 }) {
@@ -408,9 +433,21 @@ function DetailRow({
       <View style={s.detailItemRow}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           {icon}
-          <Text style={[s.detailLabel, { color: colors.textMuted }]}>
-            {label}
-          </Text>
+          <View>
+            <Text style={[s.detailLabel, { color: colors.textMuted }]}>
+              {label}
+            </Text>
+            {sub && (
+              <Text
+                style={[
+                  s.detailSub,
+                  { color: subColor ?? colors.textMuted, marginTop: 2 },
+                ]}
+              >
+                {sub}
+              </Text>
+            )}
+          </View>
         </View>
         <Text style={[s.detailValue, { color: colors.text }]}>{value}</Text>
       </View>
@@ -1189,21 +1226,37 @@ export default function ContractDetailScreen() {
               }
               colors={colors}
             />
-            {contract.paymentMethod && (
-              <DetailRow
-                icon={
-                  <Feather
-                    name={paymentIconName(contract.paymentMethod)}
-                    size={14}
-                    color={colors.textMuted}
-                  />
-                }
-                label="Pagamento"
-                value={paymentLabel(contract)}
-                last
-                colors={colors}
-              />
-            )}
+            {contract.paymentMethod && (() => {
+              const ps = getPaymentStatusInfo(
+                contract.paymentMethod,
+                contract.paymentStatus,
+                contract.person.name,
+                isHiring,
+                isEnded
+              );
+              const psColor =
+                ps.tone === "green" ? "#18a06b"
+                : ps.tone === "amber" ? "#ffaa00"
+                : ps.tone === "red" ? "#e05050"
+                : colors.textMuted;
+              return (
+                <DetailRow
+                  icon={
+                    <Feather
+                      name={paymentIconName(contract.paymentMethod)}
+                      size={14}
+                      color={colors.textMuted}
+                    />
+                  }
+                  label="Pagamento"
+                  value={paymentLabel(contract)}
+                  sub={ps.text}
+                  subColor={psColor}
+                  last
+                  colors={colors}
+                />
+              );
+            })()}
           </View>
         )}
 
