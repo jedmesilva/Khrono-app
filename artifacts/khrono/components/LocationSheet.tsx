@@ -30,9 +30,15 @@ import { LocationMode } from "@/constants/profile-data";
 
 export type { LocationMode };
 
+const ORANGE = "#e06030";
+const ORANGE_LIGHT = "#FEF3EF";
+const ORANGE_BORDER = "#F5C4B0";
+
 const LOG_MIN = Math.log(10);
 const LOG_MAX = Math.log(100000);
 const THUMB_SIZE = 24;
+
+const RADIUS_SHORTCUTS_M = [500, 1000, 2000, 5000, 10000, 25000, 50000];
 
 function toSliderPos(meters: number): number {
   return (Math.log(Math.max(10, Math.min(100000, meters))) - LOG_MIN) / (LOG_MAX - LOG_MIN);
@@ -88,7 +94,7 @@ const dot = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: "#e0603040",
   },
-  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#e06030" },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: ORANGE },
 });
 
 function RadiusSlider({
@@ -100,7 +106,6 @@ function RadiusSlider({
 }) {
   const { colors } = useTheme();
   const sliderStyles = useMemo(() => createSliderStyles(colors), [colors]);
-
   const widthRef = useRef(0);
   const [trackWidth, setTrackWidth] = useState(0);
   const startPosRef = useRef(0);
@@ -116,26 +121,19 @@ function RadiusSlider({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gs) =>
-        Math.abs(gs.dx) > Math.abs(gs.dy),
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > Math.abs(gs.dy),
       onPanResponderGrant: () => {
         startPosRef.current = currentPosRef.current;
       },
       onPanResponderMove: (_, gs) => {
         if (widthRef.current === 0) return;
-        const newPos = Math.max(
-          0,
-          Math.min(1, startPosRef.current + gs.dx / widthRef.current)
-        );
+        const newPos = Math.max(0, Math.min(1, startPosRef.current + gs.dx / widthRef.current));
         currentPosRef.current = newPos;
         setDisplayPos(newPos);
       },
       onPanResponderRelease: (_, gs) => {
         if (widthRef.current === 0) return;
-        const newPos = Math.max(
-          0,
-          Math.min(1, startPosRef.current + gs.dx / widthRef.current)
-        );
+        const newPos = Math.max(0, Math.min(1, startPosRef.current + gs.dx / widthRef.current));
         currentPosRef.current = newPos;
         setDisplayPos(newPos);
         onChange(toMeters(newPos));
@@ -147,14 +145,19 @@ function RadiusSlider({
   const displayMeters = toMeters(displayPos);
   const thumbLeft = displayPos * Math.max(0, trackWidth - THUMB_SIZE);
 
+  const handleShortcut = (meters: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const pos = toSliderPos(meters);
+    currentPosRef.current = pos;
+    setDisplayPos(pos);
+    onChange(meters);
+  };
+
   return (
     <View style={sliderStyles.container}>
       <View style={sliderStyles.labelRow}>
         <Text style={sliderStyles.label}>Raio de atendimento</Text>
-        <View style={sliderStyles.valuePill}>
-          <Feather name="radio" size={10} color={"#e06030"} />
-          <Text style={sliderStyles.valueText}>{formatRadius(displayMeters)}</Text>
-        </View>
+        <Text style={sliderStyles.valueText}>{formatRadius(displayMeters)}</Text>
       </View>
 
       <View
@@ -172,9 +175,21 @@ function RadiusSlider({
         </View>
       </View>
 
-      <View style={sliderStyles.rangeRow}>
-        <Text style={sliderStyles.rangeText}>10 m</Text>
-        <Text style={sliderStyles.rangeText}>100 km</Text>
+      <View style={sliderStyles.chips}>
+        {RADIUS_SHORTCUTS_M.map((m) => {
+          const active = Math.abs(displayMeters - m) < m * 0.05;
+          return (
+            <Pressable
+              key={m}
+              onPress={() => handleShortcut(m)}
+              style={[sliderStyles.chip, active && sliderStyles.chipActive]}
+            >
+              <Text style={[sliderStyles.chipText, active && sliderStyles.chipTextActive]}>
+                {formatRadius(m)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -190,24 +205,13 @@ function createSliderStyles(colors: ColorPalette) {
     },
     label: {
       fontFamily: "Sora_600SemiBold",
-      fontSize: 13,
-      color: colors.textSecondary,
-    },
-    valuePill: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 5,
-      backgroundColor: "#e0603015",
-      borderWidth: 1,
-      borderColor: "#e0603030",
-      borderRadius: 20,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
+      fontSize: 14,
+      color: colors.text,
     },
     valueText: {
-      fontFamily: "DMSans_500Medium",
-      fontSize: 12,
-      color: "#e06030",
+      fontFamily: "Sora_700Bold",
+      fontSize: 16,
+      color: ORANGE,
     },
     track: {
       height: 44,
@@ -227,7 +231,7 @@ function createSliderStyles(colors: ColorPalette) {
       left: 0,
       height: 4,
       borderRadius: 2,
-      backgroundColor: "#e06030",
+      backgroundColor: ORANGE,
     },
     thumb: {
       position: "absolute",
@@ -236,7 +240,7 @@ function createSliderStyles(colors: ColorPalette) {
       borderRadius: THUMB_SIZE / 2,
       backgroundColor: colors.card,
       borderWidth: 2,
-      borderColor: "#e06030",
+      borderColor: ORANGE,
       alignItems: "center",
       justifyContent: "center",
       top: (44 - THUMB_SIZE) / 2,
@@ -245,16 +249,33 @@ function createSliderStyles(colors: ColorPalette) {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: "#e06030",
+      backgroundColor: ORANGE,
     },
-    rangeRow: {
+    chips: {
       flexDirection: "row",
-      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: 6,
+      marginTop: 2,
     },
-    rangeText: {
-      fontFamily: "DMSans_400Regular",
-      fontSize: 10,
-      color: colors.textDim,
+    chip: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 20,
+      borderWidth: 1.5,
+      borderColor: colors.cardBorder,
+      backgroundColor: colors.card,
+    },
+    chipActive: {
+      borderColor: ORANGE,
+      backgroundColor: ORANGE_LIGHT,
+    },
+    chipText: {
+      fontFamily: "DMSans_600SemiBold",
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    chipTextActive: {
+      color: ORANGE,
     },
   });
 }
@@ -280,22 +301,32 @@ export function LocationSheet({
   const ref = useRef<BottomSheetModal>(null);
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
   const [radius, setRadius] = useState(serviceRadius);
+  const [saved, setSaved] = useState(false);
 
-  const snapPoints = useMemo(() => ["88%"], []);
+  const addressInputRef = useRef<TextInput>(null);
+  const snapPoints = useMemo(() => ["80%"], []);
 
   useEffect(() => {
     if (visible) {
       setSelectedMode(mode);
       setAddress(fixedAddress);
       setRadius(serviceRadius);
+      setSaved(false);
       ref.current?.present();
     } else {
       ref.current?.dismiss();
     }
   }, [visible]);
+
+  useEffect(() => {
+    if (selectedMode === "fixed") {
+      setTimeout(() => addressInputRef.current?.focus(), 200);
+    }
+  }, [selectedMode]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -310,21 +341,23 @@ export function LocationSheet({
     []
   );
 
-  const handleSave = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSave(selectedMode, selectedMode === "fixed" ? address : fixedAddress, radius);
-    onClose();
-  };
-
   const handleSelectMode = (m: LocationMode) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedMode(m);
   };
 
-  const hasChanges =
-    selectedMode !== mode ||
-    radius !== serviceRadius ||
-    (selectedMode === "fixed" && address !== fixedAddress);
+  const canSave = selectedMode === "realtime" || address.trim().length > 0;
+
+  const handleSave = () => {
+    if (!canSave) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    onSave(selectedMode, selectedMode === "fixed" ? address : fixedAddress, radius);
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+      onClose();
+    }, 1200);
+  };
 
   return (
     <BottomSheetModal
@@ -332,7 +365,13 @@ export function LocationSheet({
       snapPoints={snapPoints}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: colors.sheetBg, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderTopWidth: 1, borderColor: colors.sheetBorder }}
+      backgroundStyle={{
+        backgroundColor: colors.sheetBg,
+        borderTopLeftRadius: 26,
+        borderTopRightRadius: 26,
+        borderTopWidth: 1,
+        borderColor: colors.sheetBorder,
+      }}
       handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
       onDismiss={onClose}
       keyboardBehavior="interactive"
@@ -350,162 +389,112 @@ export function LocationSheet({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={[styles.title, { color: colors.text }]}>Localização de serviço</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          {/* Header */}
+          <Text style={styles.title}>Localização de disponibilidade</Text>
+          <Text style={styles.subtitle}>
             Define onde você está disponível para atender
           </Text>
 
-          <View style={styles.optionsWrap}>
-            {/* Real-time option */}
-            <Pressable
-              style={[
-                styles.optionCard,
-                selectedMode === "realtime" && styles.optionCardActive,
-              ]}
-              onPress={() => handleSelectMode("realtime")}
-            >
-              <View style={styles.optionTop}>
-                <View
+          {/* Segmented control */}
+          <View style={styles.segmented}>
+            {(
+              [
+                { id: "realtime", label: "Minha localização" },
+                { id: "fixed", label: "Localização fixa" },
+              ] as { id: LocationMode; label: string }[]
+            ).map((opt) => (
+              <Pressable
+                key={opt.id}
+                onPress={() => handleSelectMode(opt.id)}
+                style={[
+                  styles.segmentBtn,
+                  selectedMode === opt.id && styles.segmentBtnActive,
+                ]}
+              >
+                <Text
                   style={[
-                    styles.optionIconWrap,
-                    selectedMode === "realtime" && {
-                      backgroundColor: "#e0603018",
-                      borderColor: "#e0603030",
-                    },
+                    styles.segmentText,
+                    selectedMode === opt.id && styles.segmentTextActive,
                   ]}
                 >
-                  <PulsingDot />
-                </View>
-                <View style={styles.optionTexts}>
-                  <Text style={[styles.optionLabel, { color: colors.text }]}>Tempo real</Text>
-                  <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
-                    Usa sua localização GPS atual
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.radio,
-                    selectedMode === "realtime" && styles.radioActive,
-                  ]}
-                >
-                  {selectedMode === "realtime" && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-              </View>
-
-              {selectedMode === "realtime" && (
-                <View style={styles.realtimeInfo}>
-                  <View style={styles.realtimeRow}>
-                    <Feather
-                      name="navigation"
-                      size={11}
-                      color={"#e06030"}
-                    />
-                    <Text style={styles.realtimeText}>
-                      Belo Horizonte, MG · atualizado agora
-                    </Text>
-                  </View>
-                </View>
-              )}
-            </Pressable>
-
-            {/* Fixed location option */}
-            <Pressable
-              style={[
-                styles.optionCard,
-                selectedMode === "fixed" && styles.optionCardActiveBlue,
-              ]}
-              onPress={() => handleSelectMode("fixed")}
-            >
-              <View style={styles.optionTop}>
-                <View
-                  style={[
-                    styles.optionIconWrap,
-                    selectedMode === "fixed" && {
-                      backgroundColor: "#e0603018",
-                      borderColor: "#e0603030",
-                    },
-                  ]}
-                >
-                  <Feather
-                    name="map-pin"
-                    size={20}
-                    color={selectedMode === "fixed" ? "#e06030" : colors.textMuted}
-                  />
-                </View>
-                <View style={styles.optionTexts}>
-                  <Text style={[styles.optionLabel, { color: colors.text }]}>Localização fixa</Text>
-                  <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
-                    Atende somente em uma região definida
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.radio,
-                    selectedMode === "fixed" && styles.radioActiveBlue,
-                  ]}
-                >
-                  {selectedMode === "fixed" && (
-                    <View
-                      style={[
-                        styles.radioInner,
-                        { backgroundColor: "#e06030" },
-                      ]}
-                    />
-                  )}
-                </View>
-              </View>
-
-              {selectedMode === "fixed" && (
-                <View style={styles.addressWrap}>
-                  <View style={[styles.addressInputRow, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
-                    <Feather name="search" size={14} color={colors.textMuted} />
-                    <TextInput
-                      value={address}
-                      onChangeText={setAddress}
-                      placeholder="Ex: Belo Horizonte, MG"
-                      placeholderTextColor={colors.textDim}
-                      style={[styles.addressInput, { color: colors.text }]}
-                      autoCapitalize="words"
-                      returnKeyType="done"
-                    />
-                    {address.length > 0 && (
-                      <Pressable onPress={() => setAddress("")}>
-                        <Feather name="x" size={13} color={colors.textMuted} />
-                      </Pressable>
-                    )}
-                  </View>
-                  <Text style={[styles.addressHint, { color: colors.textMuted }]}>
-                    Informe a cidade ou bairro onde você atende
-                  </Text>
-                </View>
-              )}
-            </Pressable>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
           </View>
 
+          {/* Location display */}
+          {selectedMode === "realtime" ? (
+            <View style={styles.gpsBanner}>
+              <PulsingDot />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.gpsTitle}>Localização atual</Text>
+                <Text style={styles.gpsSub}>GPS ativo · atualizado agora</Text>
+              </View>
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.addressRow,
+                { borderColor: address.length > 0 ? ORANGE : colors.inputBorder },
+              ]}
+            >
+              <Feather
+                name="map-pin"
+                size={15}
+                color={address.length > 0 ? ORANGE : colors.textMuted}
+              />
+              <TextInput
+                ref={addressInputRef}
+                value={address}
+                onChangeText={setAddress}
+                placeholder="Ex: Belo Horizonte, MG"
+                placeholderTextColor={colors.textDim}
+                style={[styles.addressInput, { color: colors.text }]}
+                autoCapitalize="words"
+                returnKeyType="done"
+              />
+              {address.length > 0 && (
+                <Pressable onPress={() => setAddress("")} hitSlop={8}>
+                  <Feather name="x" size={16} color={colors.textMuted} />
+                </Pressable>
+              )}
+            </View>
+          )}
+
           {/* Radius slider */}
-          <View style={styles.radiusWrap}>
+          <View style={styles.sliderCard}>
             <RadiusSlider value={radius} onChange={setRadius} />
           </View>
 
-          {/* Info box */}
-          <View style={styles.infoBox}>
-            <Feather name="info" size={13} color={colors.textMuted} />
-            <Text style={[styles.infoText, { color: colors.textMuted }]}>
-              Clientes só verão sua localização aproximada, nunca o endereço
-              exato.
+          {/* Privacy note */}
+          <View style={styles.privacyRow}>
+            <Feather name="lock" size={13} color={colors.textMuted} style={{ marginTop: 1 }} />
+            <Text style={[styles.privacyText, { color: colors.textMuted }]}>
+              Clientes veem apenas sua localização{" "}
+              <Text style={{ fontFamily: "DMSans_600SemiBold" }}>aproximada</Text>,
+              nunca o endereço exato.
             </Text>
           </View>
 
           {/* Save button */}
           <Pressable
-            style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}
             onPress={handleSave}
-            disabled={selectedMode === "fixed" && address.trim().length === 0}
+            disabled={!canSave}
+            style={[
+              styles.saveBtn,
+              !canSave && styles.saveBtnDisabled,
+              saved && styles.saveBtnSaved,
+            ]}
           >
-            <Feather name="check" size={15} color="#fff" />
-            <Text style={styles.saveBtnText}>Salvar configuração</Text>
+            <Feather name={saved ? "check" : "save"} size={15} color={!canSave ? colors.textDim : "#fff"} />
+            <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>
+              {saved
+                ? "Salvo!"
+                : !canSave
+                ? "Informe a localização para continuar"
+                : "Salvar"}
+            </Text>
           </Pressable>
         </BottomSheetScrollView>
       </KeyboardAvoidingView>
@@ -516,152 +505,141 @@ export function LocationSheet({
 function createStyles(colors: ColorPalette) {
   return StyleSheet.create({
     content: { paddingHorizontal: 20, paddingTop: 8, gap: 14 },
+
     title: {
       fontFamily: "Sora_700Bold",
       fontSize: 18,
       color: colors.text,
-      marginBottom: 2,
+      letterSpacing: -0.3,
     },
     subtitle: {
       fontFamily: "DMSans_400Regular",
-      fontSize: 12,
+      fontSize: 13,
       color: colors.textSecondary,
-      lineHeight: 18,
-      marginBottom: 4,
+      lineHeight: 19,
+      marginTop: -6,
     },
-    optionsWrap: { gap: 10 },
-    optionCard: {
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.cardBorder,
-      borderRadius: 18,
-      padding: 16,
-      gap: 12,
-    },
-    optionCardActive: {
-      borderColor: "#e0603040",
-      backgroundColor: "#e0603006",
-    },
-    optionCardActiveBlue: {
-      borderColor: "#e0603040",
-      backgroundColor: "#e0603006",
-    },
-    optionTop: { flexDirection: "row", alignItems: "center", gap: 14 },
-    optionIconWrap: {
-      width: 46,
-      height: 46,
-      borderRadius: 13,
+
+    segmented: {
+      flexDirection: "row",
       backgroundColor: colors.menuIconBg,
+      borderRadius: 14,
+      padding: 4,
+      gap: 4,
+    },
+    segmentBtn: {
+      flex: 1,
+      borderRadius: 11,
+      paddingVertical: 10,
       alignItems: "center",
       justifyContent: "center",
-      flexShrink: 0,
     },
-    optionTexts: { flex: 1 },
-    optionLabel: {
-      fontFamily: "Sora_600SemiBold",
-      fontSize: 14,
-      color: colors.text,
-      marginBottom: 3,
+    segmentBtnActive: {
+      backgroundColor: colors.card,
+      shadowColor: "#000",
+      shadowOpacity: 0.06,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 1 },
+      elevation: 2,
     },
-    optionDesc: {
-      fontFamily: "DMSans_400Regular",
-      fontSize: 11,
+    segmentText: {
+      fontFamily: "DMSans_600SemiBold",
+      fontSize: 13,
       color: colors.textSecondary,
-      lineHeight: 16,
     },
-    radio: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      borderWidth: 1.5,
-      borderColor: colors.chevron,
+    segmentTextActive: {
+      color: colors.text,
+    },
+
+    gpsBanner: {
+      flexDirection: "row",
       alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
+      gap: 10,
+      paddingVertical: 11,
+      paddingHorizontal: 14,
+      backgroundColor: ORANGE_LIGHT,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: ORANGE_BORDER,
     },
-    radioActive: { borderColor: "#e06030" },
-    radioActiveBlue: { borderColor: "#e06030" },
-    radioInner: {
-      width: 9,
-      height: 9,
-      borderRadius: 5,
-      backgroundColor: "#e06030",
+    gpsTitle: {
+      fontFamily: "DMSans_600SemiBold",
+      fontSize: 13,
+      color: colors.text,
     },
-    realtimeInfo: {
-      paddingTop: 4,
-      borderTopWidth: 1,
-      borderTopColor: "#e0603015",
-    },
-    realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-    realtimeText: {
+    gpsSub: {
       fontFamily: "DMSans_400Regular",
       fontSize: 11,
-      color: "#e06030aa",
+      color: ORANGE,
+      marginTop: 1,
     },
-    addressWrap: {
-      paddingTop: 4,
-      borderTopWidth: 1,
-      borderTopColor: "#e0603015",
-      gap: 8,
-    },
-    addressInputRow: {
+
+    addressRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
       backgroundColor: colors.inputBg,
-      borderWidth: 1,
-      borderColor: colors.inputBorder,
+      borderWidth: 1.5,
       borderRadius: 12,
-      paddingHorizontal: 12,
-      paddingVertical: 12,
+      paddingHorizontal: 14,
+      height: 50,
     },
     addressInput: {
       flex: 1,
       fontFamily: "DMSans_400Regular",
-      fontSize: 13,
+      fontSize: 14,
       color: colors.text,
     },
-    addressHint: {
-      fontFamily: "DMSans_400Regular",
-      fontSize: 10,
-      color: colors.textMuted,
-      lineHeight: 15,
-    },
-    radiusWrap: {
+
+    sliderCard: {
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.cardBorder,
       borderRadius: 18,
       padding: 16,
     },
-    infoBox: {
+
+    privacyRow: {
       flexDirection: "row",
       alignItems: "flex-start",
       gap: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.cardBorder,
-      borderRadius: 12,
-      padding: 12,
+      borderRadius: 10,
     },
-    infoText: {
+    privacyText: {
       flex: 1,
       fontFamily: "DMSans_400Regular",
-      fontSize: 11,
-      color: colors.textMuted,
-      lineHeight: 16,
+      fontSize: 12,
+      lineHeight: 18,
     },
+
     saveBtn: {
-      backgroundColor: "#e06030",
+      backgroundColor: ORANGE,
       borderRadius: 14,
-      padding: 16,
+      paddingVertical: 16,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
       marginTop: 4,
     },
-    saveBtnDisabled: { opacity: 0.35 },
-    saveBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, color: "#fff" },
+    saveBtnDisabled: {
+      backgroundColor: colors.surfaceBorder,
+    },
+    saveBtnSaved: {
+      backgroundColor: "#3DAA6B",
+    },
+    saveBtnText: {
+      fontFamily: "Sora_700Bold",
+      fontSize: 15,
+      color: "#fff",
+    },
+    saveBtnTextDisabled: {
+      color: colors.textDim,
+    },
   });
 }
