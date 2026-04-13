@@ -103,8 +103,8 @@ export default function HomeScreen() {
   const isWeb = Platform.OS === "web";
 
   const displayName = user?.firstName || user?.name || "você";
-  const avatarColor = getAvatarColor(user?.name || "K");
-  const initials = getInitials(user?.name || "K");
+  const avatarColor = user?.name ? getAvatarColor(user.name) : "#e06030";
+  const initials = user?.name ? getInitials(user.name) : "";
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<DialogState>(null);
