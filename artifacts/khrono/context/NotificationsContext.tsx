@@ -278,16 +278,8 @@ export function NotificationsProvider({
       });
 
     return () => {
-      if (foregroundListenerRef.current) {
-        Notifications.removeNotificationSubscription(
-          foregroundListenerRef.current
-        );
-      }
-      if (responseListenerRef.current) {
-        Notifications.removeNotificationSubscription(
-          responseListenerRef.current
-        );
-      }
+      foregroundListenerRef.current?.remove();
+      responseListenerRef.current?.remove();
     };
   }, []);
 

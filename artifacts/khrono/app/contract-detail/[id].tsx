@@ -1496,7 +1496,7 @@ export default function ContractDetailScreen() {
           isPendingCancel && iAmConfirmer ? "Confirmar" : "Sim, cancelar"
         }
         cancelLabel="Voltar"
-        onConfirm={handleConfirmarCancelamento}
+        onConfirm={handleConfirmCancelamento}
         onCancel={() => setConfirmCancelar(false)}
         destructive
       />
