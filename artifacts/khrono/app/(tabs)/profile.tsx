@@ -449,7 +449,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.avatarSection}>
-          <View style={[styles.avatarLarge, { backgroundColor: colors.avatarBg, borderColor: "#e0603030" }]}>
+          <View style={[styles.avatarLarge, { backgroundColor: colors.avatarBg }]}>
             <Text style={styles.avatarLargeText}>{userInitials}</Text>
           </View>
           <View style={styles.profileInfo}>
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
 
   avatarSection: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
-  avatarLarge: { width: 72, height: 72, borderRadius: 22, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
+  avatarLarge: { width: 72, height: 72, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   avatarLargeText: { fontFamily: "Sora_700Bold", fontSize: 26, color: "#e06030" },
   profileInfo: { flex: 1, gap: 4 },
   nameWithBadge: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
