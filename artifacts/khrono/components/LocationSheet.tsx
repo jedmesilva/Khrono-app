@@ -86,9 +86,9 @@ const dot = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#18a06b40",
+    backgroundColor: "#e0603040",
   },
-  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#18a06b" },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#e06030" },
 });
 
 function RadiusSlider({
@@ -369,8 +369,8 @@ export function LocationSheet({
                   style={[
                     styles.optionIconWrap,
                     selectedMode === "realtime" && {
-                      backgroundColor: "#18a06b18",
-                      borderColor: "#18a06b30",
+                      backgroundColor: "#e0603018",
+                      borderColor: "#e0603030",
                     },
                   ]}
                 >
@@ -400,7 +400,7 @@ export function LocationSheet({
                     <Feather
                       name="navigation"
                       size={11}
-                      color={"#18a06b"}
+                      color={"#e06030"}
                     />
                     <Text style={styles.realtimeText}>
                       Belo Horizonte, MG · atualizado agora
@@ -539,8 +539,8 @@ function createStyles(colors: ColorPalette) {
       gap: 12,
     },
     optionCardActive: {
-      borderColor: "#18a06b40",
-      backgroundColor: "#18a06b06",
+      borderColor: "#e0603040",
+      backgroundColor: "#e0603006",
     },
     optionCardActiveBlue: {
       borderColor: "#e0603040",
@@ -579,24 +579,24 @@ function createStyles(colors: ColorPalette) {
       justifyContent: "center",
       flexShrink: 0,
     },
-    radioActive: { borderColor: "#18a06b" },
+    radioActive: { borderColor: "#e06030" },
     radioActiveBlue: { borderColor: "#e06030" },
     radioInner: {
       width: 9,
       height: 9,
       borderRadius: 5,
-      backgroundColor: "#18a06b",
+      backgroundColor: "#e06030",
     },
     realtimeInfo: {
       paddingTop: 4,
       borderTopWidth: 1,
-      borderTopColor: "#18a06b15",
+      borderTopColor: "#e0603015",
     },
     realtimeRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     realtimeText: {
       fontFamily: "DMSans_400Regular",
       fontSize: 11,
-      color: "#18a06baa",
+      color: "#e06030aa",
     },
     addressWrap: {
       paddingTop: 4,
