@@ -114,9 +114,10 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
         contentContainerStyle={[styles.container, { paddingBottom: Math.max(insets.bottom, 28) }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: "#6030e012", borderColor: "#6030e025" }]}>
-            <Feather name="maximize" size={20} color="#6030e0" />
+          <View style={[styles.iconWrap, { backgroundColor: colors.accent + "12", borderColor: colors.accent + "25" }]}>
+            <Feather name="maximize" size={20} color={colors.accent} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>QR Code</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
@@ -124,11 +125,13 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
           </Text>
         </View>
 
+        {/* Status */}
         <View style={[styles.statusRow, { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }]}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
 
+        {/* QR Card */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>QR CODE</Text>
 
@@ -151,27 +154,32 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
             </View>
           )}
 
+          <Text style={[styles.cardHint, { color: colors.textDim }]}>
+            Válido para uma única contratação nesta sessão
+          </Text>
         </View>
 
+        {/* Regenerate button */}
         <Pressable
           style={({ pressed }) => [
             styles.regenBtn,
-            confirmRegen && { borderColor: "#6030e0", backgroundColor: "#6030e010" },
+            { borderColor: confirmRegen ? colors.accent : colors.surfaceBorder },
+            confirmRegen && { backgroundColor: colors.accent + "10" },
             (pressed || regenerating) && { opacity: 0.7 },
           ]}
           onPress={handleRegenPress}
           disabled={regenerating}
         >
           {regenerating ? (
-            <ActivityIndicator size="small" color="#6030e0" />
+            <ActivityIndicator size="small" color={colors.accent} />
           ) : (
             <Feather
               name="refresh-cw"
               size={14}
-              color={confirmRegen ? "#6030e0" : colors.textMuted}
+              color={confirmRegen ? colors.accent : colors.textMuted}
             />
           )}
-          <Text style={[styles.regenBtnText, { color: confirmRegen ? "#6030e0" : colors.textMuted }]}>
+          <Text style={[styles.regenBtnText, { color: confirmRegen ? colors.accent : colors.textMuted }]}>
             {regenerating
               ? "Gerando novo QR Code..."
               : confirmRegen
@@ -276,23 +284,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 16,
   },
-  pinPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-  },
-  pinPillText: {
+  cardHint: {
     fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-  },
-  pinPillCode: {
-    fontFamily: "DMSans_700Bold",
-    fontSize: 13,
-    letterSpacing: 2,
+    fontSize: 10,
+    letterSpacing: 0.2,
+    textAlign: "center",
   },
   regenBtn: {
     flexDirection: "row",
@@ -303,7 +299,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 13,
     borderStyle: "dashed",
-    borderColor: "#88888830",
     backgroundColor: "transparent",
   },
   regenBtnText: {

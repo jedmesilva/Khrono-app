@@ -122,9 +122,10 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
         contentContainerStyle={[styles.container, { paddingBottom: Math.max(insets.bottom, 28) }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: "#e0603012", borderColor: "#e0603025" }]}>
-            <Feather name="hash" size={20} color="#e06030" />
+          <View style={[styles.iconWrap, { backgroundColor: colors.accent + "12", borderColor: colors.accent + "25" }]}>
+            <Feather name="hash" size={20} color={colors.accent} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Meu PINCODE</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
@@ -132,20 +133,22 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           </Text>
         </View>
 
+        {/* Status */}
         <View style={[styles.statusRow, { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }]}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
 
+        {/* PIN Card */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>SEU PINCODE</Text>
           <View style={styles.digitsRow}>
             {digits.map((d, i) => (
               <View
                 key={i}
-                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: "#e0603030" }]}
+                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: colors.accent + "30" }]}
               >
-                <Text style={styles.digitText}>{d}</Text>
+                <Text style={[styles.digitText, { color: colors.accent }]}>{d}</Text>
               </View>
             ))}
           </View>
@@ -154,10 +157,14 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           </Text>
         </View>
 
+        {/* Copy button */}
         <Pressable
           style={({ pressed }) => [
             styles.actionBtn,
-            { backgroundColor: colors.card, borderColor: colors.cardBorder },
+            {
+              backgroundColor: copied ? "#18a06b10" : colors.accent + "10",
+              borderColor: copied ? "#18a06b30" : colors.accent + "30",
+            },
             pressed && { opacity: 0.7 },
           ]}
           onPress={handleCopy}
@@ -165,32 +172,34 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           <Feather
             name={copied ? "check" : "copy"}
             size={15}
-            color={copied ? "#18a06b" : colors.textSecondary}
+            color={copied ? "#18a06b" : colors.accent}
           />
-          <Text style={[styles.actionBtnText, { color: copied ? "#18a06b" : colors.textSecondary }]}>
+          <Text style={[styles.actionBtnText, { color: copied ? "#18a06b" : colors.accent }]}>
             {copied ? "Copiado!" : "Copiar código"}
           </Text>
         </Pressable>
 
+        {/* Regenerate button */}
         <Pressable
           style={({ pressed }) => [
             styles.regenBtn,
-            confirmRegen && { borderColor: "#e06030", backgroundColor: "#e0603010" },
+            { borderColor: confirmRegen ? colors.accent : colors.surfaceBorder },
+            confirmRegen && { backgroundColor: colors.accent + "10" },
             (pressed || regenerating) && { opacity: 0.7 },
           ]}
           onPress={handleRegenPress}
           disabled={regenerating}
         >
           {regenerating ? (
-            <ActivityIndicator size="small" color="#e06030" />
+            <ActivityIndicator size="small" color={colors.accent} />
           ) : (
             <Feather
               name="refresh-cw"
               size={14}
-              color={confirmRegen ? "#e06030" : colors.textMuted}
+              color={confirmRegen ? colors.accent : colors.textMuted}
             />
           )}
-          <Text style={[styles.regenBtnText, { color: confirmRegen ? "#e06030" : colors.textMuted }]}>
+          <Text style={[styles.regenBtnText, { color: confirmRegen ? colors.accent : colors.textMuted }]}>
             {regenerating
               ? "Gerando novo código..."
               : confirmRegen
@@ -291,7 +300,6 @@ const styles = StyleSheet.create({
   digitText: {
     fontFamily: "DMSans_500Medium",
     fontSize: 36,
-    color: "#e06030",
     lineHeight: 42,
   },
   cardHint: {
@@ -322,7 +330,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 13,
     borderStyle: "dashed",
-    borderColor: "#88888830",
     backgroundColor: "transparent",
   },
   regenBtnText: {
