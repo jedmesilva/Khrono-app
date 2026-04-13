@@ -3,6 +3,7 @@ import {
   DMSans_500Medium,
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
+import { DMMono_400Regular } from "@expo-google-fonts/dm-mono";
 import {
   Sora_400Regular,
   Sora_600SemiBold,
@@ -112,6 +113,7 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
+    DMMono_400Regular,
     Sora_400Regular,
     Sora_600SemiBold,
     Sora_700Bold,
