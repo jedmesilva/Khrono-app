@@ -6,6 +6,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -14,66 +15,58 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
-
-type Notification = {
-  id: string;
-  icon: keyof typeof Feather.glyphMap;
-  iconColor: string;
-  title: string;
-  body: string;
-  time: string;
-  read: boolean;
-};
-
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    icon: "check-circle",
-    iconColor: "#18a06b",
-    title: "Contrato encerrado",
-    body: "Seu contrato com Rafael Lima foi encerrado. Total: R$120,00",
-    time: "2h atrás",
-    read: false,
-  },
-  {
-    id: "2",
-    icon: "user-check",
-    iconColor: "#e06030",
-    title: "Nova contratação",
-    body: "Bruno Souza te contratou para Consultoria de Redes Sociais.",
-    time: "5h atrás",
-    read: false,
-  },
-  {
-    id: "3",
-    icon: "dollar-sign",
-    iconColor: "#18a06b",
-    title: "Pagamento recebido",
-    body: "R$75,00 creditados pelo contrato com Ana Pereira.",
-    time: "ontem",
-    read: true,
-  },
-  {
-    id: "4",
-    icon: "star",
-    iconColor: "#f5c518",
-    title: "Avaliação recebida",
-    body: "Mariana Costa te avaliou com 5 estrelas. Ótimo trabalho!",
-    time: "2 dias atrás",
-    read: true,
-  },
-];
+import {
+  useNotifications,
+  type AppNotification,
+} from "@/context/NotificationsContext";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
 };
 
+type NotifMeta = {
+  icon: keyof typeof Feather.glyphMap;
+  color: string;
+};
+
+function getNotifMeta(type: string): NotifMeta {
+  switch (type) {
+    case "contract_created":
+      return { icon: "user-check", color: "#e06030" };
+    case "contract_accepted":
+      return { icon: "check-circle", color: "#18a06b" };
+    case "contract_started":
+      return { icon: "play-circle", color: "#e06030" };
+    case "contract_ended":
+      return { icon: "flag", color: "#18a06b" };
+    case "payment":
+      return { icon: "dollar-sign", color: "#18a06b" };
+    case "rating":
+      return { icon: "star", color: "#f5c518" };
+    default:
+      return { icon: "bell", color: "#8888aa" };
+  }
+}
+
+function formatRelativeTime(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "agora";
+  if (minutes < 60) return `${minutes}min atrás`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h atrás`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "ontem";
+  return `${days} dias atrás`;
+}
+
 export function NotificationsSheet({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
+    useNotifications();
   const ref = useRef<BottomSheetModal>(null);
-  const unreadCount = MOCK_NOTIFICATIONS.filter((n) => !n.read).length;
 
   const snapPoints = useMemo(() => ["75%"], []);
 
@@ -114,6 +107,10 @@ export function NotificationsSheet({ visible, onClose }: Props) {
     []
   );
 
+  const handleTap = (n: AppNotification) => {
+    if (!n.read_at) markAsRead(n.id);
+  };
+
   return (
     <BottomSheetModal
       ref={ref}
@@ -127,42 +124,114 @@ export function NotificationsSheet({ visible, onClose }: Props) {
       {/* Header */}
       <View style={staticStyles.header}>
         <View>
-          <Text style={[staticStyles.title, { color: colors.text }]}>Notificações</Text>
+          <Text style={[staticStyles.title, { color: colors.text }]}>
+            Notificações
+          </Text>
           {unreadCount > 0 && (
-            <Text style={staticStyles.unreadLabel}>{unreadCount} não lidas</Text>
+            <Text style={staticStyles.unreadLabel}>
+              {unreadCount} não lida{unreadCount > 1 ? "s" : ""}
+            </Text>
           )}
         </View>
-        <Pressable onPress={onClose} hitSlop={12}>
-          <Feather name="x" size={18} color={colors.textSecondary} />
-        </Pressable>
+        <View style={staticStyles.headerActions}>
+          {unreadCount > 0 && (
+            <Pressable
+              onPress={markAllAsRead}
+              hitSlop={12}
+              style={staticStyles.markAllBtn}
+            >
+              <Text style={staticStyles.markAllText}>Marcar todas lidas</Text>
+            </Pressable>
+          )}
+          <Pressable onPress={onClose} hitSlop={12}>
+            <Feather name="x" size={18} color={colors.textSecondary} />
+          </Pressable>
+        </View>
       </View>
 
       <BottomSheetScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[staticStyles.list, { paddingBottom: Math.max(insets.bottom, 24) }]}
+        contentContainerStyle={[
+          staticStyles.list,
+          { paddingBottom: Math.max(insets.bottom, 24) },
+        ]}
       >
-        {MOCK_NOTIFICATIONS.map((n, i) => (
-          <View key={n.id}>
-            <View style={[staticStyles.item, n.read && staticStyles.itemRead]}>
-              <View style={[staticStyles.iconWrap, { backgroundColor: n.iconColor + "18" }]}>
-                <Feather name={n.icon} size={16} color={n.iconColor} />
-              </View>
-              <View style={staticStyles.itemContent}>
-                <View style={staticStyles.itemTop}>
-                  <Text style={[staticStyles.itemTitle, { color: colors.text }, n.read && { color: colors.textSecondary }]}>
-                    {n.title}
-                  </Text>
-                  <Text style={[staticStyles.itemTime, { color: colors.textDim }]}>{n.time}</Text>
-                </View>
-                <Text style={[staticStyles.itemBody, { color: colors.textSecondary }]}>{n.body}</Text>
-              </View>
-              {!n.read && <View style={staticStyles.dot} />}
-            </View>
-            {i < MOCK_NOTIFICATIONS.length - 1 && (
-              <View style={[staticStyles.divider, { backgroundColor: colors.divider }]} />
-            )}
+        {loading && notifications.length === 0 && (
+          <View style={staticStyles.emptyWrap}>
+            <ActivityIndicator color="#e06030" />
           </View>
-        ))}
+        )}
+
+        {!loading && notifications.length === 0 && (
+          <View style={staticStyles.emptyWrap}>
+            <Feather name="bell-off" size={32} color={colors.textDim} />
+            <Text style={[staticStyles.emptyText, { color: colors.textDim }]}>
+              Nenhuma notificação ainda
+            </Text>
+          </View>
+        )}
+
+        {notifications.map((n, i) => {
+          const { icon, color } = getNotifMeta(n.type);
+          const isRead = !!n.read_at;
+          return (
+            <View key={n.id}>
+              <Pressable
+                onPress={() => handleTap(n)}
+                style={[staticStyles.item, isRead && staticStyles.itemRead]}
+              >
+                <View
+                  style={[
+                    staticStyles.iconWrap,
+                    { backgroundColor: color + "18" },
+                  ]}
+                >
+                  <Feather name={icon} size={16} color={color} />
+                </View>
+                <View style={staticStyles.itemContent}>
+                  <View style={staticStyles.itemTop}>
+                    <Text
+                      style={[
+                        staticStyles.itemTitle,
+                        { color: colors.text },
+                        isRead && { color: colors.textSecondary },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {n.title}
+                    </Text>
+                    <Text
+                      style={[
+                        staticStyles.itemTime,
+                        { color: colors.textDim },
+                      ]}
+                    >
+                      {formatRelativeTime(n.created_at)}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      staticStyles.itemBody,
+                      { color: colors.textSecondary },
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {n.body}
+                  </Text>
+                </View>
+                {!isRead && <View style={staticStyles.dot} />}
+              </Pressable>
+              {i < notifications.length - 1 && (
+                <View
+                  style={[
+                    staticStyles.divider,
+                    { backgroundColor: colors.divider },
+                  ]}
+                />
+              )}
+            </View>
+          );
+        })}
       </BottomSheetScrollView>
     </BottomSheetModal>
   );
@@ -188,9 +257,34 @@ const staticStyles = StyleSheet.create({
     marginTop: 2,
     letterSpacing: 0.3,
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  markAllBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  markAllText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 10,
+    color: "#e06030",
+    letterSpacing: 0.2,
+  },
   list: {
     paddingHorizontal: 20,
     paddingBottom: 8,
+  },
+  emptyWrap: {
+    alignItems: "center",
+    paddingVertical: 48,
+    gap: 12,
+  },
+  emptyText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 13,
+    letterSpacing: 0.2,
   },
   item: {
     flexDirection: "row",

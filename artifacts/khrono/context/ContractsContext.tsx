@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import * as Haptics from "expo-haptics";
 import { supabase } from "@/lib/supabase";
+import { useNotifications } from "@/context/NotificationsContext";
 
 export type ContractTool = {
   nome: string;
@@ -184,6 +185,7 @@ const CONTRACT_SELECT = `
 `;
 
 export function ContractsProvider({ children }: { children: React.ReactNode }) {
+  const { sendPushNotification } = useNotifications();
   const [activeContracts, setActiveContracts] = useState<Contract[]>([]);
   const [history, setHistory] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -402,6 +404,19 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         });
       }
 
+      // Push notification para o prestador contratado
+      if (hiredId) {
+        const providerName = contractData.person.name;
+        const serviceName = contractData.servico?.nome ?? contractData.servico?.skill ?? "serviço";
+        sendPushNotification(
+          hiredId,
+          "Nova contratação!",
+          `Você foi contratado para ${serviceName}.`,
+          { contract_id: contract.id },
+          "contract_created"
+        ).catch(() => {});
+      }
+
       return contract.id;
     },
     [loadContracts]
@@ -431,8 +446,24 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+      // Push notification para o contratante
+      const { data: contractRow } = await supabase
+        .from("contracts")
+        .select("contractor_id")
+        .eq("id", id)
+        .single();
+      if (contractRow?.contractor_id) {
+        sendPushNotification(
+          contractRow.contractor_id,
+          "Contrato aceito!",
+          "O prestador aceitou sua solicitação.",
+          { contract_id: id },
+          "contract_accepted"
+        ).catch(() => {});
+      }
     },
-    [loadContracts]
+    [loadContracts, sendPushNotification]
   );
 
   const beginContract = useCallback(

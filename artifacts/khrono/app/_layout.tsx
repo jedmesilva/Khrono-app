@@ -31,6 +31,7 @@ import { UserCatalogProvider } from "@/context/UserCatalogContext";
 import { LocationProvider } from "@/context/LocationContext";
 import { UserSettingsProvider } from "@/context/UserSettingsContext";
 import { AvailabilityProvider } from "@/context/AvailabilityContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -136,6 +137,7 @@ export default function RootLayout() {
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
+                  <NotificationsProvider>
                   <UserSettingsProvider>
                     <AvailabilityProvider>
                       <LocationProvider>
@@ -157,6 +159,7 @@ export default function RootLayout() {
                       </LocationProvider>
                     </AvailabilityProvider>
                   </UserSettingsProvider>
+                  </NotificationsProvider>
                 </AuthProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>
