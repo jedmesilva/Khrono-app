@@ -552,8 +552,6 @@ function createStyles(colors: ColorPalette) {
       height: 46,
       borderRadius: 13,
       backgroundColor: colors.menuIconBg,
-      borderWidth: 1,
-      borderColor: colors.chevron,
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
