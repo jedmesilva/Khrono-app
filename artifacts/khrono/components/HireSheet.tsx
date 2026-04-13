@@ -683,14 +683,13 @@ export function HireSheet({ open, onClose }: Props) {
     (provider: ProviderData) => {
       setPendingProvider(provider);
       subRef.current?.dismiss();
-      endSession();
       setPincodeSheetOpen(false);
       setTimeout(() => {
         onClose();
         router.push("/contract-confirm");
       }, 300);
     },
-    [setPendingProvider, onClose, router, endSession]
+    [setPendingProvider, onClose, router]
   );
 
   const renderBackdrop = useCallback(
