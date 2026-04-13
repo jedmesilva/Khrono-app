@@ -76,7 +76,7 @@ export default function WalletScreen() {
         </View>
 
         {/* Balance card */}
-        <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+        <View style={[styles.balanceCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.balanceLabel, { color: colors.textDim }]}>SALDO DISPONÍVEL</Text>
           <View style={styles.balanceRow}>
             <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatBalance(balance)}</Text>
@@ -85,13 +85,13 @@ export default function WalletScreen() {
             </Pressable>
           </View>
           <View style={styles.statsRow}>
-            <View style={[styles.statChip, { borderColor: "#e0603025", backgroundColor: "#e0603010" }]}>
+            <View style={[styles.statChip, { backgroundColor: "#e0603010" }]}>
               <Text style={[styles.statChipLabel, { color: "#e06030" }]}>PAGO</Text>
               <Text style={[styles.statChipValue, { color: "#e06030" }]}>
                 {showBalance ? formatCurrency(totalPaid) : "••••"}
               </Text>
             </View>
-            <View style={[styles.statChip, { borderColor: "#18a06b25", backgroundColor: "#18a06b10" }]}>
+            <View style={[styles.statChip, { backgroundColor: "#18a06b10" }]}>
               <Text style={[styles.statChipLabel, { color: "#18a06b" }]}>RECEBIDO</Text>
               <Text style={[styles.statChipValue, { color: "#18a06b" }]}>
                 {showBalance ? formatCurrency(totalReceived) : "••••"}
@@ -241,13 +241,13 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
   logo: { fontFamily: "Sora_700Bold", fontSize: 24, letterSpacing: -0.5 },
   subtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
-  balanceCard: { borderWidth: 1, borderRadius: 24, padding: 24, marginBottom: 14, gap: 12 },
+  balanceCard: { borderRadius: 24, padding: 24, marginBottom: 14, gap: 12 },
   balanceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
   balanceRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   balanceAmount: { fontFamily: "DMSans_500Medium", fontSize: 32, letterSpacing: -0.5, flex: 1 },
   eyeBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   statsRow: { flexDirection: "row", gap: 10 },
-  statChip: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 12, gap: 4 },
+  statChip: { flex: 1, borderRadius: 12, padding: 12, gap: 4 },
   statChipLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.5 },
   statChipValue: { fontFamily: "DMSans_500Medium", fontSize: 15 },
   actionsRow: { flexDirection: "row", gap: 12, marginBottom: 28 },
