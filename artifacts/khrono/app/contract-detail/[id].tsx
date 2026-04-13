@@ -32,6 +32,7 @@ import {
   useContracts,
 } from "@/context/ContractsContext";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
+import { GlobalStyles } from "@/constants/globalStyles";
 import { formatCurrency } from "@/lib/format";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -859,10 +860,10 @@ export default function ContractDetailScreen() {
         <View style={s.header}>
           <Pressable
             onPress={() => router.back()}
-            style={s.headerBtn}
+            style={GlobalStyles.backButton}
             hitSlop={12}
           >
-            <Feather name="arrow-left" size={18} color={colors.text} />
+            <Feather name="arrow-left" size={18} color={colors.iconBack} />
           </Pressable>
         </View>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -968,17 +969,19 @@ export default function ContractDetailScreen() {
     >
       {/* ── Header ── */}
       <View style={[s.header, { borderBottomColor: colors.divider }]}>
-        <Pressable
-          onPress={() => router.back()}
-          style={[s.headerBtn, { backgroundColor: colors.surface }]}
-          hitSlop={12}
-        >
-          <Feather name="arrow-left" size={16} color={colors.text} />
-        </Pressable>
+        <View style={s.headerLeft}>
+          <Pressable
+            onPress={() => router.back()}
+            style={GlobalStyles.backButton}
+            hitSlop={12}
+          >
+            <Feather name="arrow-left" size={16} color={colors.iconBack} />
+          </Pressable>
 
-        <Text style={[s.headerId, { color: colors.textMuted }]}>
-          {contratoId}
-        </Text>
+          <Text style={[s.headerId, { color: colors.textMuted }]}>
+            {contratoId}
+          </Text>
+        </View>
 
         <View
           style={[
@@ -1589,12 +1592,10 @@ const s = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
   },
-  headerBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  headerLeft: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 8,
   },
   headerId: {
     fontFamily: "DMSans_400Regular",

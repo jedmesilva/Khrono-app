@@ -35,6 +35,7 @@ export type ColorPalette = {
   menuIconBg: string;
   avatarBg: string;
   chevron: string;
+  iconBack: string;
 };
 
 const ACCENT = "#e06030";
@@ -64,6 +65,7 @@ export const lightColors: ColorPalette = {
   menuIconBg: "#f2f0ed",
   avatarBg: "#ede9e4",
   chevron: "#d0ccc8",
+  iconBack: "#2C2A26",
 };
 
 export const darkColors: ColorPalette = {
@@ -90,6 +92,7 @@ export const darkColors: ColorPalette = {
   menuIconBg: "#211e1a",
   avatarBg: "#251f1a",
   chevron: "#3a3530",
+  iconBack: "#f0ebe6",
 };
 
 type ThemeContextValue = {
