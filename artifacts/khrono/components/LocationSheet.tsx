@@ -522,33 +522,31 @@ function createStyles(colors: ColorPalette) {
 
     segmented: {
       flexDirection: "row",
-      backgroundColor: colors.menuIconBg,
-      borderRadius: 14,
+      gap: 8,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.cardBorder,
       padding: 4,
-      gap: 4,
     },
     segmentBtn: {
       flex: 1,
-      borderRadius: 11,
+      borderRadius: 12,
       paddingVertical: 10,
       alignItems: "center",
       justifyContent: "center",
     },
     segmentBtnActive: {
-      backgroundColor: colors.card,
-      shadowColor: "#000",
-      shadowOpacity: 0.06,
-      shadowRadius: 4,
-      shadowOffset: { width: 0, height: 1 },
-      elevation: 2,
+      backgroundColor: ORANGE,
     },
     segmentText: {
-      fontFamily: "DMSans_600SemiBold",
-      fontSize: 13,
+      fontFamily: "DMSans_500Medium",
+      fontSize: 12,
       color: colors.textSecondary,
     },
     segmentTextActive: {
-      color: colors.text,
+      color: "#fff",
+      fontFamily: "Sora_600SemiBold",
     },
 
     gpsBanner: {
@@ -579,7 +577,7 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       gap: 10,
       backgroundColor: colors.inputBg,
-      borderWidth: 1.5,
+      borderWidth: 1,
       borderRadius: 12,
       paddingHorizontal: 14,
       height: 50,
