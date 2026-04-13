@@ -180,38 +180,37 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.greeting}>
-            <Text style={[styles.greetingHi, { color: colors.textDim }]}>Olá,</Text>
-            <Text style={[styles.greetingName, { color: colors.text }]}>{displayName}!</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <Pressable
-              onPress={() => {
-                Haptics.selectionAsync();
-                setNotifOpen(true);
-              }}
-              style={styles.headerBtn}
-              hitSlop={8}
-            >
-              <Feather name="bell" size={20} color={colors.textSecondary} />
-              {unreadCount > 0 && (
-                <View style={[styles.badge, { borderColor: colors.background }]}>
-                  <Text style={styles.badgeText}>{unreadCount > 99 ? "99+" : unreadCount}</Text>
-                </View>
-              )}
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                Haptics.selectionAsync();
-                router.push("/(tabs)/profile" as any);
-              }}
-              hitSlop={8}
-            >
-              <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
-                <Text style={styles.avatarText}>{initials}</Text>
+          <Pressable
+            style={styles.greetingRow}
+            onPress={() => {
+              Haptics.selectionAsync();
+              router.push("/(tabs)/profile" as any);
+            }}
+            hitSlop={8}
+          >
+            <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+            <View style={styles.greeting}>
+              <Text style={[styles.greetingHi, { color: colors.textDim }]}>Olá,</Text>
+              <Text style={[styles.greetingName, { color: colors.text }]}>{displayName}!</Text>
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.selectionAsync();
+              setNotifOpen(true);
+            }}
+            style={styles.headerBtn}
+            hitSlop={8}
+          >
+            <Feather name="bell" size={20} color={colors.textSecondary} />
+            {unreadCount > 0 && (
+              <View style={[styles.badge, { borderColor: colors.background }]}>
+                <Text style={styles.badgeText}>{unreadCount > 99 ? "99+" : unreadCount}</Text>
               </View>
-            </Pressable>
-          </View>
+            )}
+          </Pressable>
         </View>
 
         {/* Loading skeletons */}
@@ -323,6 +322,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
+  greetingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
   greeting: {
     gap: 0,
   },
@@ -348,11 +352,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#fff",
     letterSpacing: 0.5,
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
   },
   headerBtn: {
     padding: 8,
