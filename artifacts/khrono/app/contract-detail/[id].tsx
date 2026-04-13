@@ -999,12 +999,18 @@ export default function ContractDetailScreen() {
         )}
 
         {/* Role banner */}
-        <View
-          style={[
+        <Pressable
+          onPress={
+            contract.person.profileId
+              ? () => router.push(`/user-profile/${contract.person.profileId}` as any)
+              : undefined
+          }
+          style={({ pressed }) => [
             s.roleBanner,
             {
               backgroundColor: roleBg,
               borderColor: roleBorder,
+              opacity: pressed && contract.person.profileId ? 0.8 : 1,
             },
           ]}
         >
@@ -1022,6 +1028,11 @@ export default function ContractDetailScreen() {
             <Text style={[s.roleName, { color: roleNameColor }]}>
               {contract.person.name}
             </Text>
+            {contract.person.profileId && (
+              <Text style={[s.roleViewProfile, { color: roleMeta }]}>
+                Ver perfil →
+              </Text>
+            )}
           </View>
           <View style={{ alignItems: "flex-end", gap: 4 }}>
             {contract.person.distancia != null && (
@@ -1044,7 +1055,7 @@ export default function ContractDetailScreen() {
               </View>
             )}
           </View>
-        </View>
+        </Pressable>
 
         {/* Service row */}
         <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
@@ -1178,28 +1189,6 @@ export default function ContractDetailScreen() {
               />
             )}
           </View>
-        )}
-
-        {/* View profile link */}
-        {contract.person.profileId && (
-          <Pressable
-            onPress={() =>
-              router.push(`/user-profile/${contract.person.profileId}` as any)
-            }
-            style={({ pressed }) => [
-              s.profileLink,
-              {
-                borderColor: colors.surfaceBorder,
-                opacity: pressed ? 0.6 : 1,
-              },
-            ]}
-          >
-            <Feather name="user" size={13} color={colors.accent + "99"} />
-            <Text style={[s.profileLinkText, { color: colors.accent + "99" }]}>
-              Ver perfil completo de {contract.person.name}
-            </Text>
-            <Feather name="chevron-right" size={13} color={colors.accent + "55"} />
-          </Pressable>
         )}
 
         {/* Rating (ended + hiring) */}
@@ -1622,6 +1611,12 @@ const s = StyleSheet.create({
     fontFamily: "DMSans_400Regular",
     fontSize: 11,
   },
+  roleViewProfile: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    marginTop: 4,
+    letterSpacing: 0.1,
+  },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1685,21 +1680,6 @@ const s = StyleSheet.create({
   detailValue: {
     fontFamily: "DMSans_500Medium",
     fontSize: 13,
-  },
-  profileLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 12,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-  },
-  profileLinkText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 12,
-    flex: 1,
   },
   sectionTitle: {
     fontFamily: "DMSans_600SemiBold",
