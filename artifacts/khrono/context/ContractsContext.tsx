@@ -70,6 +70,7 @@ export type Contract = {
   cancelReason?: string;
   endRequestedBy?: string;
   cancelRequestedBy?: string;
+  location?: string;
 };
 
 export function isContractRunning(contract: Contract): boolean {
@@ -210,6 +211,7 @@ function mapDbToContract(c: any, userId: string): Contract {
     cancelReason: c.cancel_reason ?? undefined,
     endRequestedBy: c.end_requested_by ?? undefined,
     cancelRequestedBy: c.cancel_requested_by ?? undefined,
+    location: c.location ?? undefined,
   };
 }
 
@@ -438,6 +440,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
             : null,
           started_at:
             initialStatus === "active" ? new Date().toISOString() : null,
+          location: contractData.location ?? null,
         })
         .select()
         .single();

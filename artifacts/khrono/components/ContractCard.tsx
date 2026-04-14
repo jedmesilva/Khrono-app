@@ -159,6 +159,13 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </Text>
         </View>
 
+        {!!contract.location && (
+          <View style={styles.locationRow}>
+            <Feather name="map-pin" size={10} color="#C4BFB6" />
+            <Text style={styles.locationText} numberOfLines={1}>{contract.location}</Text>
+          </View>
+        )}
+
         <View style={styles.scheduledBlock}>
           <View style={styles.scheduledLabelRow}>
             <Feather name="calendar" size={10} color="#B8B4AC" />
@@ -293,6 +300,13 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
             R$ {contract.ratePerHour}/h
           </Text>
         </View>
+
+        {!!contract.location && (
+          <View style={styles.locationRow}>
+            <Feather name="map-pin" size={10} color="#C4BFB6" />
+            <Text style={styles.locationText} numberOfLines={1}>{contract.location}</Text>
+          </View>
+        )}
 
         {/* Elapsed timer */}
         <View style={styles.elapsedBlock}>
@@ -482,6 +496,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     flexShrink: 0,
     marginLeft: 8,
+  },
+
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 14,
+    marginTop: -8,
+  },
+  locationText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    color: "#C4BFB6",
+    flex: 1,
   },
 
   // elapsed

@@ -16,6 +16,7 @@ import { useTheme, ColorPalette } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 import { useConfirmation, ProviderService } from "@/context/ConfirmationContext";
 import { useWallet } from "@/context/WalletContext";
+import { useLocation } from "@/context/LocationContext";
 import { ScheduleSheet } from "@/components/ScheduleSheet";
 import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
 import { PixPaymentModal } from "@/components/PixPaymentModal";
@@ -46,6 +47,7 @@ export default function ContractConfirmScreen() {
   const { pendingProvider, setPendingProvider } = useConfirmation();
   const { startContract } = useContracts();
   const { cards } = useWallet();
+  const { location } = useLocation();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -153,6 +155,7 @@ export default function ContractConfirmScreen() {
       agendado,
       agendadoLabel: agendado ? formatAgendamento() : undefined,
       ratePerHour: valorHora,
+      location: location.fixedAddress || undefined,
     };
   };
 
