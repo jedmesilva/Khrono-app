@@ -652,29 +652,27 @@ function PrimaryButton({
   variant?: "dark" | "green" | "red" | "ghost";
   disabled?: boolean;
 }) {
+  const { colors } = useTheme();
+
   const bg =
-    variant === "green"
-      ? "#18a06b"
-      : variant === "red"
-      ? "#e05050"
-      : variant === "ghost"
-      ? "transparent"
-      : "#2C2A26";
+    variant === "green"   ? colors.btnSuccessBg  :
+    variant === "red"     ? colors.btnDangerBg   :
+    variant === "ghost"   ? "transparent"        :
+                            colors.btnPrimaryBg;
 
   const bgPressed =
-    variant === "green"
-      ? "#138a5a"
-      : variant === "red"
-      ? "#c04040"
-      : variant === "ghost"
-      ? "transparent"
-      : "#111010";
+    variant === "green"   ? colors.btnSuccessPressed :
+    variant === "red"     ? colors.btnDangerPressed  :
+    variant === "ghost"   ? "transparent"            :
+                            colors.btnPrimaryPressed;
 
   const textColor =
-    variant === "ghost" ? "#9B9487" : "#F2EFE9";
+    variant === "ghost"   ? colors.textMuted          :
+    variant === "dark"    ? colors.btnPrimaryText      :
+                            colors.btnActionText;
 
   const borderColor =
-    variant === "ghost" ? "#DDD9D1" : "transparent";
+    variant === "ghost" ? colors.inputBorder : "transparent";
 
   return (
     <Pressable
@@ -687,7 +685,7 @@ function PrimaryButton({
       style={({ pressed }) => [
         s.primaryBtn,
         {
-          backgroundColor: disabled ? "#E5E1D9" : pressed ? bgPressed : bg,
+          backgroundColor: disabled ? colors.btnDisabledBg : pressed ? bgPressed : bg,
           borderColor,
           borderWidth: variant === "ghost" ? 1 : 0,
           opacity: pressed ? 0.9 : 1,
@@ -698,7 +696,7 @@ function PrimaryButton({
       <Text
         style={[
           s.primaryBtnText,
-          { color: disabled ? "#9B9487" : textColor },
+          { color: disabled ? colors.btnDisabledText : textColor },
         ]}
       >
         {label}

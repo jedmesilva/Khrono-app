@@ -378,7 +378,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { backgroundColor: pressed ? "#C85428" : "#e06030" },
+              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
               pressed && styles.actionBtnPressed,
             ]}
             onPress={() => {
@@ -386,8 +386,8 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
               onAccept?.(contract.id);
             }}
           >
-            <Feather name="check" size={14} color="#fff" />
-            <Text style={styles.actionBtnText}>Aceitar contrato</Text>
+            <Feather name="check" size={14} color={colors.btnActionText} />
+            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>Aceitar contrato</Text>
           </Pressable>
         )}
 
@@ -406,7 +406,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { backgroundColor: pressed ? "#C85428" : "#e06030" },
+              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
               pressed && styles.actionBtnPressed,
             ]}
             onPress={() => {
@@ -414,8 +414,8 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
               onBegin?.(contract.id);
             }}
           >
-            <Feather name="play" size={14} color="#fff" />
-            <Text style={styles.actionBtnText}>Iniciar contrato</Text>
+            <Feather name="play" size={14} color={colors.btnActionText} />
+            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>Iniciar contrato</Text>
           </Pressable>
         )}
 
@@ -634,7 +634,6 @@ const styles = StyleSheet.create({
   actionBtnText: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 13,
-    color: "#fff",
   },
   waitingRow: {
     flexDirection: "row",

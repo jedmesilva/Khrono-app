@@ -13,6 +13,7 @@ export type ThemePreference = "light" | "dark" | "system";
 
 export type ColorPalette = {
   accent: string;
+  accentPressed: string;
   accentGreen: string;
   background: string;
   card: string;
@@ -36,13 +37,30 @@ export type ColorPalette = {
   avatarBg: string;
   chevron: string;
   iconBack: string;
+  // ── button tokens ──────────────────────────────────────
+  btnPrimaryBg: string;
+  btnPrimaryPressed: string;
+  btnPrimaryText: string;
+  btnSuccessBg: string;
+  btnSuccessPressed: string;
+  btnDangerBg: string;
+  btnDangerPressed: string;
+  btnActionText: string;
+  btnDisabledBg: string;
+  btnDisabledText: string;
 };
 
-const ACCENT = "#e06030";
-const GREEN = "#00e5a0";
+const ACCENT        = "#e06030";
+const ACCENT_PRESSED = "#C85428";
+const GREEN         = "#00e5a0";
+const BTN_SUCCESS   = "#18a06b";
+const BTN_SUCCESS_P = "#138a5a";
+const BTN_DANGER    = "#e05050";
+const BTN_DANGER_P  = "#c04040";
 
 export const lightColors: ColorPalette = {
   accent: ACCENT,
+  accentPressed: ACCENT_PRESSED,
   accentGreen: GREEN,
   background: "#F8F5F2",
   card: "#ffffff",
@@ -66,10 +84,21 @@ export const lightColors: ColorPalette = {
   avatarBg: "#ede9e4",
   chevron: "#d0ccc8",
   iconBack: "#2C2A26",
+  btnPrimaryBg: "#2C2A26",
+  btnPrimaryPressed: "#111010",
+  btnPrimaryText: "#F2EFE9",
+  btnSuccessBg: BTN_SUCCESS,
+  btnSuccessPressed: BTN_SUCCESS_P,
+  btnDangerBg: BTN_DANGER,
+  btnDangerPressed: BTN_DANGER_P,
+  btnActionText: "#ffffff",
+  btnDisabledBg: "#E5E1D9",
+  btnDisabledText: "#9B9487",
 };
 
 export const darkColors: ColorPalette = {
   accent: ACCENT,
+  accentPressed: ACCENT_PRESSED,
   accentGreen: GREEN,
   background: "#100e0c",
   card: "#1a1714",
@@ -93,6 +122,16 @@ export const darkColors: ColorPalette = {
   avatarBg: "#251f1a",
   chevron: "#3a3530",
   iconBack: "#f0ebe6",
+  btnPrimaryBg: "#F0EBE6",
+  btnPrimaryPressed: "#D8D4CF",
+  btnPrimaryText: "#1A1714",
+  btnSuccessBg: BTN_SUCCESS,
+  btnSuccessPressed: BTN_SUCCESS_P,
+  btnDangerBg: BTN_DANGER,
+  btnDangerPressed: BTN_DANGER_P,
+  btnActionText: "#ffffff",
+  btnDisabledBg: "#2a2520",
+  btnDisabledText: "#504840",
 };
 
 type ThemeContextValue = {
