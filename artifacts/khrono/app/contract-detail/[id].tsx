@@ -260,6 +260,42 @@ function LocationRow({
   );
 }
 
+// ─── Service Row ──────────────────────────────────────────────────────────────
+
+function ServiceRow({
+  servico,
+  colors,
+}: {
+  servico: NonNullable<import("@/context/ContractsContext").Contract["servico"]>;
+  colors: ColorPalette;
+}) {
+  const subtitle = [
+    servico.skill && servico.skill !== servico.nome ? servico.skill : null,
+    servico.ratePerHour
+      ? `R$${servico.ratePerHour.toFixed(0).replace(".", ",")}/h`
+      : null,
+    servico.nota ? `★ ${servico.nota.toFixed(1)}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+      <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
+        <Feather name="tool" size={15} color={colors.textSecondary} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[s.detailTitle, { color: colors.text }]} numberOfLines={1}>
+          {servico.nome}
+        </Text>
+        {!!subtitle && (
+          <Text style={[s.detailSub, { color: colors.textMuted }]}>{subtitle}</Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
 // ─── Arc Progress ─────────────────────────────────────────────────────────────
 
 const ARC_CX = 104;
@@ -1232,6 +1268,11 @@ export default function ContractDetailScreen() {
           </Pressable>
 
         </View>
+
+        {/* Service row */}
+        {!!contract.servico?.nome && (
+          <ServiceRow servico={contract.servico} colors={colors} />
+        )}
 
         {/* Location row */}
         {!!contract.location && (
