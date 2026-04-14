@@ -37,6 +37,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 |---|---|---|
 | `EXPO_PUBLIC_SUPABASE_URL` | Env var (shared) | Supabase project URL |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Secret | Supabase anonymous/public key |
+| `EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase service role key (do not expose to clients) |
 | `SUPABASE_ACCESS_TOKEN` | Secret | Supabase personal access token (for MCP server) |
 | `EXPO_PUBLIC_EAS_PROJECT_ID` | Env var (shared) | EAS project ID (optional) |
 | `PORT` | Env var (shared) | App port (5000) |
@@ -45,7 +46,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 ## Database
 - **Supabase** is used for authentication, realtime subscriptions, and the primary database
 - Migrations are in `supabase/migrations/` and must be applied via the Supabase dashboard or CLI
-- The Replit PostgreSQL database is provisioned but not actively used (Supabase handles all data)
+- The Replit PostgreSQL database is provisioned but Supabase handles all app data
 - Supabase Row Level Security (RLS) policies protect all data at the database level
 
 ## Key Features
@@ -57,7 +58,12 @@ All secrets are stored in Replit Secrets (never hardcoded):
 - Skills, services, and tools catalog
 
 ## Architecture Notes
-- The Supabase client (`artifacts/khrono/lib/supabase.ts`) runs on the mobile client using the public anon key + RLS for security — this is the correct and secure architecture for React Native apps
+- The Supabase client (`artifacts/khrono/lib/supabase.ts`) runs on the mobile client using the public anon key + RLS — this is the correct and secure architecture for React Native apps
 - All sensitive operations are protected by Supabase Row Level Security (RLS) policies defined in `supabase/migrations/`
 - The Express API server (`artifacts/api-server`) handles backend routes and proxies Expo Metro traffic
 - Push notifications are sent via Expo's push notification service
+- The `EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` secret is stored safely in Replit Secrets and is NOT referenced in any app code — it exists for future server-side use only
+
+## Package Management
+- Uses **pnpm** workspaces — always run `pnpm install` from the root to install all dependencies
+- Do NOT use npm or yarn in this project
