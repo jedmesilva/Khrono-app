@@ -68,9 +68,11 @@ const ROLE_THEME = {
 
 function formatHM(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
+  const d = Math.floor(totalSec / 86400);
+  const h = Math.floor((totalSec % 86400) / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
-  if (h > 0) return `${h}h${m > 0 ? `${m}m` : ""}`;
+  if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
+  if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
   return `${m}m`;
 }
 
@@ -83,9 +85,11 @@ function formatTimerDisplay(ms: number): string {
 }
 
 function formatCountdown(s: number): string {
-  const h = Math.floor(s / 3600);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
   const m = Math.floor((s % 3600) / 60);
-  if (h > 0) return `${h}h${m > 0 ? ` ${m}min` : ""}`;
+  if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
+  if (h > 0) return m > 0 ? `${h}h ${m}min` : `${h}h`;
   if (m > 0) return `${m}min`;
   return `${s}s`;
 }

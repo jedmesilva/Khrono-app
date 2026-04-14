@@ -16,17 +16,23 @@ import { formatCurrency } from "@/lib/format";
 
 function formatTime(totalSecs: number): string {
   const abs = Math.abs(Math.floor(totalSecs));
-  const h = Math.floor(abs / 3600).toString().padStart(2, "0");
-  const m = Math.floor((abs % 3600) / 60).toString().padStart(2, "0");
-  const s = (abs % 60).toString().padStart(2, "0");
-  return `${h}:${m}:${s}`;
+  const d = Math.floor(abs / 86400);
+  const h = Math.floor((abs % 86400) / 3600);
+  const m = Math.floor((abs % 3600) / 60);
+  const s = abs % 60;
+  if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
+  if (h > 0) return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  if (m > 0) return `${m}min`;
+  return `${s}s`;
 }
 
 function formatHM(secs: number): string {
   const abs = Math.max(0, Math.floor(secs));
-  const h = Math.floor(abs / 3600);
+  const d = Math.floor(abs / 86400);
+  const h = Math.floor((abs % 86400) / 3600);
   const m = Math.floor((abs % 3600) / 60);
-  if (h > 0) return `${h}h${m > 0 ? `${m}m` : ""}`;
+  if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
+  if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
   return `${m}m`;
 }
 
