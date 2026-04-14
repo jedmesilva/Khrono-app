@@ -15,12 +15,14 @@ import React, {
   useState,
 } from "react";
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import * as ExpoLocation from "expo-location";
 import Svg, { Line, Path, Text as SvgText } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -120,6 +122,115 @@ function getValueLabel(contract: Contract): string {
     return contract.role === "hiring" ? "pago" : "recebido";
   }
   return contract.role === "hiring" ? "a pagar" : "a receber";
+}
+
+// ─── Location Row ─────────────────────────────────────────────────────────────
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(1).replace(".", ",")} km`;
+}
+
+function openMaps(address: string) {
+  const encoded = encodeURIComponent(address);
+  const native =
+    Platform.OS === "ios"
+      ? `maps://0,0?daddr=${encoded}`
+      : `geo:0,0?q=${encoded}`;
+  Linking.canOpenURL(native).then((ok) => {
+    Linking.openURL(ok ? native : `https://maps.google.com/?q=${encoded}`);
+  });
+}
+
+function LocationRow({
+  location,
+  colors,
+}: {
+  location: string;
+  colors: ColorPalette;
+}) {
+  const [distance, setDistance] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
+        if (status !== "granted" || cancelled) return;
+        const [pos, geocoded] = await Promise.all([
+          ExpoLocation.getCurrentPositionAsync({
+            accuracy: ExpoLocation.Accuracy.Balanced,
+          }),
+          ExpoLocation.geocodeAsync(location),
+        ]);
+        if (cancelled || !geocoded.length) return;
+        const km = haversineKm(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          geocoded[0].latitude,
+          geocoded[0].longitude
+        );
+        setDistance(formatDistance(km));
+      } catch {
+        // distância é opcional — falha silenciosa
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [location]);
+
+  return (
+    <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+      <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
+        <Feather name="map-pin" size={15} color={colors.textSecondary} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[s.detailTitle, { color: colors.text }]} numberOfLines={2}>
+          {location}
+        </Text>
+        <Text style={[s.detailSub, { color: colors.textMuted }]}>
+          {distance ? `${distance} de você · Endereço do serviço` : "Endereço do serviço"}
+        </Text>
+      </View>
+      <Pressable
+        onPress={() => openMaps(location)}
+        hitSlop={8}
+        style={({ pressed }) => ({
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: colors.accent + "40",
+          backgroundColor: colors.accent + (pressed ? "20" : "10"),
+        })}
+      >
+        <Feather name="navigation" size={11} color={colors.accent} />
+        <Text
+          style={{
+            fontFamily: "DMSans_500Medium",
+            fontSize: 11,
+            color: colors.accent,
+          }}
+        >
+          Navegar
+        </Text>
+      </Pressable>
+    </View>
+  );
 }
 
 // ─── Arc Progress ─────────────────────────────────────────────────────────────
@@ -1150,19 +1261,7 @@ export default function ContractDetailScreen() {
 
         {/* Location row */}
         {!!contract.location && (
-          <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-            <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
-              <Feather name="map-pin" size={15} color={colors.textSecondary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.detailTitle, { color: colors.text }]}>
-                {contract.location}
-              </Text>
-              <Text style={[s.detailSub, { color: colors.textMuted }]}>
-                Endereço do serviço
-              </Text>
-            </View>
-          </View>
+          <LocationRow location={contract.location} colors={colors} />
         )}
 
         {/* Scheduled row */}
