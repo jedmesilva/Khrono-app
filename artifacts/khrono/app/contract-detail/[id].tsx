@@ -26,6 +26,7 @@ import * as ExpoLocation from "expo-location";
 import Svg, { Line, Path, Text as SvgText } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppButton } from "@/components/AppButton";
 import { AppDialog } from "@/components/AppDialog";
 import { ReasonSheet } from "@/components/ReasonSheet";
 import {
@@ -817,80 +818,6 @@ function HelpSheetContent({
   );
 }
 
-// ─── Primary CTA ──────────────────────────────────────────────────────────────
-
-function PrimaryButton({
-  label,
-  icon,
-  onPress,
-  variant = "dark",
-  disabled,
-}: {
-  label: string;
-  icon?: React.ComponentProps<typeof Feather>["name"];
-  onPress: () => void;
-  variant?: "dark" | "green" | "red" | "ghost";
-  disabled?: boolean;
-}) {
-  const { colors } = useTheme();
-
-  const bg =
-    variant === "green"   ? colors.btnSuccessBg  :
-    variant === "red"     ? colors.btnDangerBg   :
-    variant === "ghost"   ? "transparent"        :
-                            colors.btnPrimaryBg;
-
-  const bgPressed =
-    variant === "green"   ? colors.btnSuccessPressed :
-    variant === "red"     ? colors.btnDangerPressed  :
-    variant === "ghost"   ? "transparent"            :
-                            colors.btnPrimaryPressed;
-
-  const textColor =
-    variant === "ghost"   ? colors.textMuted          :
-    variant === "dark"    ? colors.btnPrimaryText      :
-                            colors.btnActionText;
-
-  const borderColor =
-    variant === "ghost" ? colors.inputBorder : "transparent";
-
-  const resolvedColor = disabled ? colors.btnDisabledText : textColor;
-
-  return (
-    <Pressable
-      onPress={() => {
-        if (disabled) return;
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        onPress();
-      }}
-      disabled={disabled}
-      style={({ pressed }) => [
-        GlobalStyles.primaryBtn,
-        s.primaryBtn,
-        {
-          backgroundColor: disabled ? colors.btnDisabledBg : pressed ? bgPressed : bg,
-          borderColor,
-          borderWidth: variant === "ghost" ? 1 : 0,
-          opacity: pressed ? 0.9 : 1,
-          transform: [{ scale: pressed ? 0.97 : 1 }],
-        },
-      ]}
-    >
-      {icon && (
-        <Feather name={icon} size={15} color={resolvedColor} />
-      )}
-      <Text
-        style={[
-          s.primaryBtnText,
-          { color: resolvedColor },
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function ContractDetailScreen() {
@@ -1603,14 +1530,14 @@ export default function ContractDetailScreen() {
           {/* Action buttons */}
           {isPending && !isHiring && (
             <View style={{ gap: 10 }}>
-              <PrimaryButton
+              <AppButton
                 label="aceitar contrato"
                 icon="check"
                 onPress={handleAccept}
                 variant="green"
                 disabled={loading}
               />
-              <PrimaryButton
+              <AppButton
                 label="recusar contrato"
                 icon="x"
                 onPress={handleReject}
@@ -1620,25 +1547,25 @@ export default function ContractDetailScreen() {
             </View>
           )}
           {isAccepted && !isHiring && (
-            <PrimaryButton
+            <AppButton
               label="iniciar contrato"
               icon="play"
               onPress={handleBegin}
-              variant="dark"
+              variant="primary"
               disabled={loading}
             />
           )}
           {isRunning && (
-            <PrimaryButton
+            <AppButton
               label="encerrar contrato"
               icon="square"
               onPress={() => setReasonSheetMode("end")}
-              variant="dark"
+              variant="primary"
               disabled={loading}
             />
           )}
           {isPendingEnd && iAmConfirmer && (
-            <PrimaryButton
+            <AppButton
               label="confirmar encerramento"
               icon="check"
               onPress={handleConfirmEnd}
@@ -1647,7 +1574,7 @@ export default function ContractDetailScreen() {
             />
           )}
           {isPendingCancel && iAmConfirmer && (
-            <PrimaryButton
+            <AppButton
               label="confirmar cancelamento"
               icon="check"
               onPress={() => setConfirmCancelar(true)}
@@ -1970,15 +1897,6 @@ const s = StyleSheet.create({
     fontFamily: "DMSans_600SemiBold",
     fontSize: 13,
     letterSpacing: 0.2,
-  },
-  primaryBtn: {
-    borderRadius: 14,
-    paddingVertical: 16,
-  },
-  primaryBtnText: {
-    fontFamily: "DMSans_600SemiBold",
-    fontSize: 15,
-    letterSpacing: 0.3,
   },
   helpLink: {
     fontFamily: "DMSans_400Regular",
