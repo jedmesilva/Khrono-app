@@ -179,11 +179,6 @@ export default function EntradaScreen() {
           <Text style={[styles.sheetTitle, { color: colors.text }]}>
             {isEmail ? "Qual é o seu e-mail?" : "Qual é o seu telefone?"}
           </Text>
-          <Text style={[styles.sheetSub, { color: colors.textSecondary }]}>
-            {isEmail
-              ? "Se já tiver conta, pedimos a senha. Se não, criamos uma."
-              : "Se já tiver conta, pedimos a senha. Se não, criamos uma."}
-          </Text>
 
           <View style={[styles.inputWrap, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }, displayValue.length > 0 && styles.inputWrapActive]}>
             <View style={styles.inputIconWrap}>
@@ -288,14 +283,8 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontFamily: "Sora_700Bold",
     fontSize: 22,
-    marginBottom: 6,
+    marginBottom: 20,
     letterSpacing: -0.5,
-  },
-  sheetSub: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 12,
-    marginBottom: 24,
-    lineHeight: 18,
   },
   inputWrap: {
     flexDirection: "row",
