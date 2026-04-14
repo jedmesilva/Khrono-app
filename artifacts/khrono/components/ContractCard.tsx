@@ -240,7 +240,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isAccepted = contract.status === "accepted";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = !!contract.scheduledFor && !isActive;
+  const isScheduled = !!contract.scheduledFor && !isActive && !isPending;
 
   const [now, setNow] = useState(Date.now());
 
