@@ -1,0 +1,1 @@
+ALTER TABLE contracts ADD COLUMN IF NOT EXISTS distance_km NUMERIC(6,2);

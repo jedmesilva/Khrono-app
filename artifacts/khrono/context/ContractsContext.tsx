@@ -179,7 +179,7 @@ function mapDbToContract(c: any, userId: string): Contract {
       skill: c.service?.skill ?? c.service?.nome ?? "",
       nota: pp?.nota ? Number(pp.nota) : undefined,
       avaliacoes: pp?.avaliacoes ?? undefined,
-      distancia: 1.5,
+      distancia: c.distance_km != null ? Number(c.distance_km) : undefined,
       profileId: isHiring ? c.hired_id : c.contractor_id,
       totalContracts: pp?.total_contracts ?? undefined,
       totalServices: 1,
@@ -441,6 +441,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           started_at:
             initialStatus === "active" ? new Date().toISOString() : null,
           location: contractData.location ?? null,
+          distance_km: contractData.person.distancia ?? null,
         })
         .select()
         .single();

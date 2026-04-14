@@ -164,6 +164,9 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           <View style={styles.locationRow}>
             <Feather name="map-pin" size={10} color="#C4BFB6" />
             <Text style={styles.locationText} numberOfLines={1}>{contract.location}</Text>
+            {contract.person.distancia != null && (
+              <Text style={styles.locationDistText}>{contract.person.distancia} km</Text>
+            )}
           </View>
         )}
 
@@ -310,6 +313,9 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <View style={styles.locationRow}>
             <Feather name="map-pin" size={10} color="#C4BFB6" />
             <Text style={styles.locationText} numberOfLines={1}>{contract.location}</Text>
+            {contract.person.distancia != null && (
+              <Text style={styles.locationDistText}>{contract.person.distancia} km</Text>
+            )}
           </View>
         )}
 
@@ -515,6 +521,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#C4BFB6",
     flex: 1,
+  },
+  locationDistText: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 11,
+    color: "#B8B4AC",
+    flexShrink: 0,
   },
 
   // elapsed
