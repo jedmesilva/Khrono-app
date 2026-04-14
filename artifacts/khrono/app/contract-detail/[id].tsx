@@ -1541,7 +1541,7 @@ export default function ContractDetailScreen() {
                 label="recusar contrato"
                 icon="x"
                 onPress={handleReject}
-                variant="red"
+                variant="ghost-red"
                 disabled={loading}
               />
             </View>

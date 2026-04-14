@@ -6,7 +6,10 @@ import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 import { GlobalStyles } from "@/constants/globalStyles";
 import { useTheme } from "@/context/ThemeContext";
 
-export type AppButtonVariant = "primary" | "green" | "red" | "ghost";
+export type AppButtonVariant = "primary" | "green" | "red" | "ghost" | "ghost-red";
+
+const DANGER_COLOR = "#e05050";
+const DANGER_PRESSED = "#c04040";
 
 type Props = {
   label: string;
@@ -28,23 +31,34 @@ export function AppButton({
   const { colors } = useTheme();
 
   const bg =
-    variant === "green" ? colors.btnSuccessBg :
-    variant === "red"   ? colors.btnDangerBg  :
-    variant === "ghost" ? "transparent"       :
-                          colors.btnPrimaryBg;
+    variant === "green"     ? colors.btnSuccessBg :
+    variant === "red"       ? colors.btnDangerBg  :
+    variant === "ghost-red" ? "transparent"       :
+    variant === "ghost"     ? "transparent"       :
+                              colors.btnPrimaryBg;
 
   const bgPressed =
-    variant === "green" ? colors.btnSuccessPressed :
-    variant === "red"   ? colors.btnDangerPressed  :
-    variant === "ghost" ? "transparent"            :
-                          colors.btnPrimaryPressed;
+    variant === "green"     ? colors.btnSuccessPressed  :
+    variant === "red"       ? colors.btnDangerPressed   :
+    variant === "ghost-red" ? DANGER_COLOR + "12"       :
+    variant === "ghost"     ? "transparent"             :
+                              colors.btnPrimaryPressed;
 
   const textColor =
-    variant === "ghost"   ? colors.textMuted     :
-    variant === "primary" ? colors.btnPrimaryText :
-                            colors.btnActionText;
+    variant === "ghost-red" ? DANGER_COLOR           :
+    variant === "ghost"     ? colors.textMuted        :
+    variant === "primary"   ? colors.btnPrimaryText   :
+                              colors.btnActionText;
 
   const resolvedColor = disabled ? colors.btnDisabledText : textColor;
+
+  const borderColor =
+    variant === "ghost-red" ? DANGER_COLOR + "60" :
+    variant === "ghost"     ? colors.inputBorder   :
+                              "transparent";
+
+  const borderWidth =
+    variant === "ghost-red" || variant === "ghost" ? 1 : 0;
 
   return (
     <Pressable
@@ -58,8 +72,8 @@ export function AppButton({
         GlobalStyles.primaryBtn,
         {
           backgroundColor: disabled ? colors.btnDisabledBg : pressed ? bgPressed : bg,
-          borderColor: variant === "ghost" ? colors.inputBorder : "transparent",
-          borderWidth: variant === "ghost" ? 1 : 0,
+          borderColor,
+          borderWidth,
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.97 : 1 }],
         },
