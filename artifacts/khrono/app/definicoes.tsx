@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserSettings } from "@/context/UserSettingsContext";
 
@@ -122,20 +123,12 @@ export default function DefinicoesScreen() {
   );
 
   return (
-    <View style={[staticStyles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
+    <View style={[staticStyles.container, { backgroundColor: colors.background, paddingTop: topPadding }]}>
+      <ScreenHeader title="Definições" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[staticStyles.content, { paddingBottom: Math.max(insets.bottom + 32, 48) }]}
       >
-        {/* Header */}
-        <View style={staticStyles.headerRow}>
-          <Pressable style={staticStyles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color={colors.accent} />
-          </Pressable>
-          <Text style={[staticStyles.screenLabel, { color: colors.textMuted }]}>
-            definições
-          </Text>
-        </View>
 
         {/* Notificações */}
         <SectionHeader title="NOTIFICAÇÕES" colors={colors} />
@@ -264,8 +257,8 @@ export default function DefinicoesScreen() {
         {/* Sobre */}
         <SectionHeader title="SOBRE" colors={colors} />
         <View style={[sectionStyle, staticStyles.aboutSection]}>
-          <View style={staticStyles.aboutLogoWrap}>
-            <Text style={staticStyles.aboutLogo}>K</Text>
+          <View style={[staticStyles.aboutLogoWrap, { backgroundColor: colors.accent + "15", borderColor: colors.accent + "30" }]}>
+            <Text style={[staticStyles.aboutLogo, { color: colors.accent }]}>K</Text>
           </View>
           <Text style={[staticStyles.aboutName, { color: colors.text }]}>Khrono</Text>
           <Text style={[staticStyles.aboutVersion, { color: colors.textDim }]}>Versão 1.0.0</Text>

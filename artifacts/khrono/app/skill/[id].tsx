@@ -1,9 +1,9 @@
-import { Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { useTheme } from "@/context/ThemeContext";
 
 export default function SkillDetailScreen() {
@@ -12,17 +12,14 @@ export default function SkillDetailScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 20, backgroundColor: colors.background }]}>
-      <Pressable style={styles.back} onPress={() => router.back()}>
-        <Feather name="arrow-left" size={18} color={"#e06030"} />
-      </Pressable>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <ScreenHeader title="Skill" />
       <Text style={[styles.title, { color: colors.text }]}>Skill {id}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  back: { marginBottom: 20 },
-  title: { fontFamily: "Sora_700Bold", fontSize: 20 },
+  container: { flex: 1 },
+  title: { fontFamily: "Sora_600SemiBold", fontSize: 20, padding: 20 },
 });

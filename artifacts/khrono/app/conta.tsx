@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { Toast, useToast } from "@/components/Toast";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
@@ -254,13 +255,7 @@ export default function ContaScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#e06030" />
-          </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Minha conta</Text>
-          <View style={{ width: 26 }} />
-        </View>
+        <ScreenHeader title="Minha conta" />
 
         {/* Avatar */}
         <View style={styles.avatarSection}>
@@ -268,7 +263,7 @@ export default function ContaScreen() {
             {pendingImage || profileImage ? (
               <Image source={{ uri: pendingImage ?? profileImage! }} style={styles.avatarImage} />
             ) : (
-              <View style={[styles.avatar, { backgroundColor: colors.avatarBg, borderColor: "#e0603030" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.avatarBg, borderColor: colors.accent + "30" }]}>
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
             )}

@@ -13,20 +13,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HistoryCard } from "@/components/HistoryCard";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { StatsBar } from "@/components/StatsBar";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
-import { GlobalStyles } from "@/constants/globalStyles";
+import { formatCurrency } from "@/lib/format";
+
+const GREEN = "#18a06b";
 
 type Filter = "all" | "hiring" | "hired";
-
-function formatBRL(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  });
-}
 
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
@@ -53,22 +48,16 @@ export default function HistoryScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={GlobalStyles.backButton} hitSlop={12}>
-          <Feather name="arrow-left" size={16} color={colors.iconBack} />
-        </Pressable>
-        <Text style={[styles.title, { color: colors.text }]}>Histórico</Text>
-      </View>
+      <ScreenHeader title="Histórico" />
 
       {/* Stats */}
       {history.length > 0 && (
         <StatsBar
           style={styles.statsRow}
           items={[
-            { label: "PAGO", value: formatBRL(totalPaid), color: "#e06030" },
+            { label: "PAGO", value: formatCurrency(totalPaid), color: colors.accent },
             { label: "CONTRATOS", value: history.length, align: "center" },
-            { label: "RECEBIDO", value: formatBRL(totalReceived), color: "#18a06b", align: "flex-end" },
+            { label: "RECEBIDO", value: formatCurrency(totalReceived), color: GREEN, align: "flex-end" },
           ]}
         />
       )}
@@ -81,7 +70,7 @@ export default function HistoryScreen() {
             style={[
               styles.filterBtn,
               { borderColor: colors.cardBorder, backgroundColor: colors.card },
-              filter === f && styles.filterBtnActive,
+              filter === f && { borderColor: colors.accent, backgroundColor: colors.accent + "15" },
             ]}
             onPress={() => setFilter(f)}
           >
@@ -89,7 +78,7 @@ export default function HistoryScreen() {
               style={[
                 styles.filterText,
                 { color: colors.textMuted },
-                filter === f && styles.filterTextActive,
+                filter === f && { color: colors.accent },
               ]}
             >
               {f === "all" ? "Todos" : f === "hiring" ? "Contratei" : "Fui contratado"}
@@ -98,10 +87,10 @@ export default function HistoryScreen() {
         ))}
       </View>
 
-      {/* Loading */}
+      {/* Content */}
       {isLoading ? (
         <View style={styles.empty}>
-          <ActivityIndicator color="#e06030" size="large" />
+          <ActivityIndicator color={colors.accent} size="large" />
           <Text style={[styles.emptyText, { color: colors.textDim }]}>carregando histórico...</Text>
         </View>
       ) : filtered.length === 0 ? (
@@ -135,18 +124,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  title: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 16,
-    letterSpacing: -0.3,
-  },
   statsRow: {
     marginHorizontal: 20,
     marginBottom: 20,
@@ -163,17 +140,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  filterBtnActive: {
-    borderColor: "#e06030",
-    backgroundColor: "#e0603015",
-  },
   filterText: {
     fontFamily: "DMSans_400Regular",
     fontSize: 10,
     letterSpacing: 0.3,
-  },
-  filterTextActive: {
-    color: "#e06030",
   },
   list: {
     paddingHorizontal: 20,

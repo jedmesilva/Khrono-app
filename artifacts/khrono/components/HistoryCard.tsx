@@ -6,6 +6,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
 import { formatCurrency } from "@/lib/format";
 
+const GREEN = "#18a06b";
+
 type Props = {
   contract: Contract;
   onPress?: () => void;
@@ -24,7 +26,7 @@ function formatDuration(startedAt: number, endedAt?: number) {
 export function HistoryCard({ contract, onPress }: Props) {
   const { colors } = useTheme();
   const isHiring = contract.role === "hiring";
-  const accentColor = isHiring ? "#e06030" : "#18a06b";
+  const accentColor = isHiring ? colors.accent : GREEN;
 
   return (
     <Pressable
@@ -49,7 +51,7 @@ export function HistoryCard({ contract, onPress }: Props) {
         <Text style={[styles.amount, { color: colors.textSecondary }]}>
           {formatCurrency(contract.totalAmount ?? 0)}
         </Text>
-        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : "#18a06b99" }]}>
+        <Text style={[styles.roleTag, { color: isHiring ? colors.textMuted : GREEN + "99" }]}>
           {isHiring ? "pago" : "recebido"}
         </Text>
       </View>
