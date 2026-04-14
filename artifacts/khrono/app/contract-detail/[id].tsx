@@ -821,11 +821,13 @@ function HelpSheetContent({
 
 function PrimaryButton({
   label,
+  icon,
   onPress,
   variant = "dark",
   disabled,
 }: {
   label: string;
+  icon?: React.ComponentProps<typeof Feather>["name"];
   onPress: () => void;
   variant?: "dark" | "green" | "red" | "ghost";
   disabled?: boolean;
@@ -852,6 +854,8 @@ function PrimaryButton({
   const borderColor =
     variant === "ghost" ? colors.inputBorder : "transparent";
 
+  const resolvedColor = disabled ? colors.btnDisabledText : textColor;
+
   return (
     <Pressable
       onPress={() => {
@@ -868,13 +872,20 @@ function PrimaryButton({
           borderWidth: variant === "ghost" ? 1 : 0,
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.97 : 1 }],
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
         },
       ]}
     >
+      {icon && (
+        <Feather name={icon} size={15} color={resolvedColor} />
+      )}
       <Text
         style={[
           s.primaryBtnText,
-          { color: disabled ? colors.btnDisabledText : textColor },
+          { color: resolvedColor },
         ]}
       >
         {label}
@@ -1596,13 +1607,15 @@ export default function ContractDetailScreen() {
           {isPending && !isHiring && (
             <View style={{ gap: 10 }}>
               <PrimaryButton
-                label="✓  aceitar contrato"
+                label="aceitar contrato"
+                icon="check"
                 onPress={handleAccept}
                 variant="green"
                 disabled={loading}
               />
               <PrimaryButton
-                label="✕  recusar contrato"
+                label="recusar contrato"
+                icon="x"
                 onPress={handleReject}
                 variant="red"
                 disabled={loading}
@@ -1611,7 +1624,8 @@ export default function ContractDetailScreen() {
           )}
           {isAccepted && !isHiring && (
             <PrimaryButton
-              label="▶  iniciar contrato"
+              label="iniciar contrato"
+              icon="play"
               onPress={handleBegin}
               variant="dark"
               disabled={loading}
@@ -1619,7 +1633,8 @@ export default function ContractDetailScreen() {
           )}
           {isRunning && (
             <PrimaryButton
-              label="■  encerrar contrato"
+              label="encerrar contrato"
+              icon="square"
               onPress={() => setReasonSheetMode("end")}
               variant="dark"
               disabled={loading}
@@ -1627,7 +1642,8 @@ export default function ContractDetailScreen() {
           )}
           {isPendingEnd && iAmConfirmer && (
             <PrimaryButton
-              label="✓  confirmar encerramento"
+              label="confirmar encerramento"
+              icon="check"
               onPress={handleConfirmEnd}
               variant="green"
               disabled={loading}
@@ -1635,7 +1651,8 @@ export default function ContractDetailScreen() {
           )}
           {isPendingCancel && iAmConfirmer && (
             <PrimaryButton
-              label="✓  confirmar cancelamento"
+              label="confirmar cancelamento"
+              icon="check"
               onPress={() => setConfirmCancelar(true)}
               variant="red"
               disabled={loading}
