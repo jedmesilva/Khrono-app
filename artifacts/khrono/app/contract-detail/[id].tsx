@@ -1534,7 +1534,7 @@ export default function ContractDetailScreen() {
                 label="aceitar contrato"
                 icon="check"
                 onPress={handleAccept}
-                variant="green"
+                variant="accent"
                 disabled={loading}
               />
               <AppButton
@@ -1551,7 +1551,7 @@ export default function ContractDetailScreen() {
               label="iniciar contrato"
               icon="play"
               onPress={handleBegin}
-              variant="primary"
+              variant="accent"
               disabled={loading}
             />
           )}

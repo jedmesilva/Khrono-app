@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 import { GlobalStyles } from "@/constants/globalStyles";
 import { useTheme } from "@/context/ThemeContext";
 
-export type AppButtonVariant = "primary" | "green" | "red" | "ghost" | "ghost-red";
+export type AppButtonVariant = "primary" | "accent" | "green" | "red" | "ghost" | "ghost-red";
 
 const DANGER_COLOR = "#e05050";
 const DANGER_PRESSED = "#c04040";
@@ -31,13 +31,15 @@ export function AppButton({
   const { colors } = useTheme();
 
   const bg =
-    variant === "green"     ? colors.btnSuccessBg :
-    variant === "red"       ? colors.btnDangerBg  :
-    variant === "ghost-red" ? "transparent"       :
-    variant === "ghost"     ? "transparent"       :
+    variant === "accent"    ? colors.accent        :
+    variant === "green"     ? colors.btnSuccessBg  :
+    variant === "red"       ? colors.btnDangerBg   :
+    variant === "ghost-red" ? "transparent"        :
+    variant === "ghost"     ? "transparent"        :
                               colors.btnPrimaryBg;
 
   const bgPressed =
+    variant === "accent"    ? colors.accentPressed      :
     variant === "green"     ? colors.btnSuccessPressed  :
     variant === "red"       ? colors.btnDangerPressed   :
     variant === "ghost-red" ? DANGER_COLOR + "12"       :

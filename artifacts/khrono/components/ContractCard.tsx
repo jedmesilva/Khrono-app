@@ -384,7 +384,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { backgroundColor: pressed ? colors.btnSuccessPressed : colors.btnSuccessBg },
+              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
               pressed && styles.actionBtnPressed,
             ]}
             onPress={() => {
@@ -412,7 +412,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { backgroundColor: pressed ? colors.btnPrimaryPressed : colors.btnPrimaryBg },
+              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
               pressed && styles.actionBtnPressed,
             ]}
             onPress={() => {
@@ -420,8 +420,8 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
               onBegin?.(contract.id);
             }}
           >
-            <Feather name="play" size={14} color={colors.btnPrimaryText} />
-            <Text style={[styles.actionBtnText, { color: colors.btnPrimaryText }]}>Iniciar contrato</Text>
+            <Feather name="play" size={14} color={colors.btnActionText} />
+            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>Iniciar contrato</Text>
           </Pressable>
         )}
 
