@@ -1014,7 +1014,7 @@ export default function ContractDetailScreen() {
     ? now - contract.startedAt
     : isEnded && contract.endedAt && contract.startedAt > 0
     ? contract.endedAt - contract.startedAt
-    : isFixed && contract.duracaoTotal
+    : isFixed && contract.duracaoTotal && !isPending && !isAccepted
     ? contract.duracaoTotal
     : 0;
 
@@ -1026,7 +1026,7 @@ export default function ContractDetailScreen() {
   const valueLabel = getValueLabel(contract);
 
   const showTimer =
-    isRunning || isPaused || isPendingEnd || isEnded || isScheduled;
+    isRunning || isPaused || isPendingEnd || isEnded || isScheduled || isPending || isAccepted;
   const showScheduledRow =
     (isAccepted || isScheduled) && !!contract.scheduledFor;
 
