@@ -33,7 +33,7 @@ import {
 } from "@/context/ContractsContext";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { GlobalStyles } from "@/constants/globalStyles";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatRate } from "@/lib/format";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -889,7 +889,7 @@ export default function ContractDetailScreen() {
     contract.status === "cancelled" || contract.status === "rejected";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = isActive && !!contract.agendado;
+  const isScheduled = isActive && !!contract.agendado && contract.startedAt === 0;
 
   const iAmRequester =
     (isPendingEnd && contract.endRequestedBy !== contract.person.profileId) ||
@@ -1116,7 +1116,7 @@ export default function ContractDetailScreen() {
             <Text style={[s.detailSub, { color: colors.textMuted }]}>
               {isFixed && totalMs > 0
                 ? `${formatCurrency(amount)} · ${formatHM(totalMs)}`
-                : `R$ ${contract.ratePerHour.toLocaleString("pt-BR")}/h`}
+                : formatRate(contract.ratePerHour)}
             </Text>
           </View>
           <View

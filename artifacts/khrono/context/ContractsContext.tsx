@@ -76,7 +76,6 @@ export type Contract = {
 export function isContractRunning(contract: Contract): boolean {
   return (
     contract.status === "active" &&
-    !contract.agendado &&
     contract.startedAt > 0
   );
 }
