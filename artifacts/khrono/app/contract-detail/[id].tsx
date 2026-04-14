@@ -1028,7 +1028,9 @@ export default function ContractDetailScreen() {
   const showTimer =
     isRunning || isPaused || isPendingEnd || isEnded || isScheduled || isPending || isAccepted;
   const showScheduledRow =
-    (isAccepted || isScheduled) && !!contract.scheduledFor;
+    (isPending || isAccepted || isScheduled) && !!contract.scheduledFor;
+  const showImmediateRow =
+    (isPending || isAccepted) && !contract.scheduledFor && !isRunning;
 
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
@@ -1225,6 +1227,34 @@ export default function ContractDetailScreen() {
             isHiring={isHiring}
             colors={colors}
           />
+        )}
+
+        {/* Immediate start row */}
+        {showImmediateRow && (
+          <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+            <View
+              style={[
+                s.iconWrap,
+                { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
+              ]}
+            >
+              <Feather name="zap" size={15} color={colors.textMuted} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.detailTitle, { color: colors.text }]}>
+                Início imediato
+              </Text>
+              <Text style={[s.detailSub, { color: colors.textMuted }]}>
+                {isHiring
+                  ? isAccepted
+                    ? "O profissional pode iniciar a qualquer momento"
+                    : "O profissional pode iniciar assim que aceitar"
+                  : isAccepted
+                    ? "Toque em iniciar contrato para começar"
+                    : "Você poderá iniciar assim que aceitar"}
+              </Text>
+            </View>
+          </View>
         )}
 
         {/* Time hero */}
