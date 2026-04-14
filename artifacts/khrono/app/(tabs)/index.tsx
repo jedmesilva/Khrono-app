@@ -102,6 +102,7 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const isWeb = Platform.OS === "web";
 
+  const isUserReady = !!user?.name;
   const displayName = user?.firstName || user?.name || "você";
   const avatarColor = user?.name ? getAvatarColor(user.name) : "#e06030";
   const initials = user?.name ? getInitials(user.name) : "";
@@ -182,22 +183,32 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Pressable
-            style={styles.greetingRow}
-            onPress={() => {
-              Haptics.selectionAsync();
-              setMenuOpen(true);
-            }}
-            hitSlop={8}
-          >
-            <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
-              <Text style={styles.avatarText}>{initials}</Text>
+          {!isUserReady ? (
+            <View style={styles.greetingRow}>
+              <SkeletonBlock width={38} height={38} borderRadius={19} />
+              <View style={{ gap: 6 }}>
+                <SkeletonBlock width={36} height={10} borderRadius={5} />
+                <SkeletonBlock width={110} height={18} borderRadius={6} />
+              </View>
             </View>
-            <View style={styles.greeting}>
-              <Text style={[styles.greetingHi, { color: colors.textDim }]}>Olá,</Text>
-              <Text style={[styles.greetingName, { color: colors.text }]}>{displayName}!</Text>
-            </View>
-          </Pressable>
+          ) : (
+            <Pressable
+              style={styles.greetingRow}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setMenuOpen(true);
+              }}
+              hitSlop={8}
+            >
+              <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
+              <View style={styles.greeting}>
+                <Text style={[styles.greetingHi, { color: colors.textDim }]}>Olá,</Text>
+                <Text style={[styles.greetingName, { color: colors.text }]}>{displayName}!</Text>
+              </View>
+            </Pressable>
+          )}
           <Pressable
             onPress={() => {
               Haptics.selectionAsync();
