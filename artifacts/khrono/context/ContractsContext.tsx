@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import * as Haptics from "expo-haptics";
+import { Vibration } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useNotifications } from "@/context/NotificationsContext";
 import { formatCurrency } from "@/lib/format";
@@ -344,9 +344,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
               const now = Date.now();
               if (now - lastNewContractVibratedAt.current > 2000) {
                 lastNewContractVibratedAt.current = now;
-                Haptics.notificationAsync(
-                  Haptics.NotificationFeedbackType.Success
-                ).catch(() => {});
+                Vibration.vibrate([0, 700, 300, 700, 300, 700]);
               }
             }
             await handleChange();
@@ -361,9 +359,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
             const now = Date.now();
             if (now - lastNewContractVibratedAt.current > 2000) {
               lastNewContractVibratedAt.current = now;
-              Haptics.notificationAsync(
-                Haptics.NotificationFeedbackType.Success
-              ).catch(() => {});
+              Vibration.vibrate([0, 700, 300, 700, 300, 700]);
             }
             await handleChange();
           }
