@@ -632,7 +632,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const { error } = await supabase
         .from("contracts")
-        .update({ status: "active", started_at: startedAt })
+        .update({ status: "active", started_at: startedAt, agendado: false })
         .eq("id", id);
 
       if (error) throw new Error(error.message);
