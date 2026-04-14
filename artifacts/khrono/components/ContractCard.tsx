@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
   Pressable,
@@ -120,7 +121,11 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, borderStyle: "dashed" }]}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: colors.card, borderColor: colors.cardBorder, borderStyle: "dashed" },
+        pressed && styles.cardPressed,
+      ]}
     >
       {/* Header */}
       <View style={[styles.header, { backgroundColor: "#F7F5F0" }]}>
@@ -264,7 +269,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.card,
         {
           backgroundColor: colors.card,
@@ -272,6 +277,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
             ? (isPendingEnd ? "#ffaa0040" : "#e0603040")
             : colors.cardBorder,
         },
+        pressed && styles.cardPressed,
       ]}
     >
       {/* Header */}
@@ -370,8 +376,15 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
         {/* Action: accept pending contract */}
         {isPending && !isHiring && (
           <Pressable
-            style={[styles.actionBtn, { backgroundColor: "#e06030" }]}
-            onPress={() => onAccept?.(contract.id)}
+            style={({ pressed }) => [
+              styles.actionBtn,
+              { backgroundColor: pressed ? "#C85428" : "#e06030" },
+              pressed && styles.actionBtnPressed,
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onAccept?.(contract.id);
+            }}
           >
             <Feather name="check" size={14} color="#fff" />
             <Text style={styles.actionBtnText}>Aceitar contrato</Text>
@@ -391,8 +404,15 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
         {/* Begin contract */}
         {isAccepted && (
           <Pressable
-            style={[styles.actionBtn, { backgroundColor: "#e06030" }]}
-            onPress={() => onBegin?.(contract.id)}
+            style={({ pressed }) => [
+              styles.actionBtn,
+              { backgroundColor: pressed ? "#C85428" : "#e06030" },
+              pressed && styles.actionBtnPressed,
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onBegin?.(contract.id);
+            }}
           >
             <Feather name="play" size={14} color="#fff" />
             <Text style={styles.actionBtnText}>Iniciar contrato</Text>
@@ -446,6 +466,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     overflow: "hidden",
+  },
+  cardPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.985 }],
   },
 
   // ── header ────────────────────────────────────────────────────────────────
@@ -602,6 +626,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     marginBottom: 8,
+  },
+  actionBtnPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.97 }],
   },
   actionBtnText: {
     fontFamily: "Sora_600SemiBold",
