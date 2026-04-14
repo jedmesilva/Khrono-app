@@ -181,7 +181,7 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
       </View>
 
       {/* Footer */}
-      <View style={[styles.footer, { borderTopColor: colors.surfaceBorder }]}>
+      <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <Text style={[styles.footerMuted, { color: "#B8B4AC" }]}>Inicia em</Text>
           <Text style={[styles.footerTimer, { color: "#9B9487" }]}>{formatHM(remaining)}</Text>
@@ -390,7 +390,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
       </View>
 
       {/* Footer */}
-      <View style={[styles.footer, { borderTopColor: colors.surfaceBorder }]}>
+      <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <Text style={[styles.footerMuted, { color: t.footerMuted }]}>Iniciado há</Text>
           <Text style={[styles.footerTimer, { color: t.footerTimer }]}>
@@ -577,7 +577,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 13,
-    borderTopWidth: 1,
   },
   footerLeft: {
     flexDirection: "row",
