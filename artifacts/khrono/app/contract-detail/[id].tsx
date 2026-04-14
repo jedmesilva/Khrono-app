@@ -1231,18 +1231,6 @@ export default function ContractDetailScreen() {
             </View>
           </Pressable>
 
-          {/* Body: service name + rate */}
-          <View style={[s.contextBody, { backgroundColor: colors.card }]}>
-            <Text
-              style={[s.contextServiceName, { color: t.bodyMuted }]}
-              numberOfLines={1}
-            >
-              {contract.servico?.nome ?? contract.person.skill ?? "Serviço"}
-            </Text>
-            <Text style={[s.contextServiceRate, { color: t.bodyMuted }]}>
-              R$ {contract.ratePerHour}/h
-            </Text>
-          </View>
         </View>
 
         {/* Location row */}
@@ -1802,24 +1790,6 @@ const s = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 0.6,
     textTransform: "uppercase",
-  },
-  contextBody: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  contextServiceName: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 12,
-    flex: 1,
-  },
-  contextServiceRate: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    flexShrink: 0,
-    marginLeft: 8,
   },
   detailRow: {
     flexDirection: "row",
