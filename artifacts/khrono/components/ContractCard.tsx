@@ -9,40 +9,79 @@ import {
 
 import { useTheme } from "@/context/ThemeContext";
 import { Contract } from "@/context/ContractsContext";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 
-function getValueLabel(contract: Contract): string {
-  const isHiring = contract.role === "hiring";
-  const isTimer = contract.tipo === "timer";
-  const isCash = contract.paymentMethod === "dinheiro";
-  const isCardOrPix =
-    contract.paymentMethod === "cartao" || contract.paymentMethod === "pix";
+// ── helpers ────────────────────────────────────────────────────────────────────
 
-  if (contract.status === "ended") {
-    return isHiring ? "PAGO" : "RECEBIDO";
-  }
-
-  if (
-    contract.status === "pending_signature" ||
-    contract.status === "accepted" ||
-    contract.status === "paused" ||
-    contract.status === "pending_end" ||
-    contract.status === "pending_cancel"
-  ) {
-    return isHiring ? "A PAGAR" : "A RECEBER";
-  }
-
-  if (isHiring) {
-    if (isCash) return "A PAGAR";
-    if (isCardOrPix && isTimer) return "PAGANDO";
-    if (isCardOrPix && !isTimer) return "A PAGAR";
-    return "PAGANDO";
-  } else {
-    if (isCash) return "A RECEBER";
-    if (isCardOrPix) return "RECEBENDO";
-    return "RECEBENDO";
-  }
+function formatTime(totalSecs: number): string {
+  const abs = Math.abs(Math.floor(totalSecs));
+  const h = Math.floor(abs / 3600).toString().padStart(2, "0");
+  const m = Math.floor((abs % 3600) / 60).toString().padStart(2, "0");
+  const s = (abs % 60).toString().padStart(2, "0");
+  return `${h}:${m}:${s}`;
 }
+
+function formatHM(secs: number): string {
+  const abs = Math.max(0, Math.floor(secs));
+  const h = Math.floor(abs / 3600);
+  const m = Math.floor((abs % 3600) / 60);
+  if (h > 0) return `${h}h${m > 0 ? `${m}m` : ""}`;
+  return `${m}m`;
+}
+
+function formatScheduledTime(date: Date): string {
+  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatScheduledDate(date: Date): string {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  if (date.toDateString() === today.toDateString()) return "Hoje";
+  if (date.toDateString() === tomorrow.toDateString()) return "Amanhã";
+  return date.toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short" });
+}
+
+// ── role theme tokens ──────────────────────────────────────────────────────────
+
+const ROLE_THEME = {
+  hiring: {
+    headerBg: "#1E1C19",
+    amountColor: "#F2EFE9",
+    relationColor: "rgba(255,255,255,0.45)",
+    nameColor: "rgba(255,255,255,0.85)",
+    badgeBg: "rgba(255,255,255,0.08)",
+    badgeText: "rgba(255,255,255,0.45)",
+    bodyMuted: "#9B9487",
+    bodyFaint: "#B8B4AC",
+    progressBg: "#3D3B37",
+    progressFg: "#6B6760",
+    ctaColor: "#F2EFE9",
+    footerMuted: "#B8B4AC",
+    footerTimer: "#9B9487",
+    liveColor: "#5A9E6F",
+    arrowColor: "rgba(255,255,255,0.45)",
+  },
+  hired: {
+    headerBg: "#FDF3EE",
+    amountColor: "#C0622A",
+    relationColor: "#9B7060",
+    nameColor: "#2C2A26",
+    badgeBg: "#F4D0BC",
+    badgeText: "#C0622A",
+    bodyMuted: "#9B9487",
+    bodyFaint: "#B8B4AC",
+    progressBg: "#C0622A",
+    progressFg: "#E8956A",
+    ctaColor: "#2C2A26",
+    footerMuted: "#B8B4AC",
+    footerTimer: "#9B9487",
+    liveColor: "#5A9E6F",
+    arrowColor: "#C0622A",
+  },
+};
+
+// ── types ──────────────────────────────────────────────────────────────────────
 
 type Props = {
   contract: Contract;
@@ -52,28 +91,124 @@ type Props = {
   onPress?: () => void;
 };
 
-function formatElapsed(ms: number) {
-  const totalSecs = Math.floor(Math.abs(ms) / 1000);
-  const h = Math.floor(totalSecs / 3600);
-  const m = Math.floor((totalSecs % 3600) / 60);
-  const s = totalSecs % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
+// ── ScheduledContractCard ──────────────────────────────────────────────────────
 
-function formatValue(ms: number, rate: number) {
-  const hours = ms / 1000 / 3600;
-  return formatCurrency(hours * rate);
-}
-
-export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: Props) {
-  const [now, setNow] = useState(Date.now());
+function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPress?: () => void }) {
   const { colors } = useTheme();
-  const isScheduled = !!contract.agendado;
+  const isHiring = contract.role === "hiring";
+  const isTimer = contract.tipo === "timer";
+  const scheduledDate = contract.agendado!;
+  const totalFixedSecs = contract.duracaoTotal ? contract.duracaoTotal / 1000 : null;
+  const scheduledAmount = isTimer && totalFixedSecs
+    ? contract.ratePerHour * (totalFixedSecs / 3600)
+    : null;
+
+  const [remaining, setRemaining] = useState(() =>
+    Math.max(Math.floor((scheduledDate.getTime() - Date.now()) / 1000), 0)
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setRemaining(Math.max(Math.floor((scheduledDate.getTime() - Date.now()) / 1000), 0));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [scheduledDate]);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, borderStyle: "dashed" }]}
+    >
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: "#F7F5F0" }]}>
+        <View style={styles.headerTop}>
+          <Feather name={isHiring ? "arrow-up-right" : "arrow-down-left"} size={13} color="#B8B4AC" />
+          <Text style={[styles.headerRelation, { color: "#B8B4AC" }]}>
+            {isHiring ? (
+              <>{"Você contratou "}<Text style={[styles.headerName, { color: "#6B6760" }]}>{contract.person.name}</Text></>
+            ) : (
+              <><Text style={[styles.headerName, { color: "#6B6760" }]}>{contract.person.name}</Text>{" contratou você"}</>
+            )}
+          </Text>
+        </View>
+        <View style={styles.headerBottom}>
+          {scheduledAmount !== null ? (
+            <Text style={[styles.headerAmount, { color: "#9B9487" }]}>
+              {formatCurrency(scheduledAmount)}
+            </Text>
+          ) : (
+            <View />
+          )}
+          <View style={[styles.durationBadge, { backgroundColor: "#ECEAE3" }]}>
+            <Feather name="clock" size={9} color="#9B9487" />
+            <Text style={[styles.durationBadgeText, { color: "#9B9487" }]}>
+              {isTimer && totalFixedSecs ? formatHM(totalFixedSecs) : "Aberto"}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Body */}
+      <View style={styles.body}>
+        <View style={styles.serviceRow}>
+          <Text style={[styles.serviceName, { color: "#9B9487" }]} numberOfLines={1}>
+            {contract.servico?.nome ?? contract.person.skill ?? "Serviço"}
+          </Text>
+          <Text style={[styles.serviceRate, { color: "#9B9487" }]}>
+            R$ {contract.ratePerHour}/h
+          </Text>
+        </View>
+
+        <View style={styles.scheduledBlock}>
+          <View style={styles.scheduledLabelRow}>
+            <Feather name="calendar" size={10} color="#B8B4AC" />
+            <Text style={styles.scheduledLabel}>Agendado para</Text>
+          </View>
+          <View style={styles.scheduledTimeRow}>
+            <Text style={styles.scheduledTimeText}>
+              {formatScheduledTime(scheduledDate)}
+            </Text>
+            <Text style={styles.scheduledDateText}>
+              {formatScheduledDate(scheduledDate)}
+            </Text>
+          </View>
+          <View style={styles.startsInPill}>
+            <Feather name="clock" size={10} color="#9B9487" />
+            <Text style={styles.startsInLabel}>Inicia em</Text>
+            <Text style={styles.startsInValue}>{formatTime(remaining)}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Footer */}
+      <View style={[styles.footer, { borderTopColor: colors.surfaceBorder }]}>
+        <View style={styles.footerLeft}>
+          <Text style={[styles.footerMuted, { color: "#B8B4AC" }]}>Inicia em</Text>
+          <Text style={[styles.footerTimer, { color: "#9B9487" }]}>{formatHM(remaining)}</Text>
+        </View>
+        <View style={styles.footerCta}>
+          <Text style={[styles.footerCtaText, { color: "#2C2A26" }]}>Ver contrato</Text>
+          <Feather name="chevron-right" size={13} color="#2C2A26" />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+// ── ContractCard (active / pending) ───────────────────────────────────────────
+
+export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
+  const { colors } = useTheme();
+  const isHiring = contract.role === "hiring";
+  const isTimer = contract.tipo === "timer";
   const isActive = contract.status === "active";
   const isPending = contract.status === "pending_signature";
   const isAccepted = contract.status === "accepted";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
+  const isScheduled = !!contract.agendado;
+
+  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
     if (isScheduled || !isActive) return;
@@ -81,26 +216,25 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
     return () => clearInterval(id);
   }, [isScheduled, isActive]);
 
-  const isHiring = contract.role === "hiring";
-  const isTimer = contract.tipo === "timer";
-  const accentColor = colors.accent;
-  const elapsed = isScheduled || !isActive ? 0 : now - contract.startedAt;
+  if (isScheduled) {
+    return <ScheduledContractCard contract={contract} onPress={onPress} />;
+  }
 
-  const restante =
-    isTimer && contract.duracaoTotal
-      ? Math.max(0, contract.duracaoTotal - elapsed)
-      : null;
-  const progresso =
-    isTimer && contract.duracaoTotal
-      ? Math.min(1, elapsed / contract.duracaoTotal)
-      : null;
-  const quaseAcabando =
-    !isScheduled && isTimer && restante !== null && restante < 1000 * 60 * 10;
-  const alertColor = "#ff4444";
-  const displayColor = quaseAcabando ? alertColor : accentColor;
-
+  const t = ROLE_THEME[isHiring ? "hiring" : "hired"];
+  const elapsedMs = isActive ? now - contract.startedAt : 0;
+  const elapsedSecs = elapsedMs / 1000;
+  const totalFixedSecs = contract.duracaoTotal ? contract.duracaoTotal / 1000 : null;
+  const progress = totalFixedSecs ? Math.min(elapsedSecs / totalFixedSecs, 1) : null;
+  const isOverdue = isTimer && totalFixedSecs !== null && elapsedSecs > totalFixedSecs;
+  const remainingSecs = totalFixedSecs !== null ? Math.max(totalFixedSecs - elapsedSecs, 0) : null;
   const isPendingState = isPendingEnd || isPendingCancel;
-  const pendingColor = isPendingEnd ? "#ffaa00" : "#e06030";
+
+  const amount = isTimer && totalFixedSecs
+    ? contract.ratePerHour * (totalFixedSecs / 3600)
+    : (elapsedSecs / 3600) * contract.ratePerHour;
+
+  const showAmount = !isPending && !isAccepted && !isPendingState;
+  const showElapsed = !isPending && !isAccepted && !isPendingState;
 
   return (
     <Pressable
@@ -110,234 +244,164 @@ export function ContractCard({ contract, onStop, onAccept, onBegin, onPress }: P
         {
           backgroundColor: colors.card,
           borderColor: isPendingState
-            ? pendingColor + "40"
+            ? (isPendingEnd ? "#ffaa0040" : "#e0603040")
             : colors.cardBorder,
-          borderLeftColor: isPendingState ? pendingColor : displayColor,
-          borderLeftWidth: 3,
         },
       ]}
     >
-      {/* Badges row */}
-      <View style={styles.badgeRow}>
-        <View
-          style={[
-            styles.roleBadge,
-            {
-              backgroundColor: accentColor + "12",
-              borderColor: accentColor + "30",
-            },
-          ]}
-        >
-          {isScheduled ? (
-            <Feather name="calendar" size={8} color={accentColor} />
-          ) : (
-            <View
-              style={[
-                styles.statusDot,
-                {
-                  backgroundColor: isPendingState
-                    ? pendingColor
-                    : displayColor,
-                },
-              ]}
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: t.headerBg }]}>
+        <View style={styles.headerTop}>
+          <Feather
+            name={isHiring ? "arrow-up-right" : "arrow-down-left"}
+            size={13}
+            color={t.arrowColor}
+          />
+          <Text style={[styles.headerRelation, { color: t.relationColor }]}>
+            {isHiring ? (
+              <>{"Você contratou "}<Text style={[styles.headerName, { color: t.nameColor }]}>{contract.person.name}</Text></>
+            ) : (
+              <><Text style={[styles.headerName, { color: t.nameColor }]}>{contract.person.name}</Text>{" contratou você"}</>
+            )}
+          </Text>
+        </View>
+        <View style={styles.headerBottom}>
+          <Text style={[styles.headerAmount, { color: isOverdue ? "#E8956A" : t.amountColor }]}>
+            {formatCurrency(showAmount ? amount : 0)}
+          </Text>
+          <View style={[styles.durationBadge, { backgroundColor: t.badgeBg }]}>
+            <Feather
+              name={isTimer ? "clock" : "activity"}
+              size={9}
+              color={t.badgeText}
             />
-          )}
-          <Text style={[styles.roleText, { color: accentColor }]}>
-            {isHiring ? "VOCÊ CONTRATOU" : "VOCÊ FOI CONTRATADO"}
-          </Text>
-        </View>
-        <View
-          style={[
-            styles.tipoBadge,
-            {
-              borderColor: colors.text + "10",
-              backgroundColor: colors.text + "05",
-            },
-          ]}
-        >
-          <Text style={[styles.tipoText, { color: colors.textSecondary }]}>
-            {isTimer ? "TEMPO DEFINIDO" : "EM ABERTO"}
-          </Text>
-        </View>
-      </View>
-
-      {/* Person */}
-      <View style={styles.personRow}>
-        <View
-          style={[
-            styles.avatar,
-            { backgroundColor: accentColor + "15", borderColor: accentColor + "40" },
-          ]}
-        >
-          <Text style={[styles.avatarText, { color: accentColor }]}>
-            {contract.person.initials}
-          </Text>
-        </View>
-        <View style={styles.personInfo}>
-          <Text style={[styles.personName, { color: colors.text }]}>
-            {contract.person.name}
-          </Text>
-          {(contract.servico?.nome ?? contract.person.skill) ? (
-            <Text style={[styles.servicoLabel, { color: colors.textSecondary }]}>
-              {contract.servico?.nome ?? contract.person.skill}
+            <Text style={[styles.durationBadgeText, { color: t.badgeText }]}>
+              {isTimer && totalFixedSecs ? formatHM(totalFixedSecs) : "Aberto"}
             </Text>
-          ) : null}
+          </View>
         </View>
       </View>
 
-      {/* Timer / cronômetro */}
-      {isTimer && contract.duracaoTotal ? (
-        <View>
-          <View style={[styles.progressTrack, { backgroundColor: colors.surfaceBorder }]}>
-            <View
-              style={[
+      {/* Body */}
+      <View style={styles.body}>
+        {/* Service + rate */}
+        <View style={styles.serviceRow}>
+          <Text style={[styles.serviceName, { color: t.bodyMuted }]} numberOfLines={1}>
+            {contract.servico?.nome ?? contract.person.skill ?? "Serviço"}
+          </Text>
+          <Text style={[styles.serviceRate, { color: t.bodyMuted }]}>
+            R$ {contract.ratePerHour}/h
+          </Text>
+        </View>
+
+        {/* Elapsed timer */}
+        <View style={styles.elapsedBlock}>
+          <View style={styles.elapsedLabelRow}>
+            <View style={[styles.liveDot, { backgroundColor: isOverdue ? "#C0622A" : t.liveColor }]} />
+            <Text style={[styles.elapsedLabel, { color: t.bodyFaint }]}>Tempo decorrido</Text>
+          </View>
+          <Text style={[styles.elapsedTime, { color: colors.text }]}>
+            {showElapsed ? formatTime(elapsedSecs) : "00:00:00"}
+          </Text>
+        </View>
+
+        {/* Progress bar (fixed-duration contracts) */}
+        {isTimer && totalFixedSecs && (
+          <View style={styles.progressBlock}>
+            <View style={styles.progressLabels}>
+              <Text style={[styles.progressLabel, { color: t.bodyFaint }]}>Progresso</Text>
+              <Text style={[
+                styles.progressRemaining,
+                {
+                  color: isOverdue ? "#C0622A" : t.bodyMuted,
+                  fontFamily: isOverdue ? "DMSans_600SemiBold" : "DMSans_400Regular",
+                },
+              ]}>
+                {isOverdue ? "tempo esgotado" : `${formatHM(remainingSecs ?? 0)} restante`}
+              </Text>
+            </View>
+            <View style={[styles.progressTrack, { backgroundColor: colors.surfaceBorder }]}>
+              <View style={[
                 styles.progressFill,
                 {
-                  width: `${(progresso ?? 0) * 100}%` as any,
-                  backgroundColor: quaseAcabando ? alertColor : accentColor,
+                  width: `${Math.min((progress ?? 0) * 100, 100)}%` as any,
+                  backgroundColor: isOverdue ? "#C0622A" : t.progressBg,
                 },
-              ]}
-            />
-          </View>
-          <View style={styles.timerRow}>
-            <View>
-              <Text style={[styles.metaLabel, { color: colors.textMuted }]}>RESTANTE</Text>
-              <Text style={[styles.timerText, { color: quaseAcabando ? alertColor : colors.text }]}>
-                {formatElapsed(restante ?? 0)}
-              </Text>
-            </View>
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={[styles.metaLabel, { color: colors.textMuted }]}>
-                {getValueLabel(contract)}
-              </Text>
-              <Text style={[styles.valueText, { color: displayColor }]}>
-                {formatValue(contract.duracaoTotal, contract.ratePerHour)}
-              </Text>
+              ]} />
             </View>
           </View>
-        </View>
-      ) : (
-        <View style={styles.timerRow}>
-          <View>
-            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>TEMPO</Text>
-            <Text style={[styles.timerText, { color: colors.text }]}>
-              {isPending || isAccepted || isPendingState
-                ? "00:00:00"
-                : formatElapsed(elapsed)}
+        )}
+
+        {/* Action: accept pending contract */}
+        {isPending && !isHiring && (
+          <Pressable
+            style={[styles.actionBtn, { backgroundColor: "#e06030" }]}
+            onPress={() => onAccept?.(contract.id)}
+          >
+            <Feather name="check" size={14} color="#fff" />
+            <Text style={styles.actionBtnText}>Aceitar contrato</Text>
+          </Pressable>
+        )}
+
+        {/* Waiting for hired to accept */}
+        {isPending && isHiring && (
+          <View style={[styles.waitingRow, { borderColor: "#e0603025", backgroundColor: "#e0603008" }]}>
+            <Feather name="clock" size={12} color="#e0603099" />
+            <Text style={[styles.waitingText, { color: "#e0603099" }]}>
+              Aguardando aceite do contratado
             </Text>
           </View>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>
-              {getValueLabel(contract)}
-            </Text>
-            <Text
-              style={[
-                styles.valueText,
-                {
-                  color:
-                    isPending || isAccepted || isPendingState
-                      ? colors.textMuted
-                      : displayColor,
-                },
-              ]}
-            >
-              {isPending || isAccepted || isPendingState
-                ? formatCurrency(0)
-                : formatValue(elapsed, contract.ratePerHour)}
+        )}
+
+        {/* Begin contract */}
+        {isAccepted && (
+          <Pressable
+            style={[styles.actionBtn, { backgroundColor: "#e06030" }]}
+            onPress={() => onBegin?.(contract.id)}
+          >
+            <Feather name="play" size={14} color="#fff" />
+            <Text style={styles.actionBtnText}>Iniciar contrato</Text>
+          </Pressable>
+        )}
+
+        {/* Pending end */}
+        {isPendingEnd && (
+          <View style={[styles.waitingRow, { borderColor: "#ffaa0040", backgroundColor: "#ffaa0008" }]}>
+            <Feather name="flag" size={12} color="#ffaa00" />
+            <Text style={[styles.waitingText, { color: "#ffaa00" }]}>
+              {contract.endRequestedBy === contract.person.profileId
+                ? "Confirmar encerramento — toque para ver"
+                : "Encerramento aguardando confirmação"}
             </Text>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* Agendado */}
-      {isScheduled && (
-        <View style={styles.scheduledRow}>
-          <Feather name="calendar" size={10} color={accentColor + "80"} />
-          <Text style={[styles.scheduledText, { color: accentColor + "99" }]}>
-            {contract.agendadoLabel
-              ? `Inicia em ${contract.agendadoLabel}`
-              : "Agendado"}
-          </Text>
-        </View>
-      )}
-
-      {/* Rate */}
-      <View style={styles.rateRow}>
-        <Text style={[styles.rateText, { color: colors.textDim }]}>
-          {formatRate(contract.ratePerHour)}
-        </Text>
+        {/* Pending cancel */}
+        {isPendingCancel && (
+          <View style={[styles.waitingRow, { borderColor: "#e0603040", backgroundColor: "#e0603008" }]}>
+            <Feather name="x-circle" size={12} color="#e06030" />
+            <Text style={[styles.waitingText, { color: "#e06030" }]}>
+              {contract.cancelRequestedBy === contract.person.profileId
+                ? "Confirmar cancelamento — toque para ver"
+                : "Cancelamento aguardando confirmação"}
+            </Text>
+          </View>
+        )}
       </View>
 
-      {/* Aceitar contrato */}
-      {isPending && !isHiring && (
-        <Pressable
-          style={[styles.actionBtn, { backgroundColor: accentColor }]}
-          onPress={() => onAccept?.(contract.id)}
-        >
-          <Feather name="check" size={14} color="#fff" />
-          <Text style={styles.actionBtnText}>Aceitar contrato</Text>
-        </Pressable>
-      )}
-
-      {/* Aguardando aceite */}
-      {isPending && isHiring && (
-        <View
-          style={[
-            styles.waitingRow,
-            { borderColor: accentColor + "25", backgroundColor: accentColor + "08" },
-          ]}
-        >
-          <Feather name="clock" size={12} color={accentColor + "99"} />
-          <Text style={[styles.waitingText, { color: accentColor + "99" }]}>
-            Aguardando aceite do contratado
+      {/* Footer */}
+      <View style={[styles.footer, { borderTopColor: colors.surfaceBorder }]}>
+        <View style={styles.footerLeft}>
+          <Text style={[styles.footerMuted, { color: t.footerMuted }]}>Iniciado há</Text>
+          <Text style={[styles.footerTimer, { color: t.footerTimer }]}>
+            {showElapsed ? formatHM(elapsedSecs) : "—"}
           </Text>
         </View>
-      )}
-
-      {/* Iniciar contrato */}
-      {isAccepted && (
-        <Pressable
-          style={[styles.actionBtn, { backgroundColor: accentColor }]}
-          onPress={() => onBegin?.(contract.id)}
-        >
-          <Feather name="play" size={14} color="#fff" />
-          <Text style={styles.actionBtnText}>Iniciar contrato</Text>
-        </Pressable>
-      )}
-
-      {/* Pendente de encerramento */}
-      {isPendingEnd && (
-        <View
-          style={[
-            styles.waitingRow,
-            { borderColor: "#ffaa0040", backgroundColor: "#ffaa0008" },
-          ]}
-        >
-          <Feather name="flag" size={12} color="#ffaa00" />
-          <Text style={[styles.waitingText, { color: "#ffaa00" }]}>
-            {contract.endRequestedBy === contract.person.profileId
-              ? "Confirmar encerramento — toque para ver"
-              : "Encerramento aguardando confirmação"}
-          </Text>
+        <View style={styles.footerCta}>
+          <Text style={[styles.footerCtaText, { color: t.ctaColor }]}>Ver contrato</Text>
+          <Feather name="chevron-right" size={13} color={t.ctaColor} />
         </View>
-      )}
-
-      {/* Pendente de cancelamento */}
-      {isPendingCancel && (
-        <View
-          style={[
-            styles.waitingRow,
-            { borderColor: "#e0603040", backgroundColor: "#e0603008" },
-          ]}
-        >
-          <Feather name="x-circle" size={12} color="#e06030" />
-          <Text style={[styles.waitingText, { color: "#e06030" }]}>
-            {contract.cancelRequestedBy === contract.person.profileId
-              ? "Confirmar cancelamento — toque para ver"
-              : "Cancelamento aguardando confirmação"}
-          </Text>
-        </View>
-      )}
+      </View>
     </Pressable>
   );
 }
@@ -346,131 +410,135 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
     borderWidth: 1,
-    padding: 18,
+    overflow: "hidden",
   },
-  badgeRow: {
+
+  // ── header ────────────────────────────────────────────────────────────────
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+  },
+  headerTop: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginBottom: 14,
-    flexWrap: "wrap",
   },
-  roleBadge: {
+  headerRelation: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 12,
+    flex: 1,
+  },
+  headerName: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 12,
+  },
+  headerBottom: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  headerAmount: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 26,
+    letterSpacing: -0.5,
+    lineHeight: 30,
+  },
+  durationBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 2,
+  },
+  durationBadgeText: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 9,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+
+  // ── body ──────────────────────────────────────────────────────────────────
+  body: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+  },
+  serviceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  serviceName: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 12,
+    flex: 1,
+  },
+  serviceRate: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    flexShrink: 0,
+    marginLeft: 8,
+  },
+
+  // elapsed
+  elapsedBlock: {
+    marginBottom: 16,
+  },
+  elapsedLabelRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    marginBottom: 8,
   },
-  tipoBadge: {
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  statusDot: {
+  liveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
   },
-  roleText: {
-    fontFamily: "DMSans_400Regular",
+  elapsedLabel: {
+    fontFamily: "DMSans_600SemiBold",
     fontSize: 9,
     letterSpacing: 1,
+    textTransform: "uppercase",
   },
-  tipoText: {
+  elapsedTime: {
     fontFamily: "DMSans_400Regular",
-    fontSize: 9,
-    letterSpacing: 1,
+    fontSize: 36,
+    letterSpacing: -1.5,
+    lineHeight: 42,
   },
-  personRow: {
+
+  // progress
+  progressBlock: {
+    marginBottom: 16,
+  },
+  progressLabels: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 18,
+    justifyContent: "space-between",
+    marginBottom: 7,
   },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  personInfo: {
-    flex: 1,
-  },
-  personName: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-  },
-  servicoLabel: {
+  progressLabel: {
     fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    marginTop: 2,
+    fontSize: 10,
+  },
+  progressRemaining: {
+    fontSize: 10,
   },
   progressTrack: {
     height: 4,
-    borderRadius: 4,
+    borderRadius: 99,
     overflow: "hidden",
-    marginBottom: 14,
   },
   progressFill: {
     height: "100%",
-    borderRadius: 4,
+    borderRadius: 99,
   },
-  timerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    marginBottom: 10,
-  },
-  metaLabel: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 9,
-    letterSpacing: 1.5,
-    marginBottom: 4,
-    textTransform: "uppercase",
-  },
-  timerText: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 30,
-    letterSpacing: 2,
-    lineHeight: 34,
-  },
-  valueText: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 22,
-    letterSpacing: 1,
-    lineHeight: 26,
-  },
-  scheduledRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 10,
-    marginTop: -4,
-  },
-  scheduledText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    letterSpacing: 0.3,
-  },
-  rateRow: {
-    marginBottom: 16,
-  },
-  rateText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
+
+  // action buttons / waiting states
   actionBtn: {
     borderRadius: 12,
     paddingVertical: 13,
@@ -478,6 +546,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    marginBottom: 8,
   },
   actionBtnText: {
     fontFamily: "Sora_600SemiBold",
@@ -493,10 +562,100 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 14,
     justifyContent: "center",
+    marginBottom: 8,
   },
   waitingText: {
     fontFamily: "DMSans_400Regular",
     fontSize: 11,
     letterSpacing: 0.3,
+  },
+
+  // ── footer ────────────────────────────────────────────────────────────────
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderTopWidth: 1,
+  },
+  footerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  footerMuted: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+  },
+  footerTimer: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 11,
+  },
+  footerCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  footerCtaText: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 12,
+  },
+
+  // ── scheduled card specifics ──────────────────────────────────────────────
+  scheduledBlock: {
+    marginBottom: 16,
+  },
+  scheduledLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 10,
+  },
+  scheduledLabel: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 9,
+    letterSpacing: 1,
+    color: "#C4BFB6",
+    textTransform: "uppercase",
+  },
+  scheduledTimeRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 10,
+    marginBottom: 12,
+  },
+  scheduledTimeText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 36,
+    letterSpacing: -1.5,
+    lineHeight: 42,
+    color: "#2C2A26",
+  },
+  scheduledDateText: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 14,
+    color: "#9B9487",
+    paddingBottom: 4,
+  },
+  startsInPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#F0EDE6",
+    borderRadius: 8,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    alignSelf: "flex-start",
+  },
+  startsInLabel: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    color: "#9B9487",
+  },
+  startsInValue: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 11,
+    color: "#2C2A26",
   },
 });
