@@ -97,7 +97,8 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
   const { colors } = useTheme();
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
-  const scheduledDate = new Date(contract.scheduledFor!);
+  const scheduledDate = new Date(contract.scheduledFor ?? 0);
+  const isValidDate = !isNaN(scheduledDate.getTime()) && (contract.scheduledFor ?? 0) > 0;
   const totalFixedSecs = contract.duracaoTotal ? contract.duracaoTotal / 1000 : null;
   const scheduledAmount = isTimer && totalFixedSecs
     ? contract.ratePerHour * (totalFixedSecs / 3600)
@@ -173,17 +174,19 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </View>
           <View style={styles.scheduledTimeRow}>
             <Text style={styles.scheduledTimeText}>
-              {formatScheduledTime(scheduledDate)}
+              {isValidDate ? formatScheduledTime(scheduledDate) : "—"}
             </Text>
             <Text style={styles.scheduledDateText}>
-              {formatScheduledDate(scheduledDate)}
+              {isValidDate ? formatScheduledDate(scheduledDate) : "Data não definida"}
             </Text>
           </View>
-          <View style={styles.startsInPill}>
-            <Feather name="clock" size={10} color="#9B9487" />
-            <Text style={styles.startsInLabel}>Inicia em</Text>
-            <Text style={styles.startsInValue}>{formatTime(remaining)}</Text>
-          </View>
+          {isValidDate && (
+            <View style={styles.startsInPill}>
+              <Feather name="clock" size={10} color="#9B9487" />
+              <Text style={styles.startsInLabel}>Inicia em</Text>
+              <Text style={styles.startsInValue}>{formatTime(remaining)}</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -191,7 +194,9 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <Text style={[styles.footerMuted, { color: "#B8B4AC" }]}>Inicia em</Text>
-          <Text style={[styles.footerTimer, { color: "#9B9487" }]}>{formatHM(remaining)}</Text>
+          <Text style={[styles.footerTimer, { color: "#9B9487" }]}>
+            {isValidDate ? formatHM(remaining) : "—"}
+          </Text>
         </View>
         <View style={styles.footerCta}>
           <Text style={[styles.footerCtaText, { color: "#2C2A26" }]}>Ver contrato</Text>
@@ -213,7 +218,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isAccepted = contract.status === "accepted";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = !!contract.agendado;
+  const isScheduled = !!contract.agendado && !!contract.scheduledFor;
 
   const [now, setNow] = useState(Date.now());
 
