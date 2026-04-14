@@ -123,6 +123,8 @@ export default function ContractConfirmScreen() {
   const buildContractData = () => {
     const cartao = cards.find(c => c.id === cartaoSelecionadoId);
     const cardLabel = cartao ? `${cartao.bandeira} •••• ${cartao.lastFour}` : undefined;
+    const scheduledDate = new Date(agendaData);
+    scheduledDate.setHours(agendaHora, agendaMinuto, 0, 0);
     return {
       role: "hiring" as const,
       tipo: tipoContrato === "aberto" ? "cronometro" as const : "timer" as const,
@@ -154,6 +156,7 @@ export default function ContractConfirmScreen() {
       paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
       agendado,
       agendadoLabel: agendado ? formatAgendamento() : undefined,
+      scheduledFor: agendado ? scheduledDate.getTime() : undefined,
       ratePerHour: valorHora,
       location: location.fixedAddress || undefined,
     };

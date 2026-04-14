@@ -104,13 +104,15 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
     ? contract.ratePerHour * (totalFixedSecs / 3600)
     : null;
 
-  const [remaining, setRemaining] = useState(() =>
-    Math.max(Math.floor((scheduledDate.getTime() - Date.now()) / 1000), 0)
+  const [scheduledDelta, setScheduledDelta] = useState(() =>
+    Math.floor((scheduledDate.getTime() - Date.now()) / 1000)
   );
+  const isLate = scheduledDelta < 0;
+  const scheduledDeltaAbs = Math.abs(scheduledDelta);
 
   useEffect(() => {
     const id = setInterval(() => {
-      setRemaining(Math.max(Math.floor((scheduledDate.getTime() - Date.now()) / 1000), 0));
+      setScheduledDelta(Math.floor((scheduledDate.getTime() - Date.now()) / 1000));
     }, 1000);
     return () => clearInterval(id);
   }, [scheduledDate]);
@@ -185,9 +187,13 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </View>
           {isValidDate && (
             <View style={styles.startsInPill}>
-              <Feather name="clock" size={10} color="#9B9487" />
-              <Text style={styles.startsInLabel}>Inicia em</Text>
-              <Text style={styles.startsInValue}>{formatTime(remaining)}</Text>
+              <Feather name={isLate ? "alert-circle" : "clock"} size={10} color={isLate ? "#C0622A" : "#9B9487"} />
+              <Text style={[styles.startsInLabel, isLate && { color: "#C0622A" }]}>
+                {isLate ? "Início atrasado em" : "Inicia em"}
+              </Text>
+              <Text style={[styles.startsInValue, isLate && { color: "#C0622A" }]}>
+                {formatTime(scheduledDeltaAbs)}
+              </Text>
             </View>
           )}
         </View>
@@ -196,9 +202,11 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
       {/* Footer */}
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <Text style={[styles.footerMuted, { color: "#B8B4AC" }]}>Inicia em</Text>
-          <Text style={[styles.footerTimer, { color: "#9B9487" }]}>
-            {isValidDate ? formatHM(remaining) : "—"}
+          <Text style={[styles.footerMuted, { color: isLate ? "#C0622A" : "#B8B4AC" }]}>
+            {isLate ? "Início atrasado em" : "Inicia em"}
+          </Text>
+          <Text style={[styles.footerTimer, { color: isLate ? "#C0622A" : "#9B9487" }]}>
+            {isValidDate ? formatHM(scheduledDeltaAbs) : "—"}
           </Text>
         </View>
         <View style={styles.footerCta}>
@@ -221,7 +229,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isAccepted = contract.status === "accepted";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = !!contract.agendado && !!contract.scheduledFor;
+  const isScheduled = !!contract.scheduledFor && !isActive;
 
   const [now, setNow] = useState(Date.now());
 
@@ -250,6 +258,8 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
 
   const showAmount = !isPending && !isAccepted && !isPendingState;
   const showElapsed = !isPending && !isAccepted && !isPendingState;
+  const footerLabel = showElapsed ? "Iniciado há" : "Aguardando início";
+  const footerValue = showElapsed ? formatHM(elapsedSecs) : "—";
 
   return (
     <Pressable
@@ -417,9 +427,9 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
       {/* Footer */}
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <Text style={[styles.footerMuted, { color: t.footerMuted }]}>Iniciado há</Text>
+          <Text style={[styles.footerMuted, { color: t.footerMuted }]}>{footerLabel}</Text>
           <Text style={[styles.footerTimer, { color: t.footerTimer }]}>
-            {showElapsed ? formatHM(elapsedSecs) : "—"}
+            {footerValue}
           </Text>
         </View>
         <View style={styles.footerCta}>
