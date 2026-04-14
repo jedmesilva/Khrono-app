@@ -1344,25 +1344,45 @@ export default function ContractDetailScreen() {
             {isEnded && !!contract.endedAt && (
               <DetailRow
                 icon={<Feather name="check-circle" size={14} color={colors.textMuted} />}
-                label="Conclusão"
+                label="Fim"
                 value={formatData(contract.endedAt)}
                 colors={colors}
               />
             )}
-            <DetailRow
-              icon={
-                <Feather
-                  name={isFixed ? "clock" : "activity"}
-                  size={14}
-                  color={colors.textMuted}
-                />
-              }
-              label="Duração"
-              value={
-                isFixed && totalMs > 0 ? formatHM(totalMs) : "Indeterminada"
-              }
-              colors={colors}
-            />
+            {isEnded ? (
+              <DetailRow
+                icon={
+                  <Feather
+                    name={isFixed ? "clock" : "activity"}
+                    size={14}
+                    color={colors.textMuted}
+                  />
+                }
+                label="Executado"
+                value={elapsedMs > 0 ? formatHM(elapsedMs) : "—"}
+                sub={
+                  isFixed && totalMs > 0 && elapsedMs !== totalMs
+                    ? `de ${formatHM(totalMs)} contratados`
+                    : undefined
+                }
+                colors={colors}
+              />
+            ) : (
+              <DetailRow
+                icon={
+                  <Feather
+                    name={isFixed ? "clock" : "activity"}
+                    size={14}
+                    color={colors.textMuted}
+                  />
+                }
+                label="Duração"
+                value={
+                  isFixed && totalMs > 0 ? formatHM(totalMs) : "Indeterminada"
+                }
+                colors={colors}
+              />
+            )}
             {contract.paymentMethod && (() => {
               const ps = getPaymentStatusInfo(
                 contract.paymentMethod,
