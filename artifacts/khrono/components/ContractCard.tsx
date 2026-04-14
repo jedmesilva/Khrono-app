@@ -97,7 +97,7 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
   const { colors } = useTheme();
   const isHiring = contract.role === "hiring";
   const isTimer = contract.tipo === "timer";
-  const scheduledDate = contract.agendado!;
+  const scheduledDate = new Date(contract.scheduledFor!);
   const totalFixedSecs = contract.duracaoTotal ? contract.duracaoTotal / 1000 : null;
   const scheduledAmount = isTimer && totalFixedSecs
     ? contract.ratePerHour * (totalFixedSecs / 3600)
