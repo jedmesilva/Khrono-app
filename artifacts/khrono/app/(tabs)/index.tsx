@@ -25,14 +25,6 @@ import { useContracts, isContractRunning } from "@/context/ContractsContext";
 import { useNotifications } from "@/context/NotificationsContext";
 import { formatCurrency } from "@/lib/format";
 
-const AVATAR_COLORS = ["#e06030", "#18a06b", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
@@ -104,7 +96,6 @@ export default function HomeScreen() {
 
   const isUserReady = !!user?.name;
   const displayName = user?.firstName || user?.name || "você";
-  const avatarColor = user?.name ? getAvatarColor(user.name) : "#e06030";
   const initials = user?.name ? getInitials(user.name) : "";
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -200,7 +191,7 @@ export default function HomeScreen() {
               }}
               hitSlop={8}
             >
-              <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
               <View style={styles.greeting}>
