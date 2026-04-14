@@ -1148,6 +1148,23 @@ export default function ContractDetailScreen() {
           </View>
         </View>
 
+        {/* Location row */}
+        {!!contract.location && (
+          <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+            <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
+              <Feather name="map-pin" size={15} color={colors.textSecondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.detailTitle, { color: colors.text }]}>
+                {contract.location}
+              </Text>
+              <Text style={[s.detailSub, { color: colors.textMuted }]}>
+                Endereço do serviço
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Scheduled row */}
         {showScheduledRow && (
           <ScheduledRow
