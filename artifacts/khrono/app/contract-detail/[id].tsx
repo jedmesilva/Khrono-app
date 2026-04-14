@@ -1484,6 +1484,22 @@ export default function ContractDetailScreen() {
               </Text>
             </View>
           )}
+          {isAccepted && isHiring && (
+            <View
+              style={[
+                s.waitingRow,
+                {
+                  backgroundColor: "#18a06b10",
+                  borderColor: "#18a06b30",
+                },
+              ]}
+            >
+              <Feather name="clock" size={14} color="#18a06b99" />
+              <Text style={[s.waitingText, { color: "#18a06b99" }]}>
+                Aguardando {contract.person.name} iniciar o serviço
+              </Text>
+            </View>
+          )}
           {isPaused && (
             <View
               style={[
