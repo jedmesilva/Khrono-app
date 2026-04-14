@@ -35,7 +35,34 @@ import {
 } from "@/context/ContractsContext";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { GlobalStyles } from "@/constants/globalStyles";
-import { formatCurrency, formatRate } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+
+// ─── Role theme tokens (mirrors ContractCard) ─────────────────────────────────
+
+const ROLE_THEME = {
+  hiring: {
+    headerBg: "#1E1C19",
+    amountColor: "#F2EFE9",
+    relationColor: "rgba(255,255,255,0.45)",
+    nameColor: "rgba(255,255,255,0.85)",
+    badgeBg: "rgba(255,255,255,0.08)",
+    badgeText: "rgba(255,255,255,0.45)",
+    bodyMuted: "#9B9487",
+    arrowColor: "rgba(255,255,255,0.45)",
+    chevronColor: "rgba(255,255,255,0.25)",
+  },
+  hired: {
+    headerBg: "#FDF3EE",
+    amountColor: "#C0622A",
+    relationColor: "#9B7060",
+    nameColor: "#2C2A26",
+    badgeBg: "#F4D0BC",
+    badgeText: "#C0622A",
+    bodyMuted: "#9B9487",
+    arrowColor: "#C0622A",
+    chevronColor: "#C0622A66",
+  },
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -819,7 +846,7 @@ function PrimaryButton({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function ContractDetailScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -1028,14 +1055,6 @@ export default function ContractDetailScreen() {
   const showScheduledRow =
     (isAccepted || isScheduled) && !!contract.scheduledFor;
 
-  const roleLabelText = isHiring
-    ? isPending || isAccepted
-      ? "Você está contratando"
-      : "Você contratou"
-    : isRunning || isPaused || isPendingEnd || isPendingCancel
-    ? "Você é contratado de"
-    : "Você foi contratado por";
-
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
   // ── Status config ──
@@ -1058,17 +1077,8 @@ export default function ContractDetailScreen() {
     return { label: "em andamento", color: "#18a06b" };
   })();
 
-  // ── Role banner colors ──
-  const roleBg = isHiring
-    ? isDark
-      ? colors.card
-      : "#2C2A26"
-    : colors.accent + "12";
-  const roleBorder = isHiring ? "transparent" : colors.accent + "28";
-  const roleIconBg = isHiring ? "rgba(255,255,255,0.1)" : colors.accent + "25";
-  const roleTextLabel = isHiring ? "rgba(255,255,255,0.45)" : colors.accent;
-  const roleNameColor = isHiring ? (isDark ? colors.text : "#F2EFE9") : colors.text;
-  const roleMeta = isHiring ? "rgba(255,255,255,0.5)" : colors.accent + "cc";
+  // ── Role theme (mirrors ContractCard) ──
+  const t = ROLE_THEME[isHiring ? "hiring" : "hired"];
 
   return (
     <View
@@ -1156,105 +1166,81 @@ export default function ContractDetailScreen() {
           />
         )}
 
-        {/* Role banner */}
-        <Pressable
-          onPress={
-            contract.person.profileId
-              ? () => router.push(`/user-profile/${contract.person.profileId}` as any)
-              : undefined
-          }
-          style={({ pressed }) => [
-            s.roleBanner,
-            {
-              backgroundColor: roleBg,
-              borderColor: roleBorder,
-              opacity: pressed && contract.person.profileId ? 0.8 : 1,
-            },
+        {/* Context header — aligned with ContractCard */}
+        <View
+          style={[
+            s.contextCard,
+            { borderColor: colors.cardBorder },
           ]}
         >
-          <View style={[s.roleIconWrap, { backgroundColor: roleIconBg }]}>
-            <Feather
-              name={isHiring ? "arrow-up-right" : "arrow-down-left"}
-              size={16}
-              color={isHiring ? "rgba(255,255,255,0.7)" : colors.accent}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.roleLabel, { color: roleTextLabel }]}>
-              {roleLabelText}
-            </Text>
-            <Text style={[s.roleName, { color: roleNameColor }]}>
-              {contract.person.name}
-            </Text>
-            {contract.person.profileId && (
-              <Text style={[s.roleViewProfile, { color: roleMeta }]}>
-                Ver perfil →
-              </Text>
-            )}
-          </View>
-          <View style={{ alignItems: "flex-end", gap: 4 }}>
-            {contract.person.distancia != null && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Feather name="map-pin" size={11} color={roleMeta} />
-                <Text style={[s.roleMeta, { color: roleMeta }]}>
-                  {contract.person.distancia} km
-                </Text>
-              </View>
-            )}
-            {contract.person.nota != null && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                <Feather name="star" size={10} color={roleMeta} />
-                <Text style={[s.roleMeta, { color: roleMeta }]}>
-                  {contract.person.nota}
-                  {contract.person.avaliacoes != null
-                    ? ` · ${contract.person.avaliacoes} av.`
-                    : ""}
-                </Text>
-              </View>
-            )}
-          </View>
-        </Pressable>
-
-        {/* Service row */}
-        <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-          <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
-            <Feather name="briefcase" size={15} color={colors.textSecondary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.detailTitle, { color: colors.text }]}>
-              {contract.servico?.nome ?? contract.person.skill}
-            </Text>
-            <Text style={[s.detailSub, { color: colors.textMuted }]}>
-              {isFixed && totalMs > 0
-                ? `${formatCurrency(amount)} · ${formatHM(totalMs)}`
-                : formatRate(contract.ratePerHour)}
-            </Text>
-          </View>
-          <View
-            style={[
-              s.typePill,
-              {
-                backgroundColor: isFixed
-                  ? "#18a06b15"
-                  : colors.surface,
-                borderColor: isFixed
-                  ? "#18a06b35"
-                  : colors.surfaceBorder,
-              },
+          {/* Header area: relation + amount */}
+          <Pressable
+            onPress={
+              contract.person.profileId
+                ? () => router.push(`/user-profile/${contract.person.profileId}` as any)
+                : undefined
+            }
+            style={({ pressed }) => [
+              s.contextHeader,
+              { backgroundColor: t.headerBg, opacity: pressed && contract.person.profileId ? 0.88 : 1 },
             ]}
           >
-            <Feather
-              name={isFixed ? "clock" : "activity"}
-              size={11}
-              color={isFixed ? "#18a06b" : colors.textSecondary}
-            />
+            {/* Top row: arrow + relation text */}
+            <View style={s.contextHeaderTop}>
+              <Feather
+                name={isHiring ? "arrow-up-right" : "arrow-down-left"}
+                size={13}
+                color={t.arrowColor}
+              />
+              <Text style={[s.contextRelation, { color: t.relationColor }]}>
+                {isHiring ? (
+                  <>
+                    {"Você contratou "}
+                    <Text style={[s.contextName, { color: t.nameColor }]}>
+                      {contract.person.name}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={[s.contextName, { color: t.nameColor }]}>
+                      {contract.person.name}
+                    </Text>
+                    {" contratou você"}
+                  </>
+                )}
+              </Text>
+              {contract.person.profileId && (
+                <Feather name="chevron-right" size={12} color={t.chevronColor} />
+              )}
+            </View>
+            {/* Bottom row: amount + duration badge */}
+            <View style={s.contextHeaderBottom}>
+              <Text style={[s.contextAmount, { color: t.amountColor }]}>
+                {formatCurrency(amount)}
+              </Text>
+              <View style={[s.contextBadge, { backgroundColor: t.badgeBg }]}>
+                <Feather
+                  name={isFixed ? "clock" : "activity"}
+                  size={9}
+                  color={t.badgeText}
+                />
+                <Text style={[s.contextBadgeText, { color: t.badgeText }]}>
+                  {isFixed && totalMs > 0 ? formatHM(totalMs) : "Aberto"}
+                </Text>
+              </View>
+            </View>
+          </Pressable>
+
+          {/* Body: service name + rate */}
+          <View style={[s.contextBody, { backgroundColor: colors.card }]}>
             <Text
-              style={[
-                s.typePillText,
-                { color: isFixed ? "#18a06b" : colors.textSecondary },
-              ]}
+              style={[s.contextServiceName, { color: t.bodyMuted }]}
+              numberOfLines={1}
             >
-              {isFixed ? `${formatHM(totalMs)}` : "Aberto"}
+              {contract.servico?.nome ?? contract.person.skill ?? "Serviço"}
+            </Text>
+            <Text style={[s.contextServiceRate, { color: t.bodyMuted }]}>
+              R$ {contract.ratePerHour}/h
             </Text>
           </View>
         </View>
@@ -1764,43 +1750,76 @@ const s = StyleSheet.create({
     fontFamily: "DMSans_400Regular",
     fontSize: 11,
   },
-  roleBanner: {
-    borderRadius: 16,
-    padding: 14,
+  // ── context header (mirrors ContractCard) ─────────────────────────────────
+  contextCard: {
+    borderRadius: 20,
     borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  contextHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+  },
+  contextHeaderTop: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 6,
+    marginBottom: 14,
+  },
+  contextRelation: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 12,
+    flex: 1,
+  },
+  contextName: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 12,
+  },
+  contextHeaderBottom: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  contextAmount: {
+    fontFamily: "Sora_700Bold",
+    fontSize: 26,
+    letterSpacing: -0.5,
+    lineHeight: 30,
+  },
+  contextBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
     marginBottom: 2,
   },
-  roleIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  roleLabel: {
+  contextBadgeText: {
     fontFamily: "DMSans_600SemiBold",
-    fontSize: 10,
-    letterSpacing: 0.8,
+    fontSize: 9,
+    letterSpacing: 0.6,
     textTransform: "uppercase",
-    marginBottom: 3,
   },
-  roleName: {
-    fontFamily: "DMSans_600SemiBold",
-    fontSize: 15,
+  contextBody: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  roleMeta: {
+  contextServiceName: {
+    fontFamily: "DMSans_500Medium",
+    fontSize: 12,
+    flex: 1,
+  },
+  contextServiceRate: {
     fontFamily: "DMSans_400Regular",
     fontSize: 11,
-  },
-  roleViewProfile: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    marginTop: 4,
-    letterSpacing: 0.1,
+    flexShrink: 0,
+    marginLeft: 8,
   },
   detailRow: {
     flexDirection: "row",
@@ -1825,21 +1844,6 @@ const s = StyleSheet.create({
   detailSub: {
     fontFamily: "DMSans_400Regular",
     fontSize: 12,
-  },
-  typePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  typePillText: {
-    fontFamily: "DMSans_600SemiBold",
-    fontSize: 11,
-    letterSpacing: 0.3,
-    textTransform: "uppercase",
   },
   timerCard: {
     borderTopWidth: 1,
