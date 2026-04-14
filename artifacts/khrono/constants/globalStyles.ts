@@ -33,8 +33,10 @@ export const GlobalStyles = StyleSheet.create({
     backgroundColor: "#e06030",
     borderRadius: 14,
     paddingVertical: 14,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
   },
   inputWrap: {
     flexDirection: "row",

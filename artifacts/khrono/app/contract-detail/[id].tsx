@@ -865,6 +865,7 @@ function PrimaryButton({
       }}
       disabled={disabled}
       style={({ pressed }) => [
+        GlobalStyles.primaryBtn,
         s.primaryBtn,
         {
           backgroundColor: disabled ? colors.btnDisabledBg : pressed ? bgPressed : bg,
@@ -872,10 +873,6 @@ function PrimaryButton({
           borderWidth: variant === "ghost" ? 1 : 0,
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.97 : 1 }],
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
         },
       ]}
     >
@@ -1977,8 +1974,6 @@ const s = StyleSheet.create({
   primaryBtn: {
     borderRadius: 14,
     paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
   },
   primaryBtnText: {
     fontFamily: "DMSans_600SemiBold",
