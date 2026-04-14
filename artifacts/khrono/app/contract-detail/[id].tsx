@@ -661,6 +661,15 @@ function PrimaryButton({
       ? "transparent"
       : "#2C2A26";
 
+  const bgPressed =
+    variant === "green"
+      ? "#138a5a"
+      : variant === "red"
+      ? "#c04040"
+      : variant === "ghost"
+      ? "transparent"
+      : "#111010";
+
   const textColor =
     variant === "ghost" ? "#9B9487" : "#F2EFE9";
 
@@ -669,15 +678,20 @@ function PrimaryButton({
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        if (disabled) return;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onPress();
+      }}
       disabled={disabled}
       style={({ pressed }) => [
         s.primaryBtn,
         {
-          backgroundColor: disabled ? "#E5E1D9" : bg,
+          backgroundColor: disabled ? "#E5E1D9" : pressed ? bgPressed : bg,
           borderColor,
           borderWidth: variant === "ghost" ? 1 : 0,
-          opacity: pressed ? 0.85 : 1,
+          opacity: pressed ? 0.9 : 1,
+          transform: [{ scale: pressed ? 0.97 : 1 }],
         },
       ]}
     >
