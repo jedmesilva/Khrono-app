@@ -264,7 +264,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const showAmount = !isPending && !isAccepted && !isPendingState;
   const showElapsed = !isPending && !isAccepted && !isPendingState;
   const footerLabel = showElapsed ? "Iniciado há" : "Aguardando início";
-  const footerValue = showElapsed ? formatHM(elapsedSecs) : "—";
+  const footerValue = showElapsed ? formatHM(elapsedSecs) : null;
 
   return (
     <Pressable
@@ -448,9 +448,11 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <Text style={[styles.footerMuted, { color: t.footerMuted }]}>{footerLabel}</Text>
-          <Text style={[styles.footerTimer, { color: t.footerTimer }]}>
-            {footerValue}
-          </Text>
+          {footerValue != null && (
+            <Text style={[styles.footerTimer, { color: t.footerTimer }]}>
+              {footerValue}
+            </Text>
+          )}
         </View>
         <View style={styles.footerCta}>
           <Text style={[styles.footerCtaText, { color: t.ctaColor }]}>Ver contrato</Text>
