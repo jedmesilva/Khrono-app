@@ -977,7 +977,8 @@ export default function ContractDetailScreen() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [confirmCancelar, setConfirmCancelar] = useState(false);
   const [reasonSheetMode, setReasonSheetMode] = useState<"end" | "cancel" | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const loading = loadingAction !== null;
 
   const helpRef = useRef<BottomSheetModal>(null);
   const helpSnapPoints = useMemo(() => ["70%"], []);
@@ -1018,41 +1019,41 @@ export default function ContractDetailScreen() {
     return () => clearInterval(id);
   }, [contract?.status, contract?.agendado, contract?.startedAt]);
 
-  const withLoading = async (fn: () => Promise<void>) => {
-    setLoading(true);
+  const withLoading = async (action: string, fn: () => Promise<void>) => {
+    setLoadingAction(action);
     try {
       await fn();
     } catch (e) {
       console.warn("[ContractDetail] error:", e);
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
   const handleAccept = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading(() => acceptContract(contract.id));
+    await withLoading("accept", () => acceptContract(contract.id));
   }, [acceptContract, contract?.id]);
 
   const handleReject = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading(() => rejectContract(contract.id));
+    await withLoading("reject", () => rejectContract(contract.id));
     router.back();
   }, [rejectContract, contract?.id]);
 
   const handleBegin = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading(() => beginContract(contract.id));
+    await withLoading("begin", () => beginContract(contract.id));
   }, [beginContract, contract?.id]);
 
   const handleRequestEnd = useCallback(
     async (reason: string) => {
       if (!contract) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await withLoading(() => requestEndContract(contract.id, reason));
+      await withLoading("requestEnd", () => requestEndContract(contract.id, reason));
     },
     [requestEndContract, contract?.id]
   );
@@ -1060,26 +1061,26 @@ export default function ContractDetailScreen() {
   const handleConfirmEnd = useCallback(async () => {
     if (!contract) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await withLoading(() => confirmEndContract(contract.id));
+    await withLoading("confirmEnd", () => confirmEndContract(contract.id));
   }, [confirmEndContract, contract?.id]);
 
   const handleRejectEnd = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading(() => rejectEndRequest(contract.id));
+    await withLoading("rejectEnd", () => rejectEndRequest(contract.id));
   }, [rejectEndRequest, contract?.id]);
 
   const handleRejectCancel = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading(() => rejectCancelRequest(contract.id));
+    await withLoading("rejectCancel", () => rejectCancelRequest(contract.id));
   }, [rejectCancelRequest, contract?.id]);
 
   const handleRequestCancel = useCallback(
     async (reason: string) => {
       if (!contract) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await withLoading(() => requestCancelContract(contract.id, reason));
+      await withLoading("requestCancel", () => requestCancelContract(contract.id, reason));
       setHelpOpen(false);
     },
     [requestCancelContract, contract?.id]
@@ -1095,9 +1096,9 @@ export default function ContractDetailScreen() {
       contract.cancelRequestedBy !== contract.person.profileId &&
       contract.cancelRequestedBy !== undefined
     ) {
-      await withLoading(() => confirmCancelContract(contract.id));
+      await withLoading("confirmCancel", () => confirmCancelContract(contract.id));
     } else {
-      await withLoading(() => cancelContract(contract.id));
+      await withLoading("confirmCancel", () => cancelContract(contract.id));
     }
     router.back();
   }, [cancelContract, confirmCancelContract, contract]);
@@ -1696,13 +1697,15 @@ export default function ContractDetailScreen() {
                 icon="check"
                 onPress={handleAccept}
                 variant="accent"
-                loading={loading}
+                loading={loadingAction === "accept"}
+                disabled={loading}
               />
               <AppButton
                 label="recusar contrato"
                 icon="x"
                 onPress={handleReject}
                 variant="ghost-red"
+                loading={loadingAction === "reject"}
                 disabled={loading}
               />
             </View>
@@ -1713,7 +1716,7 @@ export default function ContractDetailScreen() {
               icon="play"
               onPress={handleBegin}
               variant="accent"
-              loading={loading}
+              loading={loadingAction === "begin"}
             />
           )}
           {isRunning && (
@@ -1732,13 +1735,15 @@ export default function ContractDetailScreen() {
                 icon="check"
                 onPress={handleConfirmEnd}
                 variant="primary"
-                loading={loading}
+                loading={loadingAction === "confirmEnd"}
+                disabled={loading}
               />
               <AppButton
                 label="recusar encerramento"
                 icon="x"
                 onPress={handleRejectEnd}
                 variant="ghost-red"
+                loading={loadingAction === "rejectEnd"}
                 disabled={loading}
               />
             </View>
@@ -1757,6 +1762,7 @@ export default function ContractDetailScreen() {
                 icon="x"
                 onPress={handleRejectCancel}
                 variant="ghost"
+                loading={loadingAction === "rejectCancel"}
                 disabled={loading}
               />
             </View>
