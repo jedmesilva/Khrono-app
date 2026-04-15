@@ -30,6 +30,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppButton } from "@/components/AppButton";
 import { AppDialog } from "@/components/AppDialog";
 import { ReasonSheet } from "@/components/ReasonSheet";
+import { Toast, useToast } from "@/components/Toast";
 import {
   Contract,
   isContractRunning,
@@ -979,6 +980,7 @@ export default function ContractDetailScreen() {
   const [reasonSheetMode, setReasonSheetMode] = useState<"end" | "cancel" | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const loading = loadingAction !== null;
+  const { toastState, show: showToast } = useToast();
 
   const helpRef = useRef<BottomSheetModal>(null);
   const helpSnapPoints = useMemo(() => ["70%"], []);
@@ -1019,12 +1021,18 @@ export default function ContractDetailScreen() {
     return () => clearInterval(id);
   }, [contract?.status, contract?.agendado, contract?.startedAt]);
 
-  const withLoading = async (action: string, fn: () => Promise<void>) => {
+  const withLoading = async (
+    action: string,
+    fn: () => Promise<void>,
+    opts?: { onSuccess?: string; onError?: string }
+  ) => {
     setLoadingAction(action);
     try {
       await fn();
+      if (opts?.onSuccess) showToast(opts.onSuccess, "success");
     } catch (e) {
       console.warn("[ContractDetail] error:", e);
+      showToast(opts?.onError ?? "Algo deu errado. Tente novamente.", "error");
     } finally {
       setLoadingAction(null);
     }
@@ -1053,7 +1061,14 @@ export default function ContractDetailScreen() {
     async (reason: string) => {
       if (!contract) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await withLoading("requestEnd", () => requestEndContract(contract.id, reason));
+      await withLoading(
+        "requestEnd",
+        () => requestEndContract(contract.id, reason),
+        {
+          onSuccess: "Encerramento solicitado. Aguardando confirmação.",
+          onError: "Não foi possível solicitar o encerramento.",
+        }
+      );
     },
     [requestEndContract, contract?.id]
   );
@@ -1061,13 +1076,27 @@ export default function ContractDetailScreen() {
   const handleConfirmEnd = useCallback(async () => {
     if (!contract) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await withLoading("confirmEnd", () => confirmEndContract(contract.id));
+    await withLoading(
+      "confirmEnd",
+      () => confirmEndContract(contract.id),
+      {
+        onSuccess: "Contrato encerrado com sucesso.",
+        onError: "Não foi possível confirmar o encerramento.",
+      }
+    );
   }, [confirmEndContract, contract?.id]);
 
   const handleRejectEnd = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading("rejectEnd", () => rejectEndRequest(contract.id));
+    await withLoading(
+      "rejectEnd",
+      () => rejectEndRequest(contract.id),
+      {
+        onSuccess: "Solicitação de encerramento recusada.",
+        onError: "Não foi possível recusar o encerramento.",
+      }
+    );
   }, [rejectEndRequest, contract?.id]);
 
   const handleRejectCancel = useCallback(async () => {
@@ -1725,6 +1754,7 @@ export default function ContractDetailScreen() {
               icon="square"
               onPress={() => setReasonSheetMode("end")}
               variant="primary"
+              loading={loadingAction === "requestEnd"}
               disabled={loading}
             />
           )}
@@ -1831,6 +1861,13 @@ export default function ContractDetailScreen() {
           else handleRequestCancel(reason);
           setReasonSheetMode(null);
         }}
+      />
+
+      {/* ── Toast Feedback ── */}
+      <Toast
+        visible={toastState.visible}
+        message={toastState.message}
+        type={toastState.type}
       />
 
       {/* ── Cancel Confirm Dialog ── */}
