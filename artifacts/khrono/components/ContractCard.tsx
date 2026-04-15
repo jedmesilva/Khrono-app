@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -244,6 +245,30 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isScheduled = !!contract.scheduledFor && !isActive && !isPending && !isPendingEnd && !isPendingCancel;
 
   const [now, setNow] = useState(Date.now());
+  const [loadingAction, setLoadingAction] = useState<"accept" | "begin" | null>(null);
+  const isActionLoading = loadingAction !== null;
+
+  const handleAcceptPress = useCallback(async () => {
+    if (!onAccept || isActionLoading) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setLoadingAction("accept");
+    try {
+      await onAccept(contract.id);
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [onAccept, contract.id, isActionLoading]);
+
+  const handleBeginPress = useCallback(async () => {
+    if (!onBegin || isActionLoading) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setLoadingAction("begin");
+    try {
+      await onBegin(contract.id);
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [onBegin, contract.id, isActionLoading]);
 
   useEffect(() => {
     if (isScheduled || (!isActive && !isPendingEnd && !isPendingCancel)) return;
@@ -392,16 +417,20 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-              pressed && styles.actionBtnPressed,
+              { backgroundColor: isActionLoading ? colors.accentPressed : pressed ? colors.accentPressed : colors.accent },
+              (pressed || isActionLoading) && styles.actionBtnPressed,
             ]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              onAccept?.(contract.id);
-            }}
+            onPress={handleAcceptPress}
+            disabled={isActionLoading}
           >
-            <Feather name="check" size={14} color={colors.btnActionText} />
-            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>Aceitar contrato</Text>
+            {loadingAction === "accept" ? (
+              <ActivityIndicator size="small" color={colors.btnActionText} />
+            ) : (
+              <Feather name="check" size={14} color={colors.btnActionText} />
+            )}
+            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>
+              {loadingAction === "accept" ? "Aceitando..." : "Aceitar contrato"}
+            </Text>
           </Pressable>
         )}
 
@@ -420,16 +449,20 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Pressable
             style={({ pressed }) => [
               styles.actionBtn,
-              { backgroundColor: pressed ? colors.accentPressed : colors.accent },
-              pressed && styles.actionBtnPressed,
+              { backgroundColor: isActionLoading ? colors.accentPressed : pressed ? colors.accentPressed : colors.accent },
+              (pressed || isActionLoading) && styles.actionBtnPressed,
             ]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              onBegin?.(contract.id);
-            }}
+            onPress={handleBeginPress}
+            disabled={isActionLoading}
           >
-            <Feather name="play" size={14} color={colors.btnActionText} />
-            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>Iniciar contrato</Text>
+            {loadingAction === "begin" ? (
+              <ActivityIndicator size="small" color={colors.btnActionText} />
+            ) : (
+              <Feather name="play" size={14} color={colors.btnActionText} />
+            )}
+            <Text style={[styles.actionBtnText, { color: colors.btnActionText }]}>
+              {loadingAction === "begin" ? "Iniciando..." : "Iniciar contrato"}
+            </Text>
           </Pressable>
         )}
 
