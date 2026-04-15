@@ -7,6 +7,7 @@ import {
   Animated,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -88,7 +89,8 @@ function ContractCardSkeleton() {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { activeContracts, isLoading, acceptContract, beginContract } = useContracts();
+  const { activeContracts, isLoading, acceptContract, beginContract, refreshContracts } = useContracts();
+  const [refreshing, setRefreshing] = useState(false);
   const { unreadCount } = useNotifications();
   const { colors } = useTheme();
   const { user } = useAuth();
@@ -142,6 +144,13 @@ export default function HomeScreen() {
     [acceptContract]
   );
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await refreshContracts();
+    setRefreshing(false);
+  }, [refreshContracts]);
+
   const handleBegin = useCallback(
     async (id: string) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -171,6 +180,14 @@ export default function HomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.textDim}
+            colors={[colors.accent]}
+          />
+        }
       >
         {/* Header */}
         <View style={styles.header}>

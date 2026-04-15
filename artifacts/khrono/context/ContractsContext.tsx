@@ -98,6 +98,7 @@ type ContractsContextType = {
   requestCancelContract: (id: string, reason: string) => Promise<void>;
   confirmCancelContract: (id: string) => Promise<void>;
   rejectCancelRequest: (id: string) => Promise<void>;
+  refreshContracts: () => Promise<void>;
 };
 
 const ContractsContext = createContext<ContractsContextType | null>(null);
@@ -1115,6 +1116,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
+  const refreshContracts = useCallback(async () => {
+    if (userIdRef.current)
+      await loadContracts(userIdRef.current, { showLoading: false });
+  }, [loadContracts]);
+
   return (
     <ContractsContext.Provider
       value={{
@@ -1132,6 +1138,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         requestCancelContract,
         confirmCancelContract,
         rejectCancelRequest,
+        refreshContracts,
       }}
     >
       {children}
