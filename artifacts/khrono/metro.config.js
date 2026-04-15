@@ -24,6 +24,7 @@ config.server = {
 
 const workspaceRoot = path.resolve(__dirname, "../..");
 const pnpmStoreRoot = path.resolve(workspaceRoot, "node_modules/.pnpm");
+const localRoot = path.resolve(workspaceRoot, ".local");
 
 config.watchFolders = [workspaceRoot];
 
@@ -38,6 +39,7 @@ config.resolver = {
   sourceExts: [...config.resolver.sourceExts, "svg"],
   blockList: [
     new RegExp(`${pnpmStoreRoot.replace(/[/\\]/g, "[/\\\\]")}[/\\\\].*_tmp_\\d+`),
+    new RegExp(`${localRoot.replace(/[/\\]/g, "[/\\\\]")}[/\\\\].*`),
   ],
 };
 
