@@ -1218,7 +1218,8 @@ export default function ContractDetailScreen() {
     : 0;
 
   const totalMs = contract.duracaoTotal ?? 0;
-  const amount = isFixed && totalMs > 0
+  const isOverdue = isFixed && totalMs > 0 && elapsedMs > totalMs;
+  const amount = isFixed && totalMs > 0 && !isOverdue
     ? (totalMs / 1000 / 3600) * contract.ratePerHour
     : (elapsedMs / 1000 / 3600) * contract.ratePerHour;
 

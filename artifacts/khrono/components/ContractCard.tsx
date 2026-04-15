@@ -289,7 +289,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isOverdue = isTimer && totalFixedSecs !== null && elapsedSecs > totalFixedSecs;
   const remainingSecs = totalFixedSecs !== null ? Math.max(totalFixedSecs - elapsedSecs, 0) : null;
 
-  const amount = isTimer && totalFixedSecs
+  const amount = isTimer && totalFixedSecs && !isOverdue
     ? contract.ratePerHour * (totalFixedSecs / 3600)
     : (elapsedSecs / 3600) * contract.ratePerHour;
 
