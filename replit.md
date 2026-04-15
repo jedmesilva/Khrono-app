@@ -37,7 +37,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 |---|---|---|
 | `EXPO_PUBLIC_SUPABASE_URL` | Env var (shared) | Supabase project URL |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Secret | Supabase anonymous/public key |
-| `EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase service role key (do not expose to clients) |
+| `EXPO_SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase service role key (server-side only) |
 | `SUPABASE_ACCESS_TOKEN` | Secret | Supabase personal access token (for MCP server) |
 | `EXPO_PUBLIC_EAS_PROJECT_ID` | Env var (shared) | EAS project ID (optional) |
 | `PORT` | Env var (shared) | App port (5000) |
@@ -62,7 +62,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 - All sensitive operations are protected by Supabase Row Level Security (RLS) policies defined in `supabase/migrations/`
 - The Express API server (`artifacts/api-server`) handles backend routes and proxies Expo Metro traffic
 - Push notifications are sent via Expo's push notification service
-- The `EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` secret is stored safely in Replit Secrets and is NOT referenced in any app code — it exists for future server-side use only
+- The `EXPO_SUPABASE_SERVICE_ROLE_KEY` secret is stored safely in Replit Secrets and is NOT referenced in any app code — it exists for future server-side use only
 
 ## Package Management
 - Uses **pnpm** workspaces — always run `pnpm install` from the root to install all dependencies
