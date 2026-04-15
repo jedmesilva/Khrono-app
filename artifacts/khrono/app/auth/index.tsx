@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Img5 from "@/assets/images/img5.svg";
+import Img6 from "@/assets/images/img6.svg";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
@@ -110,7 +110,7 @@ export default function EntradaScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.bgImage} pointerEvents="none">
-        <Img5 width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+        <Img6 width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
       </View>
 
       <View style={styles.spacer} />
