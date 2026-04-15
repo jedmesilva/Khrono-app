@@ -548,10 +548,12 @@ const DELAY_BG    = "#fff4ee";
 function ContractStartRow({
   scheduledFor,
   isHiring,
+  isAccepted,
   colors,
 }: {
   scheduledFor?: number;
   isHiring: boolean;
+  isAccepted: boolean;
   colors: ColorPalette;
 }) {
   const [, setTick] = useState(0);
@@ -609,6 +611,14 @@ function ContractStartRow({
 
   // ── Immediate ──
   if (isImmediate) {
+    const immediateSub = isHiring
+      ? isAccepted
+        ? "O profissional pode iniciar a qualquer momento"
+        : "O profissional pode iniciar assim que aceitar"
+      : isAccepted
+        ? "Toque em iniciar contrato para começar"
+        : "Você poderá iniciar assim que aceitar";
+
     return (
       <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
         <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
@@ -616,11 +626,7 @@ function ContractStartRow({
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[s.detailTitle, { color: colors.text }]}>Início imediato</Text>
-          <Text style={[s.detailSub, { color: colors.textMuted }]}>
-            {isHiring
-              ? "O profissional pode iniciar assim que aceitar"
-              : "Você poderá iniciar assim que aceitar"}
-          </Text>
+          <Text style={[s.detailSub, { color: colors.textMuted }]}>{immediateSub}</Text>
         </View>
       </View>
     );
@@ -1343,6 +1349,7 @@ export default function ContractDetailScreen() {
           <ContractStartRow
             scheduledFor={contract.scheduledFor}
             isHiring={isHiring}
+            isAccepted={isAccepted}
             colors={colors}
           />
         )}
