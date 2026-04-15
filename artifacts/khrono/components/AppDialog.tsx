@@ -19,13 +19,51 @@ type Props = {
   visible: boolean;
   title: string;
   message?: string;
+  // API 1: raw buttons array (existing usage)
   buttons?: AppDialogButton[];
-  onDismiss: () => void;
+  onDismiss?: () => void;
+  // API 2: simple confirm/cancel labels (contract-detail usage)
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  destructive?: boolean;
 };
 
-export function AppDialog({ visible, title, message, buttons, onDismiss }: Props) {
+export function AppDialog({
+  visible,
+  title,
+  message,
+  buttons,
+  onDismiss,
+  confirmLabel,
+  cancelLabel,
+  onConfirm,
+  onCancel,
+  destructive = false,
+}: Props) {
   const { colors } = useTheme();
-  const btns = buttons && buttons.length > 0 ? buttons : [{ text: "OK" }];
+
+  const dismiss = onDismiss ?? onCancel ?? (() => {});
+
+  let btns: AppDialogButton[];
+
+  if (buttons && buttons.length > 0) {
+    btns = buttons;
+  } else if (confirmLabel) {
+    btns = [
+      ...(cancelLabel
+        ? [{ text: cancelLabel, style: "cancel" as const, onPress: onCancel }]
+        : []),
+      {
+        text: confirmLabel,
+        style: destructive ? ("destructive" as const) : ("default" as const),
+        onPress: onConfirm,
+      },
+    ];
+  } else {
+    btns = [{ text: "OK" }];
+  }
 
   return (
     <Modal
@@ -33,21 +71,33 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={onDismiss}
+      onRequestClose={dismiss}
     >
-      <View style={styles.overlay}>
-        <View style={[styles.card, { backgroundColor: colors.sheetBg, borderColor: colors.sheetBorder }]}>
+      <Pressable style={styles.overlay} onPress={dismiss}>
+        <Pressable
+          style={[
+            styles.card,
+            { backgroundColor: colors.sheetBg, borderColor: colors.sheetBorder },
+          ]}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.body}>
             <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
             {message ? (
-              <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
+              <Text style={[styles.message, { color: colors.textSecondary }]}>
+                {message}
+              </Text>
             ) : null}
           </View>
+
           <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+
           <View style={styles.btnRow}>
             {btns.map((btn, i) => (
               <React.Fragment key={i}>
-                {i > 0 && <View style={[styles.btnSep, { backgroundColor: colors.divider }]} />}
+                {i > 0 && (
+                  <View style={[styles.btnSep, { backgroundColor: colors.divider }]} />
+                )}
                 <Pressable
                   style={({ pressed }) => [
                     styles.btn,
@@ -55,7 +105,7 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
                   ]}
                   onPress={() => {
                     btn.onPress?.();
-                    onDismiss();
+                    dismiss();
                   }}
                 >
                   <Text
@@ -63,6 +113,8 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
                       styles.btnText,
                       btn.style === "cancel"
                         ? { color: colors.textSecondary }
+                        : btn.style === "destructive"
+                        ? { color: "#e06030", fontFamily: "DMSans_700Bold" }
                         : { color: "#e06030" },
                     ]}
                   >
@@ -72,8 +124,8 @@ export function AppDialog({ visible, title, message, buttons, onDismiss }: Props
               </React.Fragment>
             ))}
           </View>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
