@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Vibration } from "react-native";
+import { AppState, AppStateStatus, Vibration } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useNotifications } from "@/context/NotificationsContext";
 import { formatCurrency } from "@/lib/format";
@@ -395,6 +395,26 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
     init();
 
+    // ── AppState: refresh ao voltar para o foreground ──────────────────────────
+    // Quando o app vai para background, o WebSocket do Realtime pode ser
+    // suspenso pelo SO e eventos podem ser perdidos. Ao voltar ao foreground,
+    // fazemos um fetch direto do banco para garantir o estado mais recente.
+    const appStateRef = { current: AppState.currentState };
+    const appStateSub = AppState.addEventListener(
+      "change",
+      (nextState: AppStateStatus) => {
+        const wasBackground =
+          appStateRef.current === "background" ||
+          appStateRef.current === "inactive";
+        const isNowActive = nextState === "active";
+        appStateRef.current = nextState;
+
+        if (wasBackground && isNowActive && userIdRef.current) {
+          loadContracts(userIdRef.current, { showLoading: false });
+        }
+      }
+    );
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -410,6 +430,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      appStateSub.remove();
       subscription.unsubscribe();
       if (contractorChannel) supabase.removeChannel(contractorChannel);
       if (hiredChannel) supabase.removeChannel(hiredChannel);
