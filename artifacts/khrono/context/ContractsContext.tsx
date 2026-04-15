@@ -648,7 +648,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       await supabase.from("contract_time_entries").insert({
         contract_id: id,
-        event: "cancelled",
+        event: "rejected",
         triggered_by: user.id,
       });
 
@@ -816,8 +816,9 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       await supabase.from("contract_time_entries").insert({
         contract_id: id,
-        event: "ended",
+        event: "end_requested",
         triggered_by: user.id,
+        reason,
       });
 
       if (userIdRef.current)
@@ -889,6 +890,15 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw new Error(error.message);
 
+      const reason = contract.endReason ?? "Encerrado com acordo mútuo";
+
+      await supabase.from("contract_time_entries").insert({
+        contract_id: id,
+        event: "ended",
+        triggered_by: user.id,
+        reason,
+      });
+
       if (userIdRef.current)
         await loadContracts(userIdRef.current, { showLoading: false });
 
@@ -899,7 +909,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       broadcastUpdate(id, contractorId, hiredId);
 
       const amountLabel = formatCurrency(totalAmount);
-      const reason = contract.endReason ?? "Encerrado com acordo mútuo";
 
       if (otherPartyId) {
         sendPushNotification(
@@ -941,6 +950,12 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .eq("id", id);
 
       if (error) throw new Error(error.message);
+
+      await supabase.from("contract_time_entries").insert({
+        contract_id: id,
+        event: "end_rejected",
+        triggered_by: user.id,
+      });
 
       if (userIdRef.current)
         await loadContracts(userIdRef.current, { showLoading: false });
@@ -984,6 +999,13 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .eq("id", id);
 
       if (error) throw new Error(error.message);
+
+      await supabase.from("contract_time_entries").insert({
+        contract_id: id,
+        event: "cancel_requested",
+        triggered_by: user.id,
+        reason,
+      });
 
       if (userIdRef.current)
         await loadContracts(userIdRef.current, { showLoading: false });
@@ -1037,10 +1059,13 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw new Error(error.message);
 
+      const reason = contract?.cancelReason ?? "Cancelado com acordo mútuo";
+
       await supabase.from("contract_time_entries").insert({
         contract_id: id,
-        event: "cancelled",
+        event: "cancel_confirmed",
         triggered_by: user.id,
+        reason,
       });
 
       if (userIdRef.current)
@@ -1051,8 +1076,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
       const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
       broadcastUpdate(id, contractorId, hiredId);
-
-      const reason = contract?.cancelReason ?? "Cancelado com acordo mútuo";
 
       if (otherPartyId) {
         sendPushNotification(
@@ -1084,6 +1107,8 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
+      const contractBeforeUpdate = activeContracts.find((c) => c.id === id);
+
       const { error } = await supabase
         .from("contracts")
         .update({
@@ -1094,6 +1119,13 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .eq("id", id);
 
       if (error) throw new Error(error.message);
+
+      await supabase.from("contract_time_entries").insert({
+        contract_id: id,
+        event: "cancel_rejected",
+        triggered_by: user.id,
+        reason: contractBeforeUpdate?.cancelReason ?? undefined,
+      });
 
       if (userIdRef.current)
         await loadContracts(userIdRef.current, { showLoading: false });
