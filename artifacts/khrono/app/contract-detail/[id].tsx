@@ -1041,20 +1041,29 @@ export default function ContractDetailScreen() {
   const handleAccept = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading("accept", () => acceptContract(contract.id));
+    await withLoading("accept", () => acceptContract(contract.id), {
+      onSuccess: "Contrato aceito.",
+      onError: "Não foi possível aceitar o contrato.",
+    });
   }, [acceptContract, contract?.id]);
 
   const handleReject = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading("reject", () => rejectContract(contract.id));
+    await withLoading("reject", () => rejectContract(contract.id), {
+      onSuccess: "Contrato recusado.",
+      onError: "Não foi possível recusar o contrato.",
+    });
     router.back();
   }, [rejectContract, contract?.id]);
 
   const handleBegin = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading("begin", () => beginContract(contract.id));
+    await withLoading("begin", () => beginContract(contract.id), {
+      onSuccess: "Contrato iniciado.",
+      onError: "Não foi possível iniciar o contrato.",
+    });
   }, [beginContract, contract?.id]);
 
   const handleRequestEnd = useCallback(
@@ -1102,14 +1111,24 @@ export default function ContractDetailScreen() {
   const handleRejectCancel = useCallback(async () => {
     if (!contract) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await withLoading("rejectCancel", () => rejectCancelRequest(contract.id));
+    await withLoading("rejectCancel", () => rejectCancelRequest(contract.id), {
+      onSuccess: "Solicitação de cancelamento recusada.",
+      onError: "Não foi possível recusar o cancelamento.",
+    });
   }, [rejectCancelRequest, contract?.id]);
 
   const handleRequestCancel = useCallback(
     async (reason: string) => {
       if (!contract) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await withLoading("requestCancel", () => requestCancelContract(contract.id, reason));
+      await withLoading(
+        "requestCancel",
+        () => requestCancelContract(contract.id, reason),
+        {
+          onSuccess: "Cancelamento solicitado. Aguardando confirmação.",
+          onError: "Não foi possível solicitar o cancelamento.",
+        }
+      );
       setHelpOpen(false);
     },
     [requestCancelContract, contract?.id]
@@ -1125,9 +1144,15 @@ export default function ContractDetailScreen() {
       contract.cancelRequestedBy !== contract.person.profileId &&
       contract.cancelRequestedBy !== undefined
     ) {
-      await withLoading("confirmCancel", () => confirmCancelContract(contract.id));
+      await withLoading("confirmCancel", () => confirmCancelContract(contract.id), {
+        onSuccess: "Contrato cancelado.",
+        onError: "Não foi possível confirmar o cancelamento.",
+      });
     } else {
-      await withLoading("confirmCancel", () => cancelContract(contract.id));
+      await withLoading("confirmCancel", () => cancelContract(contract.id), {
+        onSuccess: "Contrato cancelado.",
+        onError: "Não foi possível cancelar o contrato.",
+      });
     }
     router.back();
   }, [cancelContract, confirmCancelContract, contract]);
