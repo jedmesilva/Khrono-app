@@ -73,9 +73,11 @@ function formatHM(ms: number): string {
   const d = Math.floor(totalSec / 86400);
   const h = Math.floor((totalSec % 86400) / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
   if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
   if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  return `${m}m`;
+  if (m > 0) return `${m}m`;
+  return `${s}s`;
 }
 
 function formatTimerDisplay(ms: number): string {
@@ -961,8 +963,10 @@ export default function ContractDetailScreen() {
     beginContract,
     requestEndContract,
     confirmEndContract,
+    rejectEndRequest,
     requestCancelContract,
     confirmCancelContract,
+    rejectCancelRequest,
   } = useContracts();
 
   const contract = [...activeContracts, ...history].find((c) => c.id === id);
@@ -1059,6 +1063,18 @@ export default function ContractDetailScreen() {
     await withLoading(() => confirmEndContract(contract.id));
   }, [confirmEndContract, contract?.id]);
 
+  const handleRejectEnd = useCallback(async () => {
+    if (!contract) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await withLoading(() => rejectEndRequest(contract.id));
+  }, [rejectEndRequest, contract?.id]);
+
+  const handleRejectCancel = useCallback(async () => {
+    if (!contract) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await withLoading(() => rejectCancelRequest(contract.id));
+  }, [rejectCancelRequest, contract?.id]);
+
   const handleRequestCancel = useCallback(
     async (reason: string) => {
       if (!contract) return;
@@ -1138,6 +1154,8 @@ export default function ContractDetailScreen() {
   // ── Time / money ──
   const elapsedMs = isRunning
     ? now - contract.startedAt
+    : (isPendingEnd || isPendingCancel) && contract.startedAt > 0
+    ? now - contract.startedAt
     : isEnded && contract.endedAt && contract.startedAt > 0
     ? contract.endedAt - contract.startedAt
     : isFixed && contract.duracaoTotal && !isPending && !isAccepted
@@ -1152,19 +1170,19 @@ export default function ContractDetailScreen() {
   const valueLabel = getValueLabel(contract);
 
   const showTimer =
-    isRunning || isPaused || isPendingEnd || isEnded || isScheduled || isPending || isAccepted;
+    isRunning || isPaused || isPendingEnd || isPendingCancel || isEnded || isScheduled || isPending || isAccepted;
   const showStartRow =
-    (isPending || isAccepted || isScheduled) && !isRunning;
+    (isPending || isAccepted || isScheduled) && !isRunning && !isPendingEnd && !isPendingCancel;
 
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
   // ── Status config ──
   const statusConfig = (() => {
     if (isPendingEnd)
-      return { label: "encerramento pendente", color: "#ffaa00" };
+      return { label: "encerramento pendente", color: colors.accent };
     if (isPendingCancel)
       return { label: "cancelamento pendente", color: colors.accent };
-    if (isRunning) return { label: "em andamento", color: "#18a06b" };
+    if (isRunning) return { label: "em andamento", color: colors.accent };
     if (isPending) return { label: "aguardando aceite", color: colors.accent };
     if (isAccepted) return { label: "aguardando início", color: colors.accent };
     if (isPaused) return { label: "pausado", color: "#ffaa00" };
@@ -1234,7 +1252,7 @@ export default function ContractDetailScreen() {
         {/* Pending banners */}
         {isPendingEnd && (
           <PendingBanner
-            icon={<Feather name="flag" size={16} color="#ffaa00" />}
+            icon={<Feather name="flag" size={16} color={colors.accent} />}
             title={
               iAmRequester
                 ? "Encerramento solicitado"
@@ -1244,7 +1262,7 @@ export default function ContractDetailScreen() {
               contract.endReason ? `Motivo: ${contract.endReason}` : undefined
             }
             sub={iAmRequester ? "Aguardando confirmação da contraparte" : undefined}
-            toneColor="#ffaa00"
+            toneColor={colors.accent}
             colors={colors}
           />
         )}
@@ -1616,13 +1634,13 @@ export default function ContractDetailScreen() {
               style={[
                 s.waitingRow,
                 {
-                  backgroundColor: "#18a06b10",
-                  borderColor: "#18a06b30",
+                  backgroundColor: colors.accent + "10",
+                  borderColor: colors.accent + "30",
                 },
               ]}
             >
-              <Feather name="clock" size={14} color="#18a06b99" />
-              <Text style={[s.waitingText, { color: "#18a06b99" }]}>
+              <Feather name="clock" size={14} color={colors.accent + "99"} />
+              <Text style={[s.waitingText, { color: colors.accent + "99" }]}>
                 Aguardando {contract.person.name} iniciar o serviço
               </Text>
             </View>
@@ -1644,11 +1662,11 @@ export default function ContractDetailScreen() {
             <View
               style={[
                 s.waitingRow,
-                { backgroundColor: "#ffaa0010", borderColor: "#ffaa0035" },
+                { backgroundColor: colors.accent + "10", borderColor: colors.accent + "35" },
               ]}
             >
-              <Feather name="clock" size={14} color="#ffaa00" />
-              <Text style={[s.waitingText, { color: "#ffaa00" }]}>
+              <Feather name="clock" size={14} color={colors.accent} />
+              <Text style={[s.waitingText, { color: colors.accent }]}>
                 Aguardando confirmação de encerramento
               </Text>
             </View>
@@ -1678,7 +1696,7 @@ export default function ContractDetailScreen() {
                 icon="check"
                 onPress={handleAccept}
                 variant="accent"
-                disabled={loading}
+                loading={loading}
               />
               <AppButton
                 label="recusar contrato"
@@ -1695,7 +1713,7 @@ export default function ContractDetailScreen() {
               icon="play"
               onPress={handleBegin}
               variant="accent"
-              disabled={loading}
+              loading={loading}
             />
           )}
           {isRunning && (
@@ -1708,22 +1726,40 @@ export default function ContractDetailScreen() {
             />
           )}
           {isPendingEnd && iAmConfirmer && (
-            <AppButton
-              label="confirmar encerramento"
-              icon="check"
-              onPress={handleConfirmEnd}
-              variant="green"
-              disabled={loading}
-            />
+            <View style={{ gap: 10 }}>
+              <AppButton
+                label="confirmar encerramento"
+                icon="check"
+                onPress={handleConfirmEnd}
+                variant="primary"
+                loading={loading}
+              />
+              <AppButton
+                label="recusar encerramento"
+                icon="x"
+                onPress={handleRejectEnd}
+                variant="ghost-red"
+                disabled={loading}
+              />
+            </View>
           )}
           {isPendingCancel && iAmConfirmer && (
-            <AppButton
-              label="confirmar cancelamento"
-              icon="check"
-              onPress={() => setConfirmCancelar(true)}
-              variant="red"
-              disabled={loading}
-            />
+            <View style={{ gap: 10 }}>
+              <AppButton
+                label="confirmar cancelamento"
+                icon="check"
+                onPress={() => setConfirmCancelar(true)}
+                variant="red"
+                disabled={loading}
+              />
+              <AppButton
+                label="recusar cancelamento"
+                icon="x"
+                onPress={handleRejectCancel}
+                variant="ghost"
+                disabled={loading}
+              />
+            </View>
           )}
 
           {/* Help link */}

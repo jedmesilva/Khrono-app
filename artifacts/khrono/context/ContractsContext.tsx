@@ -94,8 +94,10 @@ type ContractsContextType = {
   cancelContract: (id: string) => Promise<void>;
   requestEndContract: (id: string, reason: string) => Promise<void>;
   confirmEndContract: (id: string) => Promise<void>;
+  rejectEndRequest: (id: string) => Promise<void>;
   requestCancelContract: (id: string, reason: string) => Promise<void>;
   confirmCancelContract: (id: string) => Promise<void>;
+  rejectCancelRequest: (id: string) => Promise<void>;
 };
 
 const ContractsContext = createContext<ContractsContextType | null>(null);
@@ -876,6 +878,49 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
+  // ── Recusar encerramento ──────────────────────────────────────────────────────
+
+  const rejectEndRequest = useCallback(
+    async (id: string) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { error } = await supabase
+        .from("contracts")
+        .update({
+          status: "active",
+          end_requested_by: null,
+          end_reason: null,
+        })
+        .eq("id", id);
+
+      if (error) throw new Error(error.message);
+
+      if (userIdRef.current)
+        await loadContracts(userIdRef.current, { showLoading: false });
+
+      const contract = activeContracts.find((c) => c.id === id);
+      const otherPartyId = contract?.person.profileId;
+      const isHiring = contract?.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+
+      if (otherPartyId) {
+        sendPushNotification(
+          otherPartyId,
+          "Encerramento recusado",
+          "A outra parte recusou o encerramento. O contrato continua ativo.",
+          { contract_id: id },
+          "contract_updated"
+        ).catch(() => {});
+      }
+    },
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
+  );
+
   // ── Solicitar cancelamento (após iniciado) ────────────────────────────────────
 
   const requestCancelContract = useCallback(
@@ -986,6 +1031,49 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
+  // ── Recusar cancelamento ──────────────────────────────────────────────────────
+
+  const rejectCancelRequest = useCallback(
+    async (id: string) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { error } = await supabase
+        .from("contracts")
+        .update({
+          status: "active",
+          cancel_requested_by: null,
+          cancel_reason: null,
+        })
+        .eq("id", id);
+
+      if (error) throw new Error(error.message);
+
+      if (userIdRef.current)
+        await loadContracts(userIdRef.current, { showLoading: false });
+
+      const contract = activeContracts.find((c) => c.id === id);
+      const otherPartyId = contract?.person.profileId;
+      const isHiring = contract?.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+
+      if (otherPartyId) {
+        sendPushNotification(
+          otherPartyId,
+          "Cancelamento recusado",
+          "A outra parte recusou o cancelamento. O contrato continua ativo.",
+          { contract_id: id },
+          "contract_updated"
+        ).catch(() => {});
+      }
+    },
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
+  );
+
   return (
     <ContractsContext.Provider
       value={{
@@ -999,8 +1087,10 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         cancelContract,
         requestEndContract,
         confirmEndContract,
+        rejectEndRequest,
         requestCancelContract,
         confirmCancelContract,
+        rejectCancelRequest,
       }}
     >
       {children}

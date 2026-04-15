@@ -240,36 +240,42 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isAccepted = contract.status === "accepted";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = !!contract.scheduledFor && !isActive && !isPending;
+  const isScheduled = !!contract.scheduledFor && !isActive && !isPending && !isPendingEnd && !isPendingCancel;
 
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    if (isScheduled || !isActive) return;
+    if (isScheduled || (!isActive && !isPendingEnd && !isPendingCancel)) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [isScheduled, isActive]);
+  }, [isScheduled, isActive, isPendingEnd, isPendingCancel]);
 
   if (isScheduled) {
     return <ScheduledContractCard contract={contract} onPress={onPress} />;
   }
 
   const t = ROLE_THEME[isHiring ? "hiring" : "hired"];
-  const elapsedMs = isActive ? now - contract.startedAt : 0;
+  const isPendingState = isPendingEnd || isPendingCancel;
+  const elapsedMs = (isActive || isPendingState) ? now - contract.startedAt : 0;
   const elapsedSecs = elapsedMs / 1000;
   const totalFixedSecs = contract.duracaoTotal ? contract.duracaoTotal / 1000 : null;
   const progress = totalFixedSecs ? Math.min(elapsedSecs / totalFixedSecs, 1) : null;
   const isOverdue = isTimer && totalFixedSecs !== null && elapsedSecs > totalFixedSecs;
   const remainingSecs = totalFixedSecs !== null ? Math.max(totalFixedSecs - elapsedSecs, 0) : null;
-  const isPendingState = isPendingEnd || isPendingCancel;
 
   const amount = isTimer && totalFixedSecs
     ? contract.ratePerHour * (totalFixedSecs / 3600)
     : (elapsedSecs / 3600) * contract.ratePerHour;
 
-  const showAmount = !isPending && !isAccepted && !isPendingState;
-  const showElapsed = !isPending && !isAccepted && !isPendingState;
-  const footerLabel = showElapsed ? "Iniciado há" : "Aguardando início";
+  const showAmount = !isPending && !isAccepted;
+  const showElapsed = !isPending && !isAccepted;
+  const footerLabel = isActive
+    ? "Iniciado há"
+    : isPendingEnd
+    ? "Encerramento pendente"
+    : isPendingCancel
+    ? "Cancelamento pendente"
+    : "Aguardando início";
   const footerValue = showElapsed ? formatHM(elapsedSecs) : null;
 
   return (
@@ -280,7 +286,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
         {
           backgroundColor: colors.card,
           borderColor: isPendingState
-            ? (isPendingEnd ? "#ffaa0040" : "#e0603040")
+            ? colors.accent + "40"
             : colors.cardBorder,
         },
         pressed && styles.cardPressed,
@@ -427,9 +433,9 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
 
         {/* Pending end */}
         {isPendingEnd && (
-          <View style={[styles.waitingRow, { borderColor: "#ffaa0040", backgroundColor: "#ffaa0008" }]}>
-            <Feather name="flag" size={12} color="#ffaa00" />
-            <Text style={[styles.waitingText, { color: "#ffaa00" }]}>
+          <View style={[styles.waitingRow, { borderColor: colors.accent + "40", backgroundColor: colors.accent + "08" }]}>
+            <Feather name="flag" size={12} color={colors.accent} />
+            <Text style={[styles.waitingText, { color: colors.accent }]}>
               {contract.endRequestedBy === contract.person.profileId
                 ? "Confirmar encerramento — toque para ver"
                 : "Encerramento aguardando confirmação"}

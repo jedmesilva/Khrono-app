@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
-import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 
 import { GlobalStyles } from "@/constants/globalStyles";
 import { useTheme } from "@/context/ThemeContext";
@@ -17,6 +17,7 @@ type Props = {
   icon?: React.ComponentProps<typeof Feather>["name"];
   variant?: AppButtonVariant;
   disabled?: boolean;
+  loading?: boolean;
   style?: ViewStyle;
 };
 
@@ -26,6 +27,7 @@ export function AppButton({
   icon,
   variant = "primary",
   disabled = false,
+  loading = false,
   style,
 }: Props) {
   const { colors } = useTheme();
@@ -52,7 +54,8 @@ export function AppButton({
     variant === "primary"   ? colors.btnPrimaryText   :
                               colors.btnActionText;
 
-  const resolvedColor = disabled ? colors.btnDisabledText : textColor;
+  const isDisabled = disabled || loading;
+  const resolvedColor = isDisabled ? colors.btnDisabledText : textColor;
 
   const borderColor =
     variant === "ghost-red" ? DANGER_COLOR + "60" :
@@ -65,15 +68,15 @@ export function AppButton({
   return (
     <Pressable
       onPress={() => {
-        if (disabled) return;
+        if (isDisabled) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         onPress();
       }}
-      disabled={disabled}
+      disabled={isDisabled}
       style={({ pressed }) => [
         GlobalStyles.primaryBtn,
         {
-          backgroundColor: disabled ? colors.btnDisabledBg : pressed ? bgPressed : bg,
+          backgroundColor: isDisabled ? colors.btnDisabledBg : pressed ? bgPressed : bg,
           borderColor,
           borderWidth,
           opacity: pressed ? 0.9 : 1,
@@ -82,8 +85,14 @@ export function AppButton({
         style,
       ]}
     >
-      {icon && <Feather name={icon} size={15} color={resolvedColor} />}
-      <Text style={[s.label, { color: resolvedColor }]}>{label}</Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={resolvedColor} />
+      ) : icon ? (
+        <Feather name={icon} size={15} color={resolvedColor} />
+      ) : null}
+      <Text style={[s.label, { color: resolvedColor }]}>
+        {loading ? "Aguarde…" : label}
+      </Text>
     </Pressable>
   );
 }
