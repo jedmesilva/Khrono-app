@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 28, paddingTop: 20 },
   iconWrap: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030",
+    backgroundColor: "#e0603015",
     alignItems: "center", justifyContent: "center", marginBottom: 24,
   },
   title: { fontFamily: "Sora_700Bold", fontSize: 28, letterSpacing: -0.8, marginBottom: 10 },
