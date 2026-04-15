@@ -6,13 +6,13 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  Image,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import Img6 from "@/assets/images/img6.svg";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
@@ -109,9 +109,12 @@ export default function EntradaScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={styles.bgImage} pointerEvents="none">
-        <Img6 width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
-      </View>
+      <Image
+        source={require("@/assets/images/krnoconcept.webp")}
+        style={styles.bgImage}
+        resizeMode="cover"
+        pointerEvents="none"
+      />
 
       <View style={styles.spacer} />
 
