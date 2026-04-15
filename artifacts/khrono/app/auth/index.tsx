@@ -6,13 +6,13 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
-  Image,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import Img5 from "@/assets/images/img5.svg";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
@@ -109,12 +109,9 @@ export default function EntradaScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <Image
-        source={require("@/assets/images/img4.png")}
-        style={styles.bgImage}
-        resizeMode="cover"
-        pointerEvents="none"
-      />
+      <View style={styles.bgImage} pointerEvents="none">
+        <Img5 width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+      </View>
 
       <View style={styles.spacer} />
 
