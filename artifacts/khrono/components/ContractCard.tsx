@@ -145,7 +145,7 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
               <><Text style={[styles.headerName, { color: "#6B6760" }]}>{contract.person.name}</Text>{" contratou você"}</>
             )}
           </Text>
-          <Text style={styles.contractId}>KRN-{contract.id.slice(-8).toUpperCase()}</Text>
+          <Text style={styles.contractId}>{contract.code || `KRN-${contract.id.slice(-8).toUpperCase()}`}</Text>
         </View>
         <View style={styles.headerBottom}>
           {scheduledAmount !== null ? (
@@ -333,7 +333,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
               <><Text style={[styles.headerName, { color: t.nameColor }]}>{contract.person.name}</Text>{" contratou você"}</>
             )}
           </Text>
-          <Text style={[styles.contractId, { color: t.relationColor }]}>KRN-{contract.id.slice(-8).toUpperCase()}</Text>
+          <Text style={[styles.contractId, { color: t.relationColor }]}>{contract.code || `KRN-${contract.id.slice(-8).toUpperCase()}`}</Text>
         </View>
         <View style={styles.headerBottom}>
           <Text style={[styles.headerAmount, { color: isOverdue ? "#E8956A" : t.amountColor }]}>

@@ -1175,7 +1175,7 @@ export default function ContractDetailScreen() {
   const showStartRow =
     (isPending || isAccepted || isScheduled) && !isRunning && !isPendingEnd && !isPendingCancel;
 
-  const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
+  const contratoId = contract.code || `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
   // ── Status config ──
   const statusConfig = (() => {
