@@ -865,8 +865,10 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const endedAt = Date.now();
       const duration = (endedAt - contract.startedAt) / 1000 / 3600;
+      const fixedHours = contract.duracaoTotal ? contract.duracaoTotal / 1000 / 3600 : null;
+      const isOverdue = contract.tipo === "timer" && fixedHours !== null && duration > fixedHours;
       const totalAmount =
-        contract.tipo === "timer" && contract.duracaoTotal
+        contract.tipo === "timer" && contract.duracaoTotal && !isOverdue
           ? parseFloat(
               (
                 (contract.duracaoTotal / 1000 / 3600) *
