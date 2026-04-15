@@ -382,7 +382,7 @@ function ArcProgress({
         </SvgText>
         <SvgText
           x={ARC_CX}
-          y={ARC_CY + 28}
+          y={ARC_CY + 36}
           textAnchor="middle"
           fill={colors.textMuted}
           fontSize={13}
@@ -393,16 +393,16 @@ function ArcProgress({
 
         <Line
           x1={ARC_CX - 20}
-          y1={ARC_CY + 44}
+          y1={ARC_CY + 52}
           x2={ARC_CX + 20}
-          y2={ARC_CY + 44}
+          y2={ARC_CY + 52}
           stroke={colors.surfaceBorder}
           strokeWidth={1}
         />
 
         <SvgText
           x={ARC_CX}
-          y={ARC_CY + 64}
+          y={ARC_CY + 72}
           textAnchor="middle"
           fill={colors.accent}
           fontSize={21}
@@ -412,7 +412,7 @@ function ArcProgress({
         </SvgText>
         <SvgText
           x={ARC_CX}
-          y={ARC_CY + 80}
+          y={ARC_CY + 88}
           textAnchor="middle"
           fill={colors.textMuted}
           fontSize={11}
