@@ -5,8 +5,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Dimensions,
   Easing,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -18,8 +18,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/context/ThemeContext";
 
-const { width } = Dimensions.get("window");
-
 type InputMode = "email" | "phone";
 
 function formatPhone(digits: string): string {
@@ -27,53 +25,6 @@ function formatPhone(digits: string): string {
   if (d.length <= 2) return d.length ? `(${d}` : "";
   if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-}
-
-function FloatingOrb({ size, color, x, y, duration, delay }: {
-  size: number; color: string; x: number; y: number; duration: number; delay: number;
-}) {
-  const tx = useRef(new Animated.Value(0)).current;
-  const ty = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.delay(delay),
-      Animated.timing(opacity, { toValue: 1, duration: 1200, useNativeDriver: true }),
-    ]).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(tx, { toValue: 28, duration, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-          Animated.timing(ty, { toValue: -18, duration: duration * 0.7, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        ]),
-        Animated.parallel([
-          Animated.timing(tx, { toValue: -14, duration: duration * 0.85, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-          Animated.timing(ty, { toValue: 22, duration, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        ]),
-        Animated.parallel([
-          Animated.timing(tx, { toValue: 0, duration: duration * 0.9, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-          Animated.timing(ty, { toValue: 0, duration: duration * 0.6, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        ]),
-      ])
-    ).start();
-  }, []);
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={{
-        position: "absolute",
-        left: x, top: y,
-        width: size, height: size,
-        borderRadius: size / 2,
-        backgroundColor: color,
-        opacity: Animated.multiply(opacity, 0.15),
-        transform: [{ translateX: tx }, { translateY: ty }],
-      }}
-    />
-  );
 }
 
 export default function EntradaScreen() {
@@ -158,24 +109,17 @@ export default function EntradaScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={styles.background} pointerEvents="none">
-        <FloatingOrb size={280} color="#e06030" x={-80} y={-60} duration={7000} delay={0} />
-        <FloatingOrb size={200} color="#e06030" x={width - 140} y={80} duration={9000} delay={500} />
-        <FloatingOrb size={160} color="#18a06b" x={width / 2 - 40} y={180} duration={11000} delay={800} />
-      </View>
-
-      <Animated.View
-        style={[styles.logoArea, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
+      <Image
+        source={require("@/assets/images/img4.png")}
+        style={styles.bgImage}
+        resizeMode="cover"
         pointerEvents="none"
-      >
-        <Text style={[styles.logoText, { color: colors.text }]}>
-          Kr<Text style={{ color: "#e06030" }}>o</Text>no
-        </Text>
-        <Text style={[styles.logoSub, { color: colors.textMuted }]}>app de contratos</Text>
-      </Animated.View>
+      />
+
+      <View style={styles.spacer} />
 
       <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
-        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + 20, opacity: fadeAnim, transform: [{ translateY: slideAnim }], backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <Text style={[styles.sheetTitle, { color: colors.text }]}>
             {isEmail ? "Qual é o seu e-mail?" : "Qual é o seu telefone?"}
           </Text>
@@ -251,25 +195,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  background: {
+  bgImage: {
     ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
   },
-  logoArea: {
+  spacer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoText: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 52,
-    letterSpacing: -2,
-    marginBottom: 10,
-  },
-  logoSub: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: "uppercase",
   },
   sheet: {
     borderTopLeftRadius: 28,
