@@ -554,24 +554,37 @@ function ContractStartRow({
   isHiring: boolean;
   colors: ColorPalette;
 }) {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!scheduledFor) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [scheduledFor]);
+
   const isImmediate = !scheduledFor;
-  const diffMs = scheduledFor ? scheduledFor - Date.now() : null;
-  const isFuture  = diffMs !== null && diffMs > 0;
-  const isDelayed = diffMs !== null && diffMs <= 0;
+  const diffMs      = scheduledFor ? scheduledFor - Date.now() : null;
+  const isFuture    = diffMs !== null && diffMs > 0;
+  const isDelayed   = diffMs !== null && diffMs <= 0;
 
   const formattedDate = scheduledFor ? formatData(scheduledFor) : "";
 
-  const futureDays = isFuture
-    ? Math.round(diffMs! / (1000 * 60 * 60 * 24))
-    : 0;
-  const futureSubtitle =
-    isFuture && diffMs! < 86_400_000
-      ? "Hoje"
-      : `Em ${futureDays} dia${futureDays !== 1 ? "s" : ""}`;
+  const remainingSec = isFuture ? Math.floor(diffMs! / 1000) : 0;
+  const isNow        = isFuture && remainingSec <= 5 * 60;
+  const isNear       = isFuture && remainingSec <= 30 * 60;
 
-  const delayDays = isDelayed
-    ? Math.ceil(Math.abs(diffMs!) / (1000 * 60 * 60 * 24))
-    : 0;
+  const futureTone = isNow
+    ? { icon: "#18a06b", text: "#18a06b", bg: "#18a06b15" }
+    : isNear
+    ? { icon: "#ffaa00", text: "#ffaa00", bg: "#ffaa0012" }
+    : { icon: colors.textMuted, text: colors.textSecondary, bg: colors.surface };
+
+  const futureTitle    = isNow ? "Iniciando agora" : `Inicia em ${formatCountdown(remainingSec)}`;
+  const futureSubtitle = isHiring
+    ? "Chegada prevista do profissional"
+    : "Horário de início do serviço";
+
+  const delayDays  = isDelayed ? Math.ceil(Math.abs(diffMs!) / (1000 * 60 * 60 * 24)) : 0;
   const delayLabel = `${delayDays} dia${delayDays !== 1 ? "s" : ""} em atraso`;
 
   const handleAddToCalendar = useCallback(async () => {
@@ -617,11 +630,11 @@ function ContractStartRow({
   if (isFuture) {
     return (
       <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-        <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
-          <Feather name="calendar" size={15} color={colors.textMuted} />
+        <View style={[s.iconWrap, { backgroundColor: futureTone.bg }]}>
+          <Feather name="calendar" size={15} color={futureTone.icon} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[s.detailTitle, { color: colors.text }]}>{formattedDate}</Text>
+          <Text style={[s.detailTitle, { color: futureTone.text }]}>{futureTitle}</Text>
           <Text style={[s.detailSub, { color: colors.textMuted }]}>{futureSubtitle}</Text>
         </View>
         <Pressable
