@@ -598,12 +598,7 @@ function ContractStartRow({
   if (isImmediate) {
     return (
       <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-        <View
-          style={[
-            s.iconWrap,
-            { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
-          ]}
-        >
+        <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
           <Feather name="zap" size={15} color={colors.textMuted} />
         </View>
         <View style={{ flex: 1 }}>
@@ -622,12 +617,7 @@ function ContractStartRow({
   if (isFuture) {
     return (
       <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-        <View
-          style={[
-            s.iconWrap,
-            { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
-          ]}
-        >
+        <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
           <Feather name="calendar" size={15} color={colors.textMuted} />
         </View>
         <View style={{ flex: 1 }}>
@@ -667,12 +657,7 @@ function ContractStartRow({
   // ── Delayed (past) ──
   return (
     <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-      <View
-        style={[
-          s.iconWrap,
-          { backgroundColor: DELAY_BG, borderWidth: 1, borderColor: DELAY_COLOR + "40" },
-        ]}
-      >
+      <View style={[s.iconWrap, { backgroundColor: DELAY_BG }]}>
         <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
           <Rect x="3" y="4" width="18" height="18" rx="2" stroke={DELAY_COLOR} strokeWidth="2" />
           <Line x1="16" y1="2" x2="16" y2="6" stroke={DELAY_COLOR} strokeWidth="2" strokeLinecap="round" />
