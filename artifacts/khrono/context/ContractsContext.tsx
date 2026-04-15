@@ -330,6 +330,22 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           await loadContracts(userIdRef.current, { showLoading: false });
       };
 
+      // Detecta reconexão: quando um canal volta ao estado SUBSCRIBED depois
+      // de já ter estado conectado, significa que houve uma queda e reconexão
+      // do WebSocket — eventos podem ter sido perdidos, então fazemos refresh.
+      const makeReconnectHandler = (onReconnect: () => void) => {
+        let everSubscribed = false;
+        return (status: string) => {
+          if (status === "SUBSCRIBED") {
+            if (everSubscribed) {
+              onReconnect();
+            } else {
+              everSubscribed = true;
+            }
+          }
+        };
+      };
+
       contractorChannel = supabase
         .channel("contracts-as-contractor")
         .on(
@@ -342,7 +358,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           },
           handleChange
         )
-        .subscribe();
+        .subscribe(makeReconnectHandler(handleChange));
 
       hiredChannel = supabase
         .channel("contracts-as-hired")
@@ -365,7 +381,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
             await handleChange();
           }
         )
-        .subscribe();
+        .subscribe(makeReconnectHandler(handleChange));
 
       const broadcastCh = supabase
         .channel("khrono-contract-events")
@@ -387,9 +403,13 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
             await handleChange();
           }
         })
-        .subscribe((s) => {
-          broadcastReadyRef.current = s === "SUBSCRIBED";
-        });
+        .subscribe((() => {
+          const onReconnect = makeReconnectHandler(handleChange);
+          return (s: string) => {
+            broadcastReadyRef.current = s === "SUBSCRIBED";
+            onReconnect(s);
+          };
+        })());
       broadcastChannelRef.current = broadcastCh;
     };
 
