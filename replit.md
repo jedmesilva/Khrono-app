@@ -44,9 +44,9 @@ All secrets are stored in Replit Secrets (never hardcoded):
 | `EXPO_METRO_PORT` | Env var (shared) | Metro bundler proxy port (22861) |
 
 ## Database
-- **Supabase** is used for authentication, realtime subscriptions, and the primary database
-- Migrations are in `supabase/migrations/` and must be applied via the Supabase dashboard or CLI
-- The Replit PostgreSQL database is provisioned but Supabase handles all app data
+- Replit PostgreSQL is provisioned and connectivity has been verified through `DATABASE_URL`
+- **Supabase** is still used by the mobile app for authentication, realtime subscriptions, and existing app data because the current Expo code depends on Supabase Auth/Realtimes APIs
+- Migrations are in `supabase/migrations/` and must be applied via the Supabase dashboard or CLI for the current data backend
 - Supabase Row Level Security (RLS) policies protect all data at the database level
 
 ## Key Features
@@ -58,7 +58,8 @@ All secrets are stored in Replit Secrets (never hardcoded):
 - Skills, services, and tools catalog
 
 ## Architecture Notes
-- The Supabase client (`artifacts/khrono/lib/supabase.ts`) runs on the mobile client using the public anon key + RLS — this is the correct and secure architecture for React Native apps
+- Expo configuration now uses static `artifacts/khrono/app.json`; dynamic `app.config.js` was removed for Replit Expo compatibility
+- The Supabase client (`artifacts/khrono/lib/supabase.ts`) runs on the mobile client using the public anon key + RLS
 - All sensitive operations are protected by Supabase Row Level Security (RLS) policies defined in `supabase/migrations/`
 - The Express API server (`artifacts/api-server`) handles backend routes and proxies Expo Metro traffic
 - Push notifications are sent via Expo's push notification service

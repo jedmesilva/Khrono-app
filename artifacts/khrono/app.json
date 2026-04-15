@@ -14,10 +14,12 @@
       "backgroundColor": "#060606"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.khrono.app"
     },
     "android": {
-      "backgroundColor": "#060606"
+      "backgroundColor": "#060606",
+      "package": "com.khrono.app"
     },
     "web": {
       "favicon": "./assets/images/icon.png"
