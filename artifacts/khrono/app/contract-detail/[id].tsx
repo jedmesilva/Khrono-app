@@ -371,8 +371,8 @@ function ArcProgress({
             right: 0,
             bottom: 0,
             alignItems: "center",
-            justifyContent: "center",
-            paddingTop: 10,
+            justifyContent: "flex-start",
+            paddingTop: 66,
           }}
         >
           <Text
