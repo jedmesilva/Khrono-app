@@ -33,6 +33,7 @@ import { LocationProvider } from "@/context/LocationContext";
 import { UserSettingsProvider } from "@/context/UserSettingsContext";
 import { AvailabilityProvider } from "@/context/AvailabilityContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -150,7 +151,9 @@ export default function RootLayout() {
                                 <ConfirmationProvider>
                                   <DocumentsProvider>
                                     <ServicesProvider>
-                                      <RootLayoutNav />
+                                      <ToastProvider>
+                                        <RootLayoutNav />
+                                      </ToastProvider>
                                     </ServicesProvider>
                                   </DocumentsProvider>
                                 </ConfirmationProvider>

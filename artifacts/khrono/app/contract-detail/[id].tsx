@@ -30,7 +30,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppButton } from "@/components/AppButton";
 import { AppDialog } from "@/components/AppDialog";
 import { ReasonSheet } from "@/components/ReasonSheet";
-import { Toast, useToast } from "@/components/Toast";
+import { useToast } from "@/context/ToastContext";
 import {
   Contract,
   isContractRunning,
@@ -980,7 +980,7 @@ export default function ContractDetailScreen() {
   const [reasonSheetMode, setReasonSheetMode] = useState<"end" | "cancel" | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const loading = loadingAction !== null;
-  const { toastState, show: showToast } = useToast();
+  const showToast = useToast();
 
   const helpRef = useRef<BottomSheetModal>(null);
   const helpSnapPoints = useMemo(() => ["70%"], []);
@@ -1861,13 +1861,6 @@ export default function ContractDetailScreen() {
           else handleRequestCancel(reason);
           setReasonSheetMode(null);
         }}
-      />
-
-      {/* ── Toast Feedback ── */}
-      <Toast
-        visible={toastState.visible}
-        message={toastState.message}
-        type={toastState.type}
       />
 
       {/* ── Cancel Confirm Dialog ── */}

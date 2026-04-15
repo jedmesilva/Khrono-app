@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { Toast, useToast } from "@/components/Toast";
+import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { DocStatus, useDocuments } from "@/context/DocumentsContext";
@@ -117,7 +117,7 @@ export default function ContaScreen() {
   const topPadding = isWeb ? insets.top + 67 : insets.top;
   const { user, refreshUser, logout } = useAuth();
 
-  const { toastState, show: showToast } = useToast();
+  const showToast = useToast();
 
   const [editing, setEditing] = useState<EditingField>(null);
   const [draft, setDraft] = useState("");
@@ -247,8 +247,6 @@ export default function ContaScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Toast visible={toastState.visible} message={toastState.message} type={toastState.type} />
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingTop: topPadding + 16, paddingBottom: isWeb ? 34 + 84 + 20 : 100 }]}
