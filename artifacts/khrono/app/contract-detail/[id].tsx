@@ -23,7 +23,8 @@ import {
   View,
 } from "react-native";
 import * as ExpoLocation from "expo-location";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Line, Path, Rect } from "react-native-svg";
+import * as Calendar from "expo-calendar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
@@ -539,69 +540,173 @@ function FreeTimer({
   );
 }
 
-// ─── Scheduled Row ────────────────────────────────────────────────────────────
+// ─── Contract Start Row ───────────────────────────────────────────────────────
 
-function ScheduledRow({
+const DELAY_COLOR = "#c4601a";
+const DELAY_BG    = "#fff4ee";
+
+function ContractStartRow({
   scheduledFor,
   isHiring,
   colors,
 }: {
-  scheduledFor: number;
+  scheduledFor?: number;
   isHiring: boolean;
   colors: ColorPalette;
 }) {
-  const [remaining, setRemaining] = useState(() =>
-    Math.max(0, Math.floor((scheduledFor - Date.now()) / 1000))
-  );
+  const isImmediate = !scheduledFor;
+  const diffMs = scheduledFor ? scheduledFor - Date.now() : null;
+  const isFuture  = diffMs !== null && diffMs > 0;
+  const isDelayed = diffMs !== null && diffMs <= 0;
 
-  useEffect(() => {
-    const id = setInterval(
-      () => setRemaining(Math.max(0, Math.floor((scheduledFor - Date.now()) / 1000))),
-      1000
+  const formattedDate = scheduledFor ? formatData(scheduledFor) : "";
+
+  const futureDays = isFuture
+    ? Math.round(diffMs! / (1000 * 60 * 60 * 24))
+    : 0;
+  const futureSubtitle =
+    isFuture && diffMs! < 86_400_000
+      ? "Hoje"
+      : `Em ${futureDays} dia${futureDays !== 1 ? "s" : ""}`;
+
+  const delayDays = isDelayed
+    ? Math.ceil(Math.abs(diffMs!) / (1000 * 60 * 60 * 24))
+    : 0;
+  const delayLabel = `${delayDays} dia${delayDays !== 1 ? "s" : ""} em atraso`;
+
+  const handleAddToCalendar = useCallback(async () => {
+    if (!scheduledFor) return;
+    try {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status !== "granted") return;
+      const cals = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+      const cal = cals.find((c) => c.allowsModifications) ?? cals[0];
+      if (!cal) return;
+      await Calendar.createEventAsync(cal.id, {
+        title: isHiring ? "Início do serviço contratado" : "Início do serviço",
+        startDate: new Date(scheduledFor),
+        endDate: new Date(scheduledFor + 3_600_000),
+        notes: "Agendado via Khrono",
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      // silently ignore
+    }
+  }, [scheduledFor, isHiring]);
+
+  // ── Immediate ──
+  if (isImmediate) {
+    return (
+      <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+        <View
+          style={[
+            s.iconWrap,
+            { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
+          ]}
+        >
+          <Feather name="zap" size={15} color={colors.textMuted} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.detailTitle, { color: colors.text }]}>Início imediato</Text>
+          <Text style={[s.detailSub, { color: colors.textMuted }]}>
+            {isHiring
+              ? "O profissional pode iniciar assim que aceitar"
+              : "Você poderá iniciar assim que aceitar"}
+          </Text>
+        </View>
+      </View>
     );
-    return () => clearInterval(id);
-  }, [scheduledFor]);
+  }
 
-  const isNow = remaining <= 5 * 60;
-  const isNear = remaining <= 30 * 60;
+  // ── Scheduled (future) ──
+  if (isFuture) {
+    return (
+      <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+        <View
+          style={[
+            s.iconWrap,
+            { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
+          ]}
+        >
+          <Feather name="calendar" size={15} color={colors.textMuted} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.detailTitle, { color: colors.text }]}>{formattedDate}</Text>
+          <Text style={[s.detailSub, { color: colors.textMuted }]}>{futureSubtitle}</Text>
+        </View>
+        <Pressable
+          onPress={handleAddToCalendar}
+          hitSlop={8}
+          style={({ pressed }) => ({
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: colors.surfaceBorder,
+            backgroundColor: pressed ? colors.surface + "cc" : colors.surface,
+          })}
+        >
+          <Feather name="calendar" size={11} color={colors.textSecondary} />
+          <Text
+            style={{
+              fontFamily: "DMSans_500Medium",
+              fontSize: 11,
+              color: colors.textSecondary,
+            }}
+          >
+            Agendar
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
 
-  const tone = isNow
-    ? { bg: "#18a06b15", border: "#18a06b35", icon: "#18a06b", text: "#18a06b" }
-    : isNear
-    ? { bg: "#ffaa0012", border: "#ffaa0035", icon: "#ffaa00", text: "#ffaa00" }
-    : { bg: colors.surface, border: colors.surfaceBorder, icon: colors.textMuted, text: colors.textSecondary };
-
+  // ── Delayed (past) ──
   return (
     <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
       <View
         style={[
           s.iconWrap,
-          { backgroundColor: tone.bg, borderWidth: 1, borderColor: tone.border },
+          { backgroundColor: DELAY_BG, borderWidth: 1, borderColor: DELAY_COLOR + "40" },
         ]}
       >
-        <Feather name="clock" size={15} color={tone.icon} />
+        <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+          <Rect x="3" y="4" width="18" height="18" rx="2" stroke={DELAY_COLOR} strokeWidth="2" />
+          <Line x1="16" y1="2" x2="16" y2="6" stroke={DELAY_COLOR} strokeWidth="2" strokeLinecap="round" />
+          <Line x1="8" y1="2" x2="8" y2="6" stroke={DELAY_COLOR} strokeWidth="2" strokeLinecap="round" />
+          <Line x1="3" y1="10" x2="21" y2="10" stroke={DELAY_COLOR} strokeWidth="2" />
+          <Line x1="12" y1="14" x2="12" y2="17" stroke={DELAY_COLOR} strokeWidth="2" strokeLinecap="round" />
+          <Line x1="12" y1="19.5" x2="12.01" y2="19.5" stroke={DELAY_COLOR} strokeWidth="2.5" strokeLinecap="round" />
+        </Svg>
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={[s.detailTitle, { color: tone.text }]}>
-          {isNow ? "Iniciando agora" : `Inicia em ${formatCountdown(remaining)}`}
-        </Text>
-        <Text style={[s.detailSub, { color: colors.textMuted }]}>
-          {isHiring
-            ? "Chegada prevista do profissional"
-            : "Horário de início do serviço"}
-        </Text>
+        <Text style={[s.detailTitle, { color: colors.text }]}>Início atrasado</Text>
+        <Text style={[s.detailSub, { color: colors.textMuted }]}>Era para {formattedDate}</Text>
       </View>
-      {!isNow && (
+      <View
+        style={{
+          paddingHorizontal: 9,
+          paddingVertical: 4,
+          borderRadius: 20,
+          backgroundColor: DELAY_BG,
+          borderWidth: 1,
+          borderColor: DELAY_COLOR + "35",
+        }}
+      >
         <Text
           style={{
-            fontSize: 13,
-            fontFamily: "DMMono_400Regular",
-            color: isNear ? "#ffaa00" : colors.textMuted,
+            fontFamily: "DMSans_600SemiBold",
+            fontSize: 11,
+            color: DELAY_COLOR,
+            letterSpacing: 0.1,
           }}
         >
-          {formatCountdown(remaining)}
+          {delayLabel}
         </Text>
-      )}
+      </View>
     </View>
   );
 }
@@ -1044,10 +1149,8 @@ export default function ContractDetailScreen() {
 
   const showTimer =
     isRunning || isPaused || isPendingEnd || isEnded || isScheduled || isPending || isAccepted;
-  const showScheduledRow =
-    (isPending || isAccepted || isScheduled) && !!contract.scheduledFor;
-  const showImmediateRow =
-    (isPending || isAccepted) && !contract.scheduledFor && !isRunning;
+  const showStartRow =
+    (isPending || isAccepted || isScheduled) && !isRunning;
 
   const contratoId = `KRN-${contract.id.slice(-8).toUpperCase()}`;
 
@@ -1237,41 +1340,13 @@ export default function ContractDetailScreen() {
           <LocationRow location={contract.location} colors={colors} />
         )}
 
-        {/* Scheduled row */}
-        {showScheduledRow && (
-          <ScheduledRow
-            scheduledFor={contract.scheduledFor!}
+        {/* Contract start row */}
+        {showStartRow && (
+          <ContractStartRow
+            scheduledFor={contract.scheduledFor}
             isHiring={isHiring}
             colors={colors}
           />
-        )}
-
-        {/* Immediate start row */}
-        {showImmediateRow && (
-          <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
-            <View
-              style={[
-                s.iconWrap,
-                { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
-              ]}
-            >
-              <Feather name="zap" size={15} color={colors.textMuted} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.detailTitle, { color: colors.text }]}>
-                Início imediato
-              </Text>
-              <Text style={[s.detailSub, { color: colors.textMuted }]}>
-                {isHiring
-                  ? isAccepted
-                    ? "O profissional pode iniciar a qualquer momento"
-                    : "O profissional pode iniciar assim que aceitar"
-                  : isAccepted
-                    ? "Toque em iniciar contrato para começar"
-                    : "Você poderá iniciar assim que aceitar"}
-              </Text>
-            </View>
-          </View>
         )}
 
         {/* Time hero */}
