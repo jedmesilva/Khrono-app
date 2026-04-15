@@ -23,7 +23,7 @@ import {
   View,
 } from "react-native";
 import * as ExpoLocation from "expo-location";
-import Svg, { Line, Path, Text as SvgText } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
@@ -341,86 +341,103 @@ function ArcProgress({
 
   return (
     <View style={{ alignItems: "center", paddingVertical: 24 }}>
-      <Svg width={208} height={212}>
-        <Path
-          d={buildArcPath(ARC_START, ARC_SWEEP, ARC_R)}
-          fill="none"
-          stroke={colors.surfaceBorder}
-          strokeWidth={9}
-          strokeLinecap="round"
-        />
-        {progress > 0 && (
+      <View style={{ width: 208, height: 212 }}>
+        {/* Arc only — no SVG text */}
+        <Svg width={208} height={212} style={{ position: "absolute" }}>
           <Path
-            d={buildArcPath(ARC_START, filledSweep, ARC_R)}
+            d={buildArcPath(ARC_START, ARC_SWEEP, ARC_R)}
             fill="none"
-            stroke={isComplete ? colors.accent : colors.text}
+            stroke={colors.surfaceBorder}
             strokeWidth={9}
             strokeLinecap="round"
           />
-        )}
+          {progress > 0 && (
+            <Path
+              d={buildArcPath(ARC_START, filledSweep, ARC_R)}
+              fill="none"
+              stroke={isComplete ? colors.accent : colors.text}
+              strokeWidth={9}
+              strokeLinecap="round"
+            />
+          )}
+        </Svg>
 
-        <SvgText
-          x={ARC_CX}
-          y={ARC_CY - 26}
-          textAnchor="middle"
-          fill={colors.textMuted}
-          fontSize={10}
-          fontFamily="DMSans_600SemiBold"
-          letterSpacing={1.2}
+        {/* Native text overlay — renderização confiável, sem sobreposição */}
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingTop: 10,
+          }}
         >
-          DECORRIDO
-        </SvgText>
-        <SvgText
-          x={ARC_CX}
-          y={ARC_CY + 8}
-          textAnchor="middle"
-          fill={colors.text}
-          fontSize={28}
-          fontFamily="DMMono_400Regular"
-        >
-          {formatHM(elapsedMs)}
-        </SvgText>
-        <SvgText
-          x={ARC_CX}
-          y={ARC_CY + 36}
-          textAnchor="middle"
-          fill={colors.textMuted}
-          fontSize={13}
-          fontFamily="DMSans_400Regular"
-        >
-          de {formatHM(totalMs)}
-        </SvgText>
-
-        <Line
-          x1={ARC_CX - 20}
-          y1={ARC_CY + 52}
-          x2={ARC_CX + 20}
-          y2={ARC_CY + 52}
-          stroke={colors.surfaceBorder}
-          strokeWidth={1}
-        />
-
-        <SvgText
-          x={ARC_CX}
-          y={ARC_CY + 72}
-          textAnchor="middle"
-          fill={colors.accent}
-          fontSize={21}
-          fontFamily="DMSans_600SemiBold"
-        >
-          {formatCurrency(amount)}
-        </SvgText>
-        <SvgText
-          x={ARC_CX}
-          y={ARC_CY + 88}
-          textAnchor="middle"
-          fill={colors.textMuted}
-          fontSize={11}
-          fontFamily="DMSans_400Regular"
-        >
-          {valueLabel}
-        </SvgText>
-      </Svg>
+          <Text
+            style={{
+              fontSize: 10,
+              letterSpacing: 1.2,
+              color: colors.textMuted,
+              fontFamily: "DMSans_600SemiBold",
+              marginBottom: 6,
+            }}
+          >
+            DECORRIDO
+          </Text>
+          <Text
+            style={{
+              fontSize: 28,
+              fontFamily: "DMMono_400Regular",
+              color: colors.text,
+              lineHeight: 34,
+            }}
+          >
+            {formatHM(elapsedMs)}
+          </Text>
+          <Text
+            style={{
+              fontSize: 13,
+              fontFamily: "DMSans_400Regular",
+              color: colors.textMuted,
+              marginTop: 4,
+              lineHeight: 18,
+            }}
+          >
+            {`de ${formatHM(totalMs)}`}
+          </Text>
+          <View
+            style={{
+              width: 40,
+              height: 1,
+              backgroundColor: colors.surfaceBorder,
+              marginTop: 12,
+              marginBottom: 12,
+            }}
+          />
+          <Text
+            style={{
+              fontSize: 21,
+              fontFamily: "DMSans_600SemiBold",
+              color: colors.accent,
+              lineHeight: 26,
+            }}
+          >
+            {formatCurrency(amount)}
+          </Text>
+          <Text
+            style={{
+              fontSize: 11,
+              fontFamily: "DMSans_400Regular",
+              color: colors.textMuted,
+              marginTop: 3,
+            }}
+          >
+            {valueLabel}
+          </Text>
+        </View>
+      </View>
 
       <View
         style={{
