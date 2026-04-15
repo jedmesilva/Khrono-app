@@ -244,6 +244,19 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   const broadcastReadyRef = useRef(false);
   const lastNewContractVibratedAt = useRef(0);
 
+  const broadcastUpdate = useCallback(
+    (contractId: string, contractorId: string | null, hiredId: string | null) => {
+      if (broadcastChannelRef.current && broadcastReadyRef.current) {
+        broadcastChannelRef.current.send({
+          type: "broadcast",
+          event: "contract-updated",
+          payload: { contract_id: contractId, contractor_id: contractorId, hired_id: hiredId },
+        });
+      }
+    },
+    []
+  );
+
   const loadContracts = useCallback(
     async (
       userId: string,
@@ -361,6 +374,14 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
               lastNewContractVibratedAt.current = now;
               Vibration.vibrate([0, 700, 300, 700, 300, 700]);
             }
+            await handleChange();
+          }
+        })
+        .on("broadcast", { event: "contract-updated" }, async (msg) => {
+          if (
+            msg.payload?.contractor_id === user.id ||
+            msg.payload?.hired_id === user.id
+          ) {
             await handleChange();
           }
         })
@@ -538,9 +559,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const { data: row } = await supabase
         .from("contracts")
-        .select("contractor_id")
+        .select("contractor_id, hired_id")
         .eq("id", id)
         .single();
+
+      broadcastUpdate(id, row?.contractor_id ?? null, row?.hired_id ?? null);
 
       if (row?.contractor_id) {
         sendPushNotification(
@@ -560,7 +583,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_accepted"
       ).catch(() => {});
     },
-    [loadContracts, sendPushNotification]
+    [loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Recusar contrato ──────────────────────────────────────────────────────────
@@ -590,9 +613,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const { data: row } = await supabase
         .from("contracts")
-        .select("contractor_id")
+        .select("contractor_id, hired_id")
         .eq("id", id)
         .single();
+
+      broadcastUpdate(id, row?.contractor_id ?? null, row?.hired_id ?? null);
 
       if (row?.contractor_id) {
         sendPushNotification(
@@ -612,7 +637,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_cancelled"
       ).catch(() => {});
     },
-    [loadContracts, sendPushNotification]
+    [loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Iniciar trabalho ──────────────────────────────────────────────────────────
@@ -644,9 +669,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const { data: row } = await supabase
         .from("contracts")
-        .select("contractor_id")
+        .select("contractor_id, hired_id")
         .eq("id", id)
         .single();
+
+      broadcastUpdate(id, row?.contractor_id ?? null, row?.hired_id ?? null);
 
       if (row?.contractor_id) {
         sendPushNotification(
@@ -666,7 +693,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_started"
       ).catch(() => {});
     },
-    [loadContracts, sendPushNotification]
+    [loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Cancelamento direto (antes de iniciar) ────────────────────────────────────
@@ -696,6 +723,9 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const otherPartyId = contract?.person.profileId;
       const isHiring = contract?.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
 
       if (otherPartyId) {
         sendPushNotification(
@@ -717,7 +747,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_cancelled"
       ).catch(() => {});
     },
-    [activeContracts, loadContracts, sendPushNotification]
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Solicitar encerramento ────────────────────────────────────────────────────
@@ -752,6 +782,9 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const contract = activeContracts.find((c) => c.id === id);
       const otherPartyId = contract?.person.profileId;
       const isHiring = contract?.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
 
       if (otherPartyId) {
         sendPushNotification(
@@ -771,7 +804,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_ended"
       ).catch(() => {});
     },
-    [activeContracts, loadContracts, sendPushNotification]
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Confirmar encerramento ────────────────────────────────────────────────────
@@ -814,6 +847,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         await loadContracts(userIdRef.current, { showLoading: false });
 
       const otherPartyId = contract.person.profileId;
+      const isHiring = contract.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+
       const amountLabel = formatCurrency(totalAmount);
       const reason = contract.endReason ?? "Encerrado com acordo mútuo";
 
@@ -835,7 +873,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_ended"
       ).catch(() => {});
     },
-    [activeContracts, loadContracts, sendPushNotification]
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Solicitar cancelamento (após iniciado) ────────────────────────────────────
@@ -864,6 +902,9 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const contract = activeContracts.find((c) => c.id === id);
       const otherPartyId = contract?.person.profileId;
       const isHiring = contract?.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
 
       if (otherPartyId) {
         sendPushNotification(
@@ -883,7 +924,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_cancelled"
       ).catch(() => {});
     },
-    [activeContracts, loadContracts, sendPushNotification]
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   // ── Confirmar cancelamento ────────────────────────────────────────────────────
@@ -917,6 +958,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         await loadContracts(userIdRef.current, { showLoading: false });
 
       const otherPartyId = contract?.person.profileId;
+      const isHiring = contract?.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+
       const reason = contract?.cancelReason ?? "Cancelado com acordo mútuo";
 
       if (otherPartyId) {
@@ -937,7 +983,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_cancelled"
       ).catch(() => {});
     },
-    [activeContracts, loadContracts, sendPushNotification]
+    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
   return (
