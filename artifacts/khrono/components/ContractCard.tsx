@@ -502,8 +502,8 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           )}
         </View>
         <View style={styles.footerCta}>
-          <Text style={[styles.footerCtaText, { color: t.ctaColor }]}>Ver contrato</Text>
-          <Feather name="chevron-right" size={13} color={t.ctaColor} />
+          <Text style={[styles.footerCtaText, { color: colors.textSecondary }]}>Ver contrato</Text>
+          <Feather name="chevron-right" size={13} color={colors.textSecondary} />
         </View>
       </View>
     </Pressable>
