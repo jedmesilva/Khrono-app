@@ -144,6 +144,7 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
               <><Text style={[styles.headerName, { color: "#6B6760" }]}>{contract.person.name}</Text>{" contratou você"}</>
             )}
           </Text>
+          <Text style={styles.contractId}>#{contract.id.slice(0, 8)}</Text>
         </View>
         <View style={styles.headerBottom}>
           {scheduledAmount !== null ? (
@@ -307,6 +308,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
               <><Text style={[styles.headerName, { color: t.nameColor }]}>{contract.person.name}</Text>{" contratou você"}</>
             )}
           </Text>
+          <Text style={[styles.contractId, { color: t.relationColor }]}>#{contract.id.slice(0, 8)}</Text>
         </View>
         <View style={styles.headerBottom}>
           <Text style={[styles.headerAmount, { color: isOverdue ? "#E8956A" : t.amountColor }]}>
@@ -506,6 +508,14 @@ const styles = StyleSheet.create({
   headerName: {
     fontFamily: "DMSans_600SemiBold",
     fontSize: 12,
+  },
+  contractId: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 10,
+    letterSpacing: 0.4,
+    flexShrink: 0,
+    marginLeft: 8,
+    color: "#B8B4AC",
   },
   headerBottom: {
     flexDirection: "row",
