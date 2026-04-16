@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { PageHeader } from "@/components/PageHeader";
 import { LocationSheet, formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
@@ -58,8 +59,8 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
+        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
+          <Feather name="arrow-left" size={16} color={colors.iconBack} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
@@ -126,8 +127,8 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
+        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
+          <Feather name="arrow-left" size={16} color={colors.iconBack} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
@@ -187,8 +188,8 @@ function SkillsListView({ skills, colors, onBack, onSelectSkill, onVerifiedPress
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
+        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
+          <Feather name="arrow-left" size={16} color={colors.iconBack} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
@@ -237,8 +238,8 @@ function ToolsListView({ tools, colors, onBack, onVerifiedPress, onAdd, onSelect
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
+        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
+          <Feather name="arrow-left" size={16} color={colors.iconBack} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Tools</Text>
@@ -459,9 +460,7 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
       >
-        <View style={styles.header}>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Perfil</Text>
-        </View>
+        <PageHeader title="Perfil" />
 
         <View style={styles.avatarSection}>
           <View style={[styles.avatarLarge, { backgroundColor: colors.avatarBg }]}>
@@ -687,8 +686,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  header: { marginBottom: 24 },
-  pageTitle: { fontFamily: "Sora_700Bold", fontSize: 26, letterSpacing: -0.5 },
 
   avatarSection: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
   avatarLarge: { width: 72, height: 72, borderRadius: 22, alignItems: "center", justifyContent: "center" },
@@ -744,8 +741,8 @@ const styles = StyleSheet.create({
   emptyServicesSub: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
 
   subContainer: { flex: 1 },
-  subHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, marginBottom: 20 },
-  backBtn: { padding: 4 },
+  subHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
+  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   subTitle: { fontFamily: "Sora_700Bold", fontSize: 19 },
   subMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
   moreBtn: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },

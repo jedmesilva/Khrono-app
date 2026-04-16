@@ -11,8 +11,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { PageHeader } from "@/components/PageHeader";
 import { useTheme } from "@/context/ThemeContext";
-import { GlobalStyles } from "@/constants/globalStyles";
 import { formatRateValue } from "@/lib/format";
 
 const EXPLORE_USERS = [
@@ -54,9 +54,7 @@ export default function ExploreScreen() {
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
       >
-        <View style={styles.header}>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Explorar</Text>
-        </View>
+        <PageHeader title="Explorar" />
 
         <View style={[styles.searchBar, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
           <Feather name="search" size={16} color={colors.textSecondary} />
@@ -152,7 +150,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  header: { marginBottom: 20 },
   searchBar: {
     flexDirection: "row", alignItems: "center", gap: 10,
     borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 16,

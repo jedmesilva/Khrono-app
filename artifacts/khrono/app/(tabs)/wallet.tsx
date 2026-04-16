@@ -17,6 +17,7 @@ import { AppDialog } from "@/components/AppDialog";
 import { HistoryCard } from "@/components/HistoryCard";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
+import { PageHeader } from "@/components/PageHeader";
 import { useTheme } from "@/context/ThemeContext";
 import { useWallet } from "@/context/WalletContext";
 import { useContracts } from "@/context/ContractsContext";
@@ -69,9 +70,7 @@ export default function WalletScreen() {
         contentContainerStyle={[styles.content, { paddingTop: topPadding + 20, paddingBottom: isWeb ? 34 + 84 + 20 : 100 }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Carteira</Text>
-        </View>
+        <PageHeader title="Carteira" />
 
         {/* Balance card */}
         <View style={[styles.balanceCard, { backgroundColor: colors.card }]}>
@@ -239,7 +238,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20 },
-  header: { marginBottom: 24 },
   balanceCard: { borderRadius: 24, padding: 24, marginBottom: 14, gap: 12 },
   balanceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
   balanceRow: { flexDirection: "row", alignItems: "center", gap: 12 },

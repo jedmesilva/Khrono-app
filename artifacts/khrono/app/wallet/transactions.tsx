@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import { HistoryCard } from "@/components/HistoryCard";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 import { formatCurrency } from "@/lib/format";
@@ -26,6 +28,7 @@ type Filtro = "todos" | "recebido" | "pago";
 export default function TransactionHistoryScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const isWeb = Platform.OS === "web";
   const router = useRouter();
   const { history } = useContracts();
 
@@ -45,31 +48,11 @@ export default function TransactionHistoryScreen() {
     .filter((h) => h.role === "hiring")
     .reduce((sum, h) => sum + (h.totalAmount ?? 0), 0);
 
+  const topPadding = isWeb ? insets.top + 67 : insets.top;
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            paddingTop: insets.top + 12,
-            borderBottomColor: colors.divider,
-            backgroundColor: colors.background,
-          },
-        ]}
-      >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          style={styles.backBtn}
-        >
-          <Feather name="arrow-left" size={18} color={colors.iconBack} />
-        </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          Histórico de movimentações
-        </Text>
-        <View style={styles.backBtn} />
-      </View>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding }]}>
+      <ScreenHeader title="Histórico de movimentações" />
 
       <ScrollView
         style={styles.scroll}
@@ -169,21 +152,6 @@ export default function TransactionHistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backBtn: { width: 32 },
-  headerTitle: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 15,
-    flex: 1,
-    textAlign: "center",
-  },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: 20, gap: 0 },
   summaryRow: { flexDirection: "row", gap: 12, marginBottom: 20 },
