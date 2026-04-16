@@ -293,7 +293,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
     ? contract.ratePerHour * (totalFixedSecs / 3600)
     : (elapsedSecs / 3600) * contract.ratePerHour;
 
-  const showAmount = !isPending && !isAccepted;
+  const showAmount = (isTimer && !!totalFixedSecs) || (!isPending && !isAccepted);
   const showElapsed = !isPending && !isAccepted;
   const footerLabel = isActive
     ? "Iniciado há"
