@@ -64,7 +64,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 - The Express API server (`artifacts/api-server`) handles backend routes and proxies Expo Metro traffic
 - Push notifications are sent via Expo's push notification service
 - The `EXPO_SUPABASE_SERVICE_ROLE_KEY` secret is stored safely in Replit Secrets and is NOT referenced in any app code — it exists for future server-side use only
-- Contract lifecycle now has dedicated Supabase tables for immutable events, pending action requests, payments, cash dual-confirmation, disputes, and dispute evidence. The current app records the expanded audit trail while keeping `contracts` as the status summary table.
+- Contract lifecycle now has dedicated Supabase tables for immutable events, pending action requests, payments, cash dual-confirmation, disputes, and dispute evidence. The app treats `contract_events` as the audit source and `contract_action_requests` as the source for pending end/cancel requests; the legacy `contract_time_entries` table and old request columns on `contracts` were removed because test data can be discarded.
 
 ## Package Management
 - Uses **pnpm** workspaces — always run `pnpm install` from the root to install all dependencies

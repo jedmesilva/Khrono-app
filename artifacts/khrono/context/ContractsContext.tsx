@@ -152,6 +152,16 @@ function mapDbStatusToUi(status: string): ContractStatus {
     : "ended";
 }
 
+function getPendingActionRequest(c: any, type: "end" | "cancel") {
+  const requests = Array.isArray(c.action_requests) ? c.action_requests : [];
+  return requests
+    .filter((request: any) => request.type === type && request.status === "pending")
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
+    )[0];
+}
+
 function mapDbToContract(c: any, userId: string): Contract {
   const isHiring = c.contractor_id === userId;
   const role: "hiring" | "hired" = isHiring ? "hiring" : "hired";
@@ -172,6 +182,8 @@ function mapDbToContract(c: any, userId: string): Contract {
     : typeof tools === "object" && tools !== null
     ? Object.values(tools)
     : [];
+  const pendingEnd = getPendingActionRequest(c, "end");
+  const pendingCancel = getPendingActionRequest(c, "cancel");
 
   return {
     id: c.id,
@@ -215,10 +227,10 @@ function mapDbToContract(c: any, userId: string): Contract {
     status: mapDbStatusToUi(c.status),
     endedAt: c.ended_at ? new Date(c.ended_at).getTime() : undefined,
     totalAmount: c.total_amount ? Number(c.total_amount) : undefined,
-    endReason: c.end_reason ?? undefined,
-    cancelReason: c.cancel_reason ?? undefined,
-    endRequestedBy: c.end_requested_by ?? undefined,
-    cancelRequestedBy: c.cancel_requested_by ?? undefined,
+    endReason: pendingEnd?.reason ?? undefined,
+    cancelReason: pendingCancel?.reason ?? undefined,
+    endRequestedBy: pendingEnd?.requested_by ?? undefined,
+    cancelRequestedBy: pendingCancel?.requested_by ?? undefined,
     location: c.location ?? undefined,
   };
 }
@@ -227,7 +239,8 @@ const CONTRACT_SELECT = `
   *,
   contractor:profiles!contractor_id(id, name, first_name),
   hired:profiles!hired_id(id, name, first_name, provider_profiles(nota, avaliacoes, total_contracts)),
-  service:provider_services!service_id(id, nome, nota, avaliacoes, valor_hora)
+  service:provider_services!service_id(id, nome, nota, avaliacoes, valor_hora),
+  action_requests:contract_action_requests(id, type, status, requested_by, reason, created_at)
 `;
 
 const ACTIVE_STATUSES = [
@@ -326,26 +339,10 @@ async function recordContractEvent({
     ...audit,
   };
 
-  const legacyRow = {
-    contract_id: contractId,
-    event: eventType,
-    triggered_by: actorId,
-    reason: reason ?? null,
-    actor_role: actorRole,
-    metadata: metadata ?? {},
-    ...audit,
-  };
-
-  const [eventRes, legacyRes] = await Promise.all([
-    supabase.from("contract_events").insert(row),
-    supabase.from("contract_time_entries").insert(legacyRow),
-  ]);
+  const eventRes = await supabase.from("contract_events").insert(row);
 
   if (eventRes.error) {
     console.warn("[ContractsContext] contract_events insert error:", eventRes.error.message);
-  }
-  if (legacyRes.error) {
-    console.warn("[ContractsContext] contract_time_entries insert error:", legacyRes.error.message);
   }
 }
 
@@ -972,8 +969,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .from("contracts")
         .update({
           status: "pending_end",
-          end_requested_by: user.id,
-          end_reason: reason,
         })
         .eq("id", id);
 
@@ -1149,8 +1144,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .from("contracts")
         .update({
           status: "active",
-          end_requested_by: null,
-          end_reason: null,
         })
         .eq("id", id);
 
@@ -1202,8 +1195,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .from("contracts")
         .update({
           status: "pending_cancel",
-          cancel_requested_by: user.id,
-          cancel_reason: reason,
         })
         .eq("id", id);
 
@@ -1334,8 +1325,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         .from("contracts")
         .update({
           status: "active",
-          cancel_requested_by: null,
-          cancel_reason: null,
         })
         .eq("id", id);
 
