@@ -1583,14 +1583,12 @@ export default function ContractDetailScreen() {
               },
             ]}
           >
-            {!!contract.scheduledFor && (
-              <DetailRow
-                icon={<Feather name="calendar" size={14} color={colors.textMuted} />}
-                label="Programado"
-                value={formatData(contract.scheduledFor)}
-                colors={colors}
-              />
-            )}
+            <DetailRow
+              icon={<Feather name="calendar" size={14} color={colors.textMuted} />}
+              label="Programado"
+              value={contract.scheduledFor ? formatData(contract.scheduledFor) : "Imediato"}
+              colors={colors}
+            />
             {(() => {
               const hasStarted = contract.startedAt > 0;
               const pont =
