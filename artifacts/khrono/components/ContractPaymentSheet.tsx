@@ -172,7 +172,6 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
   const [step, setStep] = useState<Step>("overview");
   const [amountInput, setAmountInput] = useState("");
-  const [isIncomplete, setIsIncomplete] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
@@ -253,7 +252,6 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
     if (visible) {
       setStep("overview");
       setAmountInput("");
-      setIsIncomplete(false);
       setSelectedMethod(contract.paymentMethod ?? "dinheiro");
       ref.current?.present();
       fetchPaymentData();
@@ -615,6 +613,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   function renderReportReceived() {
     const parsed = parseAmountInput(amountInput);
     const canConfirm = parsed > 0;
+    const isIncomplete = contractAmount > 0 && parsed > 0 && parsed < contractAmount;
 
     return (
       <>
@@ -655,38 +654,14 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           </Pressable>
         )}
 
-        {/* Incomplete toggle */}
-        <View style={{ marginTop: 16, gap: 8 }}>
-          <Pressable
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setIsIncomplete(false); }}
-            style={[styles.toggleOption, { borderColor: !isIncomplete ? colors.accent + "50" : colors.surfaceBorder, backgroundColor: !isIncomplete ? colors.accent + "08" : colors.card }]}
-          >
-            <View style={[styles.radio, !isIncomplete && styles.radioActive]}>
-              {!isIncomplete && <View style={styles.radioInner} />}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.toggleLabel, { color: colors.text }]}>Recebi o valor completo</Text>
-            </View>
-          </Pressable>
-          <Pressable
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setIsIncomplete(true); }}
-            style={[styles.toggleOption, { borderColor: isIncomplete ? colors.btnDangerBg + "50" : colors.surfaceBorder, backgroundColor: isIncomplete ? colors.btnDangerBg + "10" : colors.card }]}
-          >
-            <View style={[styles.radio, isIncomplete && { borderColor: colors.btnDangerBg }]}>
-              {isIncomplete && <View style={[styles.radioInner, { backgroundColor: colors.btnDangerBg }]} />}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.toggleLabel, { color: isIncomplete ? colors.btnDangerBg : colors.text }]}>
-                Faltou algum valor
-              </Text>
-              {isIncomplete && (
-                <Text style={[styles.toggleSub, { color: colors.textMuted }]}>
-                  O contratante precisará revisar e confirmar
-                </Text>
-              )}
-            </View>
-          </Pressable>
-        </View>
+        {isIncomplete && (
+          <View style={[styles.infoBox, { backgroundColor: colors.btnDangerBg + "10", borderColor: colors.btnDangerBg + "30", marginTop: 12 }]}>
+            <Feather name="alert-circle" size={14} color={colors.btnDangerBg} />
+            <Text style={[styles.infoBoxText, { color: colors.btnDangerBg }]}>
+              Valor abaixo do contratado — o contratante precisará confirmar
+            </Text>
+          </View>
+        )}
 
         <Pressable
           onPress={canConfirm && !loading ? handleReportReceived : undefined}
