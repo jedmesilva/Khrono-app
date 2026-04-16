@@ -756,7 +756,31 @@ function ContractStartRow({
   );
 }
 
-// ─── Detail Row ───────────────────────────────────────────────────────────────
+// ─── Pontualidade ─────────────────────────────────────────────────────────────
+
+function getPontualidade(scheduledFor: number, startedAt: number): {
+  label: string;
+  color: string;
+} {
+  const deltaMs  = startedAt - scheduledFor;
+  const absDelta = Math.abs(deltaMs);
+  const mins     = Math.round(absDelta / 60_000);
+  const hrs      = Math.floor(mins / 60);
+  const remMins  = mins % 60;
+
+  if (absDelta <= 5 * 60_000) {
+    return { label: "No horário", color: "#18a06b" };
+  }
+  if (deltaMs < 0) {
+    const txt = mins < 60 ? `${mins} min antes` : `${hrs}h${remMins > 0 ? ` ${remMins}min` : ""} antes`;
+    return { label: txt, color: "#18a06b" };
+  }
+  const txt = mins < 60 ? `${mins} min atrasado` : `${hrs}h${remMins > 0 ? ` ${remMins}min` : ""} atrasado`;
+  const color = mins <= 15 ? "#ffaa00" : "#e05050";
+  return { label: txt, color };
+}
+
+// ─── DetailRow ────────────────────────────────────────────────────────────────
 
 function DetailRow({
   icon,
@@ -1545,14 +1569,30 @@ export default function ContractDetailScreen() {
               },
             ]}
           >
-            {contract.startedAt > 0 && (
+            {contract.startedAt > 0 && contract.agendado && !!contract.scheduledFor && (
               <DetailRow
-                icon={<Feather name="clock" size={14} color={colors.textMuted} />}
-                label="Início"
-                value={formatData(contract.startedAt)}
+                icon={<Feather name="calendar" size={14} color={colors.textMuted} />}
+                label="Programado"
+                value={formatData(contract.scheduledFor)}
                 colors={colors}
               />
             )}
+            {contract.startedAt > 0 && (() => {
+              const isScheduledStart = contract.agendado && !!contract.scheduledFor;
+              const pont = isScheduledStart
+                ? getPontualidade(contract.scheduledFor!, contract.startedAt)
+                : null;
+              return (
+                <DetailRow
+                  icon={<Feather name="clock" size={14} color={colors.textMuted} />}
+                  label="Iniciado"
+                  value={formatData(contract.startedAt)}
+                  sub={pont?.label}
+                  subColor={pont?.color}
+                  colors={colors}
+                />
+              );
+            })()}
             {isFinalized && !!contract.endedAt && (
               <DetailRow
                 icon={<Feather name="check-circle" size={14} color={colors.textMuted} />}
