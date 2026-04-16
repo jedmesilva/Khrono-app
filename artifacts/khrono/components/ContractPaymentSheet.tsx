@@ -469,7 +469,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           ) : (
             <>
               <Text style={[styles.amountValue, { color: colors.text }]}>
-                {contractAmount > 0 ? formatCurrency(contractAmount) : "—"}
+                {formatCurrency(contractAmount)}
               </Text>
               <Text style={[styles.amountLabel, { color: statusInfo.color }]}>
                 {statusInfo.text}
