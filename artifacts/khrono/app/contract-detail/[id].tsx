@@ -1684,6 +1684,25 @@ export default function ContractDetailScreen() {
           </View>
         )}
 
+        {/* Comprovante */}
+        {(contract.startedAt > 0 || isPending || isAccepted || isCancelled || isFinalized || isScheduled) && (
+          <Pressable
+            onPress={() => setHelpOpen(true)}
+            style={({ pressed }) => [
+              s.reHireBtn,
+              {
+                borderColor: colors.surfaceBorder,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+          >
+            <Feather name="file-text" size={14} color={colors.textMuted} />
+            <Text style={[s.reHireText, { color: colors.textMuted }]}>
+              Ver comprovante
+            </Text>
+          </Pressable>
+        )}
+
         {/* Rating (ended + hiring) */}
         {isEnded && isHiring && contract.paymentStatus !== "disputed" && !avaliacaoEnviada && (
           <View
