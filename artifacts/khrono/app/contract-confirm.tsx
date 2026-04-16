@@ -156,7 +156,7 @@ export default function ContractConfirmScreen() {
       paymentCardLabel: metodoPagamento === "cartao" ? cardLabel : undefined,
       agendado,
       agendadoLabel: agendado ? formatAgendamento() : undefined,
-      scheduledFor: agendado ? scheduledDate.getTime() : undefined,
+      scheduledFor: agendado ? scheduledDate.getTime() : Date.now(),
       ratePerHour: valorHora,
       location: location.fixedAddress || undefined,
     };
