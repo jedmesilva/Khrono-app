@@ -289,11 +289,21 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isOverdue = isTimer && totalFixedSecs !== null && elapsedSecs > totalFixedSecs;
   const remainingSecs = totalFixedSecs !== null ? Math.max(totalFixedSecs - elapsedSecs, 0) : null;
 
-  const amount = isTimer && totalFixedSecs && !isOverdue
+  // Valor acumulado até agora (sempre baseado no tempo decorrido)
+  const accumulatedAmount = (elapsedSecs / 3600) * contract.ratePerHour;
+  // Valor total contratado (fixo para contratos timer)
+  const totalFixedAmount = isTimer && totalFixedSecs
     ? contract.ratePerHour * (totalFixedSecs / 3600)
-    : (elapsedSecs / 3600) * contract.ratePerHour;
+    : null;
+  // Valor exibido como principal: acumulado quando em andamento, total quando pendente/aceito
+  const isRunningNow = isActive || isPendingState;
+  const amount = isRunningNow && isTimer && totalFixedSecs
+    ? accumulatedAmount
+    : totalFixedAmount ?? accumulatedAmount;
 
   const showAmount = (isTimer && !!totalFixedSecs) || (!isPending && !isAccepted);
+  // Mostrar "de R$total" apenas quando contrato fixo em andamento
+  const showTotalRef = showAmount && isRunningNow && isTimer && !!totalFixedAmount;
   const showElapsed = !isPending && !isAccepted;
   const footerLabel = isActive
     ? "Iniciado há"
@@ -336,9 +346,16 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           <Text style={[styles.contractId, { color: t.relationColor }]}>{contract.code || `KRN-${contract.id.slice(-8).toUpperCase()}`}</Text>
         </View>
         <View style={styles.headerBottom}>
-          <Text style={[styles.headerAmount, { color: isOverdue ? "#E8956A" : t.amountColor }]}>
-            {formatCurrency(showAmount ? amount : 0)}
-          </Text>
+          <View>
+            <Text style={[styles.headerAmount, { color: isOverdue ? "#E8956A" : t.amountColor }]}>
+              {formatCurrency(showAmount ? amount : 0)}
+            </Text>
+            {showTotalRef && (
+              <Text style={{ fontSize: 11, fontFamily: "DMSans_400Regular", color: t.amountColor + "70", marginTop: 1 }}>
+                {`de ${formatCurrency(totalFixedAmount!)}`}
+              </Text>
+            )}
+          </View>
           <View style={[styles.durationBadge, { backgroundColor: t.badgeBg }]}>
             <Feather
               name={isTimer ? "clock" : "activity"}
