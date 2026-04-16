@@ -3,7 +3,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
-  BottomSheetView,
+  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -19,7 +19,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -564,7 +563,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
         <View style={styles.bigInputWrap}>
           <Text style={[styles.bigInputPrefix, { color: colors.textMuted }]}>R$</Text>
-          <TextInput
+          <BottomSheetTextInput
             style={[styles.bigInput, { color: colors.text }]}
             value={formatAmountInput(amountInput)}
             onChangeText={(t) => setAmountInput(t.replace(/\D/g, ""))}
@@ -632,7 +631,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
         <View style={styles.bigInputWrap}>
           <Text style={[styles.bigInputPrefix, { color: colors.textMuted }]}>R$</Text>
-          <TextInput
+          <BottomSheetTextInput
             style={[styles.bigInput, { color: colors.text }]}
             value={formatAmountInput(amountInput)}
             onChangeText={(t) => setAmountInput(t.replace(/\D/g, ""))}
@@ -921,6 +920,9 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
       handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
       enableDynamicSizing={true}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
       <BottomSheetScrollView
         contentContainerStyle={[
