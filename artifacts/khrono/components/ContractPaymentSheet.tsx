@@ -125,31 +125,32 @@ function statusMessage(
   uiState: UIPaymentState,
   method: PaymentMethod,
   personName: string,
-  isHiring: boolean
+  isHiring: boolean,
+  colors: ColorPalette
 ): { text: string; color: string } {
-  if (uiState === "confirmed") return { text: "Pagamento confirmado", color: "#18a06b" };
-  if (uiState === "disputed") return { text: "Pagamento em disputa", color: "#e05050" };
-  if (uiState === "inconsistency" as any) return { text: "Inconsistência detectada", color: "#e05050" };
-  if (uiState === "inconsistent") return { text: "Inconsistência detectada — valores divergem", color: "#e05050" };
+  if (uiState === "confirmed") return { text: "Pagamento confirmado", color: colors.btnSuccessBg };
+  if (uiState === "disputed") return { text: "Pagamento em disputa", color: colors.btnDangerBg };
+  if (uiState === "inconsistency" as any) return { text: "Inconsistência detectada", color: colors.btnDangerBg };
+  if (uiState === "inconsistent") return { text: "Inconsistência detectada — valores divergem", color: colors.btnDangerBg };
   if (uiState === "awaiting_other_party") {
     return {
       text: isHiring ? `Aguardando confirmação de ${personName}` : `Aguardando confirmação do contratante`,
-      color: "#ffaa00",
+      color: colors.accent,
     };
   }
   if (uiState === "awaiting_my_confirmation") {
     return {
       text: isHiring ? `${personName} informou o recebimento` : `Contratante informou o pagamento`,
-      color: "#ffaa00",
+      color: colors.accent,
     };
   }
   if (method === "dinheiro") {
     return {
       text: isHiring ? `À pagar para ${personName}` : `À receber do contratante`,
-      color: "#999",
+      color: colors.textMuted,
     };
   }
-  return { text: "Pendente", color: "#ffaa00" };
+  return { text: "Pendente", color: colors.accent };
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
@@ -344,7 +345,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
     if (uiState === "confirmed") {
       return (
         <View style={[styles.confirmedBadge]}>
-          <Feather name="check-circle" size={16} color="#18a06b" />
+          <Feather name="check-circle" size={16} color={colors.btnSuccessBg} />
           <Text style={[styles.confirmedText]}>Pagamento confirmado</Text>
         </View>
       );
@@ -353,7 +354,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
     if (uiState === "disputed") {
       return (
         <View style={[styles.disputedBadge]}>
-          <Feather name="alert-triangle" size={16} color="#e05050" />
+          <Feather name="alert-triangle" size={16} color={colors.btnDangerBg} />
           <Text style={[styles.disputedText]}>Em disputa</Text>
         </View>
       );
@@ -361,9 +362,9 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
     if (uiState === "awaiting_other_party") {
       return (
-        <View style={[styles.waitingBadge, { borderColor: "#ffaa0030", backgroundColor: "#ffaa0010" }]}>
-          <ActivityIndicator size="small" color="#ffaa00" />
-          <Text style={[styles.waitingBadgeText, { color: "#ffaa00" }]}>
+        <View style={[styles.waitingBadge, { borderColor: colors.accent + "30", backgroundColor: colors.accent + "10" }]}>
+          <ActivityIndicator size="small" color={colors.accent} />
+          <Text style={[styles.waitingBadgeText, { color: colors.accent }]}>
             Aguardando a outra parte...
           </Text>
         </View>
@@ -376,7 +377,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           onPress={() => setStep("inconsistency")}
           style={({ pressed }) => [styles.actionBtn, styles.actionBtnRed, { opacity: pressed ? 0.85 : 1 }]}
         >
-          <Feather name="alert-triangle" size={16} color="#fff" />
+          <Feather name="alert-triangle" size={16} color={colors.btnActionText} />
           <Text style={styles.actionBtnText}>Ver inconsistência</Text>
         </Pressable>
       );
@@ -388,9 +389,9 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
         return (
           <View style={{ gap: 10 }}>
             {otherAmount != null && (
-              <View style={[styles.infoBox, { backgroundColor: "#ffaa0010", borderColor: "#ffaa0030" }]}>
-                <Feather name="info" size={14} color="#ffaa00" />
-                <Text style={[styles.infoBoxText, { color: "#ffaa00" }]}>
+              <View style={[styles.infoBox, { backgroundColor: colors.accent + "10", borderColor: colors.accent + "30" }]}>
+                <Feather name="info" size={14} color={colors.accent} />
+                <Text style={[styles.infoBoxText, { color: colors.accent }]}>
                   {isHiring
                     ? `${personName} informou que recebeu ${formatCurrency(otherAmount)}`
                     : `Contratante informou que pagou ${formatCurrency(otherAmount)}`}
@@ -404,7 +405,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
               }}
               style={({ pressed }) => [styles.actionBtn, styles.actionBtnGreen, { opacity: pressed ? 0.85 : 1 }]}
             >
-              <Feather name="check" size={16} color="#fff" />
+              <Feather name="check" size={16} color={colors.btnActionText} />
               <Text style={styles.actionBtnText}>
                 {isHiring ? "Confirmar pagamento" : "Confirmar recebimento"}
               </Text>
@@ -424,7 +425,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
             }}
             style={({ pressed }) => [styles.actionBtn, styles.actionBtnPrimary, { opacity: pressed ? 0.85 : 1 }]}
           >
-            <Feather name={isHiring ? "send" : "download" } size={16} color="#fff" />
+            <Feather name={isHiring ? "send" : "download" } size={16} color={colors.btnActionText} />
             <Text style={styles.actionBtnText}>
               {isHiring ? "Já paguei" : "Já recebi"}
             </Text>
@@ -437,7 +438,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
             onPress={() => setStep("change_method")}
             style={({ pressed }) => [styles.actionBtn, styles.actionBtnPrimary, { opacity: pressed ? 0.85 : 1 }]}
           >
-            <Feather name="credit-card" size={16} color="#fff" />
+            <Feather name="credit-card" size={16} color={colors.btnActionText} />
             <Text style={styles.actionBtnText}>Pagar agora</Text>
           </Pressable>
         );
@@ -451,7 +452,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
   function renderOverview() {
     const method = contract.paymentMethod ?? "dinheiro";
-    const statusInfo = statusMessage(uiState, method, personName, isHiring);
+    const statusInfo = statusMessage(uiState, method, personName, isHiring, colors);
 
     return (
       <>
@@ -510,22 +511,22 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           <View style={{ gap: 6, marginTop: 2 }}>
             {paymentData.myConfirmation?.amount_reported != null && (
               <View style={[styles.confRow, { borderColor: colors.cardBorder, backgroundColor: colors.card }]}>
-                <Feather name="user" size={12} color="#18a06b" />
+                <Feather name="user" size={12} color={colors.btnSuccessBg} />
                 <Text style={[styles.confLabel, { color: colors.textSecondary }]}>
                   Você informou:
                 </Text>
-                <Text style={[styles.confAmount, { color: "#18a06b" }]}>
+                <Text style={[styles.confAmount, { color: colors.btnSuccessBg }]}>
                   {formatCurrency(paymentData.myConfirmation.amount_reported)}
                 </Text>
               </View>
             )}
             {paymentData.otherConfirmation?.amount_reported != null && (
               <View style={[styles.confRow, { borderColor: colors.cardBorder, backgroundColor: colors.card }]}>
-                <Feather name="user" size={12} color="#ffaa00" />
+                <Feather name="user" size={12} color={colors.accent} />
                 <Text style={[styles.confLabel, { color: colors.textSecondary }]}>
                   {personName} informou:
                 </Text>
-                <Text style={[styles.confAmount, { color: "#ffaa00" }]}>
+                <Text style={[styles.confAmount, { color: colors.accent }]}>
                   {formatCurrency(paymentData.otherConfirmation.amount_reported)}
                 </Text>
               </View>
@@ -595,10 +596,10 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           ]}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.btnActionText} />
           ) : (
             <>
-              <Feather name="check" size={16} color={canConfirm ? "#fff" : colors.textDim} />
+              <Feather name="check" size={16} color={canConfirm ? colors.btnActionText : colors.textDim} />
               <Text style={[styles.actionBtnText, !canConfirm && { color: colors.textDim }]}>
                 {canConfirm ? `Confirmar — paguei ${formatCurrency(parsed)}` : "Informe o valor pago"}
               </Text>
@@ -669,13 +670,13 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           </Pressable>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setIsIncomplete(true); }}
-            style={[styles.toggleOption, { borderColor: isIncomplete ? "#e0505050" : colors.surfaceBorder, backgroundColor: isIncomplete ? "#e0505010" : colors.card }]}
+            style={[styles.toggleOption, { borderColor: isIncomplete ? colors.btnDangerBg + "50" : colors.surfaceBorder, backgroundColor: isIncomplete ? colors.btnDangerBg + "10" : colors.card }]}
           >
-            <View style={[styles.radio, isIncomplete && { borderColor: "#e05050" }]}>
-              {isIncomplete && <View style={[styles.radioInner, { backgroundColor: "#e05050" }]} />}
+            <View style={[styles.radio, isIncomplete && { borderColor: colors.btnDangerBg }]}>
+              {isIncomplete && <View style={[styles.radioInner, { backgroundColor: colors.btnDangerBg }]} />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.toggleLabel, { color: isIncomplete ? "#e05050" : colors.text }]}>
+              <Text style={[styles.toggleLabel, { color: isIncomplete ? colors.btnDangerBg : colors.text }]}>
                 Faltou algum valor
               </Text>
               {isIncomplete && (
@@ -696,10 +697,10 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           ]}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.btnActionText} />
           ) : (
             <>
-              <Feather name={isIncomplete ? "alert-triangle" : "check"} size={16} color={canConfirm ? "#fff" : colors.textDim} />
+              <Feather name={isIncomplete ? "alert-triangle" : "check"} size={16} color={canConfirm ? colors.btnActionText : colors.textDim} />
               <Text style={[styles.actionBtnText, !canConfirm && { color: colors.textDim }]}>
                 {canConfirm
                   ? isIncomplete
@@ -791,10 +792,10 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           ]}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.btnActionText} />
           ) : (
             <>
-              <Feather name="check" size={16} color={selectedMethod !== currentMethod ? "#fff" : colors.textDim} />
+              <Feather name="check" size={16} color={selectedMethod !== currentMethod ? colors.btnActionText : colors.textDim} />
               <Text style={[styles.actionBtnText, selectedMethod === currentMethod && { color: colors.textDim }]}>
                 {selectedMethod !== currentMethod
                   ? selectedMethod !== "dinheiro"
@@ -827,18 +828,18 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
         </Pressable>
 
         <View style={styles.stepTitleBlock}>
-          <Text style={[styles.stepTitle, { color: "#e05050" }]}>Inconsistência detectada</Text>
+          <Text style={[styles.stepTitle, { color: colors.btnDangerBg }]}>Inconsistência detectada</Text>
           <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
             Os valores informados pelas partes não batem.
           </Text>
         </View>
 
-        <View style={[styles.inconsistencyCard, { borderColor: "#e0505030", backgroundColor: "#e0505008" }]}>
+        <View style={[styles.inconsistencyCard, { borderColor: colors.btnDangerBg + "30", backgroundColor: colors.btnDangerBg + "08" }]}>
           <View style={styles.inconsistencyRow}>
             <Text style={[styles.inconsistencyLabel, { color: colors.textSecondary }]}>Valor do contrato</Text>
             <Text style={[styles.inconsistencyValue, { color: colors.text }]}>{formatCurrency(contractAmount)}</Text>
           </View>
-          <View style={[styles.inconsistencyDivider, { backgroundColor: "#e0505020" }]} />
+          <View style={[styles.inconsistencyDivider, { backgroundColor: colors.btnDangerBg + "20" }]} />
           <View style={styles.inconsistencyRow}>
             <Text style={[styles.inconsistencyLabel, { color: colors.textSecondary }]}>
               {isHiring ? "Você informou (pagou)" : `Você informou (recebeu)`}
@@ -857,12 +858,12 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           </View>
           {diff != null && diff > 0 && (
             <>
-              <View style={[styles.inconsistencyDivider, { backgroundColor: "#e0505020" }]} />
+              <View style={[styles.inconsistencyDivider, { backgroundColor: colors.btnDangerBg + "20" }]} />
               <View style={styles.inconsistencyRow}>
-                <Text style={[styles.inconsistencyLabel, { color: "#e05050", fontFamily: "DMSans_600SemiBold" }]}>
+                <Text style={[styles.inconsistencyLabel, { color: colors.btnDangerBg, fontFamily: "DMSans_600SemiBold" }]}>
                   Diferença
                 </Text>
-                <Text style={[styles.inconsistencyValue, { color: "#e05050", fontFamily: "Sora_700Bold" }]}>
+                <Text style={[styles.inconsistencyValue, { color: colors.btnDangerBg, fontFamily: "Sora_700Bold" }]}>
                   {formatCurrency(diff)}
                 </Text>
               </View>
@@ -878,7 +879,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
             }}
             style={({ pressed }) => [styles.actionBtn, styles.actionBtnPrimary, { opacity: pressed ? 0.85 : 1 }]}
           >
-            <Feather name="edit-2" size={16} color="#fff" />
+            <Feather name="edit-2" size={16} color={colors.btnActionText} />
             <Text style={styles.actionBtnText}>Corrigir meu valor</Text>
           </Pressable>
           <Pressable
@@ -886,11 +887,11 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
             style={({ pressed }) => [styles.actionBtn, styles.actionBtnRedOutline, { opacity: pressed ? 0.85 : 1 }]}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#e05050" />
+              <ActivityIndicator size="small" color={colors.btnDangerBg} />
             ) : (
               <>
-                <Feather name="flag" size={16} color="#e05050" />
-                <Text style={[styles.actionBtnText, { color: "#e05050" }]}>Abrir disputa</Text>
+                <Feather name="flag" size={16} color={colors.btnDangerBg} />
+                <Text style={[styles.actionBtnText, { color: colors.btnDangerBg }]}>Abrir disputa</Text>
               </>
             )}
           </Pressable>
@@ -1045,24 +1046,24 @@ function createStyles(colors: ColorPalette) {
     actionBtnText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 14,
-      color: "#fff",
+      color: colors.btnActionText,
     },
     actionBtnPrimary: {
       backgroundColor: colors.accent,
     },
     actionBtnGreen: {
-      backgroundColor: "#18a06b",
+      backgroundColor: colors.btnSuccessBg,
     },
     actionBtnRed: {
-      backgroundColor: "#e05050",
+      backgroundColor: colors.btnDangerBg,
     },
     actionBtnRedOutline: {
       borderWidth: 1,
-      borderColor: "#e0505050",
-      backgroundColor: "#e0505010",
+      borderColor: colors.btnDangerBg + "50",
+      backgroundColor: colors.btnDangerBg + "10",
     },
     actionBtnDisabled: {
-      backgroundColor: colors.cardBorder,
+      backgroundColor: colors.btnDisabledBg,
     },
     confirmedBadge: {
       flexDirection: "row",
@@ -1072,13 +1073,13 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 16,
       borderRadius: 14,
       borderWidth: 1,
-      borderColor: "#18a06b30",
-      backgroundColor: "#18a06b10",
+      borderColor: colors.btnSuccessBg + "30",
+      backgroundColor: colors.btnSuccessBg + "10",
     },
     confirmedText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 14,
-      color: "#18a06b",
+      color: colors.btnSuccessBg,
     },
     disputedBadge: {
       flexDirection: "row",
@@ -1088,13 +1089,13 @@ function createStyles(colors: ColorPalette) {
       paddingVertical: 16,
       borderRadius: 14,
       borderWidth: 1,
-      borderColor: "#e0505030",
-      backgroundColor: "#e0505010",
+      borderColor: colors.btnDangerBg + "30",
+      backgroundColor: colors.btnDangerBg + "10",
     },
     disputedText: {
       fontFamily: "Sora_600SemiBold",
       fontSize: 14,
-      color: "#e05050",
+      color: colors.btnDangerBg,
     },
     waitingBadge: {
       flexDirection: "row",
