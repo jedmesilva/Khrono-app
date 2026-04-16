@@ -10,16 +10,19 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useRouter } from "expo-router";
+
 import { AddCardModal } from "@/components/AddCardModal";
 import { AppDialog } from "@/components/AppDialog";
 import { HistoryCard } from "@/components/HistoryCard";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
 import { useTheme } from "@/context/ThemeContext";
-import { GlobalStyles } from "@/constants/globalStyles";
 import { useWallet } from "@/context/WalletContext";
 import { useContracts } from "@/context/ContractsContext";
 import { formatCurrency } from "@/lib/format";
+
+const RECENT_LIMIT = 5;
 
 type CardBandeira = "Visa" | "Mastercard";
 
@@ -39,6 +42,7 @@ export default function WalletScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
+  const router = useRouter();
   const { history } = useContracts();
   const { balance, cards, transactions, removeCard, setDefaultCard, recordDeposit, recordWithdrawal } = useWallet();
 
@@ -47,15 +51,11 @@ export default function WalletScreen() {
   const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
   const [addCardModalVisible, setAddCardModalVisible] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<string | null>(null);
-  const [filtro, setFiltro] = useState<"todos" | "recebido" | "pago">("todos");
 
   const totalReceived = history.filter((h) => h.role === "hired").reduce((sum, h) => sum + (h.totalAmount || 0), 0);
   const totalPaid = history.filter((h) => h.role === "hiring").reduce((sum, h) => sum + (h.totalAmount || 0), 0);
-  const filteredHistory = history.filter((h) => {
-    if (filtro === "recebido") return h.role === "hired";
-    if (filtro === "pago") return h.role === "hiring";
-    return true;
-  });
+  const recentHistory = history.slice(0, RECENT_LIMIT);
+  const hasMore = history.length > RECENT_LIMIT;
 
   const topPadding = isWeb ? insets.top + 67 : insets.top;
   const fmt = (val: number) =>
@@ -176,41 +176,44 @@ export default function WalletScreen() {
 
         {/* Transactions */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Movimentações</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Movimentações recentes</Text>
+          <Pressable
+            style={styles.verTodasBtn}
+            onPress={() => router.push("/wallet/transactions")}
+          >
+            <Text style={[styles.verTodasText, { color: colors.accent }]}>Ver todas</Text>
+            <Feather name="chevron-right" size={13} color={colors.accent} />
+          </Pressable>
         </View>
 
-        <View style={styles.filtersRow}>
-          {(
-            [
-              { key: "todos", label: "Todos" },
-              { key: "recebido", label: "Recebidos" },
-              { key: "pago", label: "Pagos" },
-            ] as const
-          ).map((f) => (
-            <Pressable
-              key={f.key}
-              style={[
-                styles.filterChip,
-                { backgroundColor: colors.card, borderColor: colors.cardBorder },
-                filtro === f.key && styles.filterChipActive,
-              ]}
-              onPress={() => setFiltro(f.key)}
-            >
-              <Text style={[styles.filterChipText, { color: colors.textSecondary }, filtro === f.key && styles.filterChipTextActive]}>
-                {f.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {filteredHistory.length === 0 ? (
+        {recentHistory.length === 0 ? (
           <View style={styles.emptyState}>
             <Feather name="inbox" size={32} color={colors.textDim} />
             <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhuma transação ainda</Text>
           </View>
         ) : (
           <View style={styles.list}>
-            {filteredHistory.map((h) => <HistoryCard key={h.id} contract={h} />)}
+            {recentHistory.map((h) => (
+              <HistoryCard
+                key={h.id}
+                contract={h}
+                onPress={() => router.push(`/contract-detail/${h.id}`)}
+              />
+            ))}
+            {hasMore && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.seeAllRow,
+                  { borderColor: colors.cardBorder, backgroundColor: pressed ? colors.surface : colors.card },
+                ]}
+                onPress={() => router.push("/wallet/transactions")}
+              >
+                <Text style={[styles.seeAllText, { color: colors.accent }]}>
+                  Ver todas as {history.length} movimentações
+                </Text>
+                <Feather name="arrow-right" size={14} color={colors.accent} />
+              </Pressable>
+            )}
           </View>
         )}
       </ScrollView>
@@ -272,11 +275,18 @@ const styles = StyleSheet.create({
   removeBtn: { padding: 4 },
   emptyCards: { borderWidth: 1, borderStyle: "dashed", borderRadius: 24, padding: 24, alignItems: "center", gap: 10 },
   emptyCardsText: { fontFamily: "DMSans_400Regular", fontSize: 12 },
-  filtersRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
-  filterChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
-  filterChipActive: { backgroundColor: "#e06030", borderColor: "#e06030" },
-  filterChipText: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.5 },
-  filterChipTextActive: { color: "#fff" },
+  verTodasBtn: { flexDirection: "row", alignItems: "center", gap: 3 },
+  verTodasText: { fontFamily: "DMSans_500Medium", fontSize: 12 },
+  seeAllRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 14,
+  },
+  seeAllText: { fontFamily: "DMSans_500Medium", fontSize: 12 },
   emptyState: { alignItems: "center", paddingVertical: 48, gap: 12 },
   emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   list: { gap: 8 },

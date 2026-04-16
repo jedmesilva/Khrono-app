@@ -52,7 +52,7 @@ All secrets are stored in Replit Secrets (never hardcoded):
 ## Key Features
 - Provider/contractor marketplace with real-time contracts
 - Availability sessions with GPS-based provider discovery
-- In-app wallet (BRL) with card and PIX support
+- In-app wallet (BRL) with card and PIX support; wallet screen shows 5 most recent transactions with "Ver todas" link to full history screen (`app/wallet/transactions.tsx`)
 - Push notifications via Expo Notifications
 - QR code / PIN-based contract initiation
 - Skills, services, and tools catalog
