@@ -627,8 +627,7 @@ function ContractStartRow({
     ? "Chegada prevista do profissional"
     : "Horário de início do serviço";
 
-  const delayDays  = isDelayed ? Math.ceil(Math.abs(diffMs!) / (1000 * 60 * 60 * 24)) : 0;
-  const delayLabel = `${delayDays} dia${delayDays !== 1 ? "s" : ""} em atraso`;
+  const delayLabel = isDelayed ? `${formatDelta(Math.abs(diffMs!))} em atraso` : "";
 
   const handleAddToCalendar = useCallback(async () => {
     if (!scheduledFor) return;
