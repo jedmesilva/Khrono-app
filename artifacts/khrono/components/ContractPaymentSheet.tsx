@@ -3,7 +3,9 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import React, {
   useCallback,
@@ -156,6 +158,7 @@ function statusMessage(
 export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const { balance: walletBalance } = useWallet();
   const {
     reportCashPaid,
@@ -165,7 +168,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   } = useContracts();
 
   const ref = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["55%", "90%"], []);
+  const snapPoints = useMemo(() => ["90%"], []);
 
   const [step, setStep] = useState<Step>("overview");
   const [amountInput, setAmountInput] = useState("");
@@ -917,12 +920,12 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
       backgroundStyle={sheetBgStyle}
       handleIndicatorStyle={handleStyle}
       onDismiss={onClose}
-      enableDynamicSizing={false}
+      enableDynamicSizing={true}
     >
       <BottomSheetScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: 24 },
+          { paddingBottom: Math.max(bottomInset, 24) },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
