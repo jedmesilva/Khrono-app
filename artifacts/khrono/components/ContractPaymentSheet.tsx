@@ -403,7 +403,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
                 setAmountInput(contractAmount > 0 ? String(Math.round(contractAmount * 100)) : "");
                 setStep(isHiring ? "report_paid" : "report_received");
               }}
-              style={({ pressed }) => [styles.actionBtn, styles.actionBtnGreen, { opacity: pressed ? 0.85 : 1 }]}
+              style={({ pressed }) => [styles.actionBtn, styles.actionBtnPrimary, { opacity: pressed ? 0.85 : 1 }]}
             >
               <Feather name="check" size={16} color={colors.btnActionText} />
               <Text style={styles.actionBtnText}>
@@ -591,7 +591,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           onPress={canConfirm && !loading ? handleReportPaid : undefined}
           style={({ pressed }) => [
             styles.actionBtn,
-            canConfirm ? styles.actionBtnGreen : styles.actionBtnDisabled,
+            canConfirm ? styles.actionBtnPrimary : styles.actionBtnDisabled,
             { opacity: pressed && canConfirm ? 0.85 : 1, marginTop: 20 },
           ]}
         >
@@ -692,7 +692,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           onPress={canConfirm && !loading ? handleReportReceived : undefined}
           style={({ pressed }) => [
             styles.actionBtn,
-            canConfirm ? (isIncomplete ? styles.actionBtnRed : styles.actionBtnGreen) : styles.actionBtnDisabled,
+            canConfirm ? (isIncomplete ? styles.actionBtnRed : styles.actionBtnPrimary) : styles.actionBtnDisabled,
             { opacity: pressed && canConfirm ? 0.85 : 1, marginTop: 20 },
           ]}
         >
