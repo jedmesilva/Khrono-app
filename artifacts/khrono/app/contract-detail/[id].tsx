@@ -1584,7 +1584,7 @@ export default function ContractDetailScreen() {
               },
             ]}
           >
-            {contract.startedAt > 0 && !!contract.scheduledFor && (
+            {!showStartRow && !!contract.scheduledFor && (
               <DetailRow
                 icon={<Feather name="calendar" size={14} color={colors.textMuted} />}
                 label="Programado"
