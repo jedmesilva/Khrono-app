@@ -20,7 +20,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { supabase } from "@/lib/supabase";
 import { Contract, useContracts } from "@/context/ContractsContext";
@@ -156,7 +155,6 @@ function statusMessage(
 
 export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: Props) {
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { balance: walletBalance } = useWallet();
   const {
@@ -924,7 +922,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
       <BottomSheetScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: Math.max(insets.bottom + 24, 40) },
+          { paddingBottom: 24 },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
