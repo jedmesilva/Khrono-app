@@ -146,9 +146,7 @@ function getPaymentStatusInfo(
     if (paymentStatus === "disputed") return { text: "Pagamento em disputa", tone: "red" };
     if (paymentStatus === "awaiting_confirmation") {
       return {
-        text: isHiring
-          ? `Confirme o pagamento para ${personName}`
-          : `Confirme o recebimento de ${personName}`,
+        text: "Aguardando confirmação bilateral",
         tone: "amber",
       };
     }
