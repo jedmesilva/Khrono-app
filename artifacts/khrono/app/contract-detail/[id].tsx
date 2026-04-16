@@ -1280,7 +1280,7 @@ export default function ContractDetailScreen() {
     ? now - contract.startedAt
     : isFinalized && contract.endedAt && contract.startedAt > 0
     ? contract.endedAt - contract.startedAt
-    : isFixed && contract.duracaoTotal && !isPending && !isAccepted
+    : isFixed && contract.duracaoTotal && !isPending && !isAccepted && !isCancelled
     ? contract.duracaoTotal
     : 0;
 
@@ -1299,7 +1299,7 @@ export default function ContractDetailScreen() {
   const valueLabel = getValueLabel(contract);
 
   const showTimer =
-    isRunning || isPaused || isPendingEnd || isPendingCancel || isFinalized || isScheduled || isPending || isAccepted;
+    isRunning || isPaused || isPendingEnd || isPendingCancel || isFinalized || isCancelled || isScheduled || isPending || isAccepted;
   const showStartRow =
     (isPending || isAccepted || isScheduled) && !isRunning && !isPendingEnd && !isPendingCancel;
 
@@ -1535,7 +1535,7 @@ export default function ContractDetailScreen() {
         )}
 
         {/* Details card */}
-        {(contract.startedAt > 0 || isPending || isAccepted) && (
+        {(contract.startedAt > 0 || isPending || isAccepted || isCancelled || isFinalized) && (
           <View
             style={[
               s.detailCard,
