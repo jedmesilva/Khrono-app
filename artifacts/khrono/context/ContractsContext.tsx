@@ -61,6 +61,9 @@ export type Contract = {
   paymentMethod?: "cartao" | "pix" | "dinheiro" | "saldo";
   paymentCardLabel?: string;
   paymentStatus: "pending" | "awaiting_confirmation" | "paid" | "failed" | "disputed";
+  billingTrigger: "on_end" | "on_start" | "split";
+  pendingExtraAmount?: number;
+  pendingRefundAmount?: number;
   agendado?: boolean;
   agendadoLabel?: string;
   tools?: ContractTool[];
@@ -108,6 +111,7 @@ type ContractsContextType = {
   reportCashReceived: (id: string, amountReceived: number, isIncomplete: boolean) => Promise<void>;
   changeContractPaymentMethod: (id: string, newMethod: "cartao" | "pix" | "saldo" | "dinheiro", cardLabel?: string) => Promise<void>;
   disputeCashPayment: (id: string, reason?: string) => Promise<void>;
+  payPendingBalance: (contractId: string) => Promise<void>;
   refreshContracts: () => Promise<void>;
 };
 
@@ -222,6 +226,9 @@ function mapDbToContract(c: any, userId: string): Contract {
     paymentMethod: mapPaymentMethodToUi(c.payment_method),
     paymentCardLabel: c.payment_card_label ?? undefined,
     paymentStatus: (c.payment_status as Contract["paymentStatus"]) ?? "pending",
+    billingTrigger: (c.billing_trigger as Contract["billingTrigger"]) ?? (c.type === "defined" ? "on_start" : "on_end"),
+    pendingExtraAmount: c.pending_extra_amount != null ? Number(c.pending_extra_amount) : undefined,
+    pendingRefundAmount: c.pending_refund_amount != null ? Number(c.pending_refund_amount) : undefined,
     agendado: c.agendado ?? false,
     ratePerHour: Number(c.hourly_rate),
     startedAt: c.started_at ? new Date(c.started_at).getTime() : 0,
@@ -645,12 +652,15 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const serviceId =
         contractData.serviceId ?? contractData.servico?.serviceId ?? null;
 
+      const isDefinido = contractData.tipo === "timer";
+      const billingTrigger = isDefinido ? "on_start" : "on_end";
+
       const { data: contract, error } = await supabase
         .from("contracts")
         .insert({
           contractor_id: user.id,
           hired_id: contractData.person.profileId ?? user.id,
-          type: contractData.tipo === "cronometro" ? "open" : "defined",
+          type: isDefinido ? "defined" : "open",
           status: initialStatus,
           hourly_rate: contractData.ratePerHour,
           total_hours: contractData.duracaoTotal
@@ -659,6 +669,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           service_id: serviceId,
           payment_method: mapPaymentMethodToDb(contractData.paymentMethod),
           payment_card_label: contractData.paymentCardLabel ?? null,
+          billing_trigger: billingTrigger,
           agendado: contractData.agendado ?? false,
           scheduled_for: contractData.scheduledFor
             ? new Date(contractData.scheduledFor).toISOString()
@@ -690,6 +701,77 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           name: contractData.person.name,
         }),
       ];
+
+      // ── Pré-pagamento para contratos DEFINIDOS ────────────────────────────
+      // Contratos de tempo definido têm billing_trigger='on_start':
+      // o pagamento é criado/bloqueado na criação do contrato.
+      if (isDefinido && contractData.paymentMethod && contractData.duracaoTotal) {
+        const preAmount = parseFloat(
+          ((contractData.duracaoTotal / 3600000) * contractData.ratePerHour).toFixed(2)
+        );
+        const payerId = user.id;
+        const payeeId = contractData.person.profileId;
+        const methodDb = mapPaymentMethodToDb(contractData.paymentMethod);
+
+        if (payerId && payeeId && methodDb && preAmount > 0) {
+          let prePaymentStatus: string;
+
+          if (contractData.paymentMethod === "saldo") {
+            // Debita da wallet imediatamente
+            const { data: wallet } = await supabase
+              .from("wallets")
+              .select("id, balance")
+              .eq("profile_id", payerId)
+              .maybeSingle();
+
+            if (wallet && wallet.balance >= preAmount) {
+              const newBalance = parseFloat((wallet.balance - preAmount).toFixed(2));
+              await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
+              await supabase.from("wallet_transactions").insert({
+                wallet_id: wallet.id,
+                profile_id: payerId,
+                type: "payment",
+                status: "completed",
+                amount: preAmount,
+                balance_before: wallet.balance,
+                balance_after: newBalance,
+                description: `Pagamento antecipado – contrato #${contract.id.slice(0, 8)}`,
+                contract_id: contract.id,
+                
+              });
+              prePaymentStatus = "confirmed";
+            } else {
+              // Saldo insuficiente – registra como falha para tratar no detalhe
+              prePaymentStatus = "pending_retry";
+              await supabase.from("contracts").update({ payment_status: "failed" }).eq("id", contract.id);
+            }
+          } else if (contractData.paymentMethod === "cartao") {
+            // Pré-autorização de cartão (held) – captura real no encerramento
+            prePaymentStatus = "held";
+          } else if (contractData.paymentMethod === "pix") {
+            // PIX será exibido no modal – status aguardando confirmação
+            prePaymentStatus = "pending_request";
+          } else {
+            // dinheiro – confirmação dupla no encerramento
+            prePaymentStatus = "awaiting_dual_confirmation";
+          }
+
+          sideEffects.push(
+            supabase.from("contract_payments").insert({
+              contract_id: contract.id,
+              payer_id: payerId,
+              payee_id: payeeId,
+              method: methodDb === "balance" ? "wallet_balance" : methodDb,
+              amount: preAmount,
+              status: prePaymentStatus,
+              requested_by: user.id,
+              confirmed_at: contractData.paymentMethod === "saldo" && prePaymentStatus === "confirmed"
+                ? new Date().toISOString()
+                : null,
+            })
+          );
+        }
+      }
 
       await Promise.all(sideEffects);
       await recordContractEvent({
@@ -1027,6 +1109,17 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   );
 
   // ── Confirmar encerramento ────────────────────────────────────────────────────
+  //
+  // Matriz de resolução de pagamento:
+  //  billing_trigger='on_end' (ABERTO):
+  //    → gera payment agora pelo total medido
+  //    → dinheiro: dual-confirmation; saldo: debita wallet; cartao/pix: registra
+  //  billing_trigger='on_start' (DEFINIDO):
+  //    → payment já existe (criado na abertura)
+  //    → delta = realAmount - preAmount
+  //    → delta < 0: reembolso (wallet ou contract_refunds)
+  //    → delta > 0: cria payment extra com status pending_retry
+  //    → delta = 0: confirma payment existente
 
   const confirmEndContract = useCallback(
     async (id: string) => {
@@ -1039,61 +1132,229 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       if (!contract) throw new Error("Contrato não encontrado");
 
       const endedAt = Date.now();
-      const duration = (endedAt - contract.startedAt) / 1000 / 3600;
+      const durationHours = (endedAt - contract.startedAt) / 1000 / 3600;
       const fixedHours = contract.duracaoTotal ? contract.duracaoTotal / 1000 / 3600 : null;
-      const isOverdue = contract.tipo === "timer" && fixedHours !== null && duration > fixedHours;
-      const totalAmount =
-        contract.tipo === "timer" && contract.duracaoTotal && !isOverdue
-          ? parseFloat(
-              (
-                (contract.duracaoTotal / 1000 / 3600) *
-                contract.ratePerHour
-              ).toFixed(2)
-            )
-          : parseFloat((duration * contract.ratePerHour).toFixed(2));
 
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          status: "ended",
-          ended_at: new Date(endedAt).toISOString(),
-          total_amount: totalAmount,
-          payment_status: contract.paymentMethod !== "dinheiro" ? "paid" : "awaiting_confirmation",
-        })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
+      const realAmount = parseFloat(
+        (
+          (
+            contract.tipo === "timer" && fixedHours !== null && durationHours > fixedHours
+              ? durationHours
+              : contract.tipo === "timer" && fixedHours !== null
+              ? fixedHours
+              : durationHours
+          ) * contract.ratePerHour
+        ).toFixed(2)
+      );
 
       const reason = contract.endReason ?? "Encerrado com acordo mútuo";
-
-      await settleActionRequest(id, "end", "accepted", user.id, reason);
-
       const paymentMethodDb = mapPaymentMethodToDb(contract.paymentMethod);
-      if (paymentMethodDb) {
-        const payerId = contract.role === "hiring" ? user.id : contract.person.profileId;
-        const payeeId = contract.role === "hiring" ? contract.person.profileId : user.id;
-        if (payerId && payeeId) {
+      const payerId = contract.role === "hiring" ? user.id : contract.person.profileId;
+      const payeeId = contract.role === "hiring" ? contract.person.profileId : user.id;
+
+      let finalPaymentStatus: string;
+      let contractPendingExtra: number | null = null;
+      let contractPendingRefund: number | null = null;
+
+      if (contract.billingTrigger === "on_end") {
+        // ── Contrato ABERTO ─────────────────────────────────────────────────
+        if (contract.paymentMethod === "dinheiro") {
+          finalPaymentStatus = "awaiting_confirmation";
+        } else if (contract.paymentMethod === "saldo" && payerId) {
+          const { data: wallet } = await supabase
+            .from("wallets")
+            .select("id, balance")
+            .eq("profile_id", payerId)
+            .maybeSingle();
+
+          if (wallet && Number(wallet.balance) >= Number(realAmount)) {
+            const prev = Number(wallet.balance);
+            const real = Number(realAmount);
+            const newBalance = parseFloat((prev - real).toFixed(2));
+            await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
+            await supabase.from("wallet_transactions").insert({
+              wallet_id: wallet.id,
+              profile_id: payerId,
+              type: "payment",
+              status: "completed",
+              amount: real,
+              balance_before: prev,
+              balance_after: newBalance,
+              description: `Pagamento de serviço – contrato #${id.slice(0, 8)}`,
+              contract_id: id,
+              
+            });
+            finalPaymentStatus = "paid";
+          } else {
+            finalPaymentStatus = "failed";
+            contractPendingExtra = Number(realAmount);
+          }
+        } else {
+          finalPaymentStatus = "paid";
+        }
+
+        if (payerId && payeeId && paymentMethodDb && contract.paymentMethod !== "dinheiro") {
           await supabase.from("contract_payments").insert({
             contract_id: id,
             payer_id: payerId,
             payee_id: payeeId,
             method: paymentMethodDb === "balance" ? "wallet_balance" : paymentMethodDb,
-            amount: totalAmount,
-            status: contract.paymentMethod === "dinheiro" ? "awaiting_dual_confirmation" : "confirmed",
+            amount: Number(realAmount),
+            status: finalPaymentStatus === "paid" ? "confirmed" : "pending_retry",
             requested_by: user.id,
-            confirmed_at: contract.paymentMethod === "dinheiro" ? null : new Date().toISOString(),
+            confirmed_at: finalPaymentStatus === "paid" ? new Date().toISOString() : null,
           });
+        }
+
+        if (contract.paymentMethod === "dinheiro" && payerId && payeeId) {
+          const { data: existingCash } = await supabase
+            .from("contract_payments")
+            .select("id")
+            .eq("contract_id", id)
+            .eq("method", "cash")
+            .maybeSingle();
+          if (!existingCash) {
+            await supabase.from("contract_payments").insert({
+              contract_id: id,
+              payer_id: payerId,
+              payee_id: payeeId,
+              method: "cash",
+              amount: Number(realAmount),
+              status: "awaiting_dual_confirmation",
+              requested_by: user.id,
+            });
+          }
+          await createActionRequest({
+            contractId: id,
+            type: "payment",
+            requestedBy: user.id,
+            amount: Number(realAmount),
+          });
+        }
+      } else {
+        // ── Contrato DEFINIDO: billing_trigger = 'on_start' ─────────────────
+        const { data: prePayment } = await supabase
+          .from("contract_payments")
+          .select("id, amount, status, method, payer_id, payee_id")
+          .eq("contract_id", id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        const preAmount = prePayment ? Number(prePayment.amount) : 0;
+        const delta = parseFloat((Number(realAmount) - preAmount).toFixed(2));
+
+        if (Math.abs(delta) < 0.01) {
+          if (prePayment) {
+            await supabase.from("contract_payments").update({
+              status: "confirmed",
+              confirmed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq("id", prePayment.id);
+          }
+          finalPaymentStatus = "paid";
+        } else if (delta < 0) {
+          const refundAmount = Math.abs(delta);
+          contractPendingRefund = refundAmount;
+
+          if (prePayment) {
+            await supabase.from("contract_payments").update({
+              amount: Number(realAmount),
+              status: "confirmed",
+              confirmed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq("id", prePayment.id);
+          }
+
+          if (contract.paymentMethod === "saldo" && payerId) {
+            const { data: wallet } = await supabase
+              .from("wallets")
+              .select("id, balance")
+              .eq("profile_id", payerId)
+              .maybeSingle();
+            if (wallet) {
+              const prev = Number(wallet.balance);
+              const newBalance = parseFloat((prev + refundAmount).toFixed(2));
+              await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
+              const { data: walletTx } = await supabase.from("wallet_transactions").insert({
+                wallet_id: wallet.id,
+                profile_id: payerId,
+                type: "refund",
+                status: "completed",
+                amount: refundAmount,
+                balance_before: prev,
+                balance_after: newBalance,
+                description: `Reembolso encerramento antecipado – contrato #${id.slice(0, 8)}`,
+                contract_id: id,
+                
+              }).select("id").single();
+
+              await supabase.from("contract_refunds").insert({
+                contract_id: id,
+                payment_id: prePayment?.id ?? null,
+                profile_id: payerId,
+                amount: refundAmount,
+                reason: "early_end",
+                status: "processed",
+                wallet_tx_id: walletTx?.id ?? null,
+                processed_at: new Date().toISOString(),
+              });
+            }
+          } else {
+            await supabase.from("contract_refunds").insert({
+              contract_id: id,
+              payment_id: prePayment?.id ?? null,
+              profile_id: payerId ?? user.id,
+              amount: refundAmount,
+              reason: "early_end",
+              status: "pending",
+            });
+          }
+          finalPaymentStatus = "paid";
+        } else {
+          contractPendingExtra = delta;
+
+          if (prePayment) {
+            await supabase.from("contract_payments").update({
+              status: "confirmed",
+              confirmed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq("id", prePayment.id);
+          }
+
+          if (payerId && payeeId && paymentMethodDb) {
+            await supabase.from("contract_payments").insert({
+              contract_id: id,
+              payer_id: payerId,
+              payee_id: payeeId,
+              method: paymentMethodDb === "balance" ? "wallet_balance" : paymentMethodDb,
+              amount: delta,
+              status: "pending_retry",
+              requested_by: user.id,
+            });
+          }
+          finalPaymentStatus = "awaiting_confirmation";
         }
       }
 
-      if (contract.paymentMethod === "dinheiro") {
-        await createActionRequest({
-          contractId: id,
-          type: "payment",
-          requestedBy: user.id,
-          amount: totalAmount,
-        });
-      }
+      // ── Atualiza contrato ─────────────────────────────────────────────────
+      const contractUpdate: Record<string, any> = {
+        status: "ended",
+        ended_at: new Date(endedAt).toISOString(),
+        total_amount: Number(realAmount),
+        payment_status: finalPaymentStatus,
+      };
+      if (contractPendingExtra != null) contractUpdate.pending_extra_amount = contractPendingExtra;
+      if (contractPendingRefund != null) contractUpdate.pending_refund_amount = contractPendingRefund;
+
+      const { error } = await supabase
+        .from("contracts")
+        .update(contractUpdate)
+        .eq("id", id);
+
+      if (error) throw new Error(error.message);
+
+      await settleActionRequest(id, "end", "accepted", user.id, reason);
 
       await recordContractEvent({
         contractId: id,
@@ -1101,7 +1362,13 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         actorRole: getActorRole(contract, user.id),
         eventType: "ended",
         reason,
-        metadata: { total_amount: totalAmount, payment_method: paymentMethodDb },
+        metadata: {
+          total_amount: Number(realAmount),
+          payment_method: paymentMethodDb,
+          billing_trigger: contract.billingTrigger,
+          pending_extra: contractPendingExtra,
+          pending_refund: contractPendingRefund,
+        },
       });
 
       if (userIdRef.current)
@@ -1113,13 +1380,19 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
       broadcastUpdate(id, contractorId, hiredId);
 
-      const amountLabel = formatCurrency(totalAmount);
+      const amountLabel = formatCurrency(Number(realAmount));
+      const extraLabel = contractPendingExtra
+        ? ` Valor extra pendente: ${formatCurrency(contractPendingExtra)}.`
+        : "";
+      const refundLabel = contractPendingRefund
+        ? ` Reembolso de ${formatCurrency(contractPendingRefund)} processado.`
+        : "";
 
       if (otherPartyId) {
         sendPushNotification(
           otherPartyId,
           "Contrato encerrado",
-          `Contrato encerrado. Motivo: ${reason}. Valor: ${amountLabel}.`,
+          `Contrato encerrado. Valor: ${amountLabel}.${extraLabel}${refundLabel}`,
           { contract_id: id },
           "contract_ended"
         ).catch(() => {});
@@ -1128,7 +1401,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       sendPushNotification(
         user.id,
         "Contrato encerrado",
-        `Você confirmou o encerramento. Valor: ${amountLabel}.`,
+        `Você confirmou o encerramento. Valor: ${amountLabel}.${extraLabel}${refundLabel}`,
         { contract_id: id },
         "contract_ended"
       ).catch(() => {});
@@ -1847,6 +2120,90 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     [activeContracts, history, loadContracts, broadcastUpdate]
   );
 
+  // ── Pagar valor pendente excedente (encerramento atrasado) ───────────────────
+  const payPendingBalance = useCallback(
+    async (contractId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const contract = [...activeContracts, ...history].find((c) => c.id === contractId);
+      if (!contract) throw new Error("Contrato não encontrado");
+
+      const pendingAmount = contract.pendingExtraAmount;
+      if (!pendingAmount || pendingAmount <= 0) throw new Error("Nenhum valor pendente neste contrato");
+
+      const { data: pendingPayment } = await supabase
+        .from("contract_payments")
+        .select("id, amount, method")
+        .eq("contract_id", contractId)
+        .eq("status", "pending_retry")
+        .limit(1)
+        .maybeSingle();
+
+      if (!pendingPayment) throw new Error("Registro de pagamento pendente não encontrado");
+
+      if (contract.paymentMethod === "saldo") {
+        const payerId = contract.role === "hiring" ? user.id : contract.person.profileId;
+        if (!payerId) throw new Error("Pagador não identificado");
+
+        const { data: wallet } = await supabase
+          .from("wallets")
+          .select("id, balance")
+          .eq("profile_id", payerId)
+          .maybeSingle();
+
+        if (!wallet || Number(wallet.balance) < pendingAmount) {
+          throw new Error(`Saldo insuficiente. Disponível: ${formatCurrency(Number(wallet?.balance ?? 0))}`);
+        }
+
+        const prev = Number(wallet.balance);
+        const newBalance = parseFloat((prev - pendingAmount).toFixed(2));
+        await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
+        await supabase.from("wallet_transactions").insert({
+          wallet_id: wallet.id,
+          profile_id: payerId,
+          type: "payment",
+          status: "completed",
+          amount: pendingAmount,
+          balance_before: prev,
+          balance_after: newBalance,
+          description: `Pagamento excedente – contrato #${contractId.slice(0, 8)}`,
+          contract_id: contractId,
+          
+        });
+      }
+
+      await supabase.from("contract_payments").update({
+        status: "confirmed",
+        confirmed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq("id", pendingPayment.id);
+
+      await supabase.from("contracts").update({
+        payment_status: "paid",
+        pending_extra_amount: null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", contractId);
+
+      await recordContractEvent({
+        contractId,
+        actorId: user.id,
+        actorRole: getActorRole(contract, user.id),
+        eventType: "payment_confirmed",
+        metadata: { pending_amount: pendingAmount, method: contract.paymentMethod },
+      });
+
+      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+      const otherPartyId = contract.person.profileId;
+      const isHiring = contract.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(contractId, contractorId, hiredId);
+    },
+    [activeContracts, history, loadContracts, broadcastUpdate]
+  );
+
   const refreshContracts = useCallback(async () => {
     if (userIdRef.current)
       await loadContracts(userIdRef.current, { showLoading: false });
@@ -1874,6 +2231,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         reportCashReceived,
         changeContractPaymentMethod,
         disputeCashPayment,
+        payPendingBalance,
         refreshContracts,
       }}
     >

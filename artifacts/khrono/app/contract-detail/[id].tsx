@@ -141,7 +141,10 @@ function getPaymentStatusInfo(
   personName: string,
   isHiring: boolean,
   isEnded: boolean,
-  cardUiState?: "awaiting_other_party" | "awaiting_my_confirmation" | null
+  cardUiState?: "awaiting_other_party" | "awaiting_my_confirmation" | null,
+  billingTrigger?: Contract["billingTrigger"],
+  pendingExtraAmount?: number,
+  pendingRefundAmount?: number,
 ): { text: string; tone: "green" | "amber" | "red" | "muted" } {
   if (paymentMethod === "dinheiro") {
     if (paymentStatus === "paid") return { text: "Dinheiro confirmado", tone: "green" };
@@ -172,9 +175,25 @@ function getPaymentStatusInfo(
       tone: "muted",
     };
   }
-  if (paymentStatus === "paid") return { text: "Pago", tone: "green" };
+
+  if (paymentStatus === "paid") {
+    if (pendingRefundAmount && pendingRefundAmount > 0) return { text: "Pago · reembolso processado", tone: "green" };
+    return { text: "Pago", tone: "green" };
+  }
   if (paymentStatus === "failed") return { text: "Falha no pagamento", tone: "red" };
+  if (paymentStatus === "awaiting_confirmation") {
+    if (pendingExtraAmount && pendingExtraAmount > 0) return { text: "Excedente pendente", tone: "amber" };
+    return { text: "Aguardando confirmação", tone: "amber" };
+  }
   if (isEnded) return { text: "Pendente", tone: "amber" };
+  if (billingTrigger === "on_start") {
+    switch (paymentMethod) {
+      case "cartao": return { text: "Reservado no cartão", tone: "muted" };
+      case "pix": return { text: "Aguardando Pix", tone: "amber" };
+      case "saldo": return { text: "Debitado do saldo", tone: "green" };
+      default: return { text: "Pré-pago", tone: "muted" };
+    }
+  }
   return { text: "Na conclusão do serviço", tone: "muted" };
 }
 
@@ -1061,6 +1080,7 @@ export default function ContractDetailScreen() {
     rejectCancelRequest,
     confirmCashPayment,
     disputeCashPayment,
+    payPendingBalance,
   } = useContracts();
 
   const contract = [...activeContracts, ...history].find((c) => c.id === id);
@@ -1710,7 +1730,10 @@ export default function ContractDetailScreen() {
                 contract.person.name,
                 isHiring,
                 isEnded,
-                cardUiState
+                cardUiState,
+                contract.billingTrigger,
+                contract.pendingExtraAmount,
+                contract.pendingRefundAmount,
               );
               const psColor =
                 ps.tone === "green" ? colors.btnSuccessBg
@@ -1740,6 +1763,74 @@ export default function ContractDetailScreen() {
                 </Pressable>
               );
             })()}
+          </View>
+        )}
+
+        {/* ── Banner: pagamento excedente pendente ───────────────────────── */}
+        {contract.pendingExtraAmount != null && contract.pendingExtraAmount > 0 && isHiring && (
+          <View
+            style={[
+              s.detailCard,
+              {
+                backgroundColor: "#fff5ee",
+                borderColor: "#e0603040",
+                gap: 10,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Feather name="alert-circle" size={16} color="#e06030" />
+              <Text style={[s.detailTitle, { color: "#e06030", flex: 1 }]}>
+                Pagamento excedente
+              </Text>
+            </View>
+            <Text style={[s.detailSub, { color: colors.textSecondary }]}>
+              O serviço durou mais do que o contratado. Há um valor adicional de{" "}
+              <Text style={{ fontFamily: "DMSans_500Medium", color: colors.text }}>
+                {formatCurrency(contract.pendingExtraAmount)}
+              </Text>{" "}
+              pendente de pagamento.
+            </Text>
+            <AppButton
+              label={`Pagar ${formatCurrency(contract.pendingExtraAmount)}`}
+              icon="credit-card"
+              variant="primary"
+              onPress={() =>
+                withLoading("payPendingBalance", () => payPendingBalance(contract.id), {
+                  onSuccess: "Pagamento excedente realizado com sucesso.",
+                  onError: "Não foi possível processar o pagamento.",
+                })
+              }
+              loading={loading && loadingAction === "payPendingBalance"}
+            />
+          </View>
+        )}
+
+        {/* ── Banner: reembolso processado ────────────────────────────────── */}
+        {contract.pendingRefundAmount != null && contract.pendingRefundAmount > 0 && isHiring && (
+          <View
+            style={[
+              s.detailCard,
+              {
+                backgroundColor: "#f0faf4",
+                borderColor: "#22c55e30",
+                gap: 8,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Feather name="check-circle" size={16} color="#16a34a" />
+              <Text style={[s.detailTitle, { color: "#16a34a", flex: 1 }]}>
+                Reembolso processado
+              </Text>
+            </View>
+            <Text style={[s.detailSub, { color: colors.textSecondary }]}>
+              O serviço encerrou antes do tempo contratado. Um reembolso de{" "}
+              <Text style={{ fontFamily: "DMSans_500Medium", color: colors.text }}>
+                {formatCurrency(contract.pendingRefundAmount)}
+              </Text>{" "}
+              foi creditado no seu Saldo Khrono.
+            </Text>
           </View>
         )}
 

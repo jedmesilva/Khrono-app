@@ -56,6 +56,36 @@ All secrets are stored in Replit Secrets (never hardcoded):
 - Push notifications via Expo Notifications
 - QR code / PIN-based contract initiation
 - Skills, services, and tools catalog
+- **Payment Architecture v2**: full billing matrix by contract type × payment method
+
+## Payment Architecture (v2)
+
+### Billing Trigger Matrix
+| Contract type | Payment method | Billing trigger | Behavior |
+|---|---|---|---|
+| Aberto (cronômetro) | any | `on_end` | Payment created when contract ends |
+| Definido (timer) | cartão | `on_start` | Card pre-authorized on creation; captured on end |
+| Definido (timer) | pix | `on_start` | PIX generated on creation; service starts after confirmation |
+| Definido (timer) | saldo | `on_start` | Wallet debited immediately on creation |
+| Definido (timer) | dinheiro | `on_start` | Dual confirmation on end |
+
+### Delta Resolution at End (Defined contracts)
+- Ended **early** (delta < 0): refund via `contract_refunds` + wallet credit (saldo) or pending refund record
+- Ended **on time** (delta ≈ 0): existing payment confirmed
+- Ended **late** (delta > 0): existing payment confirmed + new `pending_retry` payment for excess
+
+### New DB Objects (migration `20260416_payment_architecture.sql`)
+- `contracts.billing_trigger` — 'on_end' | 'on_start' | 'split'
+- `contracts.pending_extra_amount` — excess to be charged
+- `contracts.pending_refund_amount` — refund already processed
+- `contract_refunds` table — immutable refund records
+- `contract_payment_splits` table — multi-method split records
+- `contract_payments.status` expanded: `held`, `pending_retry`
+
+### UI
+- `contract-confirm.tsx`: payment hints per tipo×method, dynamic button label
+- `contract-detail/[id].tsx`: pending payment banner (with pay action) + refund banner
+- `getPaymentStatusInfo` updated to show billing_trigger-aware states
 
 ## Architecture Notes
 - Expo configuration now uses static `artifacts/khrono/app.json`; dynamic `app.config.js` was removed for Replit Expo compatibility

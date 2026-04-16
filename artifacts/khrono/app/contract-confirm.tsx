@@ -102,12 +102,27 @@ export default function ContractConfirmScreen() {
 
   const labelValor = (() => {
     const isCash = metodoPagamento === "dinheiro";
-    const isCardOrPix = metodoPagamento === "cartao" || metodoPagamento === "pix";
     const isDefinido = tipoContrato === "definido";
     if (isCash) return "a pagar";
-    if (isCardOrPix && isDefinido) return "pagando";
-    if (isCardOrPix && !isDefinido) return "a pagar";
-    return "pagando";
+    if (isDefinido) return "cobrado agora";
+    return "a pagar";
+  })();
+
+  const paymentHint = (() => {
+    if (!metodoPagamento || tipoContrato !== "definido") return null;
+    const valor = valorTotal ?? "—";
+    switch (metodoPagamento) {
+      case "cartao":
+        return `O valor de ${valor} será pré-autorizado no cartão agora e capturado ao encerrar.`;
+      case "pix":
+        return `O Pix de ${valor} é gerado agora. O serviço inicia após a confirmação.`;
+      case "saldo":
+        return `O valor de ${valor} será debitado do seu Saldo Khrono imediatamente.`;
+      case "dinheiro":
+        return `Você pagará ${valor} em dinheiro ao encerrar. Ambos confirmam o valor.`;
+      default:
+        return null;
+    }
   })();
 
   const formatAgendamento = () => {
@@ -500,12 +515,28 @@ export default function ContractConfirmScreen() {
             <Feather name="chevron-right" size={14} color={colors.textDim} />
           </Pressable>
 
+          {/* Hint de cobrança antecipada para contrato definido */}
+          {paymentHint && (
+            <View style={styles.paymentHintBox}>
+              <Feather name="info" size={13} color="#e06030" style={{ marginTop: 1 }} />
+              <Text style={styles.paymentHintText}>{paymentHint}</Text>
+            </View>
+          )}
+
           <Pressable
             onPress={(metodoPagamento && !confirmLoading) ? confirmar : undefined}
             style={[styles.confirmBtn, (!metodoPagamento || confirmLoading) && styles.confirmBtnDisabled]}
           >
             <Text style={[styles.confirmBtnText, (!metodoPagamento || confirmLoading) && { color: colors.textDim }]}>
-              {confirmLoading ? "Criando contrato..." : metodoPagamento === "pix" ? "Confirmar e gerar Pix" : "Confirmar e enviar solicitação"}
+              {confirmLoading
+                ? "Criando contrato..."
+                : metodoPagamento === "pix"
+                ? "Confirmar e gerar Pix"
+                : tipoContrato === "definido" && metodoPagamento === "saldo"
+                ? "Confirmar e debitar saldo"
+                : tipoContrato === "definido" && metodoPagamento === "cartao"
+                ? "Confirmar e pré-autorizar"
+                : "Confirmar e enviar solicitação"}
             </Text>
           </Pressable>
           <Pressable onPress={goBack} style={styles.cancelBtn}>
@@ -1282,6 +1313,26 @@ function createStyles(colors: ColorPalette) {
       fontFamily: "DMSans_400Regular",
       letterSpacing: 1,
       textTransform: "uppercase",
+    },
+    paymentHintBox: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+      backgroundColor: "#e0603010",
+      borderWidth: 1,
+      borderColor: "#e0603030",
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      marginBottom: 12,
+      marginTop: 4,
+    },
+    paymentHintText: {
+      flex: 1,
+      fontFamily: "DMSans_400Regular",
+      fontSize: 12,
+      color: colors.textSecondary,
+      lineHeight: 18,
     },
   });
 }
