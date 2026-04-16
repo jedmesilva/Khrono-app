@@ -1670,11 +1670,11 @@ export default function ContractDetailScreen() {
                 : ps.tone === "amber" ? "#ffaa00"
                 : ps.tone === "red" ? "#e05050"
                 : colors.textMuted;
-              const isPayable = (isEnded || contract.paymentStatus === "awaiting_confirmation");
+              const canOpenSheet = !isCancelled;
               return (
                 <Pressable
-                  onPress={isPayable ? () => setPaymentSheetOpen(true) : undefined}
-                  style={({ pressed }) => ({ opacity: pressed && isPayable ? 0.7 : 1 })}
+                  onPress={canOpenSheet ? () => setPaymentSheetOpen(true) : undefined}
+                  style={({ pressed }) => ({ opacity: pressed && canOpenSheet ? 0.7 : 1 })}
                 >
                   <DetailRow
                     icon={
@@ -1688,9 +1688,9 @@ export default function ContractDetailScreen() {
                     value={paymentLabel(contract)}
                     sub={ps.text}
                     subColor={psColor}
-                    last={!isPayable}
+                    last={!canOpenSheet}
                     colors={colors}
-                    actionIcon={isPayable ? "chevron-right" : undefined}
+                    actionIcon={canOpenSheet ? "chevron-right" : undefined}
                   />
                 </Pressable>
               );
