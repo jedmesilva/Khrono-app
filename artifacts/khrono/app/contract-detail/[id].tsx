@@ -76,8 +76,8 @@ function formatHM(ms: number): string {
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
   if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
-  if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  if (m > 0) return `${m}m`;
+  if (h > 0) return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  if (m > 0) return `${m}min`;
   return `${s}s`;
 }
 

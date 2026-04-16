@@ -22,8 +22,8 @@ function formatTime(totalSecs: number): string {
   const m = Math.floor((abs % 3600) / 60);
   const s = abs % 60;
   if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
-  if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  if (m > 0) return `${m}m`;
+  if (h > 0) return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  if (m > 0) return `${m}min`;
   return `${s}s`;
 }
 
@@ -33,8 +33,8 @@ function formatHM(secs: number): string {
   const h = Math.floor((abs % 86400) / 3600);
   const m = Math.floor((abs % 3600) / 60);
   if (d > 0) return h > 0 ? `${d}d ${h}h` : `${d}d`;
-  if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  return `${m}m`;
+  if (h > 0) return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  return `${m}min`;
 }
 
 function formatScheduledTime(date: Date): string {
