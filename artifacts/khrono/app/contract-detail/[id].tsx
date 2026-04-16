@@ -1586,7 +1586,7 @@ export default function ContractDetailScreen() {
             <DetailRow
               icon={<Feather name="calendar" size={14} color={colors.textMuted} />}
               label="Programado"
-              value={contract.scheduledFor ? formatData(contract.scheduledFor) : "Imediato"}
+              value={formatData(contract.scheduledFor ?? contract.createdAt)}
               colors={colors}
             />
             {(() => {

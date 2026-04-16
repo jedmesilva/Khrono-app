@@ -67,6 +67,7 @@ export type Contract = {
   ratePerHour: number;
   startedAt: number;
   scheduledFor?: number;
+  createdAt: number;
   status: ContractStatus;
   endedAt?: number;
   totalAmount?: number;
@@ -224,6 +225,7 @@ function mapDbToContract(c: any, userId: string): Contract {
     scheduledFor: c.scheduled_for
       ? new Date(c.scheduled_for).getTime()
       : undefined,
+    createdAt: c.created_at ? new Date(c.created_at).getTime() : 0,
     status: mapDbStatusToUi(c.status),
     endedAt: c.ended_at ? new Date(c.ended_at).getTime() : undefined,
     totalAmount: c.total_amount ? Number(c.total_amount) : undefined,
