@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { formatRadius } from "@/components/LocationSheet";
+import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
@@ -44,6 +45,7 @@ type ProviderData = {
   skills: Skill[];
   tools: Tool[];
   services: Service[];
+  punctuality: PunctualidadeStats;
 };
 
 function getInitials(name: string): string {
@@ -116,7 +118,7 @@ const areaStyles = StyleSheet.create({
 });
 
 async function fetchProviderData(profileId: string): Promise<ProviderData | null> {
-  const [profileRes, ppRes, servicesRes, skillsRes, toolsRes, locationRes, contractsRes] = await Promise.all([
+  const [profileRes, ppRes, servicesRes, skillsRes, toolsRes, locationRes, contractsRes, punctualityRes] = await Promise.all([
     supabase.from("profiles").select("id, name, first_name, created_at").eq("id", profileId).single(),
     supabase.from("provider_profiles").select("nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
     supabase.from("provider_services")
@@ -131,6 +133,11 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     supabase.from("provider_tools").select("*").eq("profile_id", profileId),
     supabase.from("provider_locations").select("location_mode, service_radius_meters, fixed_address").eq("profile_id", profileId).single(),
     supabase.from("contracts").select("service_id").eq("hired_id", profileId).not("service_id", "is", null),
+    supabase.from("contracts")
+      .select("scheduled_for, started_at")
+      .eq("hired_id", profileId)
+      .eq("agendado", true)
+      .not("started_at", "is", null),
   ]);
 
   if (!profileRes.data) return null;
@@ -200,6 +207,9 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
   for (const sk of skills) skillMap[sk.id] = sk;
 
   const location = locationRes.data;
+  const punctuality = computePunctualidade(
+    (punctualityRes.data ?? []) as { scheduled_for: string | null; started_at: string | null }[]
+  );
 
   return {
     id: profile.id,
@@ -215,6 +225,7 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     skills,
     tools,
     services,
+    punctuality,
   };
 }
 
@@ -310,6 +321,8 @@ export default function UserProfileScreen() {
             ))}
           </View>
         </View>
+
+        <PunctualidadeCard stats={provider.punctuality} colors={colors} />
 
         {(provider.locationMode || provider.serviceRadius > 0) && (
           <ServiceAreaCard

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { LocationSheet, formatRadius } from "@/components/LocationSheet";
+import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
 import { SkillListCard } from "@/components/SkillListCard";
 import { ToolListCard } from "@/components/ToolListCard";
@@ -293,6 +294,7 @@ export default function ProfileScreen() {
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
   const [readinessSheetOpen, setReadinessSheetOpen] = useState(false);
   const [memberSince, setMemberSince] = useState<string>("");
+  const [punctuality, setPunctuality] = useState<PunctualidadeStats | null>(null);
   const topPadding = isWeb ? insets.top + 67 : insets.top;
 
   useEffect(() => {
@@ -304,6 +306,19 @@ export default function ProfileScreen() {
       .single()
       .then(({ data }) => {
         if (data?.created_at) setMemberSince(formatMonthYear(data.created_at));
+      });
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from("contracts")
+      .select("scheduled_for, started_at")
+      .eq("hired_id", user.id)
+      .eq("agendado", true)
+      .not("started_at", "is", null)
+      .then(({ data }) => {
+        if (data) setPunctuality(computePunctualidade(data as any));
       });
   }, [user?.id]);
 
@@ -474,6 +489,10 @@ export default function ProfileScreen() {
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>SERVICES</Text>
           </View>
         </View>
+
+        {punctuality && (
+          <PunctualidadeCard stats={punctuality} colors={colors} style={{ marginTop: 14 }} />
+        )}
 
         {shouldShowReadinessCard ? (
           <Pressable
