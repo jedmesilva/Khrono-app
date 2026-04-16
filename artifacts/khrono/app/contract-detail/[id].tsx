@@ -1573,7 +1573,7 @@ export default function ContractDetailScreen() {
         )}
 
         {/* Details card */}
-        {(contract.startedAt > 0 || isPending || isAccepted || isCancelled || isFinalized) && (
+        {(contract.startedAt > 0 || isPending || isAccepted || isCancelled || isFinalized || isScheduled) && (
           <View
             style={[
               s.detailCard,
