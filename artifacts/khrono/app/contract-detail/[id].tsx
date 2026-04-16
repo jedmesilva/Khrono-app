@@ -27,6 +27,7 @@ import Svg, { Line, Path, Rect } from "react-native-svg";
 import * as Calendar from "expo-calendar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { supabase } from "@/lib/supabase";
 import { AppButton } from "@/components/AppButton";
 import { AppDialog } from "@/components/AppDialog";
 import { ContractPaymentSheet } from "@/components/ContractPaymentSheet";
@@ -139,16 +140,30 @@ function getPaymentStatusInfo(
   paymentStatus: Contract["paymentStatus"],
   personName: string,
   isHiring: boolean,
-  isEnded: boolean
+  isEnded: boolean,
+  cardUiState?: "awaiting_other_party" | "awaiting_my_confirmation" | null
 ): { text: string; tone: "green" | "amber" | "red" | "muted" } {
   if (paymentMethod === "dinheiro") {
     if (paymentStatus === "paid") return { text: "Dinheiro confirmado", tone: "green" };
     if (paymentStatus === "disputed") return { text: "Pagamento em disputa", tone: "red" };
     if (paymentStatus === "awaiting_confirmation") {
-      return {
-        text: "Aguardando confirmação bilateral",
-        tone: "amber",
-      };
+      if (cardUiState === "awaiting_other_party") {
+        return {
+          text: isHiring
+            ? `Aguardando confirmação de ${personName}`
+            : `Aguardando confirmação do contratante`,
+          tone: "amber",
+        };
+      }
+      if (cardUiState === "awaiting_my_confirmation") {
+        return {
+          text: isHiring
+            ? `Confirme o pagamento para ${personName}`
+            : `Confirme o recebimento do contratante`,
+          tone: "amber",
+        };
+      }
+      return { text: "Aguardando confirmação bilateral", tone: "amber" };
     }
     return {
       text: isHiring
@@ -1058,6 +1073,7 @@ export default function ContractDetailScreen() {
   const [reasonSheetMode, setReasonSheetMode] = useState<"end" | "cancel" | null>(null);
   const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [cardUiState, setCardUiState] = useState<"awaiting_other_party" | "awaiting_my_confirmation" | null>(null);
   const loading = loadingAction !== null;
   const showToast = useToast();
 
@@ -1099,6 +1115,44 @@ export default function ContractDetailScreen() {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [contract?.status, contract?.agendado, contract?.startedAt]);
+
+  const fetchCardUiState = useCallback(async () => {
+    if (
+      !contract ||
+      contract.paymentMethod !== "dinheiro" ||
+      contract.paymentStatus !== "awaiting_confirmation"
+    ) {
+      setCardUiState(null);
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: payment } = await supabase
+      .from("contract_payments")
+      .select("id")
+      .eq("contract_id", contract.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!payment) { setCardUiState(null); return; }
+    const { data: confirmations } = await supabase
+      .from("contract_payment_confirmations")
+      .select("user_id")
+      .eq("payment_id", payment.id);
+    const myConf = confirmations?.some((c) => c.user_id === user.id) ?? false;
+    const otherConf = confirmations?.some((c) => c.user_id !== user.id) ?? false;
+    if (myConf && !otherConf) setCardUiState("awaiting_other_party");
+    else if (!myConf && otherConf) setCardUiState("awaiting_my_confirmation");
+    else setCardUiState(null);
+  }, [contract?.id, contract?.paymentMethod, contract?.paymentStatus]);
+
+  useEffect(() => {
+    fetchCardUiState();
+  }, [fetchCardUiState]);
+
+  useEffect(() => {
+    if (!paymentSheetOpen) fetchCardUiState();
+  }, [paymentSheetOpen]);
 
   const withLoading = async (
     action: string,
@@ -1655,7 +1709,8 @@ export default function ContractDetailScreen() {
                 contract.paymentStatus,
                 contract.person.name,
                 isHiring,
-                isEnded
+                isEnded,
+                cardUiState
               );
               const psColor =
                 ps.tone === "green" ? colors.btnSuccessBg
