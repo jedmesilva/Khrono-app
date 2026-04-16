@@ -1715,8 +1715,8 @@ export default function ContractDetailScreen() {
           </View>
         )}
 
-        {/* Re-hire */}
-        {(isFinalized || isCancelled) && (
+        {/* Re-hire — só para quem contratou */}
+        {(isFinalized || isCancelled) && isHiring && (
           <Pressable
             onPress={() => router.back()}
             style={({ pressed }) => [
