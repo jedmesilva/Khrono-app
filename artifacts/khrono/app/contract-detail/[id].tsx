@@ -1660,9 +1660,9 @@ export default function ContractDetailScreen() {
                 isEnded
               );
               const psColor =
-                ps.tone === "green" ? "#18a06b"
-                : ps.tone === "amber" ? "#ffaa00"
-                : ps.tone === "red" ? "#e05050"
+                ps.tone === "green" ? colors.btnSuccessBg
+                : ps.tone === "amber" ? colors.accent
+                : ps.tone === "red" ? colors.btnDangerBg
                 : colors.textMuted;
               return (
                 <Pressable
