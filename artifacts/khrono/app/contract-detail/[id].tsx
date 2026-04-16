@@ -1591,16 +1591,17 @@ export default function ContractDetailScreen() {
                 colors={colors}
               />
             )}
-            {contract.startedAt > 0 && (() => {
-              const isScheduledStart = !!contract.scheduledFor;
-              const pont = isScheduledStart
-                ? getPontualidade(contract.scheduledFor!, contract.startedAt)
-                : null;
+            {(() => {
+              const hasStarted = contract.startedAt > 0;
+              const pont =
+                hasStarted && !!contract.scheduledFor
+                  ? getPontualidade(contract.scheduledFor!, contract.startedAt)
+                  : null;
               return (
                 <DetailRow
                   icon={<Feather name="clock" size={14} color={colors.textMuted} />}
                   label="Iniciado"
-                  value={formatData(contract.startedAt)}
+                  value={hasStarted ? formatData(contract.startedAt) : "—"}
                   sub={pont?.label}
                   subColor={pont?.color}
                   colors={colors}
