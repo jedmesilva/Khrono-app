@@ -1305,7 +1305,7 @@ export default function ContractDetailScreen() {
     contract.status === "cancelled" || contract.status === "rejected";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = isActive && !!contract.agendado && contract.startedAt === 0;
+  const isScheduled = isActive && contract.startedAt === 0;
 
   const iAmRequester =
     (isPendingEnd && contract.endRequestedBy !== contract.person.profileId) ||
@@ -1584,7 +1584,7 @@ export default function ContractDetailScreen() {
               },
             ]}
           >
-            {contract.startedAt > 0 && contract.agendado && !!contract.scheduledFor && (
+            {contract.startedAt > 0 && !!contract.scheduledFor && (
               <DetailRow
                 icon={<Feather name="calendar" size={14} color={colors.textMuted} />}
                 label="Programado"
@@ -1593,7 +1593,7 @@ export default function ContractDetailScreen() {
               />
             )}
             {contract.startedAt > 0 && (() => {
-              const isScheduledStart = contract.agendado && !!contract.scheduledFor;
+              const isScheduledStart = !!contract.scheduledFor;
               const pont = isScheduledStart
                 ? getPontualidade(contract.scheduledFor!, contract.startedAt)
                 : null;
