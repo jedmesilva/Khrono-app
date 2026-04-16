@@ -954,12 +954,6 @@ function HelpSheetContent({
       destructive: true,
     });
   }
-  actions.push({
-    icon: "file-text",
-    label: "Ver comprovante do contrato",
-    desc: "Detalhes completos para fins de registro",
-    onPress: onClose,
-  });
   if (isEnded) {
     actions.push({
       icon: "alert-circle",
