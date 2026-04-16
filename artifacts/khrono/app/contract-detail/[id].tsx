@@ -758,26 +758,41 @@ function ContractStartRow({
 
 // ─── Pontualidade ─────────────────────────────────────────────────────────────
 
+function formatDelta(absDeltaMs: number): string {
+  const totalMins = Math.round(absDeltaMs / 60_000);
+  if (totalMins < 1)   return "menos de 1 min";
+  if (totalMins < 60)  return `${totalMins} min`;
+  const totalHrs  = Math.floor(totalMins / 60);
+  const remMins   = totalMins % 60;
+  if (totalHrs < 24) {
+    return remMins > 0 ? `${totalHrs}h ${remMins}min` : `${totalHrs}h`;
+  }
+  const days    = Math.floor(totalHrs / 24);
+  const remHrs  = totalHrs % 24;
+  const dayStr  = days === 1 ? "1 dia" : `${days} dias`;
+  return remHrs > 0 ? `${dayStr} ${remHrs}h` : dayStr;
+}
+
 function getPontualidade(scheduledFor: number, startedAt: number): {
   label: string;
   color: string;
 } {
   const deltaMs  = startedAt - scheduledFor;
   const absDelta = Math.abs(deltaMs);
-  const mins     = Math.round(absDelta / 60_000);
-  const hrs      = Math.floor(mins / 60);
-  const remMins  = mins % 60;
 
   if (absDelta <= 5 * 60_000) {
     return { label: "No horário", color: "#18a06b" };
   }
+
+  const dur = formatDelta(absDelta);
+
   if (deltaMs < 0) {
-    const txt = mins < 60 ? `${mins} min antes` : `${hrs}h${remMins > 0 ? ` ${remMins}min` : ""} antes`;
-    return { label: txt, color: "#18a06b" };
+    return { label: `${dur} antes`, color: "#18a06b" };
   }
-  const txt = mins < 60 ? `${mins} min atrasado` : `${hrs}h${remMins > 0 ? ` ${remMins}min` : ""} atrasado`;
-  const color = mins <= 15 ? "#ffaa00" : "#e05050";
-  return { label: txt, color };
+
+  const totalMins = Math.round(absDelta / 60_000);
+  const color = totalMins <= 15 ? "#ffaa00" : "#e05050";
+  return { label: `${dur} atrasado`, color };
 }
 
 // ─── DetailRow ────────────────────────────────────────────────────────────────
