@@ -341,25 +341,31 @@ function buildArcPath(startDeg: number, sweepDeg: number, r: number): string {
 function ArcProgress({
   elapsedMs,
   totalMs,
-  amount,
+  accumulatedAmount,
+  totalContractAmount,
+  showBreakdown,
   valueLabel,
   colors,
 }: {
   elapsedMs: number;
   totalMs: number;
-  amount: number;
+  accumulatedAmount: number;
+  totalContractAmount: number;
+  showBreakdown: boolean;
   valueLabel: string;
   colors: ColorPalette;
 }) {
   const progress = Math.min(elapsedMs / totalMs, 1);
   const isComplete = progress >= 1;
+  const isOverBudget = showBreakdown && accumulatedAmount > totalContractAmount && totalContractAmount > 0;
   const filledSweep = ARC_SWEEP * progress;
   const remainingMs = Math.max(totalMs - elapsedMs, 0);
+  const arcColor = isOverBudget ? "#e05050" : isComplete ? colors.accent : colors.text;
+  const displayAmount = showBreakdown ? accumulatedAmount : totalContractAmount;
 
   return (
     <View style={{ alignItems: "center", paddingVertical: 24 }}>
       <View style={{ width: 208, height: 212 }}>
-        {/* Arc only — no SVG text */}
         <Svg width={208} height={212} style={{ position: "absolute" }}>
           <Path
             d={buildArcPath(ARC_START, ARC_SWEEP, ARC_R)}
@@ -372,14 +378,13 @@ function ArcProgress({
             <Path
               d={buildArcPath(ARC_START, filledSweep, ARC_R)}
               fill="none"
-              stroke={isComplete ? colors.accent : colors.text}
+              stroke={arcColor}
               strokeWidth={9}
               strokeLinecap="round"
             />
           )}
         </Svg>
 
-        {/* Native text overlay — renderização confiável, sem sobreposição */}
         <View
           style={{
             position: "absolute",
@@ -389,7 +394,7 @@ function ArcProgress({
             bottom: 0,
             alignItems: "center",
             justifyContent: "flex-start",
-            paddingTop: 66,
+            paddingTop: 54,
           }}
         >
           <Text
@@ -398,57 +403,69 @@ function ArcProgress({
               letterSpacing: 1.2,
               color: colors.textMuted,
               fontFamily: "DMSans_600SemiBold",
-              marginBottom: 6,
+              marginBottom: 5,
             }}
           >
             DECORRIDO
           </Text>
           <Text
             style={{
-              fontSize: 28,
+              fontSize: 26,
               fontFamily: "DMMono_400Regular",
               color: colors.text,
-              lineHeight: 34,
+              lineHeight: 31,
             }}
           >
             {formatHM(elapsedMs)}
           </Text>
           <Text
             style={{
-              fontSize: 13,
+              fontSize: 12,
               fontFamily: "DMSans_400Regular",
               color: colors.textMuted,
-              marginTop: 4,
-              lineHeight: 18,
+              marginTop: 2,
+              lineHeight: 16,
             }}
           >
             {`de ${formatHM(totalMs)}`}
           </Text>
           <View
             style={{
-              width: 40,
+              width: 36,
               height: 1,
               backgroundColor: colors.surfaceBorder,
-              marginTop: 12,
-              marginBottom: 12,
+              marginTop: 10,
+              marginBottom: 10,
             }}
           />
           <Text
             style={{
-              fontSize: 21,
+              fontSize: 19,
               fontFamily: "DMSans_600SemiBold",
-              color: colors.accent,
-              lineHeight: 26,
+              color: isOverBudget ? "#e05050" : colors.accent,
+              lineHeight: 23,
             }}
           >
-            {formatCurrency(amount)}
+            {formatCurrency(displayAmount)}
           </Text>
+          {showBreakdown && (
+            <Text
+              style={{
+                fontSize: 11,
+                fontFamily: "DMSans_400Regular",
+                color: colors.textMuted,
+                marginTop: 2,
+              }}
+            >
+              {`de ${formatCurrency(totalContractAmount)}`}
+            </Text>
+          )}
           <Text
             style={{
-              fontSize: 11,
+              fontSize: 10,
               fontFamily: "DMSans_400Regular",
               color: colors.textMuted,
-              marginTop: 3,
+              marginTop: showBreakdown ? 1 : 3,
             }}
           >
             {valueLabel}
@@ -465,11 +482,15 @@ function ArcProgress({
           paddingHorizontal: 14,
           paddingVertical: 6,
           borderRadius: 999,
-          backgroundColor: isComplete
+          backgroundColor: isOverBudget
+            ? "#e0505015"
+            : isComplete
             ? colors.accent + "15"
             : colors.surface,
           borderWidth: 1,
-          borderColor: isComplete
+          borderColor: isOverBudget
+            ? "#e0505035"
+            : isComplete
             ? colors.accent + "35"
             : colors.surfaceBorder,
         }}
@@ -477,17 +498,21 @@ function ArcProgress({
         <Feather
           name="clock"
           size={12}
-          color={isComplete ? colors.accent : colors.textMuted}
+          color={isOverBudget ? "#e05050" : isComplete ? colors.accent : colors.textMuted}
         />
         <Text
           style={{
             fontSize: 12,
             fontFamily: "DMSans_600SemiBold",
-            color: isComplete ? colors.accent : colors.textSecondary,
+            color: isOverBudget ? "#e05050" : isComplete ? colors.accent : colors.textSecondary,
             letterSpacing: 0.3,
           }}
         >
-          {isComplete ? "TEMPO ESGOTADO" : `${formatHM(remainingMs)} restante`}
+          {isOverBudget
+            ? "Valor contratado excedido"
+            : isComplete
+            ? "TEMPO ESGOTADO"
+            : `${formatHM(remainingMs)} restante`}
         </Text>
       </View>
     </View>
@@ -1261,9 +1286,15 @@ export default function ContractDetailScreen() {
 
   const totalMs = contract.duracaoTotal ?? 0;
   const isOverdue = isFixed && totalMs > 0 && elapsedMs > totalMs;
-  const amount = isFixed && totalMs > 0 && !isOverdue
+
+  // Valor acumulado até agora (cresce do zero conforme o tempo passa)
+  const accumulatedAmount = (elapsedMs / 1000 / 3600) * contract.ratePerHour;
+  // Valor total contratado (fixo para contratos de tempo definido, ou acumulado para abertos)
+  const totalContractAmount = isFixed && totalMs > 0
     ? (totalMs / 1000 / 3600) * contract.ratePerHour
-    : (elapsedMs / 1000 / 3600) * contract.ratePerHour;
+    : accumulatedAmount;
+  // Valor exibido no cabeçalho do card de contexto (sempre o total contratado)
+  const amount = totalContractAmount;
 
   const valueLabel = getValueLabel(contract);
 
@@ -1486,14 +1517,16 @@ export default function ContractDetailScreen() {
               <ArcProgress
                 elapsedMs={elapsedMs}
                 totalMs={totalMs}
-                amount={amount}
+                accumulatedAmount={accumulatedAmount}
+                totalContractAmount={totalContractAmount}
+                showBreakdown={contract.startedAt > 0}
                 valueLabel={valueLabel}
                 colors={colors}
               />
             ) : (
               <FreeTimer
                 elapsedMs={elapsedMs}
-                amount={amount}
+                amount={accumulatedAmount}
                 valueLabel={valueLabel}
                 colors={colors}
               />
