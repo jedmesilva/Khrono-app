@@ -140,6 +140,16 @@ function getPaymentStatusInfo(
   isEnded: boolean
 ): { text: string; tone: "green" | "amber" | "red" | "muted" } {
   if (paymentMethod === "dinheiro") {
+    if (paymentStatus === "paid") return { text: "Dinheiro confirmado", tone: "green" };
+    if (paymentStatus === "disputed") return { text: "Pagamento em disputa", tone: "red" };
+    if (paymentStatus === "awaiting_confirmation") {
+      return {
+        text: isHiring
+          ? `Confirme o pagamento para ${personName}`
+          : `Confirme o recebimento de ${personName}`,
+        tone: "amber",
+      };
+    }
     return {
       text: isHiring
         ? `À pagar para ${personName}`
@@ -154,6 +164,9 @@ function getPaymentStatusInfo(
 }
 
 function getValueLabel(contract: Contract): string {
+  if (contract.status === "disputed") {
+    return "em disputa";
+  }
   if (contract.status === "ended") {
     return contract.role === "hiring" ? "pago" : "recebido";
   }
@@ -968,6 +981,8 @@ export default function ContractDetailScreen() {
     requestCancelContract,
     confirmCancelContract,
     rejectCancelRequest,
+    confirmCashPayment,
+    disputeCashPayment,
   } = useContracts();
 
   const contract = [...activeContracts, ...history].find((c) => c.id === id);
@@ -1157,6 +1172,31 @@ export default function ContractDetailScreen() {
     router.back();
   }, [cancelContract, confirmCancelContract, contract]);
 
+  const handleConfirmCashPayment = useCallback(async () => {
+    if (!contract) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await withLoading("confirmCashPayment", () => confirmCashPayment(contract.id), {
+      onSuccess:
+        contract.role === "hiring"
+          ? "Pagamento em dinheiro confirmado."
+          : "Recebimento em dinheiro confirmado.",
+      onError: "Não foi possível confirmar o pagamento.",
+    });
+  }, [confirmCashPayment, contract?.id, contract?.role]);
+
+  const handleDisputeCashPayment = useCallback(async () => {
+    if (!contract) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await withLoading(
+      "disputeCashPayment",
+      () => disputeCashPayment(contract.id, "Pagamento em dinheiro contestado pelo usuário."),
+      {
+        onSuccess: "Disputa de pagamento aberta.",
+        onError: "Não foi possível contestar o pagamento.",
+      }
+    );
+  }, [disputeCashPayment, contract?.id]);
+
   // ── Not found ──
   if (!contract) {
     return (
@@ -1195,6 +1235,8 @@ export default function ContractDetailScreen() {
   const isAccepted = contract.status === "accepted";
   const isPaused = contract.status === "paused";
   const isEnded = contract.status === "ended";
+  const isDisputed = contract.status === "disputed";
+  const isFinalized = isEnded || isDisputed;
   const isCancelled =
     contract.status === "cancelled" || contract.status === "rejected";
   const isPendingEnd = contract.status === "pending_end";
@@ -1211,7 +1253,7 @@ export default function ContractDetailScreen() {
     ? now - contract.startedAt
     : (isPendingEnd || isPendingCancel) && contract.startedAt > 0
     ? now - contract.startedAt
-    : isEnded && contract.endedAt && contract.startedAt > 0
+    : isFinalized && contract.endedAt && contract.startedAt > 0
     ? contract.endedAt - contract.startedAt
     : isFixed && contract.duracaoTotal && !isPending && !isAccepted
     ? contract.duracaoTotal
@@ -1226,7 +1268,7 @@ export default function ContractDetailScreen() {
   const valueLabel = getValueLabel(contract);
 
   const showTimer =
-    isRunning || isPaused || isPendingEnd || isPendingCancel || isEnded || isScheduled || isPending || isAccepted;
+    isRunning || isPaused || isPendingEnd || isPendingCancel || isFinalized || isScheduled || isPending || isAccepted;
   const showStartRow =
     (isPending || isAccepted || isScheduled) && !isRunning && !isPendingEnd && !isPendingCancel;
 
@@ -1243,6 +1285,7 @@ export default function ContractDetailScreen() {
     if (isAccepted) return { label: "aguardando início", color: colors.accent };
     if (isPaused) return { label: "pausado", color: "#ffaa00" };
     if (isScheduled) return { label: "agendado", color: colors.accent };
+    if (isDisputed) return { label: "em disputa", color: "#e05050" };
     if (isEnded) return { label: "encerrado", color: colors.textMuted };
     if (isCancelled)
       return {
@@ -1477,7 +1520,7 @@ export default function ContractDetailScreen() {
                 colors={colors}
               />
             )}
-            {isEnded && !!contract.endedAt && (
+            {isFinalized && !!contract.endedAt && (
               <DetailRow
                 icon={<Feather name="check-circle" size={14} color={colors.textMuted} />}
                 label="Fim"
@@ -1485,7 +1528,7 @@ export default function ContractDetailScreen() {
                 colors={colors}
               />
             )}
-            {isEnded ? (
+            {isFinalized ? (
               <DetailRow
                 icon={
                   <Feather
@@ -1554,7 +1597,7 @@ export default function ContractDetailScreen() {
         )}
 
         {/* Rating (ended + hiring) */}
-        {isEnded && isHiring && !avaliacaoEnviada && (
+        {isEnded && isHiring && contract.paymentStatus !== "disputed" && !avaliacaoEnviada && (
           <View
             style={[
               s.detailCard,
@@ -1640,7 +1683,7 @@ export default function ContractDetailScreen() {
         )}
 
         {/* Re-hire */}
-        {(isEnded || isCancelled) && (
+        {(isFinalized || isCancelled) && (
           <Pressable
             onPress={() => router.back()}
             style={({ pressed }) => [
@@ -1657,7 +1700,53 @@ export default function ContractDetailScreen() {
       </ScrollView>
 
       {/* ── Footer ── */}
-      {!isEnded && !isCancelled && (
+      {isEnded &&
+        contract.paymentMethod === "dinheiro" &&
+        contract.paymentStatus !== "paid" &&
+        contract.paymentStatus !== "disputed" && (
+          <View
+            style={[
+              s.footer,
+              {
+                paddingBottom: insets.bottom + 16,
+                backgroundColor: colors.background,
+                borderTopColor: colors.divider,
+              },
+            ]}
+          >
+            <View
+              style={[
+                s.waitingRow,
+                { backgroundColor: "#ffaa0010", borderColor: "#ffaa0035" },
+              ]}
+            >
+              <Feather name="clock" size={14} color="#ffaa00" />
+              <Text style={[s.waitingText, { color: "#ffaa00" }]}>
+                Aguardando confirmação de pagamento em dinheiro
+              </Text>
+            </View>
+            <View style={{ gap: 10 }}>
+              <AppButton
+                label={isHiring ? "confirmar que paguei" : "confirmar recebimento"}
+                icon="check"
+                onPress={handleConfirmCashPayment}
+                variant="green"
+                loading={loadingAction === "confirmCashPayment"}
+                disabled={loading}
+              />
+              <AppButton
+                label="contestar pagamento"
+                icon="alert-triangle"
+                onPress={handleDisputeCashPayment}
+                variant="ghost-red"
+                loading={loadingAction === "disputeCashPayment"}
+                disabled={loading}
+              />
+            </View>
+          </View>
+        )}
+
+      {!isFinalized && !isCancelled && (
         <View
           style={[
             s.footer,
