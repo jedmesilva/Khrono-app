@@ -29,6 +29,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/AppButton";
 import { AppDialog } from "@/components/AppDialog";
+import { ContractPaymentSheet } from "@/components/ContractPaymentSheet";
 import { ReasonSheet } from "@/components/ReasonSheet";
 import { useToast } from "@/context/ToastContext";
 import {
@@ -805,6 +806,7 @@ function DetailRow({
   subColor,
   last,
   colors,
+  actionIcon,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -813,6 +815,7 @@ function DetailRow({
   subColor?: string;
   last?: boolean;
   colors: ColorPalette;
+  actionIcon?: React.ComponentProps<typeof Feather>["name"];
 }) {
   return (
     <View>
@@ -835,7 +838,10 @@ function DetailRow({
             )}
           </View>
         </View>
-        <Text style={[s.detailValue, { color: colors.text }]}>{value}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Text style={[s.detailValue, { color: colors.text }]}>{value}</Text>
+          {actionIcon && <Feather name={actionIcon} size={14} color={colors.textMuted} />}
+        </View>
       </View>
       {!last && <View style={{ height: 1, backgroundColor: colors.divider }} />}
     </View>
@@ -1058,6 +1064,7 @@ export default function ContractDetailScreen() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [confirmCancelar, setConfirmCancelar] = useState(false);
   const [reasonSheetMode, setReasonSheetMode] = useState<"end" | "cancel" | null>(null);
+  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const loading = loadingAction !== null;
   const showToast = useToast();
@@ -1663,22 +1670,29 @@ export default function ContractDetailScreen() {
                 : ps.tone === "amber" ? "#ffaa00"
                 : ps.tone === "red" ? "#e05050"
                 : colors.textMuted;
+              const isPayable = (isEnded || contract.paymentStatus === "awaiting_confirmation");
               return (
-                <DetailRow
-                  icon={
-                    <Feather
-                      name={paymentIconName(contract.paymentMethod)}
-                      size={14}
-                      color={colors.textMuted}
-                    />
-                  }
-                  label="Pagamento"
-                  value={paymentLabel(contract)}
-                  sub={ps.text}
-                  subColor={psColor}
-                  last
-                  colors={colors}
-                />
+                <Pressable
+                  onPress={isPayable ? () => setPaymentSheetOpen(true) : undefined}
+                  style={({ pressed }) => ({ opacity: pressed && isPayable ? 0.7 : 1 })}
+                >
+                  <DetailRow
+                    icon={
+                      <Feather
+                        name={paymentIconName(contract.paymentMethod)}
+                        size={14}
+                        color={colors.textMuted}
+                      />
+                    }
+                    label="Pagamento"
+                    value={paymentLabel(contract)}
+                    sub={ps.text}
+                    subColor={psColor}
+                    last={!isPayable}
+                    colors={colors}
+                    actionIcon={isPayable ? "chevron-right" : undefined}
+                  />
+                </Pressable>
               );
             })()}
           </View>
@@ -1848,35 +1862,12 @@ export default function ContractDetailScreen() {
               },
             ]}
           >
-            <View
-              style={[
-                s.waitingRow,
-                { backgroundColor: "#ffaa0010", borderColor: "#ffaa0035" },
-              ]}
-            >
-              <Feather name="clock" size={14} color="#ffaa00" />
-              <Text style={[s.waitingText, { color: "#ffaa00" }]}>
-                Aguardando confirmação de pagamento em dinheiro
-              </Text>
-            </View>
-            <View style={{ gap: 10 }}>
-              <AppButton
-                label={isHiring ? "confirmar que paguei" : "confirmar recebimento"}
-                icon="check"
-                onPress={handleConfirmCashPayment}
-                variant="green"
-                loading={loadingAction === "confirmCashPayment"}
-                disabled={loading}
-              />
-              <AppButton
-                label="contestar pagamento"
-                icon="alert-triangle"
-                onPress={handleDisputeCashPayment}
-                variant="ghost-red"
-                loading={loadingAction === "disputeCashPayment"}
-                disabled={loading}
-              />
-            </View>
+            <AppButton
+              label={isHiring ? "Confirmar pagamento" : "Confirmar recebimento"}
+              icon="dollar-sign"
+              onPress={() => setPaymentSheetOpen(true)}
+              variant="green"
+            />
           </View>
         )}
 
@@ -2133,6 +2124,15 @@ export default function ContractDetailScreen() {
         onCancel={() => setConfirmCancelar(false)}
         destructive
       />
+
+      {contract && (
+        <ContractPaymentSheet
+          visible={paymentSheetOpen}
+          onClose={() => setPaymentSheetOpen(false)}
+          contract={contract}
+          isHiring={isHiring}
+        />
+      )}
     </View>
   );
 }

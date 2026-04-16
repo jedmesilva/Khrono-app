@@ -104,6 +104,9 @@ type ContractsContextType = {
   confirmCancelContract: (id: string) => Promise<void>;
   rejectCancelRequest: (id: string) => Promise<void>;
   confirmCashPayment: (id: string) => Promise<void>;
+  reportCashPaid: (id: string, amountReported: number) => Promise<void>;
+  reportCashReceived: (id: string, amountReceived: number, isIncomplete: boolean) => Promise<void>;
+  changeContractPaymentMethod: (id: string, newMethod: "cartao" | "pix" | "saldo" | "dinheiro", cardLabel?: string) => Promise<void>;
   disputeCashPayment: (id: string, reason?: string) => Promise<void>;
   refreshContracts: () => Promise<void>;
 };
@@ -1601,6 +1604,249 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
   );
 
+  // ── Reportar pagamento em dinheiro (contratante) ──────────────────────────────
+
+  const reportCashPaid = useCallback(
+    async (id: string, amountReported: number) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const contract = [...activeContracts, ...history].find((c) => c.id === id);
+      if (!contract) throw new Error("Contrato não encontrado");
+      if (contract.paymentMethod !== "dinheiro") throw new Error("Método não é dinheiro");
+
+      const payment = await ensureCashPayment(contract, user.id);
+      const audit = await getAuditSnapshot();
+
+      await supabase.from("contract_payment_confirmations").upsert(
+        {
+          payment_id: payment.id,
+          user_id: user.id,
+          role: "payer",
+          confirmation_type: "paid",
+          amount_reported: amountReported,
+          is_incomplete: false,
+          ...audit,
+        },
+        { onConflict: "payment_id,user_id" }
+      );
+
+      const { data: payeeConf } = await supabase
+        .from("contract_payment_confirmations")
+        .select("amount_reported, is_incomplete")
+        .eq("payment_id", payment.id)
+        .eq("user_id", payment.payee_id)
+        .maybeSingle();
+
+      const payeeAmount = payeeConf?.amount_reported ?? null;
+      const bothConfirmed = payeeAmount !== null;
+      const amountsMatch = bothConfirmed && Math.abs(amountReported - payeeAmount) < 0.02;
+      const hasInconsistency = bothConfirmed && !amountsMatch;
+
+      await supabase.from("contract_payments").update({
+        status: amountsMatch ? "confirmed" : "awaiting_payee_confirmation",
+        payer_amount_reported: amountReported,
+        has_inconsistency: hasInconsistency,
+        confirmed_at: amountsMatch ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", payment.id);
+
+      await supabase.from("contracts").update({
+        payment_status: amountsMatch ? "paid" : "awaiting_confirmation",
+        updated_at: new Date().toISOString(),
+      }).eq("id", id);
+
+      if (amountsMatch) {
+        await settleActionRequest(id, "payment", "accepted", user.id);
+      }
+
+      await recordContractEvent({
+        contractId: id,
+        actorId: user.id,
+        actorRole: getActorRole(contract, user.id),
+        eventType: "payment_confirmed",
+        metadata: { amount_reported: amountReported, role: "payer", match: amountsMatch },
+      });
+
+      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+      const otherPartyId = contract.person.profileId;
+      const isHiring = contract.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+
+      if (otherPartyId) {
+        const title = amountsMatch ? "Pagamento confirmado!" : "Confirme o pagamento";
+        const body = amountsMatch
+          ? "O pagamento em dinheiro foi confirmado pelas duas partes."
+          : `${contract.person.name} informou o pagamento. Confirme o valor recebido.`;
+        sendPushNotification(otherPartyId, title, body, { contract_id: id }, "payment").catch(() => {});
+      }
+    },
+    [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
+  );
+
+  // ── Reportar recebimento em dinheiro (contratado) ─────────────────────────────
+
+  const reportCashReceived = useCallback(
+    async (id: string, amountReceived: number, isIncomplete: boolean) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const contract = [...activeContracts, ...history].find((c) => c.id === id);
+      if (!contract) throw new Error("Contrato não encontrado");
+      if (contract.paymentMethod !== "dinheiro") throw new Error("Método não é dinheiro");
+
+      const payment = await ensureCashPayment(contract, user.id);
+      const audit = await getAuditSnapshot();
+
+      await supabase.from("contract_payment_confirmations").upsert(
+        {
+          payment_id: payment.id,
+          user_id: user.id,
+          role: "payee",
+          confirmation_type: isIncomplete ? "denied" : "received",
+          amount_reported: amountReceived,
+          is_incomplete: isIncomplete,
+          ...audit,
+        },
+        { onConflict: "payment_id,user_id" }
+      );
+
+      const { data: payerConf } = await supabase
+        .from("contract_payment_confirmations")
+        .select("amount_reported")
+        .eq("payment_id", payment.id)
+        .eq("user_id", payment.payer_id)
+        .maybeSingle();
+
+      const payerAmount = payerConf?.amount_reported ?? null;
+      const bothConfirmed = payerAmount !== null;
+      const amountsMatch = bothConfirmed && !isIncomplete && Math.abs(amountReceived - payerAmount) < 0.02;
+      const hasInconsistency = bothConfirmed && (!amountsMatch);
+
+      await supabase.from("contract_payments").update({
+        status: amountsMatch ? "confirmed" : "awaiting_payer_confirmation",
+        payee_amount_reported: amountReceived,
+        has_inconsistency: hasInconsistency,
+        confirmed_at: amountsMatch ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", payment.id);
+
+      await supabase.from("contracts").update({
+        payment_status: amountsMatch ? "paid" : "awaiting_confirmation",
+        updated_at: new Date().toISOString(),
+      }).eq("id", id);
+
+      if (amountsMatch) {
+        await settleActionRequest(id, "payment", "accepted", user.id);
+      }
+
+      await recordContractEvent({
+        contractId: id,
+        actorId: user.id,
+        actorRole: getActorRole(contract, user.id),
+        eventType: "payment_confirmed",
+        metadata: { amount_reported: amountReceived, role: "payee", is_incomplete: isIncomplete, match: amountsMatch },
+      });
+
+      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+      const otherPartyId = contract.person.profileId;
+      const isHiring = contract.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+
+      if (otherPartyId) {
+        const title = amountsMatch ? "Pagamento confirmado!" : "Confirme o pagamento";
+        const body = amountsMatch
+          ? "O pagamento em dinheiro foi confirmado pelas duas partes."
+          : isIncomplete
+          ? "O prestador informou que faltou parte do valor. Confira e confirme."
+          : `${contract.person.name} informou o recebimento. Confirme o valor pago.`;
+        sendPushNotification(otherPartyId, title, body, { contract_id: id }, "payment").catch(() => {});
+      }
+    },
+    [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
+  );
+
+  // ── Alterar método de pagamento ───────────────────────────────────────────────
+
+  const changeContractPaymentMethod = useCallback(
+    async (id: string, newMethod: "cartao" | "pix" | "saldo" | "dinheiro", cardLabel?: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const contract = [...activeContracts, ...history].find((c) => c.id === id);
+      if (!contract) throw new Error("Contrato não encontrado");
+
+      const methodMap: Record<string, string> = {
+        cartao: "card",
+        pix: "pix",
+        saldo: "balance",
+        dinheiro: "cash",
+      };
+
+      await supabase.from("contracts").update({
+        payment_method: methodMap[newMethod] ?? newMethod,
+        payment_card_label: newMethod === "cartao" ? (cardLabel ?? null) : null,
+        payment_status: newMethod !== "dinheiro" ? "paid" : "pending",
+        updated_at: new Date().toISOString(),
+      }).eq("id", id);
+
+      if (newMethod !== "dinheiro") {
+        const { data: existing } = await supabase
+          .from("contract_payments")
+          .select("id")
+          .eq("contract_id", id)
+          .limit(1)
+          .maybeSingle();
+
+        const payerId = contract.role === "hiring" ? user.id : contract.person.profileId;
+        const payeeId = contract.role === "hiring" ? contract.person.profileId : user.id;
+
+        if (!existing && payerId && payeeId) {
+          await supabase.from("contract_payments").insert({
+            contract_id: id,
+            payer_id: payerId,
+            payee_id: payeeId,
+            method: methodMap[newMethod] === "balance" ? "wallet_balance" : methodMap[newMethod],
+            amount: contract.totalAmount ?? 0,
+            status: "confirmed",
+            requested_by: user.id,
+            confirmed_at: new Date().toISOString(),
+          });
+        } else if (existing) {
+          await supabase.from("contract_payments").update({
+            method: methodMap[newMethod] === "balance" ? "wallet_balance" : methodMap[newMethod],
+            status: "confirmed",
+            confirmed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }).eq("id", existing.id);
+        }
+      }
+
+      await recordContractEvent({
+        contractId: id,
+        actorId: user.id,
+        actorRole: getActorRole(contract, user.id),
+        eventType: "payment_confirmed",
+        metadata: { new_method: newMethod, method_changed: true },
+      });
+
+      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+      const otherPartyId = contract.person.profileId;
+      const isHiring = contract.role === "hiring";
+      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+      broadcastUpdate(id, contractorId, hiredId);
+    },
+    [activeContracts, history, loadContracts, broadcastUpdate]
+  );
+
   const refreshContracts = useCallback(async () => {
     if (userIdRef.current)
       await loadContracts(userIdRef.current, { showLoading: false });
@@ -1624,6 +1870,9 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         confirmCancelContract,
         rejectCancelRequest,
         confirmCashPayment,
+        reportCashPaid,
+        reportCashReceived,
+        changeContractPaymentMethod,
         disputeCashPayment,
         refreshContracts,
       }}
