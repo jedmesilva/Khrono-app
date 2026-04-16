@@ -39,6 +39,7 @@ import {
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { GlobalStyles } from "@/constants/globalStyles";
 import { formatCurrency } from "@/lib/format";
+import { useConfirmation, ProviderData, ProviderService } from "@/context/ConfirmationContext";
 
 // ─── Role theme tokens (mirrors ContractCard) ─────────────────────────────────
 
@@ -1030,6 +1031,7 @@ export default function ContractDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { setPendingProvider } = useConfirmation();
 
   const {
     activeContracts,
@@ -1771,7 +1773,34 @@ export default function ContractDetailScreen() {
         {/* Re-hire — só para quem contratou */}
         {(isFinalized || isCancelled) && isHiring && (
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => {
+              const service: ProviderService | undefined = contract.servico
+                ? {
+                    id: 0,
+                    serviceId: contract.servico.serviceId ?? "",
+                    nome: contract.servico.nome,
+                    hourlyRate: contract.servico.ratePerHour,
+                    avaliacoes: contract.servico.avaliacoes ?? 0,
+                    nota: contract.servico.nota ?? 0,
+                    skill: contract.servico.skill,
+                    tools: contract.servico.tools,
+                  }
+                : undefined;
+
+              const provider: ProviderData = {
+                name: contract.person.name,
+                initials: contract.person.initials,
+                nota: contract.person.nota ?? 0,
+                avaliacoes: contract.person.avaliacoes ?? 0,
+                distancia: contract.person.distancia ?? 0,
+                totalContracts: contract.person.totalContracts,
+                profileId: contract.person.profileId,
+                services: service ? [service] : [],
+              };
+
+              setPendingProvider(provider);
+              router.push("/contract-confirm");
+            }}
             style={({ pressed }) => [
               s.reHireBtn,
               { borderColor: colors.surfaceBorder, opacity: pressed ? 0.7 : 1 },
