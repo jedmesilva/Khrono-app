@@ -203,7 +203,7 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
             <Text style={[styles.elapsedLabel, { color: "#B8B4AC" }]}>Tempo decorrido</Text>
           </View>
           <Text style={[styles.elapsedTime, { color: "#6B6760" }]}>
-            00:00:00
+            {formatTime(0)}
           </Text>
         </View>
 
@@ -427,7 +427,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
             <Text style={[styles.elapsedLabel, { color: t.bodyFaint }]}>Tempo decorrido</Text>
           </View>
           <Text style={[styles.elapsedTime, { color: colors.text }]}>
-            {(isActive || isPendingState) ? formatTime(elapsedSecs) : "00:00:00"}
+            {formatTime(elapsedSecs)}
           </Text>
         </View>
 
