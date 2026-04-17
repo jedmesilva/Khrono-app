@@ -1140,7 +1140,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           (
             contract.tipo === "timer" && fixedHours !== null && durationHours > fixedHours
               ? durationHours
-              : contract.tipo === "timer" && fixedHours !== null
+              : contract.tipo === "timer" && fixedHours !== null && durationHours >= fixedHours
               ? fixedHours
               : durationHours
           ) * contract.ratePerHour

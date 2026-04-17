@@ -287,6 +287,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   async function handleReportReceived() {
     const amount = parseAmountInput(amountInput);
     if (amount <= 0) return;
+    const isIncomplete = contractAmount > 0 && amount < contractAmount;
     setLoading(true);
     try {
       await reportCashReceived(contract.id, amount, isIncomplete);
@@ -398,7 +399,8 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
             )}
             <Pressable
               onPress={() => {
-                setAmountInput(contractAmount > 0 ? String(Math.round(contractAmount * 100)) : "");
+                const fillAmount = otherAmount ?? contractAmount;
+                setAmountInput(fillAmount > 0 ? String(Math.round(fillAmount * 100)) : "");
                 setStep(isHiring ? "report_paid" : "report_received");
               }}
               style={({ pressed }) => [styles.actionBtn, styles.actionBtnPrimary, { opacity: pressed ? 0.85 : 1 }]}
