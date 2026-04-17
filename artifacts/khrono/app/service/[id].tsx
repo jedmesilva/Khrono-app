@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "@/components/BackButton";
+import { IconButton } from "@/components/IconButton";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
@@ -146,12 +147,12 @@ export default function ServiceDetailScreen() {
               <VerifiedBadge onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")} />
             )}
           </View>
-          <Pressable
-            style={[styles.moreBtn, { borderColor: colors.surfaceBorder }]}
+          <IconButton
+            icon="more-horizontal"
             onPress={handleMoreOptions}
-          >
-            <Feather name="more-horizontal" size={16} color={colors.textSecondary} />
-          </Pressable>
+            backgroundColor="transparent"
+            color={colors.textSecondary}
+          />
         </View>
 
         {/* Linha de metadata: categoria + status + toggle */}
@@ -375,7 +376,6 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4, marginTop: 3, flexShrink: 0 },
   headerNameWrap: { flex: 1, flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
   serviceTitle: { fontFamily: "Sora_700Bold", fontSize: 20, lineHeight: 26, flexShrink: 1 },
-  moreBtn: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 },
 
   metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 16 },
   metaBadgesLeft: { flexDirection: "row", alignItems: "center", gap: 6, flex: 1, flexWrap: "wrap" },

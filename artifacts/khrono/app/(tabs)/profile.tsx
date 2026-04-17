@@ -72,9 +72,12 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
             <Text style={[styles.newSkillTag, { color: colors.textMuted }]}>skill nova · sem atividade ainda</Text>
           ) : null}
         </View>
-        <Pressable style={[styles.moreBtn, { borderColor: colors.surfaceBorder }]} onPress={onOptions}>
-          <Feather name="more-horizontal" size={16} color={colors.textSecondary} />
-        </Pressable>
+        <IconButton
+          icon="more-horizontal"
+          onPress={onOptions}
+          backgroundColor="transparent"
+          color={colors.textSecondary}
+        />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
@@ -136,9 +139,12 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
             {tool.available ? "disponível" : "indisponível"}
           </Text>
         </View>
-        <Pressable style={[styles.moreBtn, { borderColor: colors.surfaceBorder }]} onPress={onOptions}>
-          <Feather name="more-horizontal" size={16} color={colors.textSecondary} />
-        </Pressable>
+        <IconButton
+          icon="more-horizontal"
+          onPress={onOptions}
+          backgroundColor="transparent"
+          color={colors.textSecondary}
+        />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
@@ -736,7 +742,6 @@ const styles = StyleSheet.create({
 
   subTitle: { fontFamily: "Sora_700Bold", fontSize: 19 },
   subMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
-  moreBtn: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   newSkillTag: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
 
   skillDetailContent: { paddingHorizontal: 20, paddingTop: 4 },
