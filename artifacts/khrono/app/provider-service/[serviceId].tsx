@@ -343,6 +343,13 @@ export default function ProviderServiceScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
+      {/* ── Scrollable body (hero + conteúdo) ───────────────────────── */}
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+
       {/* ── Hero ────────────────────────────────────────────────────── */}
       <LinearGradient
         colors={[gradStart, gradEnd]}
@@ -412,12 +419,7 @@ export default function ProviderServiceScreen() {
         </View>
       </LinearGradient>
 
-      {/* ── Scrollable body ─────────────────────────────────────────── */}
-      <ScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.body, { paddingBottom: 100 }]}
-      >
+      <View style={styles.body}>
         {/* Meta row: rating + avaliacoes + contratos */}
         <View style={styles.metaRow}>
           {service.nota > 0 && (
@@ -549,6 +551,7 @@ export default function ProviderServiceScreen() {
             <Text style={[styles.emptyPerfSub, { color: colors.textMuted }]}>os dados aparecerão após o primeiro contrato</Text>
           </View>
         )}
+      </View>
       </ScrollView>
 
       {/* ── CTA fixo no rodapé ───────────────────────────────────────── */}

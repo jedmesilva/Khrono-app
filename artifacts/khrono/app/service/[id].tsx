@@ -269,6 +269,13 @@ export default function ServiceDetailScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
+      {/* ── Scrollable body (hero + conteúdo) ───────────────────────── */}
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+
       {/* ── Hero ────────────────────────────────────────────────────── */}
       <LinearGradient
         colors={[gradStart, gradEnd]}
@@ -357,12 +364,7 @@ export default function ServiceDetailScreen() {
         </View>
       </LinearGradient>
 
-      {/* ── Scrollable body ─────────────────────────────────────────── */}
-      <ScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.body, { paddingBottom: 100 }]}
-      >
+      <View style={styles.body}>
         {/* Meta: categoria + data de adição */}
         <View style={styles.metaRow}>
           {firstSkill?.type && (
@@ -530,6 +532,7 @@ export default function ServiceDetailScreen() {
             <Text style={[styles.emptyPerfSub, { color: colors.textMuted }]}>os dados aparecerão após o primeiro contrato</Text>
           </View>
         )}
+      </View>
       </ScrollView>
 
       {/* ── Barra de ações fixada no rodapé ──────────────────────────── */}
