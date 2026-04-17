@@ -197,16 +197,6 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </View>
         )}
 
-        <View style={styles.elapsedBlock}>
-          <View style={styles.elapsedLabelRow}>
-            <View style={[styles.liveDot, { backgroundColor: "#C4BFB6" }]} />
-            <Text style={[styles.elapsedLabel, { color: "#B8B4AC" }]}>Tempo decorrido</Text>
-          </View>
-          <Text style={[styles.elapsedTime, { color: "#6B6760" }]}>
-            {formatTime(0)}
-          </Text>
-        </View>
-
         {isValidDate && (
           <View style={styles.startsInRow}>
             <Feather
@@ -219,6 +209,16 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
             </Text>
           </View>
         )}
+
+        <View style={styles.elapsedBlock}>
+          <View style={styles.elapsedLabelRow}>
+            <View style={[styles.liveDot, { backgroundColor: "#C4BFB6" }]} />
+            <Text style={[styles.elapsedLabel, { color: "#B8B4AC" }]}>Tempo decorrido</Text>
+          </View>
+          <Text style={[styles.elapsedTime, { color: "#6B6760" }]}>
+            {formatTime(0)}
+          </Text>
+        </View>
       </View>
 
       {/* Footer */}
