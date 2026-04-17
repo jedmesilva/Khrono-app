@@ -1,7 +1,10 @@
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import type { Service, Skill, Tool, VerificationType } from "../constants/profile-data";
+import Svg, { Line } from "react-native-svg";
+
+import type { Service, Skill, Tool, VerificationType } from "@/constants/profile-data";
 import { formatRateValue } from "@/lib/format";
 
 interface ServiceCardProps {
@@ -24,84 +27,258 @@ interface ServiceCardProps {
   onVerifiedPress?: (type: VerificationType, context: string) => void;
 }
 
-export function ServiceCard({ service, skills, tools, active, colors, onPress, onVerifiedPress }: ServiceCardProps) {
-  const primaryCategory = skills[0]?.type ?? null;
+const ACCENT = "#e06030";
+const GREEN = "#00e5a0";
+
+const DARK_GRADIENTS: [string, string][] = [
+  ["#1d1510", "#100e0c"],
+  ["#0e1a11", "#100e0c"],
+  ["#160f1d", "#100e0c"],
+  ["#1a100c", "#100e0c"],
+  ["#0d1318", "#100e0c"],
+];
+
+const LIGHT_GRADIENTS: [string, string][] = [
+  ["#f0e9e3", "#f8f5f2"],
+  ["#e6f0e9", "#f8f5f2"],
+  ["#ede6f5", "#f8f5f2"],
+  ["#f0e9e3", "#f8f5f2"],
+  ["#e3ecf0", "#f8f5f2"],
+];
+
+function gradientFromId(id: string, isDark: boolean): [string, string] {
+  const palette = isDark ? DARK_GRADIENTS : LIGHT_GRADIENTS;
+  const sum = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return palette[sum % palette.length];
+}
+
+function makeDecorLabel(service: Service, skills: Skill[]): string {
+  const cat = skills[0]?.type;
+  const raw = cat ? cat.split(/\s+/)[0] : service.name.split(/\s+/)[0];
+  return raw.slice(0, 7).toUpperCase();
+}
+
+export function ServiceCard({
+  service,
+  skills,
+  tools,
+  active,
+  colors,
+  onPress,
+  onVerifiedPress,
+}: ServiceCardProps) {
+  const isDark = parseInt(colors.card.replace("#", "").slice(0, 2), 16) < 128;
+  const [gradStart, gradEnd] = gradientFromId(service.id, isDark);
+  const decorText = makeDecorLabel(service, skills);
+
+  const accentBg = isDark ? "rgba(224,96,48,0.09)" : "rgba(224,96,48,0.07)";
+  const accentBorder = isDark ? "rgba(224,96,48,0.24)" : "rgba(224,96,48,0.20)";
+  const gridOpacity = isDark ? 0.07 : 0.05;
+  const decorOpacity = isDark ? 0.09 : 0.06;
 
   return (
     <Pressable
-      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: active ? 1 : 0.45 }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.cardBorder,
+          opacity: active ? 1 : 0.5,
+        },
+      ]}
       onPress={onPress}
     >
-      <View style={[styles.statusBadge, { backgroundColor: active ? "#18a06b18" : colors.surface, borderColor: active ? "#18a06b35" : colors.surfaceBorder }]}>
-        <View style={[styles.statusDot, { backgroundColor: active ? "#18a06b" : colors.textDim }]} />
-        <Text style={[styles.statusText, { color: active ? "#18a06b" : colors.textDim }]}>
-          {active ? "ativo" : "inativo"}
+      {/* ── Thumbnail ──────────────────────────────────────── */}
+      <LinearGradient
+        colors={[gradStart, gradEnd]}
+        start={{ x: 0.15, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.thumb}
+      >
+        {/* Grid decoration */}
+        <Svg
+          style={StyleSheet.absoluteFill}
+          viewBox="0 0 320 130"
+          preserveAspectRatio="none"
+        >
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <Line
+              key={`v${i}`}
+              x1={i * 46}
+              y1="0"
+              x2={i * 46}
+              y2="130"
+              stroke={ACCENT}
+              strokeWidth="1"
+              opacity={gridOpacity}
+            />
+          ))}
+          {[0, 1, 2, 3].map((i) => (
+            <Line
+              key={`h${i}`}
+              x1="0"
+              y1={i * 44}
+              x2="320"
+              y2={i * 44}
+              stroke={ACCENT}
+              strokeWidth="1"
+              opacity={gridOpacity}
+            />
+          ))}
+        </Svg>
+
+        {/* Large decorative text in the background */}
+        <Text
+          style={[styles.decorLabel, { color: ACCENT, opacity: decorOpacity }]}
+          numberOfLines={1}
+        >
+          {decorText}
         </Text>
-      </View>
 
-      <View style={[styles.iconBlock, { backgroundColor: active ? "#e06030" : colors.surface }]}>
-        <Feather name="layers" size={32} color={active ? "#fff" : colors.textMuted} />
-      </View>
+        {/* Status badge — top left */}
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor: active
+                ? "rgba(0,229,160,0.12)"
+                : "rgba(255,255,255,0.06)",
+              borderColor: active
+                ? "rgba(0,229,160,0.30)"
+                : "rgba(255,255,255,0.10)",
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.statusDot,
+              {
+                backgroundColor: active
+                  ? GREEN
+                  : isDark
+                  ? "#504840"
+                  : "#bbb",
+              },
+            ]}
+          />
+          <Text
+            style={[
+              styles.statusText,
+              { color: active ? GREEN : isDark ? "#706860" : "#999" },
+            ]}
+          >
+            {active ? "ativo" : "inativo"}
+          </Text>
+        </View>
 
-      <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
-        {service.name}
-      </Text>
-
-      <View style={styles.tagsRow}>
-        {primaryCategory && (
-          <View style={styles.categoryTag}>
-            <Text style={styles.categoryTagText}>{primaryCategory}</Text>
-          </View>
-        )}
+        {/* Verified icon — top right */}
         {service.verified && (
           <Pressable
-            style={styles.verifiedTag}
-            onPress={() => onVerifiedPress?.(service.verified!.type, "service")}
+            style={styles.verifiedBtn}
+            onPress={() =>
+              onVerifiedPress?.(service.verified!.type, "service")
+            }
+            hitSlop={10}
           >
-            <Feather name="check-circle" size={12} color="#18a06b" />
-            <Text style={styles.verifiedTagText}>Verificado</Text>
+            <Feather name="check-circle" size={13} color={GREEN} />
           </Pressable>
         )}
-      </View>
+      </LinearGradient>
 
-      {skills.length > 0 && (
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textDim }]}>Skills</Text>
+      {/* ── Body ───────────────────────────────────────────── */}
+      <View style={styles.body}>
+        {/* Title + Price */}
+        <View style={styles.titleRow}>
+          <Text
+            style={[styles.title, { color: colors.text }]}
+            numberOfLines={2}
+          >
+            {service.name}
+          </Text>
+          <View style={styles.priceBlock}>
+            <Text
+              style={[
+                styles.price,
+                { color: active ? ACCENT : colors.textMuted },
+              ]}
+            >
+              {formatRateValue(service.hourlyRate)}
+            </Text>
+            <Text style={[styles.perHour, { color: colors.textDim }]}>
+              /hora
+            </Text>
+          </View>
+        </View>
+
+        {/* Meta: rating · contracts or "novo" pill */}
+        <View style={styles.metaRow}>
+          {service.isNew ? (
+            <View
+              style={[
+                styles.newBadge,
+                {
+                  backgroundColor: "rgba(0,229,160,0.09)",
+                  borderColor: "rgba(0,229,160,0.22)",
+                },
+              ]}
+            >
+              <Text style={styles.newBadgeText}>novo</Text>
+            </View>
+          ) : (
+            <>
+              <Feather name="star" size={11} color={ACCENT} />
+              <Text style={[styles.metaText, { color: colors.textMuted }]}>
+                {service.rating.toFixed(1)} · {service.contracts} contrato
+                {service.contracts !== 1 ? "s" : ""}
+              </Text>
+            </>
+          )}
+        </View>
+
+        {/* Skills chips — accent tinted */}
+        {skills.length > 0 && (
           <View style={styles.chipsRow}>
             {skills.map((sk) => (
-              <View key={sk.id} style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-                <Text style={[styles.chipText, { color: colors.textSecondary }]} numberOfLines={1}>{sk.name}</Text>
+              <View
+                key={sk.id}
+                style={[
+                  styles.chipAccent,
+                  { backgroundColor: accentBg, borderColor: accentBorder },
+                ]}
+              >
+                <Text
+                  style={[styles.chipAccentText, { color: ACCENT }]}
+                  numberOfLines={1}
+                >
+                  {sk.name}
+                </Text>
               </View>
             ))}
           </View>
-        </View>
-      )}
+        )}
 
-      {tools.length > 0 && (
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textDim }]}>Tools</Text>
+        {/* Tools chips — neutral */}
+        {tools.length > 0 && (
           <View style={styles.chipsRow}>
             {tools.map((t) => (
-              <View key={t.id} style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-                <Text style={[styles.chipText, { color: colors.textSecondary }]} numberOfLines={1}>{t.name}</Text>
+              <View
+                key={t.id}
+                style={[
+                  styles.chipNeutral,
+                  { borderColor: colors.surfaceBorder },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.chipNeutralText,
+                    { color: colors.textMuted },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {t.name}
+                </Text>
               </View>
             ))}
-          </View>
-        </View>
-      )}
-
-      <View style={[styles.footer, { borderTopColor: colors.divider }]}>
-        <View style={styles.priceBlock}>
-          <Text style={[styles.price, { color: active ? "#e06030" : colors.textMuted }]}>{formatRateValue(service.hourlyRate)}</Text>
-          <Text style={[styles.perHour, { color: colors.textDim }]}>/hora</Text>
-        </View>
-        {!service.isNew ? (
-          <Text style={[styles.contractsCount, { color: colors.textMuted }]}>
-            {service.contracts} contrato{service.contracts !== 1 ? "s" : ""}
-          </Text>
-        ) : (
-          <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>novo</Text>
           </View>
         )}
       </View>
@@ -112,19 +289,37 @@ export function ServiceCard({ service, skills, tools, active, colors, onPress, o
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 24,
-    padding: 20,
-    gap: 14,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+
+  // ── Thumbnail ─────────────────────────────────────────
+  thumb: {
+    height: 130,
+    width: "100%",
+    overflow: "hidden",
+  },
+  decorLabel: {
+    position: "absolute",
+    bottom: -10,
+    left: 12,
+    fontFamily: "Sora_700Bold",
+    fontSize: 62,
+    letterSpacing: -1.5,
+    lineHeight: 68,
+    includeFontPadding: false,
   },
   statusBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    alignSelf: "flex-start",
     borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderRadius: 100,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
   },
   statusDot: {
     width: 5,
@@ -134,112 +329,103 @@ const styles = StyleSheet.create({
   statusText: {
     fontFamily: "DMSans_400Regular",
     fontSize: 9,
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
     textTransform: "uppercase",
   },
-  iconBlock: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
+  verifiedBtn: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(0,0,0,0.30)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 18,
-    lineHeight: 24,
-  },
-  tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  categoryTag: {
-    backgroundColor: "#e0603018",
-    borderRadius: 20,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  categoryTagText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    color: "#e06030",
-  },
-  verifiedTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#18a06b15",
-    borderRadius: 20,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  verifiedTagText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    color: "#18a06b",
-  },
-  section: {
-    gap: 6,
-  },
-  sectionLabel: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 9,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  chipsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    maxWidth: 160,
-  },
-  chipText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
+
+  // ── Body ──────────────────────────────────────────────
+  body: {
+    padding: 14,
     paddingTop: 12,
-    marginTop: 2,
+    gap: 8,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  title: {
+    flex: 1,
+    fontFamily: "Sora_700Bold",
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.3,
   },
   priceBlock: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 2,
+    flexShrink: 0,
+    alignItems: "flex-end",
   },
   price: {
     fontFamily: "Sora_700Bold",
     fontSize: 22,
+    lineHeight: 24,
+    letterSpacing: 0.2,
   },
   perHour: {
     fontFamily: "DMSans_400Regular",
+    fontSize: 10,
+    marginTop: 2,
+    textAlign: "right",
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  metaText: {
+    fontFamily: "DMMono_400Regular",
     fontSize: 11,
   },
-  contractsCount: {
-    fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
-  },
   newBadge: {
-    backgroundColor: "#18a06b15",
     borderWidth: 1,
-    borderColor: "#18a06b25",
-    borderRadius: 20,
+    borderRadius: 100,
     paddingHorizontal: 9,
     paddingVertical: 3,
   },
   newBadgeText: {
     fontFamily: "DMSans_400Regular",
     fontSize: 9,
-    color: "#18a06b",
+    color: GREEN,
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 5,
+  },
+  chipAccent: {
+    borderWidth: 1,
+    borderRadius: 100,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    maxWidth: 180,
+  },
+  chipAccentText: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 11,
+  },
+  chipNeutral: {
+    borderWidth: 1,
+    borderRadius: 100,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    maxWidth: 180,
+  },
+  chipNeutralText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
   },
 });
