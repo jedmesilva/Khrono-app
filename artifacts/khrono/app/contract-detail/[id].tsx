@@ -789,6 +789,83 @@ function ContractStartRow({
   );
 }
 
+// ─── ContractEndRow ───────────────────────────────────────────────────────────
+
+function ContractEndRow({
+  startedAt,
+  totalMs,
+  isHiring,
+  colors,
+}: {
+  startedAt: number;
+  totalMs: number;
+  isHiring: boolean;
+  colors: ColorPalette;
+}) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const endTime   = startedAt + totalMs;
+  const diffMs    = endTime - Date.now();
+  const isOverdue = diffMs <= 0;
+  const absDiff   = Math.abs(diffMs);
+  const label     = formatDelta(absDiff);
+
+  const isNear  = !isOverdue && diffMs <= 30 * 60_000;
+  const isNow   = !isOverdue && diffMs <= 5 * 60_000;
+
+  const tone = isOverdue
+    ? { icon: DELAY_COLOR, text: DELAY_COLOR, bg: DELAY_BG, border: DELAY_COLOR + "35" }
+    : isNow
+    ? { icon: "#18a06b", text: "#18a06b", bg: "#18a06b15", border: "#18a06b30" }
+    : isNear
+    ? { icon: colors.accent, text: colors.accent, bg: colors.accent + "12", border: colors.accent + "30" }
+    : { icon: colors.textMuted, text: colors.textSecondary, bg: colors.surface, border: colors.surfaceBorder };
+
+  const title = isOverdue
+    ? "Encerramento atrasado"
+    : isNow
+    ? "Encerrando agora"
+    : `Encerra em ${label}`;
+
+  const sub = isOverdue
+    ? `${label} além do tempo contratado`
+    : isHiring
+    ? "Horário de encerramento do serviço"
+    : "Horário de encerramento do serviço";
+
+  return (
+    <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+      <View style={[s.iconWrap, { backgroundColor: tone.bg }]}>
+        <Feather name={isOverdue ? "alert-circle" : "clock"} size={15} color={tone.icon} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[s.detailTitle, { color: tone.text }]}>{title}</Text>
+        <Text style={[s.detailSub, { color: colors.textMuted }]}>{sub}</Text>
+      </View>
+      {isOverdue && (
+        <View
+          style={{
+            paddingHorizontal: 9,
+            paddingVertical: 4,
+            borderRadius: 20,
+            backgroundColor: DELAY_BG,
+            borderWidth: 1,
+            borderColor: tone.border,
+          }}
+        >
+          <Text style={{ fontFamily: "DMSans_600SemiBold", fontSize: 11, color: DELAY_COLOR, letterSpacing: 0.1 }}>
+            {label} atrasado
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 // ─── Pontualidade ─────────────────────────────────────────────────────────────
 
 function formatDelta(absDeltaMs: number): string {
@@ -1611,6 +1688,16 @@ export default function ContractDetailScreen() {
             scheduledFor={contract.scheduledFor}
             isHiring={isHiring}
             isAccepted={isAccepted}
+            colors={colors}
+          />
+        )}
+
+        {/* Contract end row — active/pendingEnd fixed-duration */}
+        {(isRunning || isPendingEnd) && isFixed && totalMs > 0 && (
+          <ContractEndRow
+            startedAt={contract.startedAt}
+            totalMs={totalMs}
+            isHiring={isHiring}
             colors={colors}
           />
         )}
