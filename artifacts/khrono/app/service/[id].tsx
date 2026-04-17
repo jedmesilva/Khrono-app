@@ -16,7 +16,6 @@ import Svg, { Line } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import { IconButton } from "@/components/IconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
 import { useCatalog } from "@/context/CatalogContext";
@@ -300,20 +299,22 @@ export default function ServiceDetailScreen() {
         </Text>
 
         {/* Back button */}
-        <IconButton
-          icon="arrow-left"
+        <Pressable
+          style={[styles.heroBtn, { top: topPadding + 12, left: 14, backgroundColor: isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
           onPress={() => router.back()}
-          backgroundColor="transparent"
-          style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}
-        />
+          hitSlop={10}
+        >
+          <Feather name="arrow-left" size={18} color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"} />
+        </Pressable>
 
         {/* More options button */}
-        <IconButton
-          icon="more-horizontal"
+        <Pressable
+          style={[styles.heroBtn, { top: topPadding + 12, right: 14, backgroundColor: isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
           onPress={handleMoreOptions}
-          backgroundColor="transparent"
-          style={{ position: "absolute", top: topPadding + 12, right: 14, zIndex: 10 }}
-        />
+          hitSlop={10}
+        >
+          <Feather name="more-horizontal" size={18} color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"} />
+        </Pressable>
 
         {/* Status badge */}
         <View style={[
@@ -331,14 +332,13 @@ export default function ServiceDetailScreen() {
 
         {/* Verified badge */}
         {service.verified && (
-          <IconButton
-            icon="check-circle"
-            iconSize={13}
-            color={GREEN_BADGE}
-            backgroundColor="transparent"
+          <Pressable
+            style={[styles.heroBtn, { top: topPadding + 56, right: 56, backgroundColor: isDark ? "rgba(0,0,0,0.30)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
-            style={{ position: "absolute", top: topPadding + 56, right: 56, zIndex: 10 }}
-          />
+            hitSlop={10}
+          >
+            <Feather name="check-circle" size={13} color={GREEN_BADGE} />
+          </Pressable>
         )}
 
         {/* Bottom gradient fade */}
@@ -578,6 +578,16 @@ const styles = StyleSheet.create({
 
   // Hero
   hero: { width: "100%", overflow: "hidden", position: "relative" },
+  heroBtn: {
+    position: "absolute",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
   statusBadge: {
     position: "absolute",
     left: 14,
