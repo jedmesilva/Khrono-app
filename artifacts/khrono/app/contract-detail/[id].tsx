@@ -147,7 +147,7 @@ function getPaymentStatusInfo(
   pendingRefundAmount?: number,
 ): { text: string; tone: "green" | "amber" | "red" | "muted" } {
   if (paymentMethod === "dinheiro") {
-    if (paymentStatus === "paid") return { text: "Dinheiro confirmado", tone: "green" };
+    if (paymentStatus === "paid") return { text: "Pagamento confirmado", tone: "green" };
     if (paymentStatus === "disputed") return { text: "Pagamento em disputa", tone: "red" };
     if (paymentStatus === "awaiting_confirmation") {
       if (cardUiState === "awaiting_other_party") {
@@ -177,8 +177,8 @@ function getPaymentStatusInfo(
   }
 
   if (paymentStatus === "paid") {
-    if (pendingRefundAmount && pendingRefundAmount > 0) return { text: "Pago · reembolso processado", tone: "green" };
-    return { text: "Pago", tone: "green" };
+    if (pendingRefundAmount && pendingRefundAmount > 0) return { text: "Pagamento confirmado · reembolso processado", tone: "green" };
+    return { text: "Pagamento confirmado", tone: "green" };
   }
   if (paymentStatus === "failed") return { text: "Falha no pagamento", tone: "red" };
   if (paymentStatus === "awaiting_confirmation") {
