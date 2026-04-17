@@ -50,6 +50,18 @@ function formatScheduledDate(date: Date): string {
   return date.toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short" });
 }
 
+function formatAbsoluteTime(ts: number): string {
+  if (!ts) return "—";
+  const date = new Date(ts);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const time = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  if (date.toDateString() === today.toDateString()) return `Hoje às ${time}`;
+  if (date.toDateString() === yesterday.toDateString()) return `Ontem às ${time}`;
+  return date.toLocaleDateString("pt-BR", { day: "numeric", month: "short" }) + ` às ${time}`;
+}
+
 // ── role theme tokens ──────────────────────────────────────────────────────────
 
 const ROLE_THEME = {
@@ -185,41 +197,27 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </View>
         )}
 
-        <View style={styles.scheduledBlock}>
-          <View style={styles.scheduledLabelRow}>
-            <Feather name="calendar" size={10} color="#B8B4AC" />
-            <Text style={styles.scheduledLabel}>Agendado para</Text>
-          </View>
-          <View style={styles.scheduledTimeRow}>
-            <Text style={styles.scheduledTimeText}>
-              {isValidDate ? formatScheduledTime(scheduledDate) : "—"}
-            </Text>
-            <Text style={styles.scheduledDateText}>
-              {isValidDate ? formatScheduledDate(scheduledDate) : "Data não definida"}
+        <View style={styles.elapsedBlock}>
+          <View style={styles.elapsedLabelRow}>
+            <View style={[styles.liveDot, { backgroundColor: isLate ? "#C0622A" : "#9B9487" }]} />
+            <Text style={[styles.elapsedLabel, { color: isLate ? "#C0622A" : "#9B9487" }]}>
+              {isLate ? "Início atrasado" : "Inicia em"}
             </Text>
           </View>
-          {isValidDate && (
-            <View style={styles.startsInPill}>
-              <Feather name={isLate ? "alert-circle" : "clock"} size={10} color={isLate ? "#C0622A" : "#9B9487"} />
-              <Text style={[styles.startsInLabel, isLate && { color: "#C0622A" }]}>
-                {isLate ? "Início atrasado em" : "Inicia em"}
-              </Text>
-              <Text style={[styles.startsInValue, isLate && { color: "#C0622A" }]}>
-                {formatTime(scheduledDeltaAbs)}
-              </Text>
-            </View>
-          )}
+          <Text style={[styles.elapsedTime, { color: isLate ? "#C0622A" : "#2C2A26" }]}>
+            {isValidDate ? formatTime(scheduledDeltaAbs) : "—"}
+          </Text>
         </View>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <Text style={[styles.footerMuted, { color: isLate ? "#C0622A" : "#B8B4AC" }]}>
-            {isLate ? "Início atrasado em" : "Inicia em"}
-          </Text>
-          <Text style={[styles.footerTimer, { color: isLate ? "#C0622A" : "#9B9487" }]}>
-            {isValidDate ? formatHM(scheduledDeltaAbs) : "—"}
+          <Text style={[styles.footerMuted, { color: "#B8B4AC" }]}>Programado para</Text>
+          <Text style={[styles.footerTimer, { color: "#9B9487" }]}>
+            {isValidDate
+              ? `${formatScheduledDate(scheduledDate)} às ${formatScheduledTime(scheduledDate)}`
+              : "—"}
           </Text>
         </View>
         <View style={styles.footerCta}>
@@ -304,15 +302,14 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const showAmount = (isTimer && !!totalFixedSecs) || (!isPending && !isAccepted);
   // Mostrar "de R$total" apenas quando contrato fixo em andamento
   const showTotalRef = showAmount && isRunningNow && isTimer && !!totalFixedAmount;
-  const showElapsed = !isPending && !isAccepted;
   const footerLabel = isActive
-    ? "Iniciado há"
+    ? "Iniciado em"
     : isPendingEnd
     ? "Encerramento pendente"
     : isPendingCancel
     ? "Cancelamento pendente"
     : "Aguardando início";
-  const footerValue = showElapsed ? formatHM(elapsedSecs) : null;
+  const footerValue = contract.startedAt > 0 ? formatAbsoluteTime(contract.startedAt) : null;
 
   return (
     <Pressable
@@ -398,7 +395,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
             <Text style={[styles.elapsedLabel, { color: t.bodyFaint }]}>Tempo decorrido</Text>
           </View>
           <Text style={[styles.elapsedTime, { color: colors.text }]}>
-            {showElapsed ? formatTime(elapsedSecs) : "00:00:00"}
+            {formatTime(elapsedSecs)}
           </Text>
         </View>
 
@@ -757,60 +754,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  // ── scheduled card specifics ──────────────────────────────────────────────
-  scheduledBlock: {
-    marginBottom: 16,
-  },
-  scheduledLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginBottom: 10,
-  },
-  scheduledLabel: {
-    fontFamily: "DMSans_600SemiBold",
-    fontSize: 9,
-    letterSpacing: 1,
-    color: "#C4BFB6",
-    textTransform: "uppercase",
-  },
-  scheduledTimeRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 10,
-    marginBottom: 12,
-  },
-  scheduledTimeText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 36,
-    letterSpacing: -1.5,
-    lineHeight: 42,
-    color: "#2C2A26",
-  },
-  scheduledDateText: {
-    fontFamily: "DMSans_500Medium",
-    fontSize: 14,
-    color: "#9B9487",
-    paddingBottom: 4,
-  },
-  startsInPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#F0EDE6",
-    borderRadius: 8,
-    paddingHorizontal: 11,
-    paddingVertical: 6,
-    alignSelf: "flex-start",
-  },
-  startsInLabel: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    color: "#9B9487",
-  },
-  startsInValue: {
-    fontFamily: "DMSans_600SemiBold",
-    fontSize: 11,
-    color: "#2C2A26",
-  },
 });
