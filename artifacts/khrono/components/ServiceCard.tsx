@@ -98,7 +98,7 @@ export function ServiceCard({
         {/* Grid decoration */}
         <Svg
           style={StyleSheet.absoluteFill}
-          viewBox="0 0 320 130"
+          viewBox="0 0 320 168"
           preserveAspectRatio="none"
         >
           {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -107,19 +107,19 @@ export function ServiceCard({
               x1={i * 46}
               y1="0"
               x2={i * 46}
-              y2="130"
+              y2="168"
               stroke={ACCENT}
               strokeWidth="1"
               opacity={gridOpacity}
             />
           ))}
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <Line
               key={`h${i}`}
               x1="0"
-              y1={i * 44}
+              y1={i * 42}
               x2="320"
-              y2={i * 44}
+              y2={i * 42}
               stroke={ACCENT}
               strokeWidth="1"
               opacity={gridOpacity}
@@ -295,18 +295,18 @@ const styles = StyleSheet.create({
 
   // ── Thumbnail ─────────────────────────────────────────
   thumb: {
-    height: 130,
+    height: 168,
     width: "100%",
     overflow: "hidden",
   },
   decorLabel: {
     position: "absolute",
-    bottom: -10,
+    bottom: -14,
     left: 12,
     fontFamily: "Sora_700Bold",
-    fontSize: 62,
-    letterSpacing: -1.5,
-    lineHeight: 68,
+    fontSize: 76,
+    letterSpacing: -2,
+    lineHeight: 82,
     includeFontPadding: false,
   },
   statusBadge: {
