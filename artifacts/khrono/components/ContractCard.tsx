@@ -427,7 +427,7 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
             <Text style={[styles.elapsedLabel, { color: t.bodyFaint }]}>Tempo decorrido</Text>
           </View>
           <Text style={[styles.elapsedTime, { color: colors.text }]}>
-            {formatTime(elapsedSecs)}
+            {(isActive || isPendingState) ? formatTime(elapsedSecs) : "00:00:00"}
           </Text>
         </View>
 
