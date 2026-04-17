@@ -303,6 +303,7 @@ export default function ServiceDetailScreen() {
         <IconButton
           icon="arrow-left"
           onPress={() => router.back()}
+          backgroundColor="transparent"
           style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}
         />
 
@@ -310,6 +311,7 @@ export default function ServiceDetailScreen() {
         <IconButton
           icon="more-horizontal"
           onPress={handleMoreOptions}
+          backgroundColor="transparent"
           style={{ position: "absolute", top: topPadding + 12, right: 14, zIndex: 10 }}
         />
 
@@ -333,6 +335,7 @@ export default function ServiceDetailScreen() {
             icon="check-circle"
             iconSize={13}
             color={GREEN_BADGE}
+            backgroundColor="transparent"
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
             style={{ position: "absolute", top: topPadding + 56, right: 56, zIndex: 10 }}
           />

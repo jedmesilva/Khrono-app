@@ -377,6 +377,7 @@ export default function ProviderServiceScreen() {
         <IconButton
           icon="arrow-left"
           onPress={() => router.back()}
+          backgroundColor="transparent"
           style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}
         />
 
@@ -392,6 +393,7 @@ export default function ProviderServiceScreen() {
             icon="check-circle"
             iconSize={13}
             color={GREEN}
+            backgroundColor="transparent"
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
             style={{ position: "absolute", top: topPadding + 56, right: 14, zIndex: 10 }}
           />
