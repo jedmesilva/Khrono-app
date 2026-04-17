@@ -228,50 +228,57 @@ export function ServiceCard({
           </View>
         )}
 
-        {/* Skills chips — accent tinted */}
+        {/* Skills row */}
         {skills.length > 0 && (
-          <View style={styles.chipsRow}>
-            {skills.map((sk) => (
-              <View
-                key={sk.id}
-                style={[
-                  styles.chipAccent,
-                  { backgroundColor: accentBg, borderColor: accentBorder },
-                ]}
-              >
-                <Text
-                  style={[styles.chipAccentText, { color: ACCENT }]}
-                  numberOfLines={1}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
+              skills
+            </Text>
+            <View style={styles.chipsRow}>
+              {skills.map((sk) => (
+                <View
+                  key={sk.id}
+                  style={[
+                    styles.chipAccent,
+                    { backgroundColor: accentBg, borderColor: accentBorder },
+                  ]}
                 >
-                  {sk.name}
-                </Text>
-              </View>
-            ))}
+                  <Text
+                    style={[styles.chipAccentText, { color: ACCENT }]}
+                    numberOfLines={1}
+                  >
+                    {sk.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
-        {/* Tools chips — neutral */}
+        {/* Tools row */}
         {tools.length > 0 && (
-          <View style={styles.chipsRow}>
-            {tools.map((t) => (
-              <View
-                key={t.id}
-                style={[
-                  styles.chipNeutral,
-                  { borderColor: colors.surfaceBorder },
-                ]}
-              >
-                <Text
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
+              tools
+            </Text>
+            <View style={styles.chipsRow}>
+              {tools.map((t) => (
+                <View
+                  key={t.id}
                   style={[
-                    styles.chipNeutralText,
-                    { color: colors.textMuted },
+                    styles.chipNeutral,
+                    { borderColor: colors.surfaceBorder },
                   ]}
-                  numberOfLines={1}
                 >
-                  {t.name}
-                </Text>
-              </View>
-            ))}
+                  <Text
+                    style={[styles.chipNeutralText, { color: colors.textMuted }]}
+                    numberOfLines={1}
+                  >
+                    {t.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
       </View>
@@ -402,6 +409,15 @@ const styles = StyleSheet.create({
   metaText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
+  },
+  section: {
+    gap: 6,
+  },
+  sectionLabel: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 9,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
   },
   chipsRow: {
     flexDirection: "row",
