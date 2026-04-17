@@ -37,7 +37,7 @@ export function HeroImersivo() {
   return (
     <div style={{ width:390, minHeight:844, backgroundColor:BG, fontFamily:"DM Sans, sans-serif", display:"flex", flexDirection:"column", overflow:"hidden" }}>
 
-      {/* ── Hero tall (~45% da tela) ── */}
+      {/* ── Hero tall (~40% da tela) — da Variante A ── */}
       <div style={{ position:"relative", height:340, flexShrink:0, background:"linear-gradient(160deg, #1d1510 0%, #0e0d0b 100%)", overflow:"hidden" }}>
         <GridSVG/>
 
@@ -85,7 +85,7 @@ export function HeroImersivo() {
       </div>
 
       {/* ── Body ── */}
-      <div style={{ flex:1, padding:"14px 16px 24px", display:"flex", flexDirection:"column", gap:12 }}>
+      <div style={{ flex:1, padding:"14px 16px 24px", display:"flex", flexDirection:"column", gap:10 }}>
 
         {/* Mini card do prestador — compacto */}
         <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:12, border:`1px solid ${BORDER}`, backgroundColor:CARD, cursor:"pointer" }}>
@@ -99,29 +99,40 @@ export function HeroImersivo() {
           <span style={{ color:MUTED, fontSize:14 }}>›</span>
         </div>
 
-        {/* Skills — overflow horizontal */}
-        <div>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+        {/* ── Skills — card com ícone, da Variante B ── */}
+        <div style={{ borderRadius:16, border:`1px solid ${BORDER}`, backgroundColor:CARD, padding:"14px 16px", display:"flex", flexDirection:"column", gap:10 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:26, height:26, borderRadius:7, backgroundColor:"rgba(224,96,48,0.10)", border:"1px solid rgba(224,96,48,0.20)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ fontSize:11, color:ACCENT }}>★</span>
+            </div>
             <span style={{ fontFamily:"DM Mono", fontSize:9, letterSpacing:"0.8px", textTransform:"uppercase", color:MUTED }}>Skills</span>
           </div>
-          <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:4 }}>
-            <Chip label="Elétrica" accent/><Chip label="Enfiação" accent/><Chip label="Baixa tensão" accent/><Chip label="Aterramento" accent/>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            <Chip label="Elétrica" accent/>
+            <Chip label="Enfiação" accent/>
+            <Chip label="Baixa tensão" accent/>
+            <Chip label="Aterramento" accent/>
             <Chip label="+1" accent/>
           </div>
         </div>
 
-        {/* Tools — overflow horizontal */}
-        <div>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+        {/* ── Tools — card com ícone, da Variante B ── */}
+        <div style={{ borderRadius:16, border:`1px solid ${BORDER}`, backgroundColor:CARD, padding:"14px 16px", display:"flex", flexDirection:"column", gap:10 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:26, height:26, borderRadius:7, backgroundColor:"rgba(24,160,107,0.10)", border:"1px solid rgba(24,160,107,0.20)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ fontSize:11, color:GREEN }}>🔑</span>
+            </div>
             <span style={{ fontFamily:"DM Mono", fontSize:9, letterSpacing:"0.8px", textTransform:"uppercase", color:MUTED }}>Tools</span>
           </div>
-          <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:4 }}>
-            <Chip label="Furadeira" green/><Chip label="Nível a Laser" green/><Chip label="Parafusadeira" green/>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            <Chip label="Furadeira" green/>
+            <Chip label="Nível a Laser" green/>
+            <Chip label="Parafusadeira" green/>
           </div>
         </div>
 
-        {/* Performance grid — 3 colunas */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginTop:4 }}>
+        {/* Performance grid */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
           {[{ v:"4.9", l:"NOTA" }, { v:"48", l:"AVALIAÇÕES" }, { v:"32", l:"CONTRATOS" }].map((item) => (
             <div key={item.l} style={{ padding:"14px 12px", borderRadius:14, border:`1px solid ${BORDER}`, backgroundColor:CARD, display:"flex", flexDirection:"column", gap:5 }}>
               <span style={{ fontFamily:"DM Sans", fontWeight:500, fontSize:24, color:TEXT, lineHeight:1 }}>{item.v}</span>
