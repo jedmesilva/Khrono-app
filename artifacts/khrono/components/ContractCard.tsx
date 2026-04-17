@@ -197,6 +197,16 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </View>
         )}
 
+        <View style={styles.elapsedBlock}>
+          <View style={styles.elapsedLabelRow}>
+            <View style={[styles.liveDot, { backgroundColor: "#C4BFB6" }]} />
+            <Text style={[styles.elapsedLabel, { color: "#B8B4AC" }]}>Duração</Text>
+          </View>
+          <Text style={[styles.elapsedTime, { color: "#6B6760" }]}>
+            {isTimer && totalFixedSecs ? formatHM(totalFixedSecs) : "Aberto"}
+          </Text>
+        </View>
+
         {isValidDate && (
           <View style={styles.startsInRow}>
             <Feather
