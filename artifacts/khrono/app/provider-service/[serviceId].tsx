@@ -16,6 +16,7 @@ import Svg, { Line } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { IconButton } from "@/components/IconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool } from "@/constants/profile-data";
@@ -373,13 +374,11 @@ export default function ProviderServiceScreen() {
         </Text>
 
         {/* Back button */}
-        <Pressable
-          style={[styles.heroBackBtn, { top: topPadding + 12, backgroundColor: isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
+        <IconButton
+          icon="arrow-left"
           onPress={() => router.back()}
-          hitSlop={10}
-        >
-          <Feather name="arrow-left" size={18} color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"} />
-        </Pressable>
+          style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}
+        />
 
         {/* Status badge */}
         <View style={[styles.statusBadge, { top: topPadding + 16 }]}>
@@ -389,13 +388,13 @@ export default function ProviderServiceScreen() {
 
         {/* Verified badge top-right (if any) */}
         {service.verified && (
-          <Pressable
-            style={[styles.verifiedBtn, { top: topPadding + 56, backgroundColor: isDark ? "rgba(0,0,0,0.30)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
+          <IconButton
+            icon="check-circle"
+            iconSize={13}
+            color={GREEN}
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
-            hitSlop={10}
-          >
-            <Feather name="check-circle" size={13} color={GREEN} />
-          </Pressable>
+            style={{ position: "absolute", top: topPadding + 56, right: 14, zIndex: 10 }}
+          />
         )}
 
         {/* Bottom gradient fade */}
@@ -579,17 +578,6 @@ const styles = StyleSheet.create({
 
   // Hero
   hero: { width: "100%", overflow: "hidden", position: "relative" },
-  heroBackBtn: {
-    position: "absolute",
-    left: 14,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
-  },
   statusBadge: {
     position: "absolute",
     right: 14,
@@ -605,17 +593,6 @@ const styles = StyleSheet.create({
   },
   statusDot: { width: 5, height: 5, borderRadius: 3 },
   statusText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase" },
-  verifiedBtn: {
-    position: "absolute",
-    right: 14,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
-  },
   decorLabel: {
     position: "absolute",
     right: -8,
