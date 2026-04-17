@@ -13,7 +13,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "@/components/BackButton";
-import { IconButton } from "@/components/IconButton";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
@@ -147,12 +146,9 @@ export default function ServiceDetailScreen() {
               <VerifiedBadge onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")} />
             )}
           </View>
-          <IconButton
-            icon="more-horizontal"
-            onPress={handleMoreOptions}
-            backgroundColor="transparent"
-            color={colors.textSecondary}
-          />
+          <Pressable onPress={handleMoreOptions} hitSlop={12}>
+            <Feather name="more-horizontal" size={20} color={colors.textSecondary} />
+          </Pressable>
         </View>
 
         {/* Linha de metadata: categoria + status + toggle */}

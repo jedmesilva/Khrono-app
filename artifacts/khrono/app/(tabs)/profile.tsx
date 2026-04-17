@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import { IconButton } from "@/components/IconButton";
+import { BackButton } from "@/components/BackButton";
 import { PageHeader } from "@/components/PageHeader";
 import { LocationSheet, formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
@@ -60,7 +60,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <IconButton icon="arrow-left" onPress={onBack} />
+        <BackButton onPress={onBack} />
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
             <Text style={[styles.subTitle, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{skill.name}</Text>
@@ -72,12 +72,9 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
             <Text style={[styles.newSkillTag, { color: colors.textMuted }]}>skill nova · sem atividade ainda</Text>
           ) : null}
         </View>
-        <IconButton
-          icon="more-horizontal"
-          onPress={onOptions}
-          backgroundColor="transparent"
-          color={colors.textSecondary}
-        />
+        <Pressable onPress={onOptions} hitSlop={12}>
+          <Feather name="more-horizontal" size={20} color={colors.textSecondary} />
+        </Pressable>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
@@ -127,7 +124,7 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <IconButton icon="arrow-left" onPress={onBack} />
+        <BackButton onPress={onBack} />
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
             <Text style={[styles.subTitle, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{tool.name}</Text>
@@ -139,12 +136,9 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
             {tool.available ? "disponível" : "indisponível"}
           </Text>
         </View>
-        <IconButton
-          icon="more-horizontal"
-          onPress={onOptions}
-          backgroundColor="transparent"
-          color={colors.textSecondary}
-        />
+        <Pressable onPress={onOptions} hitSlop={12}>
+          <Feather name="more-horizontal" size={20} color={colors.textSecondary} />
+        </Pressable>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
@@ -189,7 +183,7 @@ function SkillsListView({ skills, colors, onBack, onSelectSkill, onVerifiedPress
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <IconButton icon="arrow-left" onPress={onBack} />
+        <BackButton onPress={onBack} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
           <Text style={[styles.subMeta, { color: colors.textMuted }]}>
@@ -237,7 +231,7 @@ function ToolsListView({ tools, colors, onBack, onVerifiedPress, onAdd, onSelect
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <IconButton icon="arrow-left" onPress={onBack} />
+        <BackButton onPress={onBack} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Tools</Text>
           <Text style={[styles.subMeta, { color: colors.textMuted }]}>
