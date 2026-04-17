@@ -25,6 +25,7 @@ import {
 import * as ExpoLocation from "expo-location";
 import Svg, { Line, Path, Rect } from "react-native-svg";
 import * as Calendar from "expo-calendar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { supabase } from "@/lib/supabase";
@@ -621,17 +622,29 @@ const DELAY_COLOR = "#c4601a";
 const DELAY_BG    = "#fff4ee";
 
 function ContractStartRow({
+  contractId,
   scheduledFor,
   isHiring,
   isAccepted,
   colors,
 }: {
+  contractId: string;
   scheduledFor?: number;
   isHiring: boolean;
   isAccepted: boolean;
   colors: ColorPalette;
 }) {
   const [, setTick] = useState(0);
+  const [calendarAdded, setCalendarAdded] = useState(false);
+
+  const STORAGE_KEY = `cal_added_${contractId}`;
+
+  // Load persisted state
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY).then((v) => {
+      if (v === "1") setCalendarAdded(true);
+    });
+  }, [STORAGE_KEY]);
 
   useEffect(() => {
     if (!scheduledFor) return;
@@ -677,11 +690,13 @@ function ContractStartRow({
         endDate: new Date(scheduledFor + 3_600_000),
         notes: "Agendado via Khrono",
       });
+      setCalendarAdded(true);
+      AsyncStorage.setItem(STORAGE_KEY, "1");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
       // silently ignore
     }
-  }, [scheduledFor, isHiring]);
+  }, [scheduledFor, isHiring, STORAGE_KEY]);
 
   // ── Immediate ──
   if (isImmediate) {
@@ -718,7 +733,7 @@ function ContractStartRow({
           <Text style={[s.detailSub, { color: colors.textMuted }]}>{futureSubtitle}</Text>
         </View>
         <Pressable
-          onPress={handleAddToCalendar}
+          onPress={calendarAdded ? undefined : handleAddToCalendar}
           hitSlop={8}
           style={({ pressed }) => ({
             flexDirection: "row",
@@ -728,19 +743,25 @@ function ContractStartRow({
             paddingVertical: 6,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: colors.surfaceBorder,
-            backgroundColor: pressed ? colors.surface + "cc" : colors.surface,
+            borderColor: calendarAdded ? "#18a06b40" : colors.surfaceBorder,
+            backgroundColor: calendarAdded
+              ? "#18a06b12"
+              : pressed ? colors.surface + "cc" : colors.surface,
           })}
         >
-          <Feather name="calendar" size={11} color={colors.textSecondary} />
+          <Feather
+            name={calendarAdded ? "check" : "calendar"}
+            size={11}
+            color={calendarAdded ? "#18a06b" : colors.textSecondary}
+          />
           <Text
             style={{
               fontFamily: "DMSans_500Medium",
               fontSize: 11,
-              color: colors.textSecondary,
+              color: calendarAdded ? "#18a06b" : colors.textSecondary,
             }}
           >
-            Agendar
+            {calendarAdded ? "Agendado" : "Agendar"}
           </Text>
         </Pressable>
       </View>
@@ -1685,6 +1706,7 @@ export default function ContractDetailScreen() {
         {/* Contract start row */}
         {showStartRow && (
           <ContractStartRow
+            contractId={contract.id}
             scheduledFor={contract.scheduledFor}
             isHiring={isHiring}
             isAccepted={isAccepted}
