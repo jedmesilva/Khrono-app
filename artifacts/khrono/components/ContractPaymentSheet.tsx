@@ -53,8 +53,6 @@ type PaymentData = {
   otherConfirmation: { amount_reported: number | null; is_incomplete: boolean } | null;
 };
 
-type PaymentMethod = "cartao" | "pix" | "dinheiro" | "saldo";
-
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -172,6 +170,9 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   const [fetchLoading, setFetchLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [methodSheetVisible, setMethodSheetVisible] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(
+    contract.paymentMethod ?? "dinheiro"
+  );
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -333,7 +334,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   // ── Overview action button ─────────────────────────────────────────────────────
 
   function renderOverviewAction() {
-    const isCash = contract.paymentMethod === "dinheiro";
+    const isCash = selectedMethod === "dinheiro";
 
     if (uiState === "confirmed") {
       return (
@@ -445,7 +446,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   // ── Step: Overview ─────────────────────────────────────────────────────────────
 
   function renderOverview() {
-    const method = contract.paymentMethod ?? "dinheiro";
+    const method = selectedMethod;
     const statusInfo = statusMessage(uiState, method, personName, isHiring, colors);
 
     return (
@@ -817,7 +818,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           setMethodSheetVisible(false);
           handleChangeMethod(newMethod);
         }}
-        initialMethod={contract.paymentMethod ?? "dinheiro"}
+        initialMethod={selectedMethod}
         initialCardId={null}
         amount={contractAmount}
         recipientName={personName}
