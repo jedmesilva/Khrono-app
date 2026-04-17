@@ -13,6 +13,7 @@ export function BackButton({ onPress }: Props) {
       icon="arrow-left"
       onPress={onPress ?? (() => router.back())}
       hitSlop={8}
+      backgroundColor="transparent"
     />
   );
 }
