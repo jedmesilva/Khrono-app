@@ -171,18 +171,25 @@ export function ServiceCard({
           </Text>
         </View>
 
-        {/* Verified icon — top right */}
-        {service.verified && (
-          <Pressable
-            style={styles.verifiedBtn}
-            onPress={() =>
-              onVerifiedPress?.(service.verified!.type, "service")
-            }
-            hitSlop={10}
-          >
-            <Feather name="check-circle" size={13} color={GREEN} />
-          </Pressable>
-        )}
+        {/* Top-right: "novo" badge and/or verified icon */}
+        <View style={styles.topRight}>
+          {service.isNew && (
+            <View style={styles.novoBadge}>
+              <Text style={styles.novoBadgeText}>novo</Text>
+            </View>
+          )}
+          {service.verified && (
+            <Pressable
+              style={styles.verifiedBtn}
+              onPress={() =>
+                onVerifiedPress?.(service.verified!.type, "service")
+              }
+              hitSlop={10}
+            >
+              <Feather name="check-circle" size={13} color={GREEN} />
+            </Pressable>
+          )}
+        </View>
       </LinearGradient>
 
       {/* ── Body ───────────────────────────────────────────── */}
@@ -210,30 +217,16 @@ export function ServiceCard({
           </View>
         </View>
 
-        {/* Meta: rating · contracts or "novo" pill */}
-        <View style={styles.metaRow}>
-          {service.isNew ? (
-            <View
-              style={[
-                styles.newBadge,
-                {
-                  backgroundColor: "rgba(0,229,160,0.09)",
-                  borderColor: "rgba(0,229,160,0.22)",
-                },
-              ]}
-            >
-              <Text style={styles.newBadgeText}>novo</Text>
-            </View>
-          ) : (
-            <>
-              <Feather name="star" size={11} color={ACCENT} />
-              <Text style={[styles.metaText, { color: colors.textMuted }]}>
-                {service.rating.toFixed(1)} · {service.contracts} contrato
-                {service.contracts !== 1 ? "s" : ""}
-              </Text>
-            </>
-          )}
-        </View>
+        {/* Meta: rating · contracts (hidden when new) */}
+        {!service.isNew && (
+          <View style={styles.metaRow}>
+            <Feather name="star" size={11} color={ACCENT} />
+            <Text style={[styles.metaText, { color: colors.textMuted }]}>
+              {service.rating.toFixed(1)} · {service.contracts} contrato
+              {service.contracts !== 1 ? "s" : ""}
+            </Text>
+          </View>
+        )}
 
         {/* Skills chips — accent tinted */}
         {skills.length > 0 && (
@@ -332,10 +325,30 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
-  verifiedBtn: {
+  topRight: {
     position: "absolute",
     top: 10,
     right: 10,
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 5,
+  },
+  novoBadge: {
+    backgroundColor: "rgba(0,229,160,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(0,229,160,0.35)",
+    borderRadius: 100,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+  },
+  novoBadgeText: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 9,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    color: GREEN,
+  },
+  verifiedBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -389,17 +402,6 @@ const styles = StyleSheet.create({
   metaText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
-  },
-  newBadge: {
-    borderWidth: 1,
-    borderRadius: 100,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  newBadgeText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 9,
-    color: GREEN,
   },
   chipsRow: {
     flexDirection: "row",
