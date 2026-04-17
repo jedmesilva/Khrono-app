@@ -101,7 +101,7 @@ export function ProfileReadinessSheet({ visible, readiness, onClose }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: "#e0903012", borderColor: "#e0903025" }]}>
+          <View style={[styles.iconWrap, { backgroundColor: "#e0903012" }]}>
             <Feather name="alert-circle" size={20} color="#e09030" />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>
@@ -218,7 +218,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 2,

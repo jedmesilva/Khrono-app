@@ -94,7 +94,7 @@ function ServiceAreaCard({ locationMode, serviceRadius, fixedAddress, colors }: 
   return (
     <View style={[areaStyles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
       <View style={areaStyles.topRow}>
-        <View style={[areaStyles.iconWrap, { backgroundColor: colors.menuIconBg, borderColor: colors.surfaceBorder }]}>
+        <View style={[areaStyles.iconWrap, { backgroundColor: colors.menuIconBg }]}>
           <Feather name={isRealtime ? "navigation" : "map-pin"} size={14} color={colors.iconBack} />
         </View>
         <View style={{ flex: 1 }}>
@@ -112,7 +112,7 @@ function ServiceAreaCard({ locationMode, serviceRadius, fixedAddress, colors }: 
 const areaStyles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 24, padding: 14, marginBottom: 28, gap: 10 },
   topRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  iconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  iconWrap: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   areaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 12, marginBottom: 2 },
   areaDesc: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 });
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   sectionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   skillCard: { borderWidth: 1, borderRadius: 24, padding: 16 },
   skillHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  skillIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#e0603025", backgroundColor: "#e0603010", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  skillIconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: "#e0603010", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   skillNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   skillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#e06030dd", flex: 1 },
   skillType: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   newBadge: { backgroundColor: "#1a2a1a", borderWidth: 1, borderColor: "#18a06b30", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
   newBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#18a06b" },
   toolCard: { borderWidth: 1, borderRadius: 24, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  toolIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: "#18a06b25", backgroundColor: "#18a06b10", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  toolIconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: "#18a06b10", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   toolNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   toolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#18a06bdd", flex: 1 },
   toolType: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },

@@ -54,7 +54,7 @@ export function PunctualidadeCard({ stats, colors, style }: Props) {
   return (
     <View style={[card.wrap, { backgroundColor: colors.card, borderColor: colors.cardBorder }, style]}>
       <View style={card.topRow}>
-        <View style={[card.iconWrap, { backgroundColor: pctColor + "18", borderColor: pctColor + "30" }]}>
+        <View style={[card.iconWrap, { backgroundColor: pctColor + "18" }]}>
           <Feather name="clock" size={14} color={pctColor} />
         </View>
         <View style={{ flex: 1 }}>
@@ -100,7 +100,6 @@ const card = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,

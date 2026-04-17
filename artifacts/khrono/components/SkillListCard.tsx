@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
 import { GlobalStyles, cardColors } from "@/constants/globalStyles";
+import { IconBox } from "@/components/IconBox";
 
 interface SkillListCardProps {
   name: string;
@@ -30,9 +31,9 @@ export function SkillListCard({
       style={[GlobalStyles.cardRow, cardColors(colors)]}
       {...(onPress ? { onPress } : {})}
     >
-      <View style={[styles.iconWrap, { backgroundColor: isNew ? colors.surface : "#e0603012", borderColor: isNew ? colors.surfaceBorder : "#e0603028" }]}>
+      <IconBox size="sm" bg={isNew ? colors.surface : "#e0603012"}>
         <Feather name="star" size={16} color={isNew ? colors.textMuted : "#e06030"} />
-      </View>
+      </IconBox>
       <View style={{ flex: 1 }}>
         <View style={styles.nameRow}>
           <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{name}</Text>
@@ -57,7 +58,6 @@ export function SkillListCard({
 }
 
 const styles = StyleSheet.create({
-  iconWrap: { width: 38, height: 38, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   name: { fontFamily: "Sora_700Bold", fontSize: 15, flexShrink: 1 },
   description: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },

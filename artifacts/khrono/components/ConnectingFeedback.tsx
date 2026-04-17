@@ -52,7 +52,7 @@ export function ConnectingFeedback({
     <View style={styles.container}>
       <View style={styles.iconWrap}>
         <Animated.View style={[styles.spinRing, spinStyle]} />
-        <View style={[styles.iconInner, { backgroundColor: "#e0603012", borderColor: "#e0603025" }]}>
+        <View style={[styles.iconInner, { backgroundColor: "#e0603012" }]}>
           <Feather name={icon} size={22} color="#e06030" />
         </View>
       </View>
@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },

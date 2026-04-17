@@ -46,7 +46,7 @@ function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen, c
   const color = accentGreen ? colors.accentGreen : colors.accent;
   return (
     <View style={staticStyles.row}>
-      <View style={[staticStyles.iconWrap, { backgroundColor: color + "12", borderColor: color + "25" }]}>
+      <View style={[staticStyles.iconWrap, { backgroundColor: color + "12" }]}>
         <Feather name={icon} size={15} color={color} />
       </View>
       <View style={staticStyles.rowTexts}>
@@ -82,8 +82,8 @@ function LinkRow({ icon, label, sublabel, onPress, danger, colors }: LinkRowProp
         style={[
           staticStyles.iconWrap,
           danger
-            ? { backgroundColor: "#ff3b3012", borderColor: "#ff3b3025" }
-            : { backgroundColor: colors.menuIconBg, borderColor: colors.surfaceBorder },
+            ? { backgroundColor: "#ff3b3012" }
+            : { backgroundColor: colors.menuIconBg },
         ]}
       >
         <Feather name={icon} size={15} color={color} />
@@ -315,7 +315,6 @@ const staticStyles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,

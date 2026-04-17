@@ -80,7 +80,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
         <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.toolIconLarge, { backgroundColor: "#e0603012", borderColor: "#e0603028" }]}>
+          <View style={[styles.toolIconLarge, { backgroundColor: "#e0603012" }]}>
             <Feather name="star" size={32} color="#e06030" />
           </View>
         </View>
@@ -122,8 +122,6 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
 }) {
   const iconColor = tool.available ? "#e06030" : colors.textMuted;
   const iconBg = tool.available ? "#e0603012" : colors.surface;
-  const iconBorder = tool.available ? "#e0603028" : colors.surfaceBorder;
-
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
@@ -148,7 +146,7 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
         <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.toolIconLarge, { backgroundColor: iconBg, borderColor: iconBorder }]}>
+          <View style={[styles.toolIconLarge, { backgroundColor: iconBg }]}>
             <Feather name={tool.icon} size={32} color={iconColor} />
           </View>
         </View>
@@ -506,7 +504,7 @@ export default function ProfileScreen() {
             }}
           >
             <View style={styles.readinessTopRow}>
-              <View style={[styles.readinessIconWrap, { backgroundColor: "#e0903012", borderColor: "#e0903030" }]}>
+              <View style={[styles.readinessIconWrap, { backgroundColor: "#e0903012" }]}>
                 <Feather name="alert-circle" size={18} color="#e09030" />
               </View>
               <View style={{ flex: 1 }}>
@@ -565,7 +563,7 @@ export default function ProfileScreen() {
 
         {/* Location card */}
         <Pressable style={[styles.locationCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setLocationSheetOpen(true)}>
-          <View style={[styles.locationIconWrap, { backgroundColor: colors.menuIconBg, borderColor: colors.surfaceBorder }]}>
+          <View style={[styles.locationIconWrap, { backgroundColor: colors.menuIconBg }]}>
             <Feather name={location.mode === "realtime" ? "navigation" : "map-pin"} size={18} color={colors.iconBack} />
           </View>
           <View style={{ flex: 1 }}>
@@ -587,7 +585,7 @@ export default function ProfileScreen() {
         {/* Skills + Tools compact */}
         <View style={styles.compactRow}>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("skills")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#e0603020" }]}>
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
               <Feather name="tool" size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
@@ -597,7 +595,7 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("tools")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg, borderColor: "#e0603020" }]}>
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
               <Feather name="box" size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
@@ -703,13 +701,13 @@ const styles = StyleSheet.create({
 
   readinessCard: { borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 12, gap: 12 },
   readinessTopRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  readinessIconWrap: { width: 42, height: 42, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  readinessIconWrap: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   readinessTitle: { fontFamily: "Sora_700Bold", fontSize: 14, letterSpacing: -0.2 },
   readinessSubtitle: { fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 16, marginTop: 2 },
   readinessProgressBg: { height: 6, borderRadius: 3, overflow: "hidden" },
   readinessProgressFill: { height: "100%", borderRadius: 3, backgroundColor: "#18a06b" },
   readinessCheckRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  readinessCheckIcon: { width: 24, height: 24, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  readinessCheckIcon: { width: 24, height: 24, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   readinessCheckText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 12, lineHeight: 17 },
   readinessAction: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
   readinessActionText: { fontFamily: "Sora_600SemiBold", fontSize: 11, color: "#e06030" },
@@ -750,7 +748,7 @@ const styles = StyleSheet.create({
 
   skillDetailContent: { paddingHorizontal: 20, paddingTop: 4 },
   toolIconCard: { borderWidth: 1, borderRadius: 20, padding: 18, alignItems: "center", marginBottom: 12 },
-  toolIconLarge: { width: 80, height: 80, borderRadius: 20, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
+  toolIconLarge: { width: 80, height: 80, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   detailRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
   detailCard: { flex: 1, borderWidth: 1, borderRadius: 16, padding: 14, gap: 4 },
   detailCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },

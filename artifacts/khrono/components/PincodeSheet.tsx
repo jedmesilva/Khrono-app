@@ -124,7 +124,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.accent + "12", borderColor: colors.accent + "25" }]}>
+          <View style={[styles.iconWrap, { backgroundColor: colors.accent + "12" }]}>
             <Feather name="hash" size={20} color={colors.accent} />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Meu PINCODE</Text>
@@ -233,7 +233,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
