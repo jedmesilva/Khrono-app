@@ -160,13 +160,9 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           <Text style={styles.contractId}>{contract.code || `KRN-${contract.id.slice(-8).toUpperCase()}`}</Text>
         </View>
         <View style={styles.headerBottom}>
-          {scheduledAmount !== null ? (
-            <Text style={[styles.headerAmount, { color: "#9B9487" }]}>
-              {formatCurrency(scheduledAmount)}
-            </Text>
-          ) : (
-            <View />
-          )}
+          <Text style={[styles.headerAmount, { color: "#9B9487" }]}>
+            {formatCurrency(scheduledAmount ?? 0)}
+          </Text>
           <View style={[styles.durationBadge, { backgroundColor: "#ECEAE3" }]}>
             <Feather name="clock" size={9} color="#9B9487" />
             <Text style={[styles.durationBadgeText, { color: "#9B9487" }]}>
