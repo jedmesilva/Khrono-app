@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
@@ -56,6 +56,97 @@ function makeDecorLabel(service: Service, skills: Skill[]): string {
   const cat = skills[0]?.type;
   const raw = cat ? cat.split(/\s+/)[0] : service.name.split(/\s+/)[0];
   return raw.slice(0, 7).toUpperCase();
+}
+
+const CHIP_GAP = 5;
+const OVERFLOW_BADGE_W = 42;
+
+type OverflowItem = { id: string; name: string };
+
+function ChipOverflowRow({
+  items,
+  renderChip,
+  overflowBg,
+  overflowBorder,
+  overflowColor,
+}: {
+  items: OverflowItem[];
+  renderChip: (item: OverflowItem) => React.ReactNode;
+  overflowBg: string;
+  overflowBorder: string;
+  overflowColor: string;
+}) {
+  const containerW = useRef(0);
+  const chipW = useRef<Record<string, number>>({});
+  const [visibleCount, setVisibleCount] = useState<number | null>(null);
+
+  function compute() {
+    const cw = containerW.current;
+    if (cw === 0 || Object.keys(chipW.current).length < items.length) return;
+
+    let used = 0;
+    let count = 0;
+    for (let i = 0; i < items.length; i++) {
+      const w = chipW.current[items[i].id] ?? 0;
+      const spacing = count > 0 ? CHIP_GAP : 0;
+      const isLast = i === items.length - 1;
+      if (isLast) {
+        if (used + spacing + w <= cw) count++;
+      } else {
+        if (used + spacing + w + CHIP_GAP + OVERFLOW_BADGE_W <= cw) {
+          used += spacing + w;
+          count++;
+        } else {
+          break;
+        }
+      }
+    }
+    setVisibleCount(count);
+  }
+
+  const overflow = visibleCount !== null ? items.length - visibleCount : 0;
+
+  return (
+    <View
+      style={styles.chipsRow}
+      onLayout={(e) => {
+        containerW.current = e.nativeEvent.layout.width;
+        compute();
+      }}
+    >
+      {visibleCount === null &&
+        items.map((item) => (
+          <View
+            key={`m_${item.id}`}
+            style={styles.chipMeasure}
+            onLayout={(e) => {
+              chipW.current[item.id] = e.nativeEvent.layout.width;
+              compute();
+            }}
+          >
+            {renderChip(item)}
+          </View>
+        ))}
+
+      {visibleCount !== null &&
+        items.slice(0, visibleCount).map((item) => (
+          <React.Fragment key={item.id}>{renderChip(item)}</React.Fragment>
+        ))}
+
+      {overflow > 0 && (
+        <View
+          style={[
+            styles.overflowBadge,
+            { backgroundColor: overflowBg, borderColor: overflowBorder },
+          ]}
+        >
+          <Text style={[styles.overflowText, { color: overflowColor }]}>
+            +{overflow}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 }
 
 export function ServiceCard({
@@ -240,10 +331,14 @@ export function ServiceCard({
             <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
               skills
             </Text>
-            <View style={styles.chipsRow}>
-              {skills.map((sk) => (
+            <ChipOverflowRow
+              key={skills.map((s) => s.id).join()}
+              items={skills}
+              overflowBg={accentBg}
+              overflowBorder={accentBorder}
+              overflowColor={ACCENT}
+              renderChip={(sk) => (
                 <View
-                  key={sk.id}
                   style={[
                     styles.chipAccent,
                     { backgroundColor: accentBg, borderColor: accentBorder },
@@ -256,8 +351,8 @@ export function ServiceCard({
                     {sk.name}
                   </Text>
                 </View>
-              ))}
-            </View>
+              )}
+            />
           </View>
         )}
 
@@ -267,10 +362,14 @@ export function ServiceCard({
             <Text style={[styles.sectionLabel, { color: colors.textDim }]}>
               tools
             </Text>
-            <View style={styles.chipsRow}>
-              {tools.map((t) => (
+            <ChipOverflowRow
+              key={tools.map((t) => t.id).join()}
+              items={tools}
+              overflowBg={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
+              overflowBorder={colors.surfaceBorder}
+              overflowColor={colors.textMuted}
+              renderChip={(t) => (
                 <View
-                  key={t.id}
                   style={[
                     styles.chipNeutral,
                     { borderColor: colors.surfaceBorder },
@@ -283,8 +382,8 @@ export function ServiceCard({
                     {t.name}
                   </Text>
                 </View>
-              ))}
-            </View>
+              )}
+            />
           </View>
         )}
       </View>
@@ -432,8 +531,25 @@ const styles = StyleSheet.create({
   },
   chipsRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     gap: 5,
+  },
+  chipMeasure: {
+    opacity: 0,
+    position: "absolute",
+  },
+  overflowBadge: {
+    borderWidth: 1,
+    borderRadius: 100,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: OVERFLOW_BADGE_W,
+  },
+  overflowText: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 11,
   },
   chipAccent: {
     borderWidth: 1,
