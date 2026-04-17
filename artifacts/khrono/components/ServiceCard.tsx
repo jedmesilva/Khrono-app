@@ -217,16 +217,22 @@ export function ServiceCard({
           </View>
         </View>
 
-        {/* Meta: rating · contracts (hidden when new) */}
-        {!service.isNew && (
-          <View style={styles.metaRow}>
-            <Feather name="star" size={11} color={ACCENT} />
-            <Text style={[styles.metaText, { color: colors.textMuted }]}>
-              {service.rating.toFixed(1)} · {service.contracts} contrato
-              {service.contracts !== 1 ? "s" : ""}
-            </Text>
-          </View>
-        )}
+        {/* Meta: rating · contracts */}
+        <View style={styles.metaRow}>
+          {service.rating > 0 && (
+            <>
+              <Feather name="star" size={11} color={ACCENT} />
+              <Text style={[styles.metaText, { color: colors.textMuted }]}>
+                {service.rating.toFixed(1)}
+              </Text>
+              <Text style={[styles.metaDivider, { color: colors.textDim }]}>·</Text>
+            </>
+          )}
+          <Feather name="file-text" size={11} color={colors.textDim} />
+          <Text style={[styles.metaText, { color: colors.textMuted }]}>
+            {service.contracts} contrato{service.contracts !== 1 ? "s" : ""}
+          </Text>
+        </View>
 
         {/* Skills row */}
         {skills.length > 0 && (
@@ -409,6 +415,11 @@ const styles = StyleSheet.create({
   metaText: {
     fontFamily: "DMMono_400Regular",
     fontSize: 11,
+  },
+  metaDivider: {
+    fontFamily: "DMMono_400Regular",
+    fontSize: 11,
+    marginHorizontal: 1,
   },
   section: {
     gap: 6,
