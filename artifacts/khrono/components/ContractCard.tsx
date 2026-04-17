@@ -416,20 +416,37 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
           </View>
         )}
 
-        {!!contract.scheduledFor && !isActive && !isPendingState && (() => {
-          const delta = Math.floor((contract.scheduledFor! - now) / 1000);
-          const late = delta < 0;
-          return (
-            <View style={styles.startsInRow}>
-              <Feather name={late ? "alert-circle" : "clock"} size={10} color={late ? "#C0622A" : "#9B9487"} />
-              <Text style={[styles.startsInText, late && { color: "#C0622A" }]}>
-                {late
-                  ? `Início atrasado há ${formatTime(Math.abs(delta))}`
-                  : `Inicia em ${formatTime(delta)}`}
-              </Text>
-            </View>
-          );
-        })()}
+        {!!contract.scheduledFor && !isActive && !isPendingState
+          ? (() => {
+              const delta = Math.floor((contract.scheduledFor! - now) / 1000);
+              const late = delta < 0;
+              return (
+                <View style={styles.startsInRow}>
+                  <Feather name={late ? "alert-circle" : "clock"} size={10} color={late ? "#C0622A" : "#9B9487"} />
+                  <Text style={[styles.startsInText, late && { color: "#C0622A" }]}>
+                    {late
+                      ? `Início atrasado há ${formatTime(Math.abs(delta))}`
+                      : `Inicia em ${formatTime(delta)}`}
+                  </Text>
+                </View>
+              );
+            })()
+          : (isActive || isPendingEnd) && isTimer && !!totalFixedSecs
+          ? (() => {
+              const overtime = elapsedSecs - totalFixedSecs!;
+              const over = overtime > 0;
+              return (
+                <View style={styles.startsInRow}>
+                  <Feather name={over ? "alert-circle" : "clock"} size={10} color={over ? "#C0622A" : "#9B9487"} />
+                  <Text style={[styles.startsInText, over && { color: "#C0622A" }]}>
+                    {over
+                      ? `Encerramento atrasado há ${formatTime(overtime)}`
+                      : `Encerra em ${formatTime(remainingSecs ?? 0)}`}
+                  </Text>
+                </View>
+              );
+            })()
+          : null}
 
         {/* Elapsed timer */}
         <View style={styles.elapsedBlock}>
