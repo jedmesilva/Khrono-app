@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { CadastroDone } from "@/components/CadastroDone";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
@@ -295,9 +296,7 @@ export default function CadastroServiceScreen() {
   return (
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
+        <BackButton onPress={handleBack} />
         <View style={{ flex: 1 }}>
           {draft.step !== 1 || draft.step1Sub === "new_form" ? (
             <>

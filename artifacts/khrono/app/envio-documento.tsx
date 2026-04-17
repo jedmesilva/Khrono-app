@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { useTheme } from "@/context/ThemeContext";
 import { DocFile, DocType, useDocuments } from "@/context/DocumentsContext";
 
@@ -113,9 +114,7 @@ export default function EnvioDocumentoScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#e06030" />
-          </Pressable>
+          <BackButton />
           <Text style={[styles.headerTitle, { color: colors.text }]}>Enviar documento</Text>
           <View style={{ width: 26 }} />
         </View>

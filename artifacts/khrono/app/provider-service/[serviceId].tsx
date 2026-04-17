@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { AppDialog } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
@@ -181,9 +182,7 @@ export default function ProviderServiceScreen() {
   if (!data) {
     return (
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Service não encontrado.</Text>
       </View>
     );
@@ -195,9 +194,7 @@ export default function ProviderServiceScreen() {
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#e06030" />
-          </Pressable>
+          <BackButton />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <Text style={[styles.serviceTitle, { color: colors.text }]}>{service.name}</Text>

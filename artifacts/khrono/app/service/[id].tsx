@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
@@ -58,9 +59,7 @@ export default function ServiceDetailScreen() {
   if (!service) {
     return (
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Service não encontrado.</Text>
       </View>
     );
@@ -138,9 +137,7 @@ export default function ServiceDetailScreen() {
 
         {/* Header: voltar + nome + verificado + mais opções */}
         <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#e06030" />
-          </Pressable>
+          <BackButton />
           <View style={styles.headerNameWrap}>
             <Text style={[styles.serviceTitle, { color: active ? colors.text : colors.textDim }]} numberOfLines={2}>
               {service.name}

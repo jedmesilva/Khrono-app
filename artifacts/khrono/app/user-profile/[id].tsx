@@ -19,6 +19,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { AppDialog } from "@/components/AppDialog";
 import { formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
@@ -271,9 +272,7 @@ export default function UserProfileScreen() {
   if (!provider) {
     return (
       <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Perfil não encontrado.</Text>
       </View>
     );
@@ -289,9 +288,7 @@ export default function UserProfileScreen() {
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={18} color="#e06030" />
-          </Pressable>
+          <BackButton />
           <Text style={[styles.screenLabel, { color: colors.textMuted }]}>perfil</Text>
         </View>
 

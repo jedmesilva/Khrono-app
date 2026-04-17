@@ -29,6 +29,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { supabase } from "@/lib/supabase";
+import { BackButton } from "@/components/BackButton";
 import { AppButton } from "@/components/AppButton";
 import { AppDialog } from "@/components/AppDialog";
 import { ContractPaymentSheet } from "@/components/ContractPaymentSheet";
@@ -1443,13 +1444,7 @@ export default function ContractDetailScreen() {
         ]}
       >
         <View style={s.header}>
-          <Pressable
-            onPress={() => router.back()}
-            style={GlobalStyles.backButton}
-            hitSlop={12}
-          >
-            <Feather name="arrow-left" size={18} color={colors.iconBack} />
-          </Pressable>
+          <BackButton />
         </View>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text
@@ -1550,13 +1545,7 @@ export default function ContractDetailScreen() {
       {/* ── Header ── */}
       <View style={[s.header, { borderBottomColor: colors.divider }]}>
         <View style={s.headerLeft}>
-          <Pressable
-            onPress={() => router.back()}
-            style={GlobalStyles.backButton}
-            hitSlop={12}
-          >
-            <Feather name="arrow-left" size={16} color={colors.iconBack} />
-          </Pressable>
+          <BackButton />
 
           <Text style={[s.headerId, { color: colors.textMuted }]}>
             {contratoId}

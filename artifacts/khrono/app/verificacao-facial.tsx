@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { useTheme } from "@/context/ThemeContext";
 
 type Step = "guide" | "capturing" | "done";
@@ -30,9 +31,7 @@ export default function VerificacaoFacialScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPadding + 16 }]}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
+        <BackButton />
         <Text style={[styles.headerTitle, { color: colors.text }]}>Reconhecimento facial</Text>
         <View style={{ width: 26 }} />
       </View>

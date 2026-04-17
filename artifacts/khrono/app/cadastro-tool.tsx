@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { CadastroDone } from "@/components/CadastroDone";
 import { ToolListCard } from "@/components/ToolListCard";
 import { useCatalog, type CatalogTool } from "@/context/CatalogContext";
@@ -188,9 +189,7 @@ export default function CadastroToolScreen() {
   return (
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={handleBack}>
-          <Feather name="arrow-left" size={18} color="#e06030" />
-        </Pressable>
+        <BackButton onPress={handleBack} />
         <View style={{ flex: 1 }}>
           {step !== 1 || step1Sub === "new_form" ? (
             <>
