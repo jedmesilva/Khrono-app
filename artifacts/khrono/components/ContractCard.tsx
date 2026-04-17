@@ -197,17 +197,18 @@ function ScheduledContractCard({ contract, onPress }: { contract: Contract; onPr
           </View>
         )}
 
-        <View style={styles.elapsedBlock}>
-          <View style={styles.elapsedLabelRow}>
-            <View style={[styles.liveDot, { backgroundColor: isLate ? "#C0622A" : "#9B9487" }]} />
-            <Text style={[styles.elapsedLabel, { color: isLate ? "#C0622A" : "#9B9487" }]}>
-              {isLate ? "Início atrasado" : "Inicia em"}
+        {isValidDate && (
+          <View style={styles.startsInRow}>
+            <Feather
+              name={isLate ? "alert-circle" : "clock"}
+              size={10}
+              color={isLate ? "#C0622A" : "#9B9487"}
+            />
+            <Text style={[styles.startsInText, isLate && { color: "#C0622A" }]}>
+              {isLate ? `Início atrasado há ${formatTime(scheduledDeltaAbs)}` : `Inicia em ${formatTime(scheduledDeltaAbs)}`}
             </Text>
           </View>
-          <Text style={[styles.elapsedTime, { color: isLate ? "#C0622A" : "#2C2A26" }]}>
-            {isValidDate ? formatTime(scheduledDeltaAbs) : "—"}
-          </Text>
-        </View>
+        )}
       </View>
 
       {/* Footer */}
@@ -302,14 +303,21 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const showAmount = (isTimer && !!totalFixedSecs) || (!isPending && !isAccepted);
   // Mostrar "de R$total" apenas quando contrato fixo em andamento
   const showTotalRef = showAmount && isRunningNow && isTimer && !!totalFixedAmount;
+  const hasScheduled = !!contract.scheduledFor;
   const footerLabel = isActive
-    ? "Iniciado em"
+    ? "Iniciado"
     : isPendingEnd
     ? "Encerramento pendente"
     : isPendingCancel
     ? "Cancelamento pendente"
+    : hasScheduled
+    ? "Programado para"
     : "Aguardando início";
-  const footerValue = contract.startedAt > 0 ? formatAbsoluteTime(contract.startedAt) : null;
+  const footerValue = contract.startedAt > 0
+    ? formatAbsoluteTime(contract.startedAt)
+    : hasScheduled
+    ? formatAbsoluteTime(contract.scheduledFor!)
+    : null;
 
   return (
     <Pressable
@@ -618,7 +626,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    marginBottom: 14,
+    marginBottom: 6,
     marginTop: -8,
   },
   locationText: {
@@ -632,6 +640,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#B8B4AC",
     flexShrink: 0,
+  },
+
+  startsInRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 14,
+  },
+  startsInText: {
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    color: "#9B9487",
+    flex: 1,
   },
 
   // elapsed
