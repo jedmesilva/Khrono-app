@@ -358,8 +358,6 @@ function createStyles(colors: ColorPalette) {
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: colors.inputBg,
-      borderWidth: 1,
-      borderColor: colors.inputBorder,
     },
     closeBtnPressed: {
       backgroundColor: colors.rowPressed,

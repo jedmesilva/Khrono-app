@@ -1,8 +1,8 @@
-import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import { IconButton } from "@/components/IconButton";
 import { useTheme } from "@/context/ThemeContext";
 
 type Props = {
@@ -15,13 +15,11 @@ export function ScreenHeader({ title, onBack, right }: Props) {
   const { colors } = useTheme();
   return (
     <View style={styles.header}>
-      <Pressable
-        style={[styles.backBtn, { backgroundColor: colors.surface }]}
+      <IconButton
+        icon="arrow-left"
         onPress={onBack ?? (() => router.back())}
         hitSlop={8}
-      >
-        <Feather name="arrow-left" size={16} color={colors.iconBack} />
-      </Pressable>
+      />
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
         {title}
       </Text>
@@ -41,14 +39,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 14,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
   },
   title: {
     flex: 1,

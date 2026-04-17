@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { AddCardModal } from "@/components/AddCardModal";
 import { AppDialog } from "@/components/AppDialog";
 import { HistoryCard } from "@/components/HistoryCard";
+import { IconButton } from "@/components/IconButton";
 import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
 import { PageHeader } from "@/components/PageHeader";
@@ -77,9 +78,12 @@ export default function WalletScreen() {
           <Text style={[styles.balanceLabel, { color: colors.textDim }]}>SALDO DISPONÍVEL</Text>
           <View style={styles.balanceRow}>
             <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatBalance(balance)}</Text>
-            <Pressable onPress={() => setShowBalance((v) => !v)} style={[styles.eyeBtn, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]} hitSlop={12}>
-              <Feather name={showBalance ? "eye-off" : "eye"} size={16} color={colors.textSecondary} />
-            </Pressable>
+            <IconButton
+              icon={showBalance ? "eye-off" : "eye"}
+              onPress={() => setShowBalance((v) => !v)}
+              color={colors.textSecondary}
+              hitSlop={12}
+            />
           </View>
           <View style={styles.statsRow}>
             <View style={[styles.statChip, { backgroundColor: "#e0603010" }]}>
@@ -242,7 +246,7 @@ const styles = StyleSheet.create({
   balanceLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" },
   balanceRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   balanceAmount: { fontFamily: "DMSans_500Medium", fontSize: 32, letterSpacing: -0.5, flex: 1 },
-  eyeBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+
   statsRow: { flexDirection: "row", gap: 10 },
   statChip: { flex: 1, borderRadius: 12, padding: 12, gap: 4 },
   statChipLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.5 },

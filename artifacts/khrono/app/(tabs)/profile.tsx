@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { IconButton } from "@/components/IconButton";
 import { PageHeader } from "@/components/PageHeader";
 import { LocationSheet, formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
@@ -59,9 +60,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
-          <Feather name="arrow-left" size={16} color={colors.iconBack} />
-        </Pressable>
+        <IconButton icon="arrow-left" onPress={onBack} />
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
             <Text style={[styles.subTitle, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{skill.name}</Text>
@@ -125,9 +124,7 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
-          <Feather name="arrow-left" size={16} color={colors.iconBack} />
-        </Pressable>
+        <IconButton icon="arrow-left" onPress={onBack} />
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
             <Text style={[styles.subTitle, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{tool.name}</Text>
@@ -186,9 +183,7 @@ function SkillsListView({ skills, colors, onBack, onSelectSkill, onVerifiedPress
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
-          <Feather name="arrow-left" size={16} color={colors.iconBack} />
-        </Pressable>
+        <IconButton icon="arrow-left" onPress={onBack} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
           <Text style={[styles.subMeta, { color: colors.textMuted }]}>
@@ -236,9 +231,7 @@ function ToolsListView({ tools, colors, onBack, onVerifiedPress, onAdd, onSelect
   return (
     <View style={styles.subContainer}>
       <View style={styles.subHeader}>
-        <Pressable onPress={onBack} style={[styles.backBtn, { backgroundColor: colors.surface }]}>
-          <Feather name="arrow-left" size={16} color={colors.iconBack} />
-        </Pressable>
+        <IconButton icon="arrow-left" onPress={onBack} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.subTitle, { color: colors.text }]}>Tools</Text>
           <Text style={[styles.subMeta, { color: colors.textMuted }]}>
@@ -740,7 +733,7 @@ const styles = StyleSheet.create({
 
   subContainer: { flex: 1 },
   subHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+
   subTitle: { fontFamily: "Sora_700Bold", fontSize: 19 },
   subMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
   moreBtn: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
