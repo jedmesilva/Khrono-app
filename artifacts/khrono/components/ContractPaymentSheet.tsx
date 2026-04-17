@@ -3,9 +3,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
-  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import React, {
   useCallback,
@@ -19,14 +17,15 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
 import { supabase } from "@/lib/supabase";
 import { Contract, useContracts } from "@/context/ContractsContext";
-import { useWallet } from "@/context/WalletContext";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { formatCurrency } from "@/lib/format";
+import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -35,7 +34,6 @@ type Step =
   | "report_paid"
   | "report_received"
   | "confirm_payment"
-  | "change_method"
   | "inconsistency";
 
 type UIPaymentState =
@@ -158,8 +156,6 @@ function statusMessage(
 export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { bottom: bottomInset } = useSafeAreaInsets();
-  const { balance: walletBalance } = useWallet();
   const {
     reportCashPaid,
     reportCashReceived,
@@ -175,9 +171,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(
-    contract.paymentMethod ?? "dinheiro"
-  );
+  const [methodSheetVisible, setMethodSheetVisible] = useState(false);
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -435,7 +429,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
       if (contract.paymentStatus === "failed") {
         return (
           <Pressable
-            onPress={() => setStep("change_method")}
+            onPress={() => setMethodSheetVisible(true)}
             style={({ pressed }) => [styles.actionBtn, styles.actionBtnPrimary, { opacity: pressed ? 0.85 : 1 }]}
           >
             <Feather name="credit-card" size={16} color={colors.btnActionText} />
@@ -495,7 +489,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
           </View>
           {isHiring && uiState !== "confirmed" && uiState !== "disputed" && (
             <Pressable
-              onPress={() => { setSelectedMethod(method); setStep("change_method"); }}
+              onPress={() => setMethodSheetVisible(true)}
               style={({ pressed }) => [
                 styles.changeMethodBtn,
                 { borderColor: colors.surfaceBorder, backgroundColor: pressed ? colors.surface : "transparent" },
@@ -564,7 +558,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
         <View style={styles.bigInputWrap}>
           <Text style={[styles.bigInputPrefix, { color: colors.textMuted }]}>R$</Text>
-          <BottomSheetTextInput
+          <TextInput
             style={[styles.bigInput, { color: colors.text }]}
             value={formatAmountInput(amountInput)}
             onChangeText={(t) => setAmountInput(t.replace(/\D/g, ""))}
@@ -633,7 +627,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
         <View style={styles.bigInputWrap}>
           <Text style={[styles.bigInputPrefix, { color: colors.textMuted }]}>R$</Text>
-          <BottomSheetTextInput
+          <TextInput
             style={[styles.bigInput, { color: colors.text }]}
             value={formatAmountInput(amountInput)}
             onChangeText={(t) => setAmountInput(t.replace(/\D/g, ""))}
@@ -684,101 +678,6 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
                     ? `Confirmar — recebi ${formatCurrency(parsed)} (incompleto)`
                     : `Confirmar — recebi ${formatCurrency(parsed)}`
                   : "Informe o valor recebido"}
-              </Text>
-            </>
-          )}
-        </Pressable>
-      </>
-    );
-  }
-
-  // ── Step: Change Method ────────────────────────────────────────────────────────
-
-  function renderChangeMethod() {
-    const currentMethod = contract.paymentMethod ?? "dinheiro";
-    const methods: PaymentMethod[] = ["dinheiro", "pix", "cartao", "saldo"];
-    const methodDescriptions: Record<PaymentMethod, string> = {
-      dinheiro: "Pague em espécie diretamente",
-      pix: "Transferência instantânea via Pix",
-      cartao: "Cartão de crédito ou débito",
-      saldo: `Saldo disponível: ${formatCurrency(walletBalance)}`,
-    };
-
-    return (
-      <>
-        <Pressable onPress={() => setStep("overview")} style={styles.backBtn}>
-          <Feather name="arrow-left" size={16} color={colors.textSecondary} />
-          <Text style={[styles.backText, { color: colors.textSecondary }]}>Voltar</Text>
-        </Pressable>
-
-        <View style={styles.stepTitleBlock}>
-          <Text style={[styles.stepTitle, { color: colors.text }]}>Alterar pagamento</Text>
-          <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
-            Selecione como deseja pagar {formatCurrency(contractAmount)}
-          </Text>
-        </View>
-
-        <View style={{ gap: 8, marginTop: 8 }}>
-          {methods.map((m) => {
-            const isCurrent = m === currentMethod;
-            const isSelected = m === selectedMethod;
-            const isDisabledSaldo = m === "saldo" && walletBalance < contractAmount;
-            return (
-              <Pressable
-                key={m}
-                onPress={() => {
-                  if (isDisabledSaldo) return;
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSelectedMethod(m);
-                }}
-                style={[
-                  styles.methodOption,
-                  {
-                    borderColor: isSelected ? colors.accent + "50" : colors.surfaceBorder,
-                    backgroundColor: isSelected ? colors.accent + "08" : colors.card,
-                    opacity: isDisabledSaldo ? 0.4 : 1,
-                  },
-                ]}
-              >
-                <View style={[styles.methodOptionIcon, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-                  <Feather name={methodIcon(m)} size={16} color={isSelected ? colors.accent : colors.textMuted} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.methodOptionLabel, isSelected && { color: colors.accent }]}>
-                    {methodLabel(m)}
-                  </Text>
-                  <Text style={[styles.methodOptionSub, { color: colors.textMuted }]}>
-                    {methodDescriptions[m]}
-                    {isCurrent && !isSelected && " · atual"}
-                  </Text>
-                </View>
-                <View style={[styles.radio, isSelected && styles.radioActive]}>
-                  {isSelected && <View style={styles.radioInner} />}
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Pressable
-          onPress={!loading && selectedMethod !== currentMethod ? () => handleChangeMethod(selectedMethod) : undefined}
-          style={({ pressed }) => [
-            styles.actionBtn,
-            selectedMethod !== currentMethod ? styles.actionBtnPrimary : styles.actionBtnDisabled,
-            { opacity: pressed && selectedMethod !== currentMethod ? 0.85 : 1, marginTop: 20 },
-          ]}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color={colors.btnActionText} />
-          ) : (
-            <>
-              <Feather name="check" size={16} color={selectedMethod !== currentMethod ? colors.btnActionText : colors.textDim} />
-              <Text style={[styles.actionBtnText, selectedMethod === currentMethod && { color: colors.textDim }]}>
-                {selectedMethod !== currentMethod
-                  ? selectedMethod !== "dinheiro"
-                    ? `Pagar com ${methodLabel(selectedMethod)}`
-                    : `Mudar para ${methodLabel(selectedMethod)}`
-                  : "Selecione um método diferente"}
               </Text>
             </>
           )}
@@ -883,36 +782,49 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
     switch (step) {
       case "report_paid": return renderReportPaid();
       case "report_received": return renderReportReceived();
-      case "change_method": return renderChangeMethod();
       case "inconsistency": return renderInconsistency();
       default: return renderOverview();
     }
   }
 
   return (
-    <BottomSheetModal
-      ref={ref}
-      snapPoints={snapPoints}
-      backdropComponent={renderBackdrop}
-      backgroundStyle={sheetBgStyle}
-      handleIndicatorStyle={handleStyle}
-      onDismiss={onClose}
-      enableDynamicSizing={true}
-      keyboardBehavior="interactive"
-      keyboardBlurBehavior="restore"
-      android_keyboardInputMode="adjustResize"
-    >
-      <BottomSheetScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: Math.max(bottomInset, 24) },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+    <>
+      <BottomSheetModal
+        ref={ref}
+        snapPoints={snapPoints}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={sheetBgStyle}
+        handleIndicatorStyle={handleStyle}
+        onDismiss={onClose}
+        enableDynamicSizing={true}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
-        {renderStep()}
-      </BottomSheetScrollView>
-    </BottomSheetModal>
+        <BottomSheetScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: 24 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {renderStep()}
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+
+      <PaymentSheet
+        visible={methodSheetVisible}
+        onClose={() => setMethodSheetVisible(false)}
+        onConfirm={(newMethod) => {
+          setMethodSheetVisible(false);
+          handleChangeMethod(newMethod);
+        }}
+        initialMethod={contract.paymentMethod ?? "dinheiro"}
+        initialCardId={null}
+        amount={contractAmount}
+        recipientName={personName}
+        showPixStep={false}
+        hideSaldo={false}
+      />
+    </>
   );
 }
 
@@ -1169,50 +1081,6 @@ function createStyles(colors: ColorPalette) {
       marginBottom: 1,
     },
     toggleSub: {
-      fontFamily: "DMSans_400Regular",
-      fontSize: 11,
-    },
-    radio: {
-      width: 18,
-      height: 18,
-      borderRadius: 9,
-      borderWidth: 1.5,
-      borderColor: colors.textDim,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    radioActive: {
-      borderColor: colors.accent,
-    },
-    radioInner: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: colors.accent,
-    },
-    methodOption: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 14,
-      padding: 14,
-      borderRadius: 14,
-      borderWidth: 1,
-    },
-    methodOptionIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      borderWidth: 1,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    methodOptionLabel: {
-      fontFamily: "Sora_600SemiBold",
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginBottom: 2,
-    },
-    methodOptionSub: {
       fontFamily: "DMSans_400Regular",
       fontSize: 11,
     },

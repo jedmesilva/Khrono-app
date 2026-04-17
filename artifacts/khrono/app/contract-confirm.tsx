@@ -19,7 +19,6 @@ import { useWallet } from "@/context/WalletContext";
 import { useLocation } from "@/context/LocationContext";
 import { ScheduleSheet } from "@/components/ScheduleSheet";
 import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
-import { PixPaymentModal } from "@/components/PixPaymentModal";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ServiceSelectionSheet } from "@/components/ServiceSelectionSheet";
 import { formatCurrency, formatRate } from "@/lib/format";
@@ -565,14 +564,18 @@ export default function ContractConfirmScreen() {
         }}
       />
 
-      {/* ── PIX PAYMENT MODAL ── */}
-      <PixPaymentModal
+      {/* ── PIX STEP (after contract created) ── */}
+      <PaymentSheet
         visible={pixPaymentAberta}
         onClose={finishPixFlow}
         onConfirm={finishPixFlow}
-        providerName={provider.name}
+        showPixStep={true}
+        initialMethod="pix"
+        initialCardId={null}
+        recipientName={provider.name}
         amount={tipoContrato === "definido" ? Number(valorTotal ?? 0) : valorHora}
-        tipoContrato={tipoContrato}
+        contractType={tipoContrato}
+        hideSaldo={true}
       />
 
       {/* ── SCHEDULE SHEET ── */}
