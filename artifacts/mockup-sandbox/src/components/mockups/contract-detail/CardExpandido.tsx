@@ -1,233 +1,167 @@
 import "./_group.css";
 
 const ACCENT = "#e06030";
-const GREEN = "#00e5a0";
+const GREEN = "#18a06b";
 
-function GridSVG() {
+function GridSVG({ opacity }: { opacity: number }) {
   return (
-    <svg
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-      viewBox="0 0 390 168"
-      preserveAspectRatio="none"
-    >
-      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-        <line key={`v${i}`} x1={i * 56} y1="0" x2={i * 56} y2="168" stroke={ACCENT} strokeWidth="1" opacity={0.05} />
+    <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} viewBox="0 0 390 200" preserveAspectRatio="none">
+      {[0,1,2,3,4,5,6,7].map((i) => (
+        <line key={`v${i}`} x1={i*56} y1="0" x2={i*56} y2="200" stroke={ACCENT} strokeWidth="1" opacity={opacity}/>
       ))}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <line key={`h${i}`} x1="0" y1={i * 42} x2="390" y2={i * 42} stroke={ACCENT} strokeWidth="1" opacity={0.05} />
+      {[0,1,2,3,4].map((i) => (
+        <line key={`h${i}`} x1="0" y1={i*50} x2="390" y2={i*50} stroke={ACCENT} strokeWidth="1" opacity={opacity}/>
       ))}
     </svg>
   );
 }
 
-function Chip({ label, accent }: { label: string; accent?: boolean }) {
+function Chip({ label, accent, green }: { label: string; accent?: boolean; green?: boolean }) {
+  const bg = accent ? "rgba(224,96,48,0.08)" : green ? "rgba(24,160,107,0.08)" : "#f4f0ed";
+  const border = accent ? "rgba(224,96,48,0.20)" : green ? "rgba(24,160,107,0.20)" : "#e8e2dc";
+  const color = accent ? ACCENT : green ? GREEN : "#9a8f87";
   return (
-    <span style={{
-      fontSize: 11, fontFamily: "DM Sans", fontWeight: 600,
-      padding: "4px 10px", borderRadius: 100,
-      border: `1px solid ${accent ? "rgba(224,96,48,0.22)" : "rgba(0,0,0,0.10)"}`,
-      backgroundColor: accent ? "rgba(224,96,48,0.07)" : "rgba(0,0,0,0.04)",
-      color: accent ? ACCENT : "#7a7060",
-      whiteSpace: "nowrap",
-    }}>
+    <span style={{ fontSize:11, fontFamily:"DM Sans", fontWeight:600, padding:"4px 10px", borderRadius:100, border:`1px solid ${border}`, backgroundColor:bg, color, whiteSpace:"nowrap" }}>
       {label}
     </span>
   );
 }
 
-function DetailRow({
-  icon, title, sub, action, last,
-}: {
-  icon: string; title: string; sub?: string; action?: React.ReactNode; last?: boolean;
-}) {
+function StarRow({ rating }: { rating: number }) {
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 12,
-      paddingBottom: last ? 0 : 14,
-      borderBottom: last ? "none" : "1px solid rgba(0,0,0,0.07)",
-    }}>
-      <div style={{
-        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-        backgroundColor: "#F4EDE6",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 15,
-      }}>
-        {icon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontFamily: "DM Sans", fontWeight: 500, color: "#2C2A26", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</div>
-        {sub && <div style={{ fontSize: 11, fontFamily: "DM Mono", color: "#9B9487", marginTop: 2 }}>{sub}</div>}
-      </div>
-      {action}
-    </div>
+    <span style={{ display:"flex", gap:2 }}>
+      {[1,2,3,4,5].map((s) => (
+        <span key={s} style={{ fontSize:11, color:ACCENT, opacity: s <= rating ? 1 : 0.2 }}>★</span>
+      ))}
+    </span>
   );
 }
 
 export function CardExpandido() {
   return (
-    <div style={{
-      width: 390, minHeight: 844,
-      backgroundColor: "#FDF3EE",
-      fontFamily: "DM Sans, sans-serif",
-      overflow: "hidden",
-      display: "flex", flexDirection: "column",
-    }}>
+    <div style={{ width:390, minHeight:844, backgroundColor:"#faf7f5", fontFamily:"DM Sans, sans-serif", display:"flex", flexDirection:"column", overflow:"hidden" }}>
 
-      {/* ── Thumbnail — igual ao ServiceCard ───────────────── */}
-      <div style={{
-        position: "relative", height: 168, overflow: "hidden", flexShrink: 0,
-        background: "linear-gradient(135deg, #f0e9e3 0%, #f8f5f2 100%)",
-      }}>
-        <GridSVG />
+      {/* ── Thumbnail hero — variante clara (peach) ── */}
+      <div style={{ position:"relative", height:200, overflow:"hidden", flexShrink:0, background:"linear-gradient(135deg, #f0e9e3 0%, #f8f5f2 100%)" }}>
+        <GridSVG opacity={0.06}/>
 
-        {/* Decorative large text */}
-        <div style={{
-          position: "absolute", bottom: -20, left: 12,
-          fontFamily: "Sora, sans-serif", fontWeight: 700,
-          fontSize: 76, letterSpacing: -3, lineHeight: 1,
-          color: ACCENT, opacity: 0.06,
-          userSelect: "none",
-        }}>
+        {/* Texto decorativo gigante */}
+        <div style={{ position:"absolute", bottom:-18, left:14, fontFamily:"Sora, sans-serif", fontWeight:700, fontSize:80, letterSpacing:-3, lineHeight:1, color:ACCENT, opacity:0.10, userSelect:"none" }}>
           ELÉTR
         </div>
 
-        {/* Status badge — top-left */}
-        <div style={{
-          position: "absolute", top: 10, left: 10,
-          display: "flex", alignItems: "center", gap: 5,
-          border: "1px solid rgba(0,229,160,0.30)",
-          backgroundColor: "rgba(0,229,160,0.10)",
-          borderRadius: 100, padding: "4px 9px",
-        }}>
-          <div style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: GREEN }} />
-          <span style={{ fontFamily: "DM Sans", fontSize: 9, letterSpacing: "0.6px", textTransform: "uppercase", color: GREEN }}>ativo</span>
+        {/* Badge de status */}
+        <div style={{ position:"absolute", top:10, left:14, display:"flex", alignItems:"center", gap:5, border:"1px solid rgba(0,184,122,0.40)", backgroundColor:"rgba(0,184,122,0.10)", borderRadius:100, padding:"4px 9px" }}>
+          <div style={{ width:5, height:5, borderRadius:3, backgroundColor:"#00b87a" }}/>
+          <span style={{ fontFamily:"DM Sans", fontSize:9, letterSpacing:"0.6px", textTransform:"uppercase", color:"#00b87a" }}>ativo</span>
         </div>
 
-        {/* Contract code — top-right */}
-        <div style={{
-          position: "absolute", top: 10, right: 10,
-          border: "1px solid rgba(192,98,42,0.18)",
-          backgroundColor: "rgba(192,98,42,0.08)",
-          borderRadius: 100, padding: "4px 10px",
-        }}>
-          <span style={{ fontFamily: "DM Mono", fontSize: 10, color: "#C0622A", letterSpacing: "0.4px" }}>KRN-4F3A8C21</span>
+        {/* Badge verificado */}
+        <div style={{ position:"absolute", top:10, right:14, width:26, height:26, borderRadius:13, backgroundColor:"rgba(255,255,255,0.60)", border:"1px solid rgba(24,160,107,0.20)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <span style={{ fontSize:12, color:GREEN }}>✓</span>
+        </div>
+
+        {/* Título + preço no bottom do hero */}
+        <div style={{ position:"absolute", bottom:14, left:14, right:14, display:"flex", alignItems:"flex-end", justifyContent:"space-between" }}>
+          <span style={{ fontFamily:"Sora, sans-serif", fontWeight:700, fontSize:20, color:"#1c1916", letterSpacing:-0.5, lineHeight:1.2, flex:1, marginRight:12 }}>
+            Instalação Elétrica
+          </span>
+          <div style={{ flexShrink:0, textAlign:"right" }}>
+            <div style={{ fontFamily:"Sora, sans-serif", fontWeight:700, fontSize:24, color:ACCENT, lineHeight:1 }}>R$50</div>
+            <div style={{ fontFamily:"DM Sans", fontSize:10, color:"#9a8f87", marginTop:2 }}>/hora</div>
+          </div>
         </div>
       </div>
 
-      {/* ── Card body ──────────────────────────────────────── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      {/* ── Body ─────────────────────────────────────────── */}
+      <div style={{ flex:1, padding:"16px 16px", display:"flex", flexDirection:"column", gap:14 }}>
 
-        {/* Counterparty + role header */}
-        <div style={{
-          padding: "14px 16px 12px",
-          borderBottom: "1px solid rgba(0,0,0,0.07)",
-          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-        }}>
-          <div>
-            <span style={{ fontFamily: "DM Sans", fontSize: 11, color: "#9B7060" }}>Você prestou serviço para</span>
-            <div style={{ fontFamily: "Sora, sans-serif", fontWeight: 700, fontSize: 20, color: "#2C2A26", letterSpacing: -0.4, lineHeight: 1.2, marginTop: 2 }}>
-              Mariana Souza
+        {/* Meta: rating · contratos */}
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <StarRow rating={5}/>
+          <span style={{ fontFamily:"DM Mono", fontSize:11, color:"#6b5e56" }}>4.9</span>
+          <span style={{ fontFamily:"DM Mono", fontSize:11, color:"#c4b8b0" }}>·</span>
+          <span style={{ fontSize:12, color:"#c4b8b0" }}>📄</span>
+          <span style={{ fontFamily:"DM Mono", fontSize:11, color:"#6b5e56" }}>32 contratos</span>
+        </div>
+
+        {/* Mini card do prestador */}
+        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", borderRadius:14, border:"1px solid #ede6e0", backgroundColor:"#fff", cursor:"pointer" }}>
+          <div style={{ width:36, height:36, borderRadius:18, backgroundColor:"rgba(224,96,48,0.09)", border:"1px solid rgba(224,96,48,0.20)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <span style={{ fontFamily:"Sora, sans-serif", fontWeight:700, fontSize:13, color:ACCENT }}>JP</span>
+          </div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"Sora, sans-serif", fontWeight:600, fontSize:13, color:"#1c1916" }}>João Pereira</div>
+            <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:2 }}>
+              <span style={{ color:ACCENT, fontSize:9 }}>★</span>
+              <span style={{ fontFamily:"DM Sans", fontSize:10, color:"#9a8f87" }}>4.8 · 127 avaliações</span>
             </div>
           </div>
-          {/* Value block */}
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontFamily: "Sora, sans-serif", fontWeight: 700, fontSize: 22, color: "#C0622A", lineHeight: 1 }}>R$ 76,00</div>
-            <div style={{ fontFamily: "DM Sans", fontSize: 10, color: "#9B9487", marginTop: 3 }}>a receber</div>
-          </div>
+          <span style={{ color:"#c4b8b0", fontSize:13 }}>›</span>
         </div>
 
-        {/* Timer block */}
-        <div style={{
-          margin: "0 16px",
-          padding: "16px 0",
-          borderBottom: "1px solid rgba(0,0,0,0.07)",
-          display: "flex", flexDirection: "column", gap: 8,
-        }}>
-          <span style={{ fontFamily: "DM Mono", fontSize: 9, letterSpacing: "0.8px", textTransform: "uppercase", color: "#9B9487" }}>tempo decorrido</span>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: "DM Mono", fontSize: 36, color: "#2C2A26", lineHeight: 1, letterSpacing: -1 }}>01:32:45</span>
-            <span style={{ fontFamily: "DM Sans", fontSize: 12, color: "#9B9487", paddingBottom: 4 }}>de 2h total</span>
-          </div>
-          {/* Progress bar */}
-          <div style={{
-            height: 5, borderRadius: 3, backgroundColor: "#F4D0BC", overflow: "hidden",
-          }}>
-            <div style={{ height: "100%", width: "77%", borderRadius: 3, backgroundColor: ACCENT }} />
-          </div>
-          <span style={{ fontFamily: "DM Sans", fontSize: 11, color: "#9B7060" }}>28 min restantes</span>
-        </div>
+        {/* Divisor */}
+        <div style={{ height:1, backgroundColor:"#ede6e0" }}/>
 
-        {/* Detail rows */}
-        <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <DetailRow
-            icon="🔧"
-            title="Instalação Elétrica"
-            sub="Eletricidade · R$50/h · ★ 4.8"
-          />
-          <DetailRow
-            icon="📍"
-            title="Av. Paulista, 1000 · SP"
-            sub="1,2 km · Endereço do serviço"
-            action={
-              <div style={{
-                display: "flex", alignItems: "center", gap: 4,
-                padding: "6px 10px", borderRadius: 20,
-                border: `1px solid ${ACCENT}40`,
-                backgroundColor: `${ACCENT}10`,
-                cursor: "pointer", flexShrink: 0,
-              }}>
-                <span style={{ fontSize: 11, color: ACCENT, fontFamily: "DM Sans", fontWeight: 500 }}>↗ Navegar</span>
-              </div>
-            }
-          />
-          <DetailRow
-            icon="⚡"
-            title="Pix"
-            sub="Na conclusão do serviço"
-            last
-          />
-        </div>
-
-        {/* Skills + Tools */}
-        <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontFamily: "DM Mono", fontSize: 9, letterSpacing: "0.8px", textTransform: "uppercase", color: "#9B9487" }}>skills</span>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-              <Chip label="Elétrica" accent />
-              <Chip label="Enfiação" accent />
-              <Chip label="Baixa tensão" accent />
-              <span style={{ fontSize: 11, fontFamily: "DM Sans", fontWeight: 600, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(224,96,48,0.22)", backgroundColor: "rgba(224,96,48,0.07)", color: ACCENT }}>+1</span>
+        {/* Skills */}
+        <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:8, backgroundColor:"rgba(224,96,48,0.08)", border:"1px solid rgba(224,96,48,0.18)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ fontSize:12, color:ACCENT }}>★</span>
             </div>
+            <span style={{ fontFamily:"DM Mono", fontSize:9, letterSpacing:"0.8px", textTransform:"uppercase", color:"#b3a9a1" }}>Skills</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontFamily: "DM Mono", fontSize: 9, letterSpacing: "0.8px", textTransform: "uppercase", color: "#9B9487" }}>tools</span>
-            <div style={{ display: "flex", gap: 5 }}>
-              <Chip label="Furadeira" />
-              <Chip label="Nível a Laser" />
-            </div>
+          <div style={{ display:"flex", gap:5, flexWrap:"wrap", paddingLeft:36 }}>
+            <Chip label="Elétrica" accent/>
+            <Chip label="Enfiação" accent/>
+            <Chip label="Baixa tensão" accent/>
+            <Chip label="Aterramento" accent/>
+            <span style={{ fontSize:11, fontFamily:"DM Sans", fontWeight:600, padding:"4px 10px", borderRadius:100, border:"1px solid rgba(224,96,48,0.20)", backgroundColor:"rgba(224,96,48,0.08)", color:ACCENT }}>+1</span>
           </div>
         </div>
 
-        {/* CTA */}
-        <div style={{ padding: "16px", marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
-          <button style={{
-            width: "100%", padding: "14px", borderRadius: 14,
-            backgroundColor: ACCENT, border: "none", cursor: "pointer",
-            fontFamily: "Sora, sans-serif", fontWeight: 700, fontSize: 15,
-            color: "#fff", letterSpacing: -0.2,
-          }}>
-            Encerrar serviço
+        {/* Tools */}
+        <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:8, backgroundColor:"rgba(24,160,107,0.08)", border:"1px solid rgba(24,160,107,0.18)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ fontSize:12, color:GREEN }}>🔑</span>
+            </div>
+            <span style={{ fontFamily:"DM Mono", fontSize:9, letterSpacing:"0.8px", textTransform:"uppercase", color:"#b3a9a1" }}>Tools</span>
+          </div>
+          <div style={{ display:"flex", gap:5, flexWrap:"wrap", paddingLeft:36 }}>
+            <Chip label="Furadeira"/>
+            <Chip label="Nível a Laser"/>
+            <Chip label="Parafusadeira"/>
+          </div>
+        </div>
+
+        {/* Divisor */}
+        <div style={{ height:1, backgroundColor:"#ede6e0" }}/>
+
+        {/* Performance grid */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
+          {[
+            { value:"4.9", label:"NOTA" },
+            { value:"48", label:"AVALIAÇÕES" },
+            { value:"32", label:"CONTRATOS" },
+          ].map((item) => (
+            <div key={item.label} style={{ padding:"14px 12px", borderRadius:16, border:"1px solid #ede6e0", backgroundColor:"#fff", display:"flex", flexDirection:"column", gap:4 }}>
+              <span style={{ fontFamily:"DM Sans", fontWeight:500, fontSize:22, color:"#1c1916", lineHeight:1 }}>{item.value}</span>
+              <span style={{ fontFamily:"DM Mono", fontSize:8, letterSpacing:"0.8px", textTransform:"uppercase", color:"#b3a9a1" }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTAs */}
+        <div style={{ marginTop:"auto", paddingTop:8, display:"flex", flexDirection:"column", gap:8 }}>
+          <button style={{ width:"100%", padding:"14px", borderRadius:14, backgroundColor:ACCENT, border:"none", cursor:"pointer", fontFamily:"Sora, sans-serif", fontWeight:700, fontSize:15, color:"#fff", letterSpacing:-0.2 }}>
+            Contratar serviço
           </button>
-          <button style={{
-            width: "100%", padding: "12px", borderRadius: 14,
-            backgroundColor: "transparent",
-            border: "1px solid rgba(192,98,42,0.20)", cursor: "pointer",
-            fontFamily: "DM Sans", fontWeight: 500, fontSize: 14,
-            color: "#9B7060",
-          }}>
-            Reportar problema
+          <button style={{ width:"100%", padding:"13px", borderRadius:14, backgroundColor:"transparent", border:"1px solid #ede6e0", cursor:"pointer", fontFamily:"DM Sans", fontWeight:500, fontSize:14, color:"#6b5e56" }}>
+            Ver perfil completo
           </button>
         </div>
+
       </div>
     </div>
   );
