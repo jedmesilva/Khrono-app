@@ -1,8 +1,7 @@
-import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { IconButton } from "@/components/IconButton";
+import { BackButton } from "@/components/BackButton";
 import { useTheme } from "@/context/ThemeContext";
 
 type Props = {
@@ -15,11 +14,7 @@ export function ScreenHeader({ title, onBack, right }: Props) {
   const { colors } = useTheme();
   return (
     <View style={styles.header}>
-      <IconButton
-        icon="arrow-left"
-        onPress={onBack ?? (() => router.back())}
-        hitSlop={8}
-      />
+      <BackButton onPress={onBack} />
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
         {title}
       </Text>
