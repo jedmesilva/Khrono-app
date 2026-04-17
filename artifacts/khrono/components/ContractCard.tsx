@@ -241,11 +241,18 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   const isAccepted = contract.status === "accepted";
   const isPendingEnd = contract.status === "pending_end";
   const isPendingCancel = contract.status === "pending_cancel";
-  const isScheduled = !!contract.scheduledFor && !isActive && !isPending && !isPendingEnd && !isPendingCancel;
 
   const [now, setNow] = useState(Date.now());
   const [loadingAction, setLoadingAction] = useState<"accept" | "begin" | null>(null);
   const isActionLoading = loadingAction !== null;
+
+  // Agendado apenas se o horário ainda não chegou — puramente baseado no tempo
+  const isScheduled =
+    !!contract.scheduledFor &&
+    contract.scheduledFor > now &&
+    !isActive &&
+    !isPendingEnd &&
+    !isPendingCancel;
 
   const handleAcceptPress = useCallback(async () => {
     if (!onAccept || isActionLoading) return;
@@ -270,10 +277,17 @@ export function ContractCard({ contract, onAccept, onBegin, onPress }: Props) {
   }, [onBegin, contract.id, isActionLoading]);
 
   useEffect(() => {
-    if (isScheduled || (!isActive && !isPendingEnd && !isPendingCancel)) return;
+    // Precisa de tick: contrato ativo/pendente de encerramento/cancelamento,
+    // ou agendado no futuro (para transitar para card normal quando o horário chegar)
+    const needsTick =
+      isActive ||
+      isPendingEnd ||
+      isPendingCancel ||
+      (!!contract.scheduledFor && contract.scheduledFor > Date.now());
+    if (!needsTick) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [isScheduled, isActive, isPendingEnd, isPendingCancel]);
+  }, [isActive, isPendingEnd, isPendingCancel, contract.scheduledFor]);
 
   if (isScheduled) {
     return <ScheduledContractCard contract={contract} onPress={onPress} />;
