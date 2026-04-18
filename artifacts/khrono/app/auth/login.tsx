@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -88,9 +89,9 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Feather name="arrow-left" size={20} color={colors.textSecondary} />
-          </Pressable>
+          <View style={styles.backBtn}>
+            <BackButton />
+          </View>
 
           <View style={styles.content}>
             <View style={styles.iconWrap}>
@@ -158,8 +159,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   backBtn: {
-    width: 40, height: 40,
-    alignItems: "center", justifyContent: "center",
     marginLeft: 16, marginBottom: 8,
   },
   content: { flex: 1, paddingHorizontal: 28, paddingTop: 20, paddingBottom: 40 },

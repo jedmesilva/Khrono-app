@@ -16,6 +16,8 @@ import Svg, { Line } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { BackButton } from "@/components/BackButton";
+import { IconButton } from "@/components/IconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
 import { useCatalog } from "@/context/CatalogContext";
@@ -178,9 +180,9 @@ export default function ServiceDetailScreen() {
   if (!service) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
-        <Pressable onPress={() => router.back()} style={{ position: "absolute", top: topPadding + 16, left: 16 }}>
-          <Feather name="arrow-left" size={20} color={colors.iconBack} />
-        </Pressable>
+        <View style={{ position: "absolute", top: topPadding + 16, left: 16 }}>
+          <BackButton />
+        </View>
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Serviço não encontrado.</Text>
       </View>
     );
@@ -299,22 +301,26 @@ export default function ServiceDetailScreen() {
         </Text>
 
         {/* Back button */}
-        <Pressable
-          style={[styles.heroBtn, { top: topPadding + 12, left: 14, backgroundColor: isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
+        <IconButton
+          icon="arrow-left"
           onPress={() => router.back()}
+          iconSize={18}
+          backgroundColor={isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)"}
+          color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"}
           hitSlop={10}
-        >
-          <Feather name="arrow-left" size={18} color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"} />
-        </Pressable>
+          style={{ position: "absolute", top: topPadding + 12, left: 14, borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)", zIndex: 10 }}
+        />
 
         {/* More options button */}
-        <Pressable
-          style={[styles.heroBtn, { top: topPadding + 12, right: 14, backgroundColor: isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)", borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)" }]}
+        <IconButton
+          icon="more-horizontal"
           onPress={handleMoreOptions}
+          iconSize={18}
+          backgroundColor={isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)"}
+          color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"}
           hitSlop={10}
-        >
-          <Feather name="more-horizontal" size={18} color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"} />
-        </Pressable>
+          style={{ position: "absolute", top: topPadding + 12, right: 14, borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)", zIndex: 10 }}
+        />
 
         {/* Status badge */}
         <View style={[
