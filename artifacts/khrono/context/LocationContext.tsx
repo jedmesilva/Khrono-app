@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { AppState, AppStateStatus } from "react-native";
 import * as ExpoLocation from "expo-location";
 import { supabase } from "@/lib/supabase";
 import type { LocationMode } from "@/constants/profile-data";
@@ -30,7 +31,9 @@ type LocationContextType = {
   saveLocation: (
     mode: LocationMode,
     address: string,
-    radiusMeters: number
+    radiusMeters: number,
+    lat?: number,
+    lng?: number
   ) => Promise<void>;
   refreshGps: () => Promise<void>;
 };
@@ -64,6 +67,7 @@ function rowToLocation(row: any): ServiceLocation {
 }
 
 const GPS_THROTTLE_MS = 5 * 60 * 1000;
+const GPS_POLL_INTERVAL_MS = 5 * 60 * 1000;
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useState<ServiceLocation>(DEFAULT_LOCATION);
@@ -174,8 +178,30 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [loadLocation, refreshGps]);
 
+  useEffect(() => {
+    if (location.mode !== "realtime") return;
+
+    const poll = setInterval(() => {
+      if (AppState.currentState === "active") {
+        refreshGps();
+      }
+    }, GPS_POLL_INTERVAL_MS);
+
+    const handleAppStateChange = (nextState: AppStateStatus) => {
+      if (nextState === "active" && location.mode === "realtime") {
+        refreshGps();
+      }
+    };
+    const appStateSub = AppState.addEventListener("change", handleAppStateChange);
+
+    return () => {
+      clearInterval(poll);
+      appStateSub.remove();
+    };
+  }, [location.mode, refreshGps]);
+
   const saveLocation = useCallback(
-    async (mode: LocationMode, address: string, radiusMeters: number) => {
+    async (mode: LocationMode, address: string, radiusMeters: number, lat?: number, lng?: number) => {
       if (!profileIdRef.current) return;
 
       const payload: Record<string, any> = {
@@ -186,6 +212,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
       if (mode === "fixed") {
         payload.fixed_address = address;
+        if (lat != null) payload.fixed_lat = lat;
+        if (lng != null) payload.fixed_lng = lng;
       }
 
       const { error } = await supabase
@@ -198,6 +226,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           mode,
           serviceRadiusMeters: radiusMeters,
           fixedAddress: mode === "fixed" ? address : prev.fixedAddress,
+          fixedLat: mode === "fixed" && lat != null ? lat : prev.fixedLat,
+          fixedLng: mode === "fixed" && lng != null ? lng : prev.fixedLng,
         }));
 
         if (mode === "realtime") {

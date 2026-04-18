@@ -284,7 +284,7 @@ type Props = {
   mode: LocationMode;
   fixedAddress: string;
   serviceRadius: number;
-  onSave: (mode: LocationMode, address: string, radius: number) => void;
+  onSave: (mode: LocationMode, address: string, radius: number, lat?: number, lng?: number) => void;
 };
 
 export function LocationSheet({
@@ -302,6 +302,8 @@ export function LocationSheet({
 
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
+  const [addressLat, setAddressLat] = useState<number | undefined>(undefined);
+  const [addressLng, setAddressLng] = useState<number | undefined>(undefined);
   const [radius, setRadius] = useState(serviceRadius);
   const [saved, setSaved] = useState(false);
   const [addressSheetOpen, setAddressSheetOpen] = useState(false);
@@ -312,6 +314,8 @@ export function LocationSheet({
     if (visible) {
       setSelectedMode(mode);
       setAddress(fixedAddress);
+      setAddressLat(undefined);
+      setAddressLng(undefined);
       setRadius(serviceRadius);
       setSaved(false);
       ref.current?.present();
@@ -322,6 +326,8 @@ export function LocationSheet({
 
   const handleAddressSelect = useCallback((result: AddressResult) => {
     setAddress(result.label);
+    setAddressLat(result.lat);
+    setAddressLng(result.lng);
   }, []);
 
   const renderBackdrop = useCallback(
@@ -347,7 +353,11 @@ export function LocationSheet({
   const handleSave = () => {
     if (!canSave) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSave(selectedMode, selectedMode === "fixed" ? address : fixedAddress, radius);
+    if (selectedMode === "fixed") {
+      onSave(selectedMode, address, radius, addressLat, addressLng);
+    } else {
+      onSave(selectedMode, fixedAddress, radius);
+    }
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
