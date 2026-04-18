@@ -113,8 +113,6 @@ export default function DefinicoesScreen() {
   const sectionStyle = useMemo(
     () => ({
       backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.cardBorder,
       borderRadius: 18,
       overflow: "hidden" as const,
       marginBottom: 20,
