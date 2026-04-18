@@ -24,7 +24,6 @@ import { AppDialog } from "@/components/AppDialog";
 import { formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool, type Service } from "@/constants/profile-data";
 import { supabase } from "@/lib/supabase";
@@ -372,63 +371,35 @@ export default function UserProfileScreen() {
           </>
         )}
 
-        {provider.skills.length > 0 && (
-          <>
-            <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>skills</Text>
-            <View style={{ gap: 10, marginBottom: 24 }}>
-              {provider.skills.map((skill) => (
-                <View key={skill.id} style={[styles.skillCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-                  <View style={styles.skillHeader}>
-                    <View style={styles.skillIconWrap}>
-                      <Feather name="star" size={13} color="#e06030" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <View style={styles.skillNameRow}>
-                        <Text style={styles.skillName}>{skill.name}</Text>
-                        {skill.verified && (
-                          <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
-                        )}
-                      </View>
-                      {skill.type ? (
-                        <Text style={[styles.skillType, { color: colors.textMuted }]}>{skill.type}</Text>
-                      ) : null}
-                      {skill.description ? (
-                        <Text style={[styles.skillDesc, { color: colors.textSecondary }]}>{skill.description}</Text>
-                      ) : null}
-                    </View>
-                  </View>
+        {(provider.skills.length > 0 || provider.tools.length > 0) && (
+          <View style={[styles.compactRow, { marginBottom: 28 }]}>
+            {provider.skills.length > 0 && (
+              <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+                <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+                  <Feather name="star" size={16} color="#e06030" />
                 </View>
-              ))}
-            </View>
-          </>
-        )}
-
-        {provider.tools.length > 0 && (
-          <>
-            <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>tools</Text>
-            <View style={{ gap: 10, marginBottom: 40 }}>
-              {provider.tools.map((tool) => (
-                <View key={tool.id} style={[styles.toolCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-                  <View style={styles.toolIconWrap}>
-                    <Feather name={tool.icon === "truck" ? "truck" : tool.icon === "tool" ? "tool" : "box"} size={14} color="#18a06b" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={styles.toolNameRow}>
-                      <Text style={styles.toolName}>{tool.name}</Text>
-                      {tool.verified && (
-                        <VerifiedBadge onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)} />
-                      )}
-                    </View>
-                    <Text style={[styles.toolType, { color: colors.textMuted }]}>{tool.type}</Text>
-                    {tool.details ? (
-                      <Text style={[styles.toolDetails, { color: colors.textSecondary }]}>{tool.details}</Text>
-                    ) : null}
-                  </View>
-                  <View style={[styles.availDot, { backgroundColor: tool.available ? "#18a06b" : colors.textDim }]} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
+                  <Text style={[styles.compactMeta, { color: colors.textDim }]}>
+                    {provider.skills.length} · {provider.skills.filter((s) => s.verified !== null).length} verificadas
+                  </Text>
                 </View>
-              ))}
-            </View>
-          </>
+              </View>
+            )}
+            {provider.tools.length > 0 && (
+              <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+                <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+                  <Feather name="box" size={16} color="#e06030" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
+                  <Text style={[styles.compactMeta, { color: colors.textDim }]}>
+                    {provider.tools.length} · {provider.tools.filter((t) => t.available).length} disponíveis
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
         )}
 
         {provider.services.length === 0 && provider.skills.length === 0 && provider.tools.length === 0 && (
@@ -463,22 +434,11 @@ const styles = StyleSheet.create({
   statValue: { fontFamily: "DMSans_500Medium", fontSize: 14 },
   statLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase" },
   sectionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
-  skillCard: { borderWidth: 1, borderRadius: 24, padding: 16 },
-  skillHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  skillIconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: "#e0603010", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  skillNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  skillName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#e06030dd", flex: 1 },
-  skillType: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },
-  skillDesc: { fontFamily: "Sora_400Regular", fontSize: 11, lineHeight: 16 },
-  newBadge: { backgroundColor: "#1a2a1a", borderWidth: 1, borderColor: "#18a06b30", borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
-  newBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, color: "#18a06b" },
-  toolCard: { borderWidth: 1, borderRadius: 24, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  toolIconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: "#18a06b10", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  toolNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  toolName: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#18a06bdd", flex: 1 },
-  toolType: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },
-  toolDetails: { fontFamily: "Sora_400Regular", fontSize: 11 },
-  availDot: { width: 7, height: 7, borderRadius: 4, marginTop: 4, flexShrink: 0 },
+  compactRow: { flexDirection: "row", gap: 10 },
+  compactCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 20, padding: 14, borderWidth: 1 },
+  compactIcon: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center" },
+  compactTitle: { fontFamily: "Sora_700Bold", fontSize: 13 },
+  compactMeta: { fontFamily: "DMSans_400Regular", fontSize: 9 },
   emptyState: { borderRadius: 24, padding: 32, alignItems: "center", gap: 10 },
   emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
 });
