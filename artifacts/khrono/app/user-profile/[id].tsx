@@ -371,38 +371,32 @@ export default function UserProfileScreen() {
           </>
         )}
 
-        {(provider.skills.length > 0 || provider.tools.length > 0) && (
-          <View style={[styles.compactRow, { marginBottom: 28 }]}>
-            {provider.skills.length > 0 && (
-              <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-                <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-                  <Feather name="star" size={16} color="#e06030" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
-                  <Text style={[styles.compactMeta, { color: colors.textDim }]}>
-                    {provider.skills.length} · {provider.skills.filter((s) => s.verified !== null).length} verificadas
-                  </Text>
-                </View>
-              </View>
-            )}
-            {provider.tools.length > 0 && (
-              <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-                <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-                  <Feather name="box" size={16} color="#e06030" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
-                  <Text style={[styles.compactMeta, { color: colors.textDim }]}>
-                    {provider.tools.length} · {provider.tools.filter((t) => t.available).length} disponíveis
-                  </Text>
-                </View>
-              </View>
-            )}
+        <View style={[styles.compactRow, { marginBottom: 28 }]}>
+          <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+              <Feather name="star" size={16} color="#e06030" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
+              <Text style={[styles.compactMeta, { color: colors.textDim }]}>
+                {provider.skills.length} · {provider.skills.filter((s) => s.verified !== null).length} verificadas
+              </Text>
+            </View>
           </View>
-        )}
+          <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+              <Feather name="box" size={16} color="#e06030" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
+              <Text style={[styles.compactMeta, { color: colors.textDim }]}>
+                {provider.tools.length} · {provider.tools.filter((t) => t.available).length} disponíveis
+              </Text>
+            </View>
+          </View>
+        </View>
 
-        {provider.services.length === 0 && provider.skills.length === 0 && provider.tools.length === 0 && (
+        {provider.services.length === 0 && (
           <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Feather name="user" size={28} color={colors.textDim} />
             <Text style={[styles.emptyText, { color: colors.textDim }]}>perfil sem services cadastrados</Text>
