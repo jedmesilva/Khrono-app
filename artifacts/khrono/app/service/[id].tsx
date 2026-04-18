@@ -535,8 +535,8 @@ export default function ServiceDetailScreen() {
           style={[
             styles.ctaBtn,
             active
-              ? { backgroundColor: "transparent", borderWidth: 1, borderColor: "#e0603040" }
-              : { backgroundColor: ACCENT },
+              ? { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.surfaceBorder }
+              : { backgroundColor: "rgba(224,96,48,0.07)", borderWidth: 1, borderColor: "rgba(224,96,48,0.35)" },
           ]}
           activeOpacity={0.80}
           onPress={() => toggleActive(service.id)}
@@ -544,10 +544,10 @@ export default function ServiceDetailScreen() {
           <Feather
             name={active ? "pause-circle" : "play-circle"}
             size={16}
-            color={active ? ACCENT : "#fff"}
+            color={active ? colors.textMuted : ACCENT}
             style={{ marginRight: 8 }}
           />
-          <Text style={[styles.ctaBtnText, { color: active ? ACCENT : "#fff" }]}>
+          <Text style={[styles.ctaBtnText, { color: active ? colors.textMuted : ACCENT }]}>
             {active ? "Desativar serviço" : "Ativar serviço"}
           </Text>
         </TouchableOpacity>

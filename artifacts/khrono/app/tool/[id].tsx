@@ -5,7 +5,6 @@ import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -111,24 +110,6 @@ export default function ToolDetailScreen() {
     setDialog({
       title: tool.name,
       buttons: [
-        {
-          label: available ? "Marcar como indisponível" : "Marcar como disponível",
-          onPress: () => {
-            setDialog(null);
-            handleToggleAvailable(!available);
-          },
-        },
-        ...(vstatus === "unverified"
-          ? [
-              {
-                label: "Solicitar verificação",
-                onPress: () => {
-                  setDialog(null);
-                  handleRequestVerification();
-                },
-              },
-            ]
-          : []),
         {
           label: "Editar ferramenta",
           onPress: () => {
@@ -313,36 +294,6 @@ export default function ToolDetailScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={styles.body}
       >
-        {/* Toggle disponível */}
-        <View
-          style={[
-            styles.toggleCard,
-            { backgroundColor: colors.card },
-          ]}
-        >
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={[styles.toggleTitle, { color: colors.text }]}>
-              {available
-                ? "Ferramenta disponível"
-                : "Ferramenta indisponível"}
-            </Text>
-            <Text style={[styles.toggleSub, { color: colors.textMuted }]}>
-              {available
-                ? "Aparece como disponível nos serviços"
-                : "Marcada como temporariamente indisponível"}
-            </Text>
-          </View>
-          <Switch
-            value={available}
-            onValueChange={handleToggleAvailable}
-            trackColor={{
-              false: isDark ? "#302b26" : "#d0cbc6",
-              true: ACCENT,
-            }}
-            thumbColor={available ? "#fff" : isDark ? "#a09890" : "#e0dbd6"}
-          />
-        </View>
-
         {/* Info grid — tipo e data */}
         <View style={styles.row}>
           <View
@@ -544,11 +495,24 @@ export default function ToolDetailScreen() {
         ]}
       >
         <TouchableOpacity
-          style={styles.ctaBtn}
-          activeOpacity={0.85}
-          onPress={() => router.push("/cadastro-tool")}
+          style={[
+            styles.ctaBtn,
+            available
+              ? { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.surfaceBorder }
+              : { backgroundColor: "rgba(224,96,48,0.07)", borderWidth: 1, borderColor: "rgba(224,96,48,0.35)" },
+          ]}
+          activeOpacity={0.80}
+          onPress={() => handleToggleAvailable(!available)}
         >
-          <Text style={styles.ctaBtnLabel}>Editar ferramenta</Text>
+          <Feather
+            name={available ? "pause-circle" : "play-circle"}
+            size={16}
+            color={available ? colors.textMuted : ACCENT}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={[styles.ctaBtnLabel, { color: available ? colors.textMuted : ACCENT }]}>
+            {available ? "Marcar como indisponível" : "Marcar como disponível"}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -604,16 +568,6 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 3 },
 
   body: { paddingHorizontal: 16, paddingTop: 14, gap: 10 },
-
-  toggleCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 16,
-    padding: 14,
-  },
-  toggleTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  toggleSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 1 },
 
   row: { flexDirection: "row", gap: 10 },
   infoCard: {
@@ -682,16 +636,15 @@ const styles = StyleSheet.create({
 
   cta: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1 },
   ctaBtn: {
-    backgroundColor: ACCENT,
     borderRadius: 14,
     paddingVertical: 15,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
   ctaBtnLabel: {
     fontFamily: "Sora_700Bold",
     fontSize: 15,
-    color: "#fff",
     letterSpacing: -0.2,
   },
 });

@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -105,13 +104,6 @@ export default function SkillDetailScreen() {
     setDialog({
       title: skill.name,
       buttons: [
-        {
-          label: isActive ? "Desativar skill" : "Ativar skill",
-          onPress: () => {
-            setDialog(null);
-            handleToggleActive(!isActive);
-          },
-        },
         {
           label: "Editar skill",
           onPress: () => {
@@ -289,29 +281,6 @@ export default function SkillDetailScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={styles.body}
       >
-        {/* Toggle ativo */}
-        <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={[styles.toggleTitle, { color: colors.text }]}>
-              {isActive ? "Skill ativa no perfil" : "Skill oculta do perfil público"}
-            </Text>
-            <Text style={[styles.toggleSub, { color: colors.textMuted }]}>
-              {isActive
-                ? "Aparece nas buscas e no seu perfil"
-                : "Não aparece nas buscas"}
-            </Text>
-          </View>
-          <Switch
-            value={isActive}
-            onValueChange={handleToggleActive}
-            trackColor={{
-              false: isDark ? "#302b26" : "#d0cbc6",
-              true: ACCENT,
-            }}
-            thumbColor={isActive ? "#fff" : isDark ? "#a09890" : "#e0dbd6"}
-          />
-        </View>
-
         {/* Info grid */}
         <View style={styles.row}>
           <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
@@ -482,11 +451,24 @@ export default function SkillDetailScreen() {
         ]}
       >
         <TouchableOpacity
-          style={styles.ctaBtn}
-          activeOpacity={0.85}
-          onPress={() => router.push("/cadastro-skill")}
+          style={[
+            styles.ctaBtn,
+            isActive
+              ? { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.surfaceBorder }
+              : { backgroundColor: "rgba(224,96,48,0.07)", borderWidth: 1, borderColor: "rgba(224,96,48,0.35)" },
+          ]}
+          activeOpacity={0.80}
+          onPress={() => handleToggleActive(!isActive)}
         >
-          <Text style={styles.ctaBtnLabel}>Editar skill</Text>
+          <Feather
+            name={isActive ? "pause-circle" : "play-circle"}
+            size={16}
+            color={isActive ? colors.textMuted : ACCENT}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={[styles.ctaBtnLabel, { color: isActive ? colors.textMuted : ACCENT }]}>
+            {isActive ? "Desativar skill" : "Ativar skill"}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -542,20 +524,6 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 3 },
 
   body: { paddingHorizontal: 16, paddingTop: 14, gap: 10 },
-
-  toggleCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 16,
-    padding: 14,
-  },
-  toggleTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  toggleSub: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    marginTop: 1,
-  },
 
   row: { flexDirection: "row", gap: 10 },
   infoCard: {
@@ -640,16 +608,15 @@ const styles = StyleSheet.create({
 
   cta: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1 },
   ctaBtn: {
-    backgroundColor: ACCENT,
     borderRadius: 14,
     paddingVertical: 15,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
   ctaBtnLabel: {
     fontFamily: "Sora_700Bold",
     fontSize: 15,
-    color: "#fff",
     letterSpacing: -0.2,
   },
 });
