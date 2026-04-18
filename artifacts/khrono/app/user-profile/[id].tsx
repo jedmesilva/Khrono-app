@@ -46,6 +46,8 @@ type ProviderData = {
   skills: Skill[];
   tools: Tool[];
   services: Service[];
+  serviceSkillsMap: Record<string, Skill[]>;
+  serviceToolsMap: Record<string, Tool[]>;
   punctuality: PunctualidadeStats;
 };
 
@@ -166,9 +168,6 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     addedAt: formatMonthYear(t.created_at),
   }));
 
-  const toolMap: Record<string, Tool> = {};
-  for (const t of tools) toolMap[t.id] = t;
-
   const skills: Skill[] = (skillsRes.data ?? []).map((entry: any) => {
     const cs = entry.skill as any;
     return {
@@ -182,10 +181,41 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     };
   });
 
+  const serviceSkillsMap: Record<string, Skill[]> = {};
+  const serviceToolsMap: Record<string, Tool[]> = {};
+
   const services: Service[] = (servicesRes.data ?? []).map((row: any) => {
     const contractsCount = contractsCountMap[row.id] ?? 0;
     const skillIds: string[] = (row.service_skills ?? []).map((ss: any) => ss.skill_id as string);
     const toolIds: string[] = (row.service_tools ?? []).map((st: any) => st.tool_id as string);
+
+    serviceSkillsMap[row.id] = (row.service_skills ?? []).map((ss: any) => {
+      const cs = ss.skill as any;
+      return {
+        id: cs?.id ?? ss.skill_id,
+        name: cs?.nome ?? "",
+        type: cs?.category ?? "",
+        description: cs?.description ?? "",
+        verified: cs?.verified ? ({ type: "documentation" as VerificationType }) : null,
+        isNew: false,
+        addedAt: "",
+      } as Skill;
+    });
+
+    serviceToolsMap[row.id] = (row.service_tools ?? []).map((st: any) => {
+      const pt = st.tool as any;
+      return {
+        id: pt?.id ?? st.tool_id,
+        name: pt?.nome ?? "",
+        type: pt?.tipo ?? "equipamento",
+        icon: iconForTipo(pt?.tipo ?? ""),
+        details: pt?.details ?? "",
+        available: Boolean(pt?.is_available),
+        verified: null,
+        addedAt: "",
+      } as Tool;
+    });
+
     return {
       id: row.id,
       name: row.nome,
@@ -203,9 +233,6 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
       contractsList: [],
     };
   });
-
-  const skillMap: Record<string, Skill> = {};
-  for (const sk of skills) skillMap[sk.id] = sk;
 
   const location = locationRes.data;
   const punctuality = computePunctualidade(
@@ -226,6 +253,8 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     skills,
     tools,
     services,
+    serviceSkillsMap,
+    serviceToolsMap,
     punctuality,
   };
 }
@@ -278,12 +307,6 @@ export default function UserProfileScreen() {
     );
   }
 
-  const toolMap: Record<string, Tool> = {};
-  for (const t of provider.tools) toolMap[t.id] = t;
-
-  const skillMap: Record<string, Skill> = {};
-  for (const sk of provider.skills) skillMap[sk.id] = sk;
-
   return (
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -335,12 +358,8 @@ export default function UserProfileScreen() {
             <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>services</Text>
             <View style={{ gap: 10, marginBottom: 24 }}>
               {provider.services.map((service) => {
-                const serviceSkills: Skill[] = service.skillIds
-                  .map((sid) => skillMap[sid])
-                  .filter((s): s is Skill => !!s);
-                const serviceTools: Tool[] = service.toolIds
-                  .map((tid) => toolMap[tid])
-                  .filter((t): t is Tool => !!t);
+                const serviceSkills: Skill[] = provider.serviceSkillsMap[service.id] ?? [];
+                const serviceTools: Tool[] = provider.serviceToolsMap[service.id] ?? [];
                 return (
                   <ServiceCard
                     key={service.id}
