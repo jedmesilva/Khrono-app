@@ -17,7 +17,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
-import { IconButton } from "@/components/IconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool } from "@/constants/profile-data";

@@ -17,7 +17,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
-import { IconButton } from "@/components/IconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
 import { useCatalog } from "@/context/CatalogContext";
@@ -306,14 +305,9 @@ export default function ServiceDetailScreen() {
         </View>
 
         {/* More options button */}
-        <IconButton
-          icon="more-horizontal"
-          onPress={handleMoreOptions}
-          iconSize={18}
-          backgroundColor="transparent"
-          color={colors.iconBack}
-          style={{ position: "absolute", top: topPadding + 12, right: 14, zIndex: 10 }}
-        />
+        <View style={{ position: "absolute", top: topPadding + 12, right: 14, zIndex: 10 }}>
+          <BackButton icon="more-horizontal" size={18} onPress={handleMoreOptions} />
+        </View>
 
         {/* Status badge */}
         <View style={[
