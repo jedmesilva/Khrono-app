@@ -182,6 +182,38 @@ export default function ToolDetailScreen() {
           <SimpleIconButton icon="more-horizontal" size={18} onPress={handleOptions} />
         </View>
 
+        {/* Available badge — centered at top, same level as nav buttons */}
+        <View
+          style={{
+            position: "absolute",
+            top: insets.top + 18,
+            left: 0,
+            right: 0,
+            alignItems: "center",
+            zIndex: 9,
+            pointerEvents: "none",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              borderWidth: 1,
+              borderColor: available ? "rgba(24,160,107,0.32)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.14)",
+              backgroundColor: available ? "rgba(24,160,107,0.14)" : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+              borderRadius: 100,
+              paddingHorizontal: 9,
+              paddingVertical: 4,
+            }}
+          >
+            {available && <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: GREEN }} />}
+            <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: available ? GREEN : colors.textMuted }}>
+              {available ? "disponível" : "indisponível"}
+            </Text>
+          </View>
+        </View>
+
         <Text
           style={[
             styles.decor,
@@ -253,35 +285,6 @@ export default function ToolDetailScreen() {
                 style={[styles.chipText, { color: isDark ? "#c0bab4" : "#6a6460" }]}
               >
                 {tool.type}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: available
-                    ? "rgba(24,160,107,0.14)"
-                    : isDark
-                    ? "rgba(255,255,255,0.07)"
-                    : "rgba(0,0,0,0.07)",
-                  borderColor: available
-                    ? "rgba(24,160,107,0.32)"
-                    : isDark
-                    ? "rgba(255,255,255,0.14)"
-                    : "rgba(0,0,0,0.14)",
-                },
-              ]}
-            >
-              {available && (
-                <View style={[styles.dot, { backgroundColor: GREEN }]} />
-              )}
-              <Text
-                style={[
-                  styles.chipText,
-                  { color: available ? GREEN : colors.textMuted },
-                ]}
-              >
-                {available ? "disponível" : "indisponível"}
               </Text>
             </View>
           </View>
