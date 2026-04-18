@@ -169,26 +169,30 @@ export default function SkillDetailScreen() {
           <BackButton />
         </View>
 
-        <View style={{ position: "absolute", top: insets.top + 14, right: 14, flexDirection: "row", alignItems: "center", gap: 8, zIndex: 10 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 5,
-              borderWidth: 1,
-              borderColor: isActive ? "rgba(24,160,107,0.32)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.14)",
-              backgroundColor: isActive ? "rgba(24,160,107,0.14)" : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
-              borderRadius: 100,
-              paddingHorizontal: 9,
-              paddingVertical: 4,
-            }}
-          >
-            {isActive && <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: GREEN }} />}
-            <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: isActive ? GREEN : colors.textMuted }}>
-              {isActive ? "ativa" : "inativa"}
-            </Text>
-          </View>
+        <View style={{ position: "absolute", top: insets.top + 14, right: 14, zIndex: 10 }}>
           <SimpleIconButton icon="more-horizontal" onPress={handleOptions} />
+        </View>
+
+        {/* Status badge — mesmo padrão da tela de serviço: direita, abaixo dos botões de nav */}
+        <View style={{
+          position: "absolute",
+          right: 14,
+          top: insets.top + 60,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 5,
+          borderWidth: 1,
+          borderColor: isActive ? "rgba(24,160,107,0.30)" : isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
+          backgroundColor: isActive ? "rgba(24,160,107,0.12)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+          borderRadius: 100,
+          paddingHorizontal: 9,
+          paddingVertical: 4,
+          zIndex: 10,
+        }}>
+          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: isActive ? "#00e5a0" : (isDark ? "#504840" : "#bbb") }} />
+          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: isActive ? "#00e5a0" : (isDark ? "#706860" : "#999") }}>
+            {isActive ? "ativa" : "inativa"}
+          </Text>
         </View>
 
         <Text
