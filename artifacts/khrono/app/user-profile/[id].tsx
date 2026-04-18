@@ -110,7 +110,7 @@ function ServiceAreaCard({ locationMode, serviceRadius, fixedAddress, colors }: 
 }
 
 const areaStyles = StyleSheet.create({
-  card: { borderRadius: 24, padding: 14, marginBottom: 28, gap: 10 },
+  card: { borderRadius: 24, padding: 14, marginBottom: 12, gap: 10 },
   topRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   iconWrap: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   areaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 12, marginBottom: 2 },
@@ -347,10 +347,10 @@ export default function UserProfileScreen() {
           />
         )}
 
-        <View style={[styles.compactRow, { marginBottom: 14 }]}>
+        <View style={styles.compactRow}>
           <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-              <Feather name="star" size={16} color="#e06030" />
+              <Feather name="tool" size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
@@ -372,10 +372,17 @@ export default function UserProfileScreen() {
           </View>
         </View>
 
-        {provider.services.length > 0 && (
-          <>
-            <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>services</Text>
-            <View style={{ gap: 10, marginBottom: 24 }}>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Services</Text>
+          </View>
+          {provider.services.length === 0 ? (
+            <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+              <Feather name="layers" size={28} color={colors.textDim} />
+              <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhum service cadastrado</Text>
+            </View>
+          ) : (
+            <View style={styles.list}>
               {provider.services.map((service) => {
                 const serviceSkills: Skill[] = provider.serviceSkillsMap[service.id] ?? [];
                 const serviceTools: Tool[] = provider.serviceToolsMap[service.id] ?? [];
@@ -393,15 +400,8 @@ export default function UserProfileScreen() {
                 );
               })}
             </View>
-          </>
-        )}
-
-        {provider.services.length === 0 && (
-          <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Feather name="user" size={28} color={colors.textDim} />
-            <Text style={[styles.emptyText, { color: colors.textDim }]}>perfil sem services cadastrados</Text>
-          </View>
-        )}
+          )}
+        </View>
       </ScrollView>
 
       <AppDialog visible={!!dialog} title={dialog?.title ?? ""} message={dialog?.message} onDismiss={() => setDialog(null)} />
@@ -427,12 +427,15 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, height: 28 },
   statValue: { fontFamily: "DMSans_500Medium", fontSize: 14 },
   statLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase" },
-  sectionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
-  compactRow: { flexDirection: "row", gap: 10 },
-  compactCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 20, padding: 14, borderWidth: 1 },
+  compactRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
+  compactCard: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 20, padding: 14 },
   compactIcon: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   compactTitle: { fontFamily: "Sora_700Bold", fontSize: 13 },
   compactMeta: { fontFamily: "DMSans_400Regular", fontSize: 9 },
-  emptyState: { borderRadius: 24, padding: 32, alignItems: "center", gap: 10 },
+  section: { marginBottom: 20 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+  sectionTitle: { fontFamily: "Sora_700Bold", fontSize: 17 },
+  list: { gap: 12 },
+  emptyState: { borderRadius: 20, padding: 28, alignItems: "center", gap: 10 },
   emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
 });
