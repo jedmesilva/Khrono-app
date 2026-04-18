@@ -424,7 +424,7 @@ export default function ServiceDetailScreen() {
               overflowBorder={colors.surfaceBorder}
               overflowColor={colors.textMuted}
               renderChip={(t) => (
-                <View style={[styles.chipNeutral, { borderColor: colors.surfaceBorder }]}>
+                <View style={[styles.chipNeutral, { backgroundColor: colors.surface }]}>
                   <Text style={[styles.chipText, { color: colors.textMuted }]} numberOfLines={1}>{t.name}</Text>
                 </View>
               )}
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   // Body
   body: { paddingHorizontal: 16, paddingTop: 14, gap: 10 },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  categoryTag: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  categoryTag: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
   categoryTagText: { fontFamily: "DMSans_500Medium", fontSize: 9, letterSpacing: 1, textTransform: "uppercase" },
   metaDate: { fontFamily: "DMMono_400Regular", fontSize: 11 },
 
@@ -633,8 +633,8 @@ const styles = StyleSheet.create({
   emptyChipText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 
   // Chips
-  chipAccent: { borderWidth: 1, borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
-  chipNeutral: { borderWidth: 1, borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
+  chipAccent: { borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
+  chipNeutral: { borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
   chipText: { fontFamily: "DMSans_600SemiBold", fontSize: 11 },
 
   // Performance grid

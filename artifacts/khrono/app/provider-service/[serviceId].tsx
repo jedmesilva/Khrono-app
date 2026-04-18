@@ -496,7 +496,7 @@ export default function ProviderServiceScreen() {
               overflowBorder={colors.surfaceBorder}
               overflowColor={colors.textMuted}
               renderChip={(t) => (
-                <View style={[styles.chipNeutral, { borderColor: colors.surfaceBorder }]}>
+                <View style={[styles.chipNeutral, { backgroundColor: colors.surface }]}>
                   <Text style={[styles.chipNeutralText, { color: colors.textMuted }]} numberOfLines={1}>{t.name}</Text>
                 </View>
               )}
@@ -514,7 +514,7 @@ export default function ProviderServiceScreen() {
             ]).map((item) => (
               <Pressable
                 key={item.key}
-                style={[styles.perfCard, { backgroundColor: colors.card, borderColor: expanded === item.key ? colors.surfaceBorder : colors.cardBorder }]}
+                style={[styles.perfCard, { backgroundColor: colors.card }]}
                 onPress={() => toggleCard(item.key)}
               >
                 <View style={styles.perfCardHeader}>
@@ -692,9 +692,9 @@ const styles = StyleSheet.create({
   sectionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" },
 
   // Chips
-  chipAccent: { borderWidth: 1, borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
+  chipAccent: { borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
   chipAccentText: { fontFamily: "DMSans_600SemiBold", fontSize: 11 },
-  chipNeutral: { borderWidth: 1, borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
+  chipNeutral: { borderRadius: 100, paddingHorizontal: 10, paddingVertical: 4, maxWidth: 180 },
   chipNeutralText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 
   // Performance grid
