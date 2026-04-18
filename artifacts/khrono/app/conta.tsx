@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
+import { IconBox } from "@/components/IconBox";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -373,9 +374,9 @@ export default function ContaScreen() {
 
           <View style={[styles.verifBlock, { backgroundColor: colors.card }]}>
             <View style={styles.verifBlockHeader}>
-              <View style={[styles.verifIconWrap, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
+              <IconBox size="sm" bg={colors.surface}>
                 <Feather name="file-text" size={16} color={colors.textSecondary} />
-              </View>
+              </IconBox>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.verifBlockTitle, { color: colors.textSecondary }]}>Documentos</Text>
                 <Text style={[styles.verifBlockSub, { color: colors.textMuted }]}>RG, CNH ou Passaporte</Text>
@@ -388,9 +389,9 @@ export default function ContaScreen() {
                   <View key={doc.id}>
                     {index > 0 && <View style={[styles.docDivider, { backgroundColor: colors.surface }]} />}
                     <View style={styles.docItem}>
-                      <View style={[styles.docItemIcon, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                      <IconBox size="sm" bg={colors.surface}>
                         <Feather name="file-text" size={14} color={colors.textSecondary} />
-                      </View>
+                      </IconBox>
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.docItemType, { color: colors.textSecondary }]}>{doc.type}</Text>
                         <Text style={[styles.docItemMeta, { color: colors.textMuted }]}>
@@ -421,9 +422,9 @@ export default function ContaScreen() {
 
           <View style={[styles.verifBlock, { marginTop: 10, backgroundColor: colors.card }]}>
             <View style={styles.verifBlockHeader}>
-              <View style={[styles.verifIconWrap, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
+              <IconBox size="sm" bg={colors.surface}>
                 <Feather name="aperture" size={16} color={colors.textSecondary} />
-              </View>
+              </IconBox>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.verifBlockTitle, { color: colors.textSecondary }]}>Reconhecimento facial</Text>
                 <Text style={[styles.verifBlockSub, { color: colors.textMuted }]}>Verificação com liveness</Text>
@@ -504,9 +505,9 @@ export default function ContaScreen() {
             <Text style={[styles.cardSub, { color: colors.textMuted }]}>Adicione uma camada extra de segurança à sua conta.</Text>
             <View style={styles.twoFaList}>
               <View style={styles.twoFaItem}>
-                <View style={[styles.twoFaIcon, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
+                <IconBox size="sm" bg={colors.surface}>
                   <Feather name="shield" size={16} color={colors.textSecondary} />
-                </View>
+                </IconBox>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.twoFaLabel, { color: colors.textSecondary }]}>App autenticador</Text>
                   <Text style={[styles.twoFaSub, { color: colors.textMuted }]}>Google Authenticator, Authy...</Text>
@@ -592,7 +593,6 @@ const styles = StyleSheet.create({
   statusBadgeText: { fontFamily: "DMSans_500Medium", fontSize: 10, letterSpacing: 0.5 },
   verifBlock: { borderRadius: 24, overflow: "hidden" },
   verifBlockHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
-  verifIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   verifBlockTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   verifBlockSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 2 },
   verifContent: { padding: 12, paddingTop: 0 },
@@ -601,7 +601,6 @@ const styles = StyleSheet.create({
   docList: { borderTopWidth: 1, marginHorizontal: 16, marginBottom: 12 },
   docDivider: { height: 1 },
   docItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
-  docItemIcon: { width: 30, height: 30, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   docItemType: { fontFamily: "Sora_600SemiBold", fontSize: 12 },
   docItemMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
   docEmpty: { alignItems: "center", gap: 8, paddingVertical: 20, borderTopWidth: 1 },
@@ -621,7 +620,6 @@ const styles = StyleSheet.create({
   changePwdBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 13, color: "#fff" },
   twoFaList: { marginTop: 14, gap: 0 },
   twoFaItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
-  twoFaIcon: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   twoFaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   twoFaSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 2 },
   configureBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
