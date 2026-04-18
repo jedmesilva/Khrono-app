@@ -1,101 +1,49 @@
 # Khrono — Replit Project
 
 ## Overview
-Khrono is a mobile-first service marketplace platform built with Expo (React Native). It connects contractors and service providers, handles real-time contracts, availability sessions, push notifications, and an in-app wallet.
-
-## Project Structure
-This is a **pnpm monorepo** with the following packages:
-
-| Path | Purpose | Framework |
-|---|---|---|
-| `artifacts/khrono` | Primary mobile app | Expo / React Native |
-| `artifacts/api-server` | Backend API / Expo proxy | Express.js |
-| `artifacts/mockup-sandbox` | UI component previewer | Vite / React / Tailwind |
-| `lib/api-spec` | OpenAPI spec + codegen | Orval |
-| `lib/api-zod` | Zod schemas from OpenAPI | Zod |
-| `lib/api-client-react` | TanStack Query client | React Query |
-| `supabase/migrations` | Database schema migrations | PostgreSQL / Supabase |
+Khrono is a mobile-first service marketplace platform (React Native / Expo) that connects contractors and service providers. It handles real-time contracts, availability sessions, push notifications, and an in-app wallet (BRL).
 
 ## Tech Stack
-- **Mobile**: Expo SDK 54, React Native 0.81, expo-router (file-based routing)
-- **Backend**: Express.js v5, pino logging
-- **Database/Auth**: Supabase (PostgreSQL, Auth, Realtime, RLS)
-- **State/Data**: TanStack Query v5
+- **Mobile App**: Expo SDK 54 (React Native 0.81), `expo-router` for file-based routing
+- **Backend**: Express.js (v5) API server + Metro proxy (`artifacts/api-server`)
+- **Database & Auth**: Supabase (PostgreSQL, Auth, Realtime, RLS)
+- **State Management**: TanStack Query v5
 - **Language**: TypeScript throughout
+- **Package Manager**: pnpm (monorepo)
 
-## Running the App
-The workflow `Start application` starts the Expo Metro bundler on port 5000. The app can be viewed:
-- **Mobile**: Scan the QR code from the workflow logs with Expo Go
-- **Web**: Available at port 5000 (React Native Web)
+## Project Structure
+```
+artifacts/
+  khrono/          — Expo mobile app (primary)
+  api-server/      — Express.js backend + Metro proxy
+  mockup-sandbox/  — Vite component preview environment
+lib/
+  api-spec/        — OpenAPI definition (openapi.yaml)
+  api-zod/         — Zod schemas generated from OpenAPI
+  api-client-react/— TanStack Query hooks (generated)
+supabase/
+  migrations/      — PostgreSQL schema & RLS policies
+```
 
-The expo-proxy script also runs on port 22861 to proxy Metro traffic.
+## How to Run
+The "Start application" workflow runs:
+```
+node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/khrono run dev
+```
+- Metro bundler starts on port 5000 (web preview)
+- Expo proxy on port 22861 for Expo Go connections
 
-## Environment Variables & Secrets
-All secrets are stored in Replit Secrets (never hardcoded):
-
-| Key | Type | Purpose |
-|---|---|---|
-| `EXPO_PUBLIC_SUPABASE_URL` | Env var (shared) | Supabase project URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Secret | Supabase anonymous/public key |
-| `EXPO_SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase service role key (server-side only) |
-| `SUPABASE_ACCESS_TOKEN` | Secret | Supabase personal access token (for MCP server) |
-| `EXPO_PUBLIC_EAS_PROJECT_ID` | Env var (shared) | EAS project ID (optional) |
-| `PORT` | Env var (shared) | App port (5000) |
-| `EXPO_METRO_PORT` | Env var (shared) | Metro bundler proxy port (22861) |
+## Environment Variables
+Set in Replit secrets (do not hardcode):
+- `EXPO_PUBLIC_SUPABASE_URL` — Supabase project URL (set in shared env)
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon key (secret)
+- `EXPO_SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (secret)
+- `SUPABASE_ACCESS_TOKEN` — Supabase personal access token (secret)
 
 ## Database
-- Replit PostgreSQL is provisioned and connectivity has been verified through `DATABASE_URL`
-- **Supabase** is still used by the mobile app for authentication, realtime subscriptions, and existing app data because the current Expo code depends on Supabase Auth/Realtimes APIs
-- Migrations are in `supabase/migrations/` and must be applied via the Supabase dashboard or CLI for the current data backend
-- Supabase Row Level Security (RLS) policies protect all data at the database level
+Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase/migrations/`. The app uses Supabase's Row Level Security (RLS) policies for authorization.
 
-## Key Features
-- Provider/contractor marketplace with real-time contracts
-- Availability sessions with GPS-based provider discovery
-- In-app wallet (BRL) with card and PIX support; wallet screen shows 5 most recent transactions with "Ver todas" link to full history screen (`app/wallet/transactions.tsx`)
-- Push notifications via Expo Notifications
-- QR code / PIN-based contract initiation
-- Skills, services, and tools catalog
-- **Payment Architecture v2**: full billing matrix by contract type × payment method
-
-## Payment Architecture (v2)
-
-### Billing Trigger Matrix
-| Contract type | Payment method | Billing trigger | Behavior |
-|---|---|---|---|
-| Aberto (cronômetro) | any | `on_end` | Payment created when contract ends |
-| Definido (timer) | cartão | `on_start` | Card pre-authorized on creation; captured on end |
-| Definido (timer) | pix | `on_start` | PIX generated on creation; service starts after confirmation |
-| Definido (timer) | saldo | `on_start` | Wallet debited immediately on creation |
-| Definido (timer) | dinheiro | `on_start` | Dual confirmation on end |
-
-### Delta Resolution at End (Defined contracts)
-- Ended **early** (delta < 0): refund via `contract_refunds` + wallet credit (saldo) or pending refund record
-- Ended **on time** (delta ≈ 0): existing payment confirmed
-- Ended **late** (delta > 0): existing payment confirmed + new `pending_retry` payment for excess
-
-### New DB Objects (migration `20260416_payment_architecture.sql`)
-- `contracts.billing_trigger` — 'on_end' | 'on_start' | 'split'
-- `contracts.pending_extra_amount` — excess to be charged
-- `contracts.pending_refund_amount` — refund already processed
-- `contract_refunds` table — immutable refund records
-- `contract_payment_splits` table — multi-method split records
-- `contract_payments.status` expanded: `held`, `pending_retry`
-
-### UI
-- `contract-confirm.tsx`: payment hints per tipo×method, dynamic button label
-- `contract-detail/[id].tsx`: pending payment banner (with pay action) + refund banner
-- `getPaymentStatusInfo` updated to show billing_trigger-aware states
-
-## Architecture Notes
-- Expo configuration now uses static `artifacts/khrono/app.json`; dynamic `app.config.js` was removed for Replit Expo compatibility
-- The Supabase client (`artifacts/khrono/lib/supabase.ts`) runs on the mobile client using the public anon key + RLS
-- All sensitive operations are protected by Supabase Row Level Security (RLS) policies defined in `supabase/migrations/`
-- The Express API server (`artifacts/api-server`) handles backend routes and proxies Expo Metro traffic
-- Push notifications are sent via Expo's push notification service
-- The `EXPO_SUPABASE_SERVICE_ROLE_KEY` secret is stored safely in Replit Secrets and is NOT referenced in any app code — it exists for future server-side use only
-- Contract lifecycle now has dedicated Supabase tables for immutable events, pending action requests, payments, cash dual-confirmation, disputes, and dispute evidence. The app treats `contract_events` as the audit source and `contract_action_requests` as the source for pending end/cancel requests; the legacy `contract_time_entries` table and old request columns on `contracts` were removed because test data can be discarded.
-
-## Package Management
-- Uses **pnpm** workspaces — always run `pnpm install` from the root to install all dependencies
-- Do NOT use npm or yarn in this project
+## Security Notes
+- All Supabase keys are stored as Replit secrets
+- The `.replit` file previously contained a hardcoded Supabase access token — this token should be rotated via the Supabase dashboard
+- RLS is enabled on all tables; users can only access their own data
