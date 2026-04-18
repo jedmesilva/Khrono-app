@@ -12,6 +12,7 @@ export type UserSkillEntry = {
   id: string;
   skill_id: string;
   createdAt: string;
+  isActive: boolean;
   skill: CatalogSkill;
 };
 
@@ -27,6 +28,7 @@ type UserCatalogContextType = {
   isLoading: boolean;
   addSkill: (skillId: string) => Promise<void>;
   removeSkill: (skillId: string) => Promise<void>;
+  toggleSkillActive: (entryId: string, isActive: boolean) => Promise<void>;
   addService: (serviceId: string) => Promise<void>;
   removeService: (serviceId: string) => Promise<void>;
   hasSkill: (skillId: string) => boolean;
@@ -45,7 +47,7 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
     const [skillsRes, servicesRes] = await Promise.all([
       supabase
         .from("user_skills")
-        .select("id, skill_id, created_at, skill:skills_catalog(*)")
+        .select("id, skill_id, created_at, is_active, skill:skills_catalog(*)")
         .eq("profile_id", uid),
       supabase
         .from("user_services")
@@ -59,6 +61,7 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
           id: row.id,
           skill_id: row.skill_id,
           createdAt: row.created_at ?? "",
+          isActive: row.is_active !== false,
           skill: row.skill as CatalogSkill,
         }))
       );
@@ -114,11 +117,22 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
           id: data.id,
           skill_id: data.skill_id,
           createdAt: (data as any).created_at ?? "",
+          isActive: true,
           skill: (data as any).skill,
         },
       ]);
     }
   }, [userId]);
+
+  const toggleSkillActive = useCallback(async (entryId: string, isActive: boolean) => {
+    setUserSkills((prev) =>
+      prev.map((s) => (s.id === entryId ? { ...s, isActive } : s))
+    );
+    await supabase
+      .from("user_skills")
+      .update({ is_active: isActive })
+      .eq("id", entryId);
+  }, []);
 
   const removeSkill = useCallback(async (skillId: string) => {
     if (!userId) return;
@@ -168,7 +182,7 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
 
   return (
     <UserCatalogContext.Provider
-      value={{ userSkills, userServices, isLoading, addSkill, removeSkill, addService, removeService, hasSkill, hasService }}
+      value={{ userSkills, userServices, isLoading, addSkill, removeSkill, toggleSkillActive, addService, removeService, hasSkill, hasService }}
     >
       {children}
     </UserCatalogContext.Provider>

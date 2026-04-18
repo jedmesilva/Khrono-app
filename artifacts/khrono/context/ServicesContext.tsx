@@ -53,6 +53,7 @@ function mapRowToService(row: any, contractsCount: number): Service {
 }
 
 function mapRowToTool(row: any): Tool {
+  const vs = row.verification_status as "unverified" | "pending" | "verified" | undefined;
   return {
     id: row.id,
     name: row.nome,
@@ -60,8 +61,12 @@ function mapRowToTool(row: any): Tool {
     icon: iconForTipo(row.tipo),
     details: row.details ?? "",
     available: Boolean(row.is_available),
-    verified: null,
+    verified: vs === "verified" ? { type: "documentation" as VerificationType } : null,
     addedAt: formatMonthYear(row.created_at),
+    brand: row.brand ?? undefined,
+    model: row.model ?? undefined,
+    year: row.manufacture_year ?? undefined,
+    verificationStatus: vs ?? "unverified",
   };
 }
 
@@ -72,6 +77,9 @@ interface ServicesContextType {
   isLoading: boolean;
   isActive: (id: string) => boolean;
   toggleActive: (id: string) => Promise<void>;
+  toggleToolAvailable: (id: string, available: boolean) => Promise<void>;
+  removeTool: (id: string) => Promise<void>;
+  requestToolVerification: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -201,13 +209,33 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
     [myServices]
   );
 
+  const toggleToolAvailable = useCallback(async (id: string, available: boolean) => {
+    setMyTools((prev) => prev.map((t) => (t.id === id ? { ...t, available } : t)));
+    await supabase.from("provider_tools").update({ is_available: available }).eq("id", id);
+  }, []);
+
+  const removeTool = useCallback(async (id: string) => {
+    setMyTools((prev) => prev.filter((t) => t.id !== id));
+    await supabase.from("provider_tools").delete().eq("id", id);
+  }, []);
+
+  const requestToolVerification = useCallback(async (id: string) => {
+    setMyTools((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, verificationStatus: "pending" as const } : t))
+    );
+    await supabase
+      .from("provider_tools")
+      .update({ verification_status: "pending" })
+      .eq("id", id);
+  }, []);
+
   const refresh = useCallback(async () => {
     if (userIdRef.current) await loadData(userIdRef.current);
   }, [loadData]);
 
   return (
     <ServicesContext.Provider
-      value={{ myServices, myTools, providerProfile, isLoading, isActive, toggleActive, refresh }}
+      value={{ myServices, myTools, providerProfile, isLoading, isActive, toggleActive, toggleToolAvailable, removeTool, requestToolVerification, refresh }}
     >
       {children}
     </ServicesContext.Provider>

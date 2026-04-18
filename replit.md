@@ -54,3 +54,20 @@ Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase
 - App runs successfully: Metro on port 5000, Expo proxy on port 22861
 - Supabase kept as the backend (Auth, Realtime, RLS) — migrating to Replit PostgreSQL would break auth and realtime subscriptions
 - No hardcoded secrets found in source code
+
+## Skill & Tool Detail Screen Refactor (April 2026)
+Both detail screens were rewritten to match the richness of `provider-service/[serviceId].tsx`:
+- **Hero section**: 220px gradient, decorative oversized text, pill badges for status/category, back + options buttons with frosted style
+- **Active/Available toggle**: Prominent Switch card below hero (no longer buried in options menu)
+- **Info grid**: 2-column cards for category/type, added-at date, brand/model/year for tools
+- **Verification section**: Skills verify automatically via community reviews; tools verify via Khrono documentation flow with a "Request Verification" CTA
+- **Services list** (skill screen): lists services using that skill with navigation to each
+- **Edit CTA footer**: Fixed bottom bar with "Editar skill" / "Editar ferramenta" button
+
+### Data model additions
+- `user_skills.is_active` (bool, default true) — migration: `supabase/migrations/20260418_skill_active_tool_details.sql`
+- `provider_tools.brand`, `model`, `manufacture_year`, `verification_status`, `verified_at` — same migration
+- `Tool` interface updated in `constants/profile-data.ts`
+- `UserSkillEntry.isActive` added to `UserCatalogContext`
+- `toggleSkillActive(entryId, isActive)` added to `UserCatalogContext`
+- `toggleToolAvailable(id, available)`, `removeTool(id)`, `requestToolVerification(id)` added to `ServicesContext`

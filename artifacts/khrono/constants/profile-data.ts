@@ -20,6 +20,10 @@ export interface Tool {
   available: boolean;
   verified: { type: VerificationType } | null;
   addedAt: string;
+  brand?: string;
+  model?: string;
+  year?: number;
+  verificationStatus?: "unverified" | "pending" | "verified";
 }
 
 export interface Review {
