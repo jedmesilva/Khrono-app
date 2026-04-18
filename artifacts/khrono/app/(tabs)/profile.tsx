@@ -724,7 +724,7 @@ const styles = StyleSheet.create({
   addBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
   addBtnText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
 
-  emptyServices: { borderWidth: 1, borderRadius: 20, padding: 28, alignItems: "center", gap: 10 },
+  emptyServices: { borderRadius: 20, padding: 28, alignItems: "center", gap: 10 },
   emptyServicesText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   emptyServicesSub: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
 
@@ -736,13 +736,13 @@ const styles = StyleSheet.create({
   newSkillTag: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
 
   skillDetailContent: { paddingHorizontal: 20, paddingTop: 4 },
-  toolIconCard: { borderWidth: 1, borderRadius: 20, padding: 18, alignItems: "center", marginBottom: 12 },
+  toolIconCard: { borderRadius: 20, padding: 18, alignItems: "center", marginBottom: 12 },
   toolIconLarge: { width: 80, height: 80, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   detailRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
-  detailCard: { flex: 1, borderWidth: 1, borderRadius: 16, padding: 14, gap: 4 },
+  detailCard: { flex: 1, borderRadius: 16, padding: 14, gap: 4 },
   detailCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },
   detailCardValue: { fontFamily: "Sora_600SemiBold", fontSize: 14 },
-  descriptionCard: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 8 },
+  descriptionCard: { borderRadius: 16, padding: 16, gap: 8 },
   descriptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },
   descriptionText: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20 },
 

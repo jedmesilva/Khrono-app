@@ -85,7 +85,6 @@ export function PunctualidadeCard({ stats, colors, style }: Props) {
 
 const card = StyleSheet.create({
   wrap: {
-    borderWidth: 1,
     borderRadius: 20,
     padding: 16,
     marginBottom: 14,

@@ -111,7 +111,7 @@ function ServiceAreaCard({ locationMode, serviceRadius, fixedAddress, colors }: 
 }
 
 const areaStyles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 24, padding: 14, marginBottom: 28, gap: 10 },
+  card: { borderRadius: 24, padding: 14, marginBottom: 28, gap: 10 },
   topRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   iconWrap: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   areaLabel: { fontFamily: "Sora_600SemiBold", fontSize: 12, marginBottom: 2 },
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 24 },
   backBtn: { padding: 4, flexShrink: 0 },
   screenLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
-  profileCard: { borderWidth: 1, borderRadius: 20, padding: 24, alignItems: "center", marginBottom: 14 },
+  profileCard: { borderRadius: 20, padding: 24, alignItems: "center", marginBottom: 14 },
   avatarWrap: { marginBottom: 16 },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#e0603015", borderWidth: 2, borderColor: "#e0603030", alignItems: "center", justifyContent: "center" },
   avatarText: { fontFamily: "Sora_700Bold", fontSize: 24, color: "#e06030" },
@@ -465,6 +465,6 @@ const styles = StyleSheet.create({
   toolType: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 },
   toolDetails: { fontFamily: "Sora_400Regular", fontSize: 11 },
   availDot: { width: 7, height: 7, borderRadius: 4, marginTop: 4, flexShrink: 0 },
-  emptyState: { borderWidth: 1, borderRadius: 24, padding: 32, alignItems: "center", gap: 10 },
+  emptyState: { borderRadius: 24, padding: 32, alignItems: "center", gap: 10 },
   emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
 });
