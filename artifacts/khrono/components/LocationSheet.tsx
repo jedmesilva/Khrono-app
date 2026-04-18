@@ -539,16 +539,6 @@ export function LocationSheet({
             <RadiusSlider value={radius} onChange={setRadius} />
           </View>
 
-          {/* Privacy note */}
-          <View style={styles.privacyRow}>
-            <Feather name="lock" size={13} color={colors.textMuted} style={{ marginTop: 1 }} />
-            <Text style={[styles.privacyText, { color: colors.textMuted }]}>
-              Clientes veem apenas sua localização{" "}
-              <Text style={{ fontFamily: "DMSans_600SemiBold" }}>aproximada</Text>,
-              nunca o endereço exato.
-            </Text>
-          </View>
-
           {/* Save button */}
           <Pressable
             onPress={handleSave}
