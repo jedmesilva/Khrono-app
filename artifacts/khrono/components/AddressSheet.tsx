@@ -80,8 +80,21 @@ async function searchNominatim(query: string): Promise<AddressResult[]> {
     const city =
       addr.city || addr.town || addr.village || addr.municipality || addr.county || "";
     const state = addr.state || "";
-    const label =
-      city && state ? `${city}, ${state}` : item.display_name.split(",")[0].trim();
+    const road = addr.road || addr.pedestrian || addr.footway || addr.path || "";
+    const houseNumber = addr.house_number || "";
+    const suburb = addr.suburb || addr.neighbourhood || addr.quarter || "";
+
+    let label: string;
+    if (road) {
+      const streetPart = houseNumber ? `${road}, ${houseNumber}` : road;
+      const withSuburb = suburb ? `${streetPart} - ${suburb}` : streetPart;
+      label = city ? `${withSuburb}, ${city}` : withSuburb;
+    } else if (city && state) {
+      label = `${city}, ${state}`;
+    } else {
+      label = item.display_name.split(",")[0].trim();
+    }
+
     return {
       label,
       fullLabel: item.display_name,
