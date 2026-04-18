@@ -46,8 +46,8 @@ function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen, c
   const color = accentGreen ? colors.accentGreen : colors.accent;
   return (
     <View style={staticStyles.row}>
-      <View style={[staticStyles.iconWrap, { backgroundColor: color + "12" }]}>
-        <Feather name={icon} size={15} color={color} />
+      <View style={[staticStyles.iconWrap, { backgroundColor: colors.menuIconBg }]}>
+        <Feather name={icon} size={15} color={colors.textSecondary} />
       </View>
       <View style={staticStyles.rowTexts}>
         <Text style={[staticStyles.rowLabel, { color: colors.text }]}>{label}</Text>
