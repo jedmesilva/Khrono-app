@@ -324,17 +324,17 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         .from("provider_locations")
         .upsert(payload, { onConflict: "profile_id" });
 
-      if (!error) {
-        modeRef.current = mode;
-        setLocation((prev) => ({
-          ...prev,
-          mode,
-          serviceRadiusMeters: radiusMeters,
-          fixedAddress: mode === "fixed" ? address : prev.fixedAddress,
-          fixedLat: mode === "fixed" && lat != null ? lat : prev.fixedLat,
-          fixedLng: mode === "fixed" && lng != null ? lng : prev.fixedLng,
-        }));
-      }
+      if (error) throw new Error(error.message);
+
+      modeRef.current = mode;
+      setLocation((prev) => ({
+        ...prev,
+        mode,
+        serviceRadiusMeters: radiusMeters,
+        fixedAddress: mode === "fixed" ? address : prev.fixedAddress,
+        fixedLat: mode === "fixed" && lat != null ? lat : prev.fixedLat,
+        fixedLng: mode === "fixed" && lng != null ? lng : prev.fixedLng,
+      }));
     },
     []
   );

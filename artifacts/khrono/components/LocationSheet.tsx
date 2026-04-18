@@ -327,6 +327,7 @@ export function LocationSheet({
   const [radius, setRadius] = useState(serviceRadius);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [addressSheetOpen, setAddressSheetOpen] = useState(false);
 
   const snapPoints = useMemo(() => ["80%"], []);
@@ -340,6 +341,7 @@ export function LocationSheet({
       setRadius(serviceRadius);
       setSaving(false);
       setSaved(false);
+      setSaveError(false);
       ref.current?.present();
     } else {
       ref.current?.dismiss();
@@ -375,6 +377,7 @@ export function LocationSheet({
   const handleSave = async () => {
     if (!canSave || saving) return;
     setSaving(true);
+    setSaveError(false);
     try {
       if (selectedMode === "fixed") {
         await onSave(selectedMode, address, radius, addressLat, addressLng);
@@ -389,7 +392,10 @@ export function LocationSheet({
         onClose();
       }, 1200);
     } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setSaving(false);
+      setSaveError(true);
+      setTimeout(() => setSaveError(false), 3000);
     }
   };
 
@@ -516,19 +522,22 @@ export function LocationSheet({
             disabled={!canSave || saving}
             style={[
               styles.saveBtn,
-              (!canSave || saving) && styles.saveBtnDisabled,
+              (!canSave || saving) && !saveError && styles.saveBtnDisabled,
+              saveError && styles.saveBtnError,
             ]}
           >
             <Feather
-              name={saved ? "check" : saving ? "loader" : "save"}
+              name={saved ? "check" : saving ? "loader" : saveError ? "alert-circle" : "save"}
               size={15}
-              color={!canSave ? colors.textDim : "#fff"}
+              color={!canSave && !saveError ? colors.textDim : "#fff"}
             />
-            <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>
+            <Text style={[styles.saveBtnText, !canSave && !saveError && styles.saveBtnTextDisabled]}>
               {saved
                 ? "Salvo!"
                 : saving
                 ? "Salvando..."
+                : saveError
+                ? "Erro ao salvar. Tente novamente."
                 : !canSave
                 ? "Informe a localização para continuar"
                 : "Salvar"}
@@ -684,6 +693,9 @@ function createStyles(colors: ColorPalette) {
     },
     saveBtnDisabled: {
       backgroundColor: colors.surfaceBorder,
+    },
+    saveBtnError: {
+      backgroundColor: "#C0392B",
     },
     saveBtnText: {
       fontFamily: "Sora_700Bold",
