@@ -56,6 +56,7 @@ Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase
 - Replit PostgreSQL was provisioned and `DATABASE_URL`/Postgres environment variables are available.
 - Supabase was retained for app runtime because the current mobile app depends directly on Supabase Auth, Realtime subscriptions, RLS policies, and existing migrations. Replacing those with server-side PostgreSQL/Drizzle would be a major product migration and would risk breaking auth/realtime behavior during import.
 - No Supabase Edge Function source directory was found in the imported project.
+- Import migration checklist was completed after dependency installation, workflow restart, environment variable verification, log review, and HTTP 200 preview validation.
 
 ## Skill & Tool Detail Screen Refactor (April 2026)
 Both detail screens were rewritten to match the richness of `provider-service/[serviceId].tsx`:
