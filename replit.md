@@ -44,16 +44,18 @@ Set in Replit secrets (do not hardcode):
 Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase/migrations/`. The app uses Supabase's Row Level Security (RLS) policies for authorization.
 
 ## Security Notes
-- All Supabase keys are stored as Replit secrets (EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN)
-- The `.replit` file contains a hardcoded Supabase MCP access token — **rotate this token in the Supabase dashboard** (Settings > Access Tokens)
-- RLS is enabled on all tables; users can only access their own data
-- The Supabase anon key is safe to expose in the mobile app — all access control is enforced by RLS policies on the database
+- All Supabase keys should be stored as Replit secrets (`EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ACCESS_TOKEN`).
+- The `.replit` file still contains a Supabase MCP access token from the imported project configuration. `.replit` is protected in this environment, so rotate this token in the Supabase dashboard (Settings > Access Tokens) before using that MCP configuration again.
+- RLS is enabled on all Supabase tables; users can only access data allowed by policies.
+- The Supabase anon key is designed to be exposed to the mobile app, but service-role and access tokens must never be shipped to the client.
 
-## Replit Migration Notes (April 2025)
-- Dependencies installed via `pnpm install` (1174 packages)
-- App runs successfully: Metro on port 5000, Expo proxy on port 22861
-- Supabase kept as the backend (Auth, Realtime, RLS) — migrating to Replit PostgreSQL would break auth and realtime subscriptions
-- No hardcoded secrets found in source code
+## Replit Migration Notes (April 2026)
+- Workspace dependencies were installed via `pnpm install` from the existing lockfile.
+- The "Start application" workflow was restarted and verified running successfully.
+- Preview endpoint returned HTTP 200 through the Replit development domain.
+- Replit PostgreSQL was provisioned and `DATABASE_URL`/Postgres environment variables are available.
+- Supabase was retained for app runtime because the current mobile app depends directly on Supabase Auth, Realtime subscriptions, RLS policies, and existing migrations. Replacing those with server-side PostgreSQL/Drizzle would be a major product migration and would risk breaking auth/realtime behavior during import.
+- No Supabase Edge Function source directory was found in the imported project.
 
 ## Skill & Tool Detail Screen Refactor (April 2026)
 Both detail screens were rewritten to match the richness of `provider-service/[serviceId].tsx`:
