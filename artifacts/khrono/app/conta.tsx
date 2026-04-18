@@ -247,13 +247,15 @@ export default function ContaScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={{ paddingTop: topPadding }}>
+        <ScreenHeader title="Minha conta" />
+      </View>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.content, { paddingTop: topPadding + 16, paddingBottom: isWeb ? 34 + 84 + 20 : 100 }]}
+        contentContainerStyle={[styles.content, { paddingTop: 16, paddingBottom: isWeb ? 34 + 84 + 20 : 100 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <ScreenHeader title="Minha conta" />
 
         {/* Avatar */}
         <View style={styles.avatarSection}>
@@ -291,7 +293,7 @@ export default function ContaScreen() {
         {/* Dados pessoais */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Dados pessoais</Text>
-          <View style={[styles.fieldList, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.fieldList, { backgroundColor: colors.card }]}>
             {FIELDS.map((f) => {
               const isEditing = editing === f.key;
               const rawValue = userData[f.key];
@@ -369,7 +371,7 @@ export default function ContaScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Verificação de identidade</Text>
 
-          <View style={[styles.verifBlock, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.verifBlock, { backgroundColor: colors.card }]}>
             <View style={styles.verifBlockHeader}>
               <View style={[styles.verifIconWrap, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
                 <Feather name="file-text" size={16} color={colors.textSecondary} />
@@ -417,7 +419,7 @@ export default function ContaScreen() {
             </View>
           </View>
 
-          <View style={[styles.verifBlock, { marginTop: 10, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.verifBlock, { marginTop: 10, backgroundColor: colors.card }]}>
             <View style={styles.verifBlockHeader}>
               <View style={[styles.verifIconWrap, { borderColor: colors.surfaceBorder, backgroundColor: colors.surface }]}>
                 <Feather name="aperture" size={16} color={colors.textSecondary} />
@@ -453,7 +455,7 @@ export default function ContaScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Segurança</Text>
 
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.card, { backgroundColor: colors.card }]}>
             <Pressable style={styles.cardAccordionHeader} onPress={() => setPwdExpanded((v) => !v)}>
               <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>Alterar senha</Text>
               <Feather name={pwdExpanded ? "chevron-up" : "chevron-down"} size={15} color={colors.textMuted} />
@@ -497,7 +499,7 @@ export default function ContaScreen() {
             )}
           </View>
 
-          <View style={[styles.card, { marginTop: 10, backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.card, { marginTop: 10, backgroundColor: colors.card }]}>
             <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>Autenticação em dois fatores</Text>
             <Text style={[styles.cardSub, { color: colors.textMuted }]}>Adicione uma camada extra de segurança à sua conta.</Text>
             <View style={styles.twoFaList}>
@@ -572,7 +574,7 @@ const styles = StyleSheet.create({
   avatarSaveText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#fff" },
   section: { marginBottom: 28 },
   sectionTitle: { fontFamily: "DMSans_500Medium", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
-  fieldList: { borderRadius: 24, borderWidth: 1, overflow: "hidden" },
+  fieldList: { borderRadius: 24, overflow: "hidden" },
   fieldRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },
   fieldMeta: { flex: 1 },
   fieldLabel: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 3 },
@@ -588,7 +590,7 @@ const styles = StyleSheet.create({
   eyeBtn: { padding: 6 },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
   statusBadgeText: { fontFamily: "DMSans_500Medium", fontSize: 10, letterSpacing: 0.5 },
-  verifBlock: { borderRadius: 24, borderWidth: 1, overflow: "hidden" },
+  verifBlock: { borderRadius: 24, overflow: "hidden" },
   verifBlockHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
   verifIconWrap: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   verifBlockTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
@@ -606,7 +608,7 @@ const styles = StyleSheet.create({
   docEmptyText: { fontFamily: "DMSans_400Regular", fontSize: 12 },
   rejectedMsg: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginHorizontal: 16, marginBottom: 12, padding: 10, backgroundColor: "#ff3b3010", borderRadius: 8, borderWidth: 1, borderColor: "#ff3b3025" },
   rejectedMsgText: { fontFamily: "DMSans_400Regular", fontSize: 11, color: "#ff3b30", flex: 1, lineHeight: 16 },
-  card: { borderRadius: 24, borderWidth: 1, padding: 16 },
+  card: { borderRadius: 24, padding: 16 },
   cardAccordionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   cardSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 4, lineHeight: 16 },
@@ -624,7 +626,7 @@ const styles = StyleSheet.create({
   twoFaSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 2 },
   configureBtn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
   configureBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 11 },
-  dangerSection: { borderWidth: 1, borderColor: "#ff3b3020", borderRadius: 24, padding: 16, backgroundColor: "#ff3b3008", marginBottom: 20 },
+  dangerSection: { borderRadius: 24, padding: 16, backgroundColor: "#ff3b3008", marginBottom: 20 },
   dangerHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
   dangerTitle: { fontFamily: "Sora_700Bold", fontSize: 13, color: "#ff3b30" },
   dangerDesc: { fontFamily: "DMSans_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 14 },
