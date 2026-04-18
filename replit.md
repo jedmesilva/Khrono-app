@@ -44,6 +44,13 @@ Set in Replit secrets (do not hardcode):
 Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase/migrations/`. The app uses Supabase's Row Level Security (RLS) policies for authorization.
 
 ## Security Notes
-- All Supabase keys are stored as Replit secrets
-- The `.replit` file previously contained a hardcoded Supabase access token — this token should be rotated via the Supabase dashboard
+- All Supabase keys are stored as Replit secrets (EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN)
+- The `.replit` file contains a hardcoded Supabase MCP access token — **rotate this token in the Supabase dashboard** (Settings > Access Tokens)
 - RLS is enabled on all tables; users can only access their own data
+- The Supabase anon key is safe to expose in the mobile app — all access control is enforced by RLS policies on the database
+
+## Replit Migration Notes (April 2025)
+- Dependencies installed via `pnpm install` (1174 packages)
+- App runs successfully: Metro on port 5000, Expo proxy on port 22861
+- Supabase kept as the backend (Auth, Realtime, RLS) — migrating to Replit PostgreSQL would break auth and realtime subscriptions
+- No hardcoded secrets found in source code
