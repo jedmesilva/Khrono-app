@@ -509,7 +509,6 @@ export function LocationSheet({
             style={[
               styles.saveBtn,
               !canSave && styles.saveBtnDisabled,
-              saved && styles.saveBtnSaved,
             ]}
           >
             <Feather name={saved ? "check" : "save"} size={15} color={!canSave ? colors.textDim : "#fff"} />
@@ -671,9 +670,6 @@ function createStyles(colors: ColorPalette) {
     },
     saveBtnDisabled: {
       backgroundColor: colors.surfaceBorder,
-    },
-    saveBtnSaved: {
-      backgroundColor: "#3DAA6B",
     },
     saveBtnText: {
       fontFamily: "Sora_700Bold",
