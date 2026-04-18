@@ -286,8 +286,19 @@ type Props = {
   fixedLat?: number | null;
   fixedLng?: number | null;
   serviceRadius: number;
+  realtimeUpdatedAt?: Date | null;
   onSave: (mode: LocationMode, address: string, radius: number, lat?: number, lng?: number) => void;
 };
+
+function formatLastUpdate(date: Date | null | undefined): string {
+  if (!date) return "aguardando GPS...";
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5) return "agora mesmo";
+  if (seconds < 60) return `há ${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `há ${minutes}min`;
+  return `há ${Math.floor(minutes / 60)}h`;
+}
 
 export function LocationSheet({
   visible,
@@ -297,6 +308,7 @@ export function LocationSheet({
   fixedLat,
   fixedLng,
   serviceRadius,
+  realtimeUpdatedAt,
   onSave,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -439,7 +451,9 @@ export function LocationSheet({
               <PulsingDot />
               <View style={{ flex: 1 }}>
                 <Text style={styles.gpsTitle}>Localização atual</Text>
-                <Text style={styles.gpsSub}>GPS ativo · atualizado a cada 5 min</Text>
+                <Text style={styles.gpsSub}>
+                  GPS ativo · {formatLastUpdate(realtimeUpdatedAt)}
+                </Text>
               </View>
             </View>
           ) : (

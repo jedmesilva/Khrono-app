@@ -354,6 +354,7 @@ export default function ProfileScreen() {
         fixedLat={location.fixedLat}
         fixedLng={location.fixedLng}
         serviceRadius={location.serviceRadiusMeters}
+        realtimeUpdatedAt={location.realtimeUpdatedAt}
         onSave={(mode, address, radius, lat, lng) => {
           saveLocation(mode, address, radius, lat, lng);
         }}
