@@ -362,7 +362,7 @@ export default function ServiceDetailScreen() {
         {/* Meta: categoria + data de adição */}
         <View style={styles.metaRow}>
           {firstSkill?.type && (
-            <View style={[styles.categoryTag, { backgroundColor: accentBg, borderColor: accentBorder }]}>
+            <View style={[styles.categoryTag, { backgroundColor: accentBg }]}>
               <Text style={[styles.categoryTagText, { color: ACCENT }]}>{firstSkill.type}</Text>
             </View>
           )}
@@ -376,9 +376,9 @@ export default function ServiceDetailScreen() {
 
         {/* Skills card */}
         {skills.length > 0 ? (
-          <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBadge, { backgroundColor: accentBg, borderColor: accentBorder }]}>
+              <View style={[styles.sectionIconBadge, { backgroundColor: accentBg }]}>
                 <Feather name="star" size={13} color={ACCENT} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Skills</Text>
@@ -390,16 +390,16 @@ export default function ServiceDetailScreen() {
               overflowBorder={accentBorder}
               overflowColor={ACCENT}
               renderChip={(sk) => (
-                <View style={[styles.chipAccent, { backgroundColor: accentBg, borderColor: accentBorder }]}>
+                <View style={[styles.chipAccent, { backgroundColor: accentBg }]}>
                   <Text style={[styles.chipText, { color: ACCENT }]} numberOfLines={1}>{sk.name}</Text>
                 </View>
               )}
             />
           </View>
         ) : (
-          <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <View style={[styles.sectionIconBadge, { backgroundColor: colors.surface }]}>
                 <Feather name="star" size={13} color={colors.textDim} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Skills</Text>
@@ -410,9 +410,9 @@ export default function ServiceDetailScreen() {
 
         {/* Tools card */}
         {tools.length > 0 ? (
-          <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBadge, { backgroundColor: greenBg, borderColor: greenBorder }]}>
+              <View style={[styles.sectionIconBadge, { backgroundColor: greenBg }]}>
                 <Feather name="key" size={13} color={GREEN_SOLID} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Tools</Text>
@@ -431,9 +431,9 @@ export default function ServiceDetailScreen() {
             />
           </View>
         ) : (
-          <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <View style={[styles.sectionIconBadge, { backgroundColor: colors.surface }]}>
                 <Feather name="key" size={13} color={colors.textDim} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Tools</Text>
@@ -626,9 +626,9 @@ const styles = StyleSheet.create({
   metaDate: { fontFamily: "DMMono_400Regular", fontSize: 11 },
 
   // Section cards
-  sectionCard: { borderWidth: 1, borderRadius: 16, padding: 14, gap: 10 },
+  sectionCard: { borderRadius: 16, padding: 14, gap: 10 },
   sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
-  sectionIconBadge: { width: 28, height: 28, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  sectionIconBadge: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   sectionLabel: { fontFamily: "DMMono_400Regular", fontSize: 9, letterSpacing: 0.8, textTransform: "uppercase" },
   emptyChipText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
 
   // Performance grid
   perfGrid: { flexDirection: "row", gap: 8 },
-  perfCard: { flex: 1, borderWidth: 1, borderRadius: 16, padding: 14 },
+  perfCard: { flex: 1, borderRadius: 16, padding: 14 },
   perfCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
   perfCardValue: { fontFamily: "DMSans_500Medium", fontSize: 22 },
   perfCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase" },
