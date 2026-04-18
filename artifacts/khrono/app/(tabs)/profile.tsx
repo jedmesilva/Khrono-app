@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
+import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { PageHeader } from "@/components/PageHeader";
 import { LocationSheet, formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
@@ -72,7 +73,7 @@ function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: 
             <Text style={[styles.newSkillTag, { color: colors.textMuted }]}>skill nova · sem atividade ainda</Text>
           ) : null}
         </View>
-        <BackButton icon="more-horizontal" onPress={onOptions} />
+        <SimpleIconButton icon="more-horizontal" onPress={onOptions} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
@@ -134,7 +135,7 @@ function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
             {tool.available ? "disponível" : "indisponível"}
           </Text>
         </View>
-        <BackButton icon="more-horizontal" onPress={onOptions} />
+        <SimpleIconButton icon="more-horizontal" onPress={onOptions} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
