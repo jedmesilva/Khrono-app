@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useMemo } from "react";
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -216,15 +215,6 @@ export default function DefinicoesScreen() {
           />
         </View>
 
-        {(isLoading || isSaving || error) && (
-          <View style={staticStyles.statusRow}>
-            {isLoading && <ActivityIndicator size="small" color={colors.accent} />}
-            <Text style={[staticStyles.statusText, { color: error ? colors.accent : colors.textDim }]}>
-              {error ?? (isLoading ? "Carregando definições..." : "Salvando definições...")}
-            </Text>
-          </View>
-        )}
-
         {/* Suporte */}
         <SectionHeader title="SUPORTE" colors={colors} />
         <View style={sectionStyle}>
@@ -334,17 +324,6 @@ const staticStyles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 28,
     gap: 4,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginBottom: 18,
-  },
-  statusText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
   },
   aboutLogoWrap: {
     width: 52,
