@@ -375,15 +375,9 @@ export default function ProviderServiceScreen() {
         </Text>
 
         {/* Back button */}
-        <IconButton
-          icon="arrow-left"
-          onPress={() => router.back()}
-          iconSize={18}
-          backgroundColor={isDark ? "rgba(0,0,0,0.40)" : "rgba(255,255,255,0.50)"}
-          color={isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"}
-          hitSlop={10}
-          style={{ position: "absolute", top: topPadding + 12, left: 14, borderWidth: 1, borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)", zIndex: 10 }}
-        />
+        <View style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}>
+          <BackButton />
+        </View>
 
         {/* Status badge */}
         <View style={[styles.statusBadge, { top: topPadding + 16 }]}>
