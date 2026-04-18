@@ -283,6 +283,8 @@ type Props = {
   onClose: () => void;
   mode: LocationMode;
   fixedAddress: string;
+  fixedLat?: number | null;
+  fixedLng?: number | null;
   serviceRadius: number;
   onSave: (mode: LocationMode, address: string, radius: number, lat?: number, lng?: number) => void;
 };
@@ -292,6 +294,8 @@ export function LocationSheet({
   onClose,
   mode,
   fixedAddress,
+  fixedLat,
+  fixedLng,
   serviceRadius,
   onSave,
 }: Props) {
@@ -302,8 +306,12 @@ export function LocationSheet({
 
   const [selectedMode, setSelectedMode] = useState<LocationMode>(mode);
   const [address, setAddress] = useState(fixedAddress);
-  const [addressLat, setAddressLat] = useState<number | undefined>(undefined);
-  const [addressLng, setAddressLng] = useState<number | undefined>(undefined);
+  const [addressLat, setAddressLat] = useState<number | undefined>(
+    fixedLat != null ? fixedLat : undefined
+  );
+  const [addressLng, setAddressLng] = useState<number | undefined>(
+    fixedLng != null ? fixedLng : undefined
+  );
   const [radius, setRadius] = useState(serviceRadius);
   const [saved, setSaved] = useState(false);
   const [addressSheetOpen, setAddressSheetOpen] = useState(false);
@@ -314,8 +322,8 @@ export function LocationSheet({
     if (visible) {
       setSelectedMode(mode);
       setAddress(fixedAddress);
-      setAddressLat(undefined);
-      setAddressLng(undefined);
+      setAddressLat(fixedLat != null ? fixedLat : undefined);
+      setAddressLng(fixedLng != null ? fixedLng : undefined);
       setRadius(serviceRadius);
       setSaved(false);
       ref.current?.present();
@@ -431,7 +439,7 @@ export function LocationSheet({
               <PulsingDot />
               <View style={{ flex: 1 }}>
                 <Text style={styles.gpsTitle}>Localização atual</Text>
-                <Text style={styles.gpsSub}>GPS ativo · atualizado agora</Text>
+                <Text style={styles.gpsSub}>GPS ativo · atualizado a cada 5 min</Text>
               </View>
             </View>
           ) : (

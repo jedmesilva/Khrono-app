@@ -351,6 +351,8 @@ export default function ProfileScreen() {
         onClose={() => setLocationSheetOpen(false)}
         mode={location.mode}
         fixedAddress={location.fixedAddress}
+        fixedLat={location.fixedLat}
+        fixedLng={location.fixedLng}
         serviceRadius={location.serviceRadiusMeters}
         onSave={(mode, address, radius, lat, lng) => {
           saveLocation(mode, address, radius, lat, lng);
