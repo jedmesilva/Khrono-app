@@ -14,6 +14,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { BackButton } from "@/components/BackButton";
+import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
@@ -162,10 +164,6 @@ export default function SkillDetailScreen() {
     );
   }
 
-  const btnBg = isDark ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.54)";
-  const btnBorder = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)";
-  const btnIcon = isDark ? "#f0ebe6" : "#1a1714";
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Hero ───────────────────────────────────────────────── */}
@@ -175,35 +173,13 @@ export default function SkillDetailScreen() {
         end={{ x: 1, y: 1 }}
         style={[styles.hero, { height: HERO_H + insets.top }]}
       >
-        <Pressable
-          style={[
-            styles.heroBtn,
-            {
-              top: insets.top + 14,
-              left: 14,
-              backgroundColor: btnBg,
-              borderColor: btnBorder,
-            },
-          ]}
-          onPress={() => router.back()}
-        >
-          <Feather name="arrow-left" size={18} color={btnIcon} />
-        </Pressable>
+        <View style={{ position: "absolute", top: insets.top + 14, left: 14, zIndex: 10 }}>
+          <BackButton />
+        </View>
 
-        <Pressable
-          style={[
-            styles.heroBtn,
-            {
-              top: insets.top + 14,
-              right: 14,
-              backgroundColor: btnBg,
-              borderColor: btnBorder,
-            },
-          ]}
-          onPress={handleOptions}
-        >
-          <Feather name="more-horizontal" size={18} color={btnIcon} />
-        </Pressable>
+        <View style={{ position: "absolute", top: insets.top + 14, right: 14, zIndex: 10 }}>
+          <SimpleIconButton icon="more-horizontal" onPress={handleOptions} />
+        </View>
 
         <Text
           style={[
@@ -314,15 +290,7 @@ export default function SkillDetailScreen() {
         contentContainerStyle={styles.body}
       >
         {/* Toggle ativo */}
-        <View
-          style={[
-            styles.toggleCard,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.cardBorder,
-            },
-          ]}
-        >
+        <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={[styles.toggleTitle, { color: colors.text }]}>
               {isActive ? "Skill ativa no perfil" : "Skill oculta do perfil público"}
@@ -346,51 +314,19 @@ export default function SkillDetailScreen() {
 
         {/* Info grid */}
         <View style={styles.row}>
-          <View
-            style={[
-              styles.infoCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>
-              CATEGORIA
-            </Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
-              {skill.category || "—"}
-            </Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>CATEGORIA</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>{skill.category || "—"}</Text>
           </View>
-          <View
-            style={[
-              styles.infoCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>
-              ADICIONADA EM
-            </Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
-              {skill.addedAt || "—"}
-            </Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>ADICIONADA EM</Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>{skill.addedAt || "—"}</Text>
           </View>
         </View>
 
         {/* Descrição */}
         {!!skill.description && (
-          <View
-            style={[
-              styles.section,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
+          <View style={[styles.section, { backgroundColor: colors.card }]}>
             <Text style={[styles.infoLabel, { color: colors.textMuted }]}>
               DESCRIÇÃO
             </Text>
