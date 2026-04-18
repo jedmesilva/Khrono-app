@@ -517,23 +517,13 @@ export default function ToolDetailScreen() {
 
           {vstatus === "unverified" && (
             <TouchableOpacity
-              style={[
-                styles.verifyBtn,
-                {
-                  backgroundColor: isDark
-                    ? "rgba(255,255,255,0.06)"
-                    : "rgba(0,0,0,0.04)",
-                  borderColor: isDark
-                    ? "rgba(255,255,255,0.12)"
-                    : "rgba(0,0,0,0.10)",
-                },
-              ]}
-              activeOpacity={0.75}
+              style={styles.verifyBtn}
+              activeOpacity={0.85}
               onPress={handleRequestVerification}
             >
-              <Feather name="file-text" size={13} color={ACCENT} />
-              <Text style={[styles.verifyBtnLabel, { color: ACCENT }]}>
-                Solicitar verificação por documentação
+              <Feather name="file-text" size={13} color="#fff" />
+              <Text style={styles.verifyBtnLabel}>
+                Solicitar verificação
               </Text>
             </TouchableOpacity>
           )}
@@ -669,15 +659,17 @@ const styles = StyleSheet.create({
   verifyBtn: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 7,
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: ACCENT,
   },
   verifyBtnLabel: {
     fontFamily: "Sora_600SemiBold",
-    fontSize: 12,
+    fontSize: 13,
+    color: "#fff",
   },
 
   emptyFull: {
