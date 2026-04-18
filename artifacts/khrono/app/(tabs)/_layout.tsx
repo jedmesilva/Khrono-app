@@ -1,7 +1,7 @@
 import { BlurView } from "expo-blur";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SymbolView } from "expo-symbols";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import { Tabs } from "expo-router";
 import React from "react";
 import {

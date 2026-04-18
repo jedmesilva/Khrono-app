@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { supabase } from "@/lib/supabase";
 import { useTheme, type ThemePreference } from "@/context/ThemeContext";
+import { setHapticsEnabled } from "@/lib/haptics";
 
 export type UserSettings = {
   notification_push_enabled: boolean;
@@ -86,6 +87,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
           const loaded = mapRowToSettings(data);
           setSettings(loaded);
           setThemeMode(loaded.theme_preference);
+          setHapticsEnabled(loaded.haptics_enabled);
         } else {
           const { data: inserted, error: insertError } = await supabase
             .from("user_settings")
@@ -98,6 +100,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
           const loaded = mapRowToSettings(inserted);
           setSettings(loaded);
           setThemeMode(loaded.theme_preference);
+          setHapticsEnabled(loaded.haptics_enabled);
         }
       } catch (e) {
         console.warn("[UserSettingsContext] loadSettings error:", e);
@@ -117,6 +120,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
       } else {
         userIdRef.current = null;
         setSettings(DEFAULT_SETTINGS);
+        setHapticsEnabled(DEFAULT_SETTINGS.haptics_enabled);
         setIsLoading(false);
       }
     });
@@ -128,6 +132,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
       } else {
         userIdRef.current = null;
         setSettings(DEFAULT_SETTINGS);
+        setHapticsEnabled(DEFAULT_SETTINGS.haptics_enabled);
         setError(null);
         setIsLoading(false);
       }
@@ -152,6 +157,10 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
         setThemeMode(value as ThemePreference);
       }
 
+      if (key === "haptics_enabled") {
+        setHapticsEnabled(Boolean(value));
+      }
+
       const { error: upsertError } = await supabase
         .from("user_settings")
         .upsert(
@@ -167,6 +176,9 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
         setSettings(previous);
         if (key === "theme_preference") {
           setThemeMode(previous.theme_preference);
+        }
+        if (key === "haptics_enabled") {
+          setHapticsEnabled(previous.haptics_enabled);
         }
         setError("Não foi possível salvar esta definição.");
       }

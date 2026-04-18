@@ -73,3 +73,11 @@ Both detail screens were rewritten to match the richness of `provider-service/[s
 - `UserSkillEntry.isActive` added to `UserCatalogContext`
 - `toggleSkillActive(entryId, isActive)` added to `UserCatalogContext`
 - `toggleToolAvailable(id, available)`, `removeTool(id)`, `requestToolVerification(id)` added to `ServicesContext`
+
+## Settings Screen Behavior Updates (April 2026)
+- Haptics now use `artifacts/khrono/lib/haptics.ts`, which respects the user's `haptics_enabled` preference globally.
+- Notification settings now affect in-app filtering and push token handling through `NotificationsContext`.
+- Push token rows can store `notification_push_enabled`, `notification_contracts_enabled`, and `notification_schedule_enabled`; migration: `supabase/migrations/20260418_push_token_preferences.sql`.
+- Security toggles for 2FA, biometrics, and facial recognition now show an explanatory alert instead of saving a fake enabled state.
+- `UserSettingsProvider` wraps `NotificationsProvider` in `app/_layout.tsx` so notifications can read user preferences.
+- Theme preference now drives `ThemeContext` (`light`, `dark`, or `system`) and the settings screen cycles through those modes from "Tema do app".

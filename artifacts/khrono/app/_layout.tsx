@@ -140,8 +140,8 @@ export default function RootLayout() {
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
-                  <NotificationsProvider>
                   <UserSettingsProvider>
+                  <NotificationsProvider>
                     <AvailabilityProvider>
                       <LocationProvider>
                         <CatalogProvider>
@@ -163,8 +163,8 @@ export default function RootLayout() {
                         </CatalogProvider>
                       </LocationProvider>
                     </AvailabilityProvider>
-                  </UserSettingsProvider>
                   </NotificationsProvider>
+                  </UserSettingsProvider>
                 </AuthProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>

@@ -14,6 +14,7 @@ import { Platform } from "react-native";
 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+import { useUserSettings, type UserSettings } from "@/context/UserSettingsContext";
 
 // Show notifications when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -50,6 +51,45 @@ type NotificationsContextType = {
     type?: string
   ) => Promise<void>;
 };
+
+type NotificationPreferenceShape = Pick<
+  UserSettings,
+  | "notification_push_enabled"
+  | "notification_contracts_enabled"
+  | "notification_schedule_enabled"
+>;
+
+function isContractNotification(type: string) {
+  const normalized = type.toLowerCase();
+  return normalized.includes("contract") || normalized.includes("contrato");
+}
+
+function isScheduleNotification(type: string) {
+  const normalized = type.toLowerCase();
+  return (
+    normalized.includes("schedule") ||
+    normalized.includes("agenda") ||
+    normalized.includes("lembrete")
+  );
+}
+
+function allowsNotificationCategory(
+  type: string,
+  preferences: Pick<
+    NotificationPreferenceShape,
+    "notification_contracts_enabled" | "notification_schedule_enabled"
+  >,
+) {
+  if (isContractNotification(type) && !preferences.notification_contracts_enabled) {
+    return false;
+  }
+
+  if (isScheduleNotification(type) && !preferences.notification_schedule_enabled) {
+    return false;
+  }
+
+  return true;
+}
 
 const NotificationsContext = createContext<NotificationsContextType>({
   notifications: [],
@@ -122,6 +162,7 @@ export function NotificationsProvider({
   children: React.ReactNode;
 }) {
   const { user, isAuthenticated } = useAuth();
+  const { settings } = useUserSettings();
   const router = useRouter();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [pushToken, setPushToken] = useState<string | null>(null);
@@ -154,30 +195,61 @@ export function NotificationsProvider({
       .limit(50);
 
     if (!error && data) {
-      setNotifications(data as AppNotification[]);
+      setNotifications(
+        (data as AppNotification[]).filter((notification) =>
+          allowsNotificationCategory(notification.type, settings)
+        )
+      );
     }
     setLoading(false);
-  }, []);
+  }, [settings]);
 
   // ── Register push token in Supabase ─────────────────────────────────────────
 
+  const clearPushTokens = useCallback(async (uid: string) => {
+    await supabase.from("push_tokens").delete().eq("profile_id", uid);
+    setPushToken(null);
+    setHasPermission(false);
+  }, []);
+
   const setupPushToken = useCallback(async (uid: string) => {
+    if (!settings.notification_push_enabled) {
+      await clearPushTokens(uid);
+      return;
+    }
+
     const token = await registerForPushNotificationsAsync();
     setHasPermission(token !== null);
     if (!token) return;
 
     setPushToken(token);
 
-    await supabase.from("push_tokens").upsert(
-      {
-        profile_id: uid,
-        token,
-        platform: Platform.OS,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "profile_id,token" }
-    );
-  }, []);
+    const payload = {
+      profile_id: uid,
+      token,
+      platform: Platform.OS,
+      notification_push_enabled: settings.notification_push_enabled,
+      notification_contracts_enabled: settings.notification_contracts_enabled,
+      notification_schedule_enabled: settings.notification_schedule_enabled,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from("push_tokens")
+      .upsert(payload, { onConflict: "profile_id,token" });
+
+    if (error) {
+      await supabase.from("push_tokens").upsert(
+        {
+          profile_id: uid,
+          token,
+          platform: Platform.OS,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "profile_id,token" }
+      );
+    }
+  }, [clearPushTokens, settings]);
 
   // ── Supabase Realtime subscription ──────────────────────────────────────────
 
@@ -198,6 +270,7 @@ export function NotificationsProvider({
         },
         (payload) => {
           const newNotif = payload.new as AppNotification;
+          if (!allowsNotificationCategory(newNotif.type, settings)) return;
           setNotifications((prev) => [newNotif, ...prev]);
         }
       )
@@ -211,6 +284,10 @@ export function NotificationsProvider({
         },
         (payload) => {
           const updated = payload.new as AppNotification;
+          if (!allowsNotificationCategory(updated.type, settings)) {
+            setNotifications((prev) => prev.filter((n) => n.id !== updated.id));
+            return;
+          }
           setNotifications((prev) =>
             prev.map((n) => (n.id === updated.id ? updated : n))
           );
@@ -219,7 +296,7 @@ export function NotificationsProvider({
       .subscribe();
 
     realtimeChannelRef.current = ch;
-  }, []);
+  }, [settings]);
 
   // ── Main setup effect ────────────────────────────────────────────────────────
 
@@ -247,7 +324,7 @@ export function NotificationsProvider({
         realtimeChannelRef.current = null;
       }
     };
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, loadNotifications, setupPushToken, setupRealtime]);
 
   // ── Foreground notification listener ────────────────────────────────────────
 
@@ -336,16 +413,45 @@ export function NotificationsProvider({
         );
       }
 
-      // 2. Look up push token(s) for the recipient
-      const { data: tokenRows } = await supabase
+      let tokenRows:
+        | Array<{
+            token: string;
+            notification_push_enabled?: boolean;
+            notification_contracts_enabled?: boolean;
+            notification_schedule_enabled?: boolean;
+          }>
+        | null = null;
+
+      const tokenResult = await supabase
         .from("push_tokens")
-        .select("token")
+        .select(
+          "token, notification_push_enabled, notification_contracts_enabled, notification_schedule_enabled"
+        )
         .eq("profile_id", profileId);
+
+      if (tokenResult.error) {
+        const fallbackTokenResult = await supabase
+          .from("push_tokens")
+          .select("token")
+          .eq("profile_id", profileId);
+        tokenRows = fallbackTokenResult.data;
+      } else {
+        tokenRows = tokenResult.data;
+      }
 
       if (!tokenRows || tokenRows.length === 0) return;
 
       const validTokens = tokenRows
-        .map((r: { token: string }) => r.token)
+        .filter((row) => {
+          if (row.notification_push_enabled === false) return false;
+          return allowsNotificationCategory(type, {
+            notification_contracts_enabled:
+              row.notification_contracts_enabled ?? true,
+            notification_schedule_enabled:
+              row.notification_schedule_enabled ?? true,
+          });
+        })
+        .map((r) => r.token)
         .filter((t) => t.startsWith("ExponentPushToken"));
 
       if (validTokens.length === 0) return;

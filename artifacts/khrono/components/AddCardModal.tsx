@@ -5,7 +5,7 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,

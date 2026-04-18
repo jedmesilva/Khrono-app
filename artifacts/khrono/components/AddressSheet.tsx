@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import { StatusBar } from "expo-status-bar";
 import React, {
   useCallback,

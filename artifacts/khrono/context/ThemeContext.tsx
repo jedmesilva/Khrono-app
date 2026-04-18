@@ -2,7 +2,10 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useMemo,
+  useState,
 } from "react";
+import { useColorScheme } from "react-native";
 
 
 export type ThemePreference = "light" | "dark" | "system";
@@ -147,11 +150,16 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const isDark = false;
-  const colors = lightColors;
-  const themePreference: ThemePreference = "light";
-  const setThemeMode = useCallback((_mode: ThemePreference) => {}, []);
-  const toggleTheme = useCallback(() => {}, []);
+  const systemScheme = useColorScheme();
+  const [themePreference, setThemePreference] = useState<ThemePreference>("light");
+  const isDark = themePreference === "system" ? systemScheme === "dark" : themePreference === "dark";
+  const colors = useMemo(() => (isDark ? darkColors : lightColors), [isDark]);
+  const setThemeMode = useCallback((mode: ThemePreference) => {
+    setThemePreference(mode);
+  }, []);
+  const toggleTheme = useCallback(() => {
+    setThemePreference((current) => (current === "dark" ? "light" : "dark"));
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ isDark, themePreference, colors, toggleTheme, setThemeMode }}>

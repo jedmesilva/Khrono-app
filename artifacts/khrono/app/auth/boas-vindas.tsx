@@ -1,4 +1,4 @@
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {

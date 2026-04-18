@@ -9,10 +9,12 @@ import {
   Switch,
   Text,
   View,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
+import type { ThemePreference } from "@/context/ThemeContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserSettings } from "@/context/UserSettingsContext";
 
@@ -102,12 +104,40 @@ function LinkRow({ icon, label, sublabel, onPress, danger, colors }: LinkRowProp
   );
 }
 
+const themeLabels: Record<ThemePreference, string> = {
+  light: "Claro",
+  dark: "Escuro",
+  system: "Sistema",
+};
+
+const nextThemePreference: Record<ThemePreference, ThemePreference> = {
+  light: "dark",
+  dark: "system",
+  system: "light",
+};
+
 export default function DefinicoesScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
   const { colors } = useTheme();
   const { settings, updateSetting } = useUserSettings();
+
+  const handleSecurityToggle = (
+    key: "two_factor_enabled" | "biometric_auth_enabled" | "facial_recognition_enabled",
+    label: string,
+    value: boolean
+  ) => {
+    if (!value) {
+      updateSetting(key, false);
+      return;
+    }
+
+    Alert.alert(
+      "Configuração indisponível",
+      `${label} precisa de um fluxo de segurança dedicado antes de poder ser ativado com segurança. Assim evitamos salvar uma opção que não protege a conta de verdade.`
+    );
+  };
 
   const sectionStyle = useMemo(
     () => ({
@@ -166,7 +196,9 @@ export default function DefinicoesScreen() {
             label="Autenticação de dois fatores"
             sublabel="Solicitar uma etapa extra ao entrar"
             value={settings.two_factor_enabled}
-            onValueChange={(value) => updateSetting("two_factor_enabled", value)}
+            onValueChange={(value) =>
+              handleSecurityToggle("two_factor_enabled", "Autenticação de dois fatores", value)
+            }
             accentGreen
             colors={colors}
           />
@@ -176,7 +208,9 @@ export default function DefinicoesScreen() {
             label="Biometria"
             sublabel="Usar impressão digital quando disponível"
             value={settings.biometric_auth_enabled}
-            onValueChange={(value) => updateSetting("biometric_auth_enabled", value)}
+            onValueChange={(value) =>
+              handleSecurityToggle("biometric_auth_enabled", "Biometria", value)
+            }
             accentGreen
             colors={colors}
           />
@@ -186,7 +220,9 @@ export default function DefinicoesScreen() {
             label="Reconhecimento facial"
             sublabel="Permitir login e verificações com Face ID/facial"
             value={settings.facial_recognition_enabled}
-            onValueChange={(value) => updateSetting("facial_recognition_enabled", value)}
+            onValueChange={(value) =>
+              handleSecurityToggle("facial_recognition_enabled", "Reconhecimento facial", value)
+            }
             accentGreen
             colors={colors}
           />
@@ -201,6 +237,16 @@ export default function DefinicoesScreen() {
             sublabel="Feedback tátil nas interações"
             value={settings.haptics_enabled}
             onValueChange={(value) => updateSetting("haptics_enabled", value)}
+            colors={colors}
+          />
+          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
+          <LinkRow
+            icon="moon"
+            label="Tema do app"
+            sublabel={`${themeLabels[settings.theme_preference]} — toque para alternar`}
+            onPress={() =>
+              updateSetting("theme_preference", nextThemePreference[settings.theme_preference])
+            }
             colors={colors}
           />
         </View>
