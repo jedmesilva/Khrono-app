@@ -182,10 +182,10 @@ export default function ToolDetailScreen() {
           <SimpleIconButton icon="more-horizontal" size={18} onPress={handleOptions} />
         </View>
 
-        {/* Status badge — mesmo padrão da tela de serviço: direita, abaixo dos botões de nav */}
+        {/* Status badge — mesmo padrão da tela de serviço: esquerda, abaixo do botão de voltar */}
         <View style={{
           position: "absolute",
-          right: 14,
+          left: 14,
           top: insets.top + 60,
           flexDirection: "row",
           alignItems: "center",
