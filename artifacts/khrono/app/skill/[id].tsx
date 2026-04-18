@@ -169,7 +169,25 @@ export default function SkillDetailScreen() {
           <BackButton />
         </View>
 
-        <View style={{ position: "absolute", top: insets.top + 14, right: 14, zIndex: 10 }}>
+        <View style={{ position: "absolute", top: insets.top + 14, right: 14, flexDirection: "row", alignItems: "center", gap: 8, zIndex: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              borderWidth: 1,
+              borderColor: isActive ? "rgba(24,160,107,0.32)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.14)",
+              backgroundColor: isActive ? "rgba(24,160,107,0.14)" : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+              borderRadius: 100,
+              paddingHorizontal: 9,
+              paddingVertical: 4,
+            }}
+          >
+            {isActive && <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: GREEN }} />}
+            <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: isActive ? GREEN : colors.textMuted }}>
+              {isActive ? "ativa" : "inativa"}
+            </Text>
+          </View>
           <SimpleIconButton icon="more-horizontal" onPress={handleOptions} />
         </View>
 
@@ -219,59 +237,22 @@ export default function SkillDetailScreen() {
             )}
           </View>
 
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 6,
-              marginTop: 6,
-              alignItems: "center",
-            }}
-          >
-            {!!skill.category && (
-              <View
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: "rgba(224,96,48,0.14)",
-                    borderColor: "rgba(224,96,48,0.28)",
-                  },
-                ]}
-              >
-                <Text style={[styles.chipText, { color: ACCENT }]}>
-                  {skill.category}
-                </Text>
-              </View>
-            )}
+          {!!skill.category && (
             <View
               style={[
                 styles.chip,
                 {
-                  backgroundColor: isActive
-                    ? "rgba(24,160,107,0.14)"
-                    : isDark
-                    ? "rgba(255,255,255,0.07)"
-                    : "rgba(0,0,0,0.07)",
-                  borderColor: isActive
-                    ? "rgba(24,160,107,0.32)"
-                    : isDark
-                    ? "rgba(255,255,255,0.14)"
-                    : "rgba(0,0,0,0.14)",
+                  marginTop: 6,
+                  backgroundColor: "rgba(224,96,48,0.14)",
+                  borderColor: "rgba(224,96,48,0.28)",
                 },
               ]}
             >
-              {isActive && (
-                <View style={[styles.dot, { backgroundColor: GREEN }]} />
-              )}
-              <Text
-                style={[
-                  styles.chipText,
-                  { color: isActive ? GREEN : colors.textMuted },
-                ]}
-              >
-                {isActive ? "ativa" : "inativa"}
+              <Text style={[styles.chipText, { color: ACCENT }]}>
+                {skill.category}
               </Text>
             </View>
-          </View>
+          )}
         </View>
       </LinearGradient>
 

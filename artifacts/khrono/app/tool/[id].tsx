@@ -178,7 +178,25 @@ export default function ToolDetailScreen() {
           <BackButton />
         </View>
 
-        <View style={{ position: "absolute", top: insets.top + 14, right: 14, zIndex: 10 }}>
+        <View style={{ position: "absolute", top: insets.top + 14, right: 14, flexDirection: "row", alignItems: "center", gap: 8, zIndex: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              borderWidth: 1,
+              borderColor: available ? "rgba(24,160,107,0.32)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.14)",
+              backgroundColor: available ? "rgba(24,160,107,0.14)" : isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+              borderRadius: 100,
+              paddingHorizontal: 9,
+              paddingVertical: 4,
+            }}
+          >
+            {available && <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: GREEN }} />}
+            <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: available ? GREEN : colors.textMuted }}>
+              {available ? "disponível" : "indisponível"}
+            </Text>
+          </View>
           <SimpleIconButton icon="more-horizontal" size={18} onPress={handleOptions} />
         </View>
 
