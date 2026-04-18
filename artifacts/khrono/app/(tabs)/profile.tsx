@@ -12,14 +12,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
-import { BackButton } from "@/components/BackButton";
-import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { PageHeader } from "@/components/PageHeader";
 import { LocationSheet, formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
-import { SkillListCard } from "@/components/SkillListCard";
-import { ToolListCard } from "@/components/ToolListCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ProfileReadinessSheet } from "@/components/ProfileReadinessSheet";
 import { useAvailability } from "@/context/AvailabilityContext";
@@ -40,7 +36,6 @@ import {
 } from "@/constants/profile-data";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
-type ViewState = "main" | "skills" | "skill_detail" | "tools" | "tool_detail";
 
 function getInitials(name: string): string {
   return (name ?? "")
@@ -49,220 +44,6 @@ function getInitials(name: string): string {
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("");
-}
-
-function SkillDetailView({ skill, colors, onBack, onVerifiedPress, onOptions }: {
-  skill: Skill;
-  colors: any;
-  onBack: () => void;
-  onVerifiedPress: (type: VerificationType) => void;
-  onOptions: () => void;
-}) {
-  return (
-    <View style={styles.subContainer}>
-      <View style={styles.subHeader}>
-        <BackButton onPress={onBack} />
-        <View style={{ flex: 1 }}>
-          <View style={styles.nameWithBadge}>
-            <Text style={[styles.subTitle, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{skill.name}</Text>
-            {skill.verified && (
-              <VerifiedBadge onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} />
-            )}
-          </View>
-          {skill.isNew ? (
-            <Text style={[styles.newSkillTag, { color: colors.textMuted }]}>skill nova · sem atividade ainda</Text>
-          ) : null}
-        </View>
-        <SimpleIconButton icon="more-horizontal" onPress={onOptions} />
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
-        <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.toolIconLarge, { backgroundColor: "#e0603012" }]}>
-            <Feather name="star" size={32} color="#e06030" />
-          </View>
-        </View>
-
-        <View style={styles.detailRow}>
-          <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.detailCardLabel, { color: colors.textMuted }]}>CATEGORIA</Text>
-            <Text style={[styles.detailCardValue, { color: colors.text }]}>{skill.type || "—"}</Text>
-          </View>
-          <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.detailCardLabel, { color: colors.textMuted }]}>ADICIONADA EM</Text>
-            <Text style={[styles.detailCardValue, { color: colors.text }]}>{skill.addedAt || "—"}</Text>
-          </View>
-        </View>
-
-        {skill.description ? (
-          <View style={[styles.descriptionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.descriptionLabel, { color: colors.textMuted }]}>DESCRIÇÃO</Text>
-            <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{skill.description}</Text>
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Feather name="file-text" size={28} color={colors.textDim} />
-            <Text style={[styles.emptyText, { color: colors.textDim }]}>sem descrição</Text>
-          </View>
-        )}
-        <View style={{ height: 100 }} />
-      </ScrollView>
-    </View>
-  );
-}
-
-function ToolDetailView({ tool, colors, onBack, onVerifiedPress, onOptions }: {
-  tool: Tool;
-  colors: any;
-  onBack: () => void;
-  onVerifiedPress: (type: VerificationType) => void;
-  onOptions: () => void;
-}) {
-  const iconColor = tool.available ? "#e06030" : colors.textMuted;
-  const iconBg = tool.available ? "#e0603012" : colors.surface;
-  return (
-    <View style={styles.subContainer}>
-      <View style={styles.subHeader}>
-        <BackButton onPress={onBack} />
-        <View style={{ flex: 1 }}>
-          <View style={styles.nameWithBadge}>
-            <Text style={[styles.subTitle, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{tool.name}</Text>
-            {tool.verified && (
-              <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} />
-            )}
-          </View>
-          <Text style={[styles.newSkillTag, { color: tool.available ? "#18a06b" : colors.textMuted }]}>
-            {tool.available ? "disponível" : "indisponível"}
-          </Text>
-        </View>
-        <SimpleIconButton icon="more-horizontal" onPress={onOptions} />
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={styles.skillDetailContent}>
-        <View style={[styles.toolIconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.toolIconLarge, { backgroundColor: iconBg }]}>
-            <Feather name={tool.icon} size={32} color={iconColor} />
-          </View>
-        </View>
-
-        <View style={styles.detailRow}>
-          <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.detailCardLabel, { color: colors.textMuted }]}>TIPO</Text>
-            <Text style={[styles.detailCardValue, { color: colors.text }]}>{tool.type || "—"}</Text>
-          </View>
-          <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.detailCardLabel, { color: colors.textMuted }]}>ADICIONADA EM</Text>
-            <Text style={[styles.detailCardValue, { color: colors.text }]}>{tool.addedAt || "—"}</Text>
-          </View>
-        </View>
-
-        <View style={[styles.descriptionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <Text style={[styles.descriptionLabel, { color: colors.textMuted }]}>DETALHES</Text>
-          <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{tool.details || "—"}</Text>
-        </View>
-
-        <View style={{ height: 100 }} />
-      </ScrollView>
-    </View>
-  );
-}
-
-function SkillsListView({ skills, colors, onBack, onSelectSkill, onVerifiedPress, onAdd }: {
-  skills: Skill[];
-  colors: any;
-  onBack: () => void;
-  onSelectSkill: (skill: Skill) => void;
-  onVerifiedPress: (type: VerificationType) => void;
-  onAdd: () => void;
-}) {
-  const verifiedCount = skills.filter((s) => s.verified !== null).length;
-
-  return (
-    <View style={styles.subContainer}>
-      <View style={styles.subHeader}>
-        <BackButton onPress={onBack} />
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.subTitle, { color: colors.text }]}>Skills</Text>
-          <Text style={[styles.subMeta, { color: colors.textMuted }]}>
-            {skills.length} skills · {verifiedCount} verificadas
-          </Text>
-        </View>
-        <Pressable style={[styles.addBtn, { borderColor: colors.surfaceBorder }]} onPress={onAdd}>
-          <Feather name="plus" size={11} color={colors.textSecondary} />
-          <Text style={[styles.addBtnText, { color: colors.textSecondary }]}>adicionar</Text>
-        </Pressable>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
-        {skills.length === 0 && (
-          <View style={styles.emptyState}>
-            <Feather name="star" size={28} color={colors.textDim} />
-            <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhuma skill cadastrada</Text>
-          </View>
-        )}
-        {skills.map((skill) => (
-          <SkillListCard
-            key={skill.id}
-            name={skill.name}
-            description={skill.description}
-            isNew={skill.isNew}
-            verifiedBadge={skill.verified ? <VerifiedBadge onPress={() => skill.verified && onVerifiedPress(skill.verified.type)} /> : undefined}
-            onPress={() => onSelectSkill(skill)}
-          />
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
-
-function ToolsListView({ tools, colors, onBack, onVerifiedPress, onAdd, onSelectTool }: {
-  tools: Tool[];
-  colors: any;
-  onBack: () => void;
-  onVerifiedPress: (type: VerificationType) => void;
-  onAdd: () => void;
-  onSelectTool: (tool: Tool) => void;
-}) {
-  const verifiedCount = tools.filter((t) => t.verified !== null).length;
-
-  return (
-    <View style={styles.subContainer}>
-      <View style={styles.subHeader}>
-        <BackButton onPress={onBack} />
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.subTitle, { color: colors.text }]}>Tools</Text>
-          <Text style={[styles.subMeta, { color: colors.textMuted }]}>
-            {tools.length} tools · {verifiedCount} verificadas
-          </Text>
-        </View>
-        <Pressable style={[styles.addBtn, { borderColor: colors.surfaceBorder }]} onPress={onAdd}>
-          <Feather name="plus" size={11} color={colors.textSecondary} />
-          <Text style={[styles.addBtnText, { color: colors.textSecondary }]}>adicionar</Text>
-        </Pressable>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 100, gap: 10 }}>
-        {tools.length === 0 && (
-          <View style={styles.emptyState}>
-            <Feather name="box" size={28} color={colors.textDim} />
-            <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhuma tool cadastrada</Text>
-          </View>
-        )}
-        {tools.map((tool) => (
-          <ToolListCard
-            key={tool.id}
-            name={tool.name}
-            iconName={tool.icon}
-            description={`${tool.type}${tool.details ? ` · ${tool.details}` : ""}`}
-            badge={tool.available ? "disponível" : "indisponível"}
-            available={tool.available}
-            verifiedBadge={tool.verified ? <VerifiedBadge onPress={() => tool.verified && onVerifiedPress(tool.verified.type)} /> : undefined}
-            onPress={() => onSelectTool(tool)}
-          />
-        ))}
-      </ScrollView>
-    </View>
-  );
 }
 
 export default function ProfileScreen() {
@@ -276,9 +57,6 @@ export default function ProfileScreen() {
   const { skills: catalogSkills } = useCatalog();
   const { location, saveLocation } = useLocation();
   const { profileReadiness, refreshProfileReadiness } = useAvailability();
-  const [view, setView] = useState<ViewState>("main");
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
   const [readinessSheetOpen, setReadinessSheetOpen] = useState(false);
@@ -356,89 +134,6 @@ export default function ProfileScreen() {
     setDialog({ title: VERIFICATION_LABELS[type], message });
   }
 
-  function handleSkillOptions(skill: Skill) {
-    setDialog({
-      title: skill.name,
-      buttons: [
-        { label: "Editar skill", onPress: () => { setDialog(null); router.push("/cadastro-skill"); } },
-        {
-          label: "Excluir skill",
-          style: "destructive",
-          onPress: () => {
-            setDialog({
-              title: "Excluir skill?",
-              message: `"${skill.name}" será removida do seu perfil permanentemente.`,
-              buttons: [
-                { label: "Cancelar", onPress: () => setDialog(null) },
-                { label: "Excluir", style: "destructive", onPress: () => { setDialog(null); setView("skills"); } },
-              ],
-            });
-          },
-        },
-        { label: "Cancelar", onPress: () => setDialog(null) },
-      ],
-    });
-  }
-
-  function handleToolOptions(tool: Tool) {
-    setDialog({
-      title: tool.name,
-      buttons: [
-        { label: "Editar tool", onPress: () => { setDialog(null); router.push("/cadastro-tool"); } },
-        {
-          label: "Excluir tool",
-          style: "destructive",
-          onPress: () => {
-            setDialog({
-              title: "Excluir tool?",
-              message: `"${tool.name}" será removida do seu perfil permanentemente.`,
-              buttons: [
-                { label: "Cancelar", onPress: () => setDialog(null) },
-                { label: "Excluir", style: "destructive", onPress: () => { setDialog(null); setView("tools"); } },
-              ],
-            });
-          },
-        },
-        { label: "Cancelar", onPress: () => setDialog(null) },
-      ],
-    });
-  }
-
-  if (view === "skill_detail" && selectedSkill) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
-        <SkillDetailView skill={selectedSkill} colors={colors} onBack={() => { setSelectedSkill(null); setView("skills"); }} onVerifiedPress={handleVerifiedPress} onOptions={() => handleSkillOptions(selectedSkill)} />
-        <AppDialog visible={!!dialog} title={dialog?.title ?? ""} message={dialog?.message} buttons={dialog?.buttons} onDismiss={() => setDialog(null)} />
-      </View>
-    );
-  }
-
-  if (view === "tool_detail" && selectedTool) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
-        <ToolDetailView tool={selectedTool} colors={colors} onBack={() => { setSelectedTool(null); setView("tools"); }} onVerifiedPress={handleVerifiedPress} onOptions={() => handleToolOptions(selectedTool)} />
-        <AppDialog visible={!!dialog} title={dialog?.title ?? ""} message={dialog?.message} buttons={dialog?.buttons} onDismiss={() => setDialog(null)} />
-      </View>
-    );
-  }
-
-  if (view === "skills") {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
-        <SkillsListView skills={mappedSkills} colors={colors} onBack={() => setView("main")} onSelectSkill={(skill) => { setSelectedSkill(skill); setView("skill_detail"); }} onVerifiedPress={handleVerifiedPress} onAdd={() => router.push("/cadastro-skill")} />
-        <AppDialog visible={!!dialog} title={dialog?.title ?? ""} message={dialog?.message} buttons={dialog?.buttons} onDismiss={() => setDialog(null)} />
-      </View>
-    );
-  }
-
-  if (view === "tools") {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPadding + 20 }]}>
-        <ToolsListView tools={myTools} colors={colors} onBack={() => setView("main")} onVerifiedPress={handleVerifiedPress} onAdd={() => router.push("/cadastro-tool")} onSelectTool={(tool) => { setSelectedTool(tool); setView("tool_detail"); }} />
-        <AppDialog visible={!!dialog} title={dialog?.title ?? ""} message={dialog?.message} buttons={dialog?.buttons} onDismiss={() => setDialog(null)} />
-      </View>
-    );
-  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -574,7 +269,7 @@ export default function ProfileScreen() {
 
         {/* Skills + Tools compact */}
         <View style={styles.compactRow}>
-          <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("skills")}>
+          <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push("/skills")}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
               <Feather name="tool" size={16} color="#e06030" />
             </View>
@@ -584,7 +279,7 @@ export default function ProfileScreen() {
             </View>
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
-          <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => setView("tools")}>
+          <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push("/tools")}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
               <Feather name="box" size={16} color="#e06030" />
             </View>
@@ -727,25 +422,4 @@ const styles = StyleSheet.create({
   emptyServices: { borderRadius: 20, padding: 28, alignItems: "center", gap: 10 },
   emptyServicesText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   emptyServicesSub: { fontFamily: "DMSans_400Regular", fontSize: 11, textAlign: "center", maxWidth: 220, lineHeight: 17 },
-
-  subContainer: { flex: 1 },
-  subHeader: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
-
-  subTitle: { fontFamily: "Sora_700Bold", fontSize: 19 },
-  subMeta: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
-  newSkillTag: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 2 },
-
-  skillDetailContent: { paddingHorizontal: 20, paddingTop: 4 },
-  toolIconCard: { borderRadius: 20, padding: 18, alignItems: "center", marginBottom: 12 },
-  toolIconLarge: { width: 80, height: 80, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  detailRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
-  detailCard: { flex: 1, borderRadius: 16, padding: 14, gap: 4 },
-  detailCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },
-  detailCardValue: { fontFamily: "Sora_600SemiBold", fontSize: 14 },
-  descriptionCard: { borderRadius: 16, padding: 16, gap: 8 },
-  descriptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 8, letterSpacing: 1.2, textTransform: "uppercase" },
-  descriptionText: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20 },
-
-  emptyState: { alignItems: "center", paddingVertical: 40, gap: 10 },
-  emptyText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
 });

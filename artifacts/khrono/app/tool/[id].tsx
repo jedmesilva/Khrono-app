@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,30 +9,17 @@ import { BackButton } from "@/components/BackButton";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
-import { useUserCatalog } from "@/context/UserCatalogContext";
-import { formatMonthYear } from "@/context/ServicesContext";
-import { Skill, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { useServices } from "@/context/ServicesContext";
+import { VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
-export default function SkillDetailScreen() {
+export default function ToolDetailScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { userSkills, removeSkill } = useUserCatalog();
+  const { myTools } = useServices();
   const [dialog, setDialog] = useState<{ title: string; message?: string; buttons?: AppDialogButton[] } | null>(null);
 
-  const skill: Skill | null = useMemo(() => {
-    const entry = userSkills.find((s) => s.skill_id === id);
-    if (!entry) return null;
-    return {
-      id: entry.skill_id,
-      name: entry.skill?.nome ?? "",
-      type: entry.skill?.category ?? "",
-      description: entry.skill?.description ?? "",
-      verified: entry.skill?.verified ? ({ type: "documentation" as VerificationType }) : null,
-      isNew: false,
-      addedAt: formatMonthYear(entry.createdAt),
-    };
-  }, [userSkills, id]);
+  const tool = myTools.find((t) => t.id === id) ?? null;
 
   function handleVerifiedPress(type: VerificationType) {
     const message =
@@ -43,31 +30,27 @@ export default function SkillDetailScreen() {
   }
 
   function handleOptions() {
-    if (!skill) return;
+    if (!tool) return;
     setDialog({
-      title: skill.name,
+      title: tool.name,
       buttons: [
         {
-          label: "Editar skill",
-          onPress: () => { setDialog(null); router.push("/cadastro-skill"); },
+          label: "Editar tool",
+          onPress: () => { setDialog(null); router.push("/cadastro-tool"); },
         },
         {
-          label: "Excluir skill",
+          label: "Excluir tool",
           style: "destructive",
           onPress: () => {
             setDialog({
-              title: "Excluir skill?",
-              message: `"${skill.name}" será removida do seu perfil permanentemente.`,
+              title: "Excluir tool?",
+              message: `"${tool.name}" será removida do seu perfil permanentemente.`,
               buttons: [
                 { label: "Cancelar", onPress: () => setDialog(null) },
                 {
                   label: "Excluir",
                   style: "destructive",
-                  onPress: async () => {
-                    setDialog(null);
-                    await removeSkill(skill.id);
-                    router.back();
-                  },
+                  onPress: () => { setDialog(null); router.back(); },
                 },
               ],
             });
@@ -78,7 +61,7 @@ export default function SkillDetailScreen() {
     });
   }
 
-  if (!skill) {
+  if (!tool) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <View style={styles.header}>
@@ -86,11 +69,14 @@ export default function SkillDetailScreen() {
         </View>
         <View style={styles.emptyState}>
           <Feather name="alert-circle" size={28} color={colors.textDim} />
-          <Text style={[styles.emptyText, { color: colors.textDim }]}>skill não encontrada</Text>
+          <Text style={[styles.emptyText, { color: colors.textDim }]}>tool não encontrada</Text>
         </View>
       </View>
     );
   }
+
+  const iconColor = tool.available ? "#e06030" : colors.textMuted;
+  const iconBg = tool.available ? "#e0603012" : colors.surface;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
@@ -99,15 +85,15 @@ export default function SkillDetailScreen() {
         <View style={{ flex: 1 }}>
           <View style={styles.nameWithBadge}>
             <Text style={[styles.title, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>
-              {skill.name}
+              {tool.name}
             </Text>
-            {skill.verified && (
-              <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />
+            {tool.verified && (
+              <VerifiedBadge onPress={() => tool.verified && handleVerifiedPress(tool.verified.type)} />
             )}
           </View>
-          {skill.isNew && (
-            <Text style={[styles.statusTag, { color: colors.textMuted }]}>skill nova · sem atividade ainda</Text>
-          )}
+          <Text style={[styles.statusTag, { color: tool.available ? "#18a06b" : colors.textMuted }]}>
+            {tool.available ? "disponível" : "indisponível"}
+          </Text>
         </View>
         <SimpleIconButton icon="more-horizontal" onPress={handleOptions} />
       </View>
@@ -118,33 +104,26 @@ export default function SkillDetailScreen() {
         contentContainerStyle={styles.content}
       >
         <View style={[styles.iconCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-          <View style={[styles.iconLarge, { backgroundColor: "#e0603012" }]}>
-            <Feather name="tool" size={32} color="#e06030" />
+          <View style={[styles.iconLarge, { backgroundColor: iconBg }]}>
+            <Feather name={tool.icon} size={32} color={iconColor} />
           </View>
         </View>
 
         <View style={styles.detailRow}>
           <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.detailLabel, { color: colors.textMuted }]}>CATEGORIA</Text>
-            <Text style={[styles.detailValue, { color: colors.text }]}>{skill.type || "—"}</Text>
+            <Text style={[styles.detailLabel, { color: colors.textMuted }]}>TIPO</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{tool.type || "—"}</Text>
           </View>
           <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <Text style={[styles.detailLabel, { color: colors.textMuted }]}>ADICIONADA EM</Text>
-            <Text style={[styles.detailValue, { color: colors.text }]}>{skill.addedAt || "—"}</Text>
+            <Text style={[styles.detailValue, { color: colors.text }]}>{tool.addedAt || "—"}</Text>
           </View>
         </View>
 
-        {skill.description ? (
-          <View style={[styles.descriptionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <Text style={[styles.descriptionLabel, { color: colors.textMuted }]}>DESCRIÇÃO</Text>
-            <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{skill.description}</Text>
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Feather name="file-text" size={28} color={colors.textDim} />
-            <Text style={[styles.emptyText, { color: colors.textDim }]}>sem descrição</Text>
-          </View>
-        )}
+        <View style={[styles.descriptionCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+          <Text style={[styles.descriptionLabel, { color: colors.textMuted }]}>DETALHES</Text>
+          <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{tool.details || "—"}</Text>
+        </View>
 
         <View style={{ height: 100 }} />
       </ScrollView>
