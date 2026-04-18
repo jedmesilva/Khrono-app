@@ -290,7 +290,7 @@ export default function SkillDetailScreen() {
         contentContainerStyle={styles.body}
       >
         {/* Toggle ativo */}
-        <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.toggleCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={[styles.toggleTitle, { color: colors.text }]}>
               {isActive ? "Skill ativa no perfil" : "Skill oculta do perfil público"}
@@ -505,16 +505,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
 
   hero: { width: "100%", overflow: "hidden", position: "relative" },
-  heroBtn: {
-    position: "absolute",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
-  },
   decor: {
     position: "absolute",
     right: -6,
@@ -574,7 +564,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     gap: 4,
-    borderWidth: 1,
   },
   infoLabel: {
     fontFamily: "DMSans_400Regular",
@@ -584,7 +573,7 @@ const styles = StyleSheet.create({
   },
   infoValue: { fontFamily: "Sora_600SemiBold", fontSize: 14 },
 
-  section: { borderRadius: 16, padding: 14, gap: 10, borderWidth: 1 },
+  section: { borderRadius: 16, padding: 14, gap: 10 },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",

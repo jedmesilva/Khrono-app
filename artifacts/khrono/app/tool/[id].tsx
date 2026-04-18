@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
@@ -14,6 +13,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
+import { BackButton } from "@/components/BackButton";
+import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { useServices } from "@/context/ServicesContext";
@@ -183,10 +184,6 @@ export default function ToolDetailScreen() {
     );
   }
 
-  const btnBg = isDark ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.54)";
-  const btnBorder = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)";
-  const btnIcon = isDark ? "#f0ebe6" : "#1a1714";
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Hero ───────────────────────────────────────────────── */}
@@ -196,35 +193,13 @@ export default function ToolDetailScreen() {
         end={{ x: 1, y: 1 }}
         style={[styles.hero, { height: HERO_H + insets.top }]}
       >
-        <Pressable
-          style={[
-            styles.heroBtn,
-            {
-              top: insets.top + 14,
-              left: 14,
-              backgroundColor: btnBg,
-              borderColor: btnBorder,
-            },
-          ]}
-          onPress={() => router.back()}
-        >
-          <Feather name="arrow-left" size={18} color={btnIcon} />
-        </Pressable>
+        <View style={{ position: "absolute", top: insets.top + 14, left: 14, zIndex: 10 }}>
+          <BackButton />
+        </View>
 
-        <Pressable
-          style={[
-            styles.heroBtn,
-            {
-              top: insets.top + 14,
-              right: 14,
-              backgroundColor: btnBg,
-              borderColor: btnBorder,
-            },
-          ]}
-          onPress={handleOptions}
-        >
-          <Feather name="more-horizontal" size={18} color={btnIcon} />
-        </Pressable>
+        <View style={{ position: "absolute", top: insets.top + 14, right: 14, zIndex: 10 }}>
+          <SimpleIconButton icon="more-horizontal" size={18} onPress={handleOptions} />
+        </View>
 
         <Text
           style={[
@@ -605,16 +580,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
 
   hero: { width: "100%", overflow: "hidden", position: "relative" },
-  heroBtn: {
-    position: "absolute",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
-  },
   decor: {
     position: "absolute",
     right: -6,
@@ -670,7 +635,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     gap: 4,
-    borderWidth: 1,
   },
   infoLabel: {
     fontFamily: "DMSans_400Regular",
@@ -680,7 +644,7 @@ const styles = StyleSheet.create({
   },
   infoValue: { fontFamily: "Sora_600SemiBold", fontSize: 14 },
 
-  section: { borderRadius: 16, padding: 14, gap: 10, borderWidth: 1 },
+  section: { borderRadius: 16, padding: 14, gap: 10 },
   bodyText: {
     fontFamily: "Sora_400Regular",
     fontSize: 13,
