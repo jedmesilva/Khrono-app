@@ -511,7 +511,7 @@ export default function ToolDetailScreen() {
             style={{ marginRight: 8 }}
           />
           <Text style={[styles.ctaBtnLabel, { color: available ? colors.textMuted : ACCENT }]}>
-            {available ? "Marcar como indisponível" : "Marcar como disponível"}
+            {available ? "Desativar ferramenta" : "Ativar ferramenta"}
           </Text>
         </TouchableOpacity>
       </View>
