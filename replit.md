@@ -62,6 +62,13 @@ Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase
 - No Supabase Edge Function source directory was found in the imported project.
 - Import migration checklist was completed after dependency installation, workflow restart, environment variable verification, log review, and HTTP 200 preview validation.
 
+## Railway API Server Deployment
+- `railway.json` is configured to build and start only `@workspace/api-server` from the monorepo root.
+- API production build command: `pnpm --filter @workspace/api-server run build`.
+- API production start command: `pnpm --filter @workspace/api-server run start`.
+- Railway healthcheck path: `/api/healthz`.
+- Required Railway variables for payments: `PORT` (Railway managed), `DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and optionally `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
+
 ## Skill & Tool Detail Screen Refactor (April 2026)
 Both detail screens were rewritten to match the richness of `provider-service/[serviceId].tsx`:
 - **Hero section**: 220px gradient, decorative oversized text, pill badges for status/category, back + options buttons with frosted style
