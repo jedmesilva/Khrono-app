@@ -287,7 +287,7 @@ type Props = {
   fixedLng?: number | null;
   serviceRadius: number;
   realtimeUpdatedAt?: Date | null;
-  onSave: (mode: LocationMode, address: string, radius: number, lat?: number, lng?: number) => void;
+  onSave: (mode: LocationMode, address: string, radius: number, lat?: number, lng?: number) => Promise<void>;
 };
 
 function formatLastUpdate(date: Date | null | undefined): string {
@@ -325,6 +325,7 @@ export function LocationSheet({
     fixedLng != null ? fixedLng : undefined
   );
   const [radius, setRadius] = useState(serviceRadius);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [addressSheetOpen, setAddressSheetOpen] = useState(false);
 
@@ -337,6 +338,7 @@ export function LocationSheet({
       setAddressLat(fixedLat != null ? fixedLat : undefined);
       setAddressLng(fixedLng != null ? fixedLng : undefined);
       setRadius(serviceRadius);
+      setSaving(false);
       setSaved(false);
       ref.current?.present();
     } else {
@@ -370,19 +372,25 @@ export function LocationSheet({
 
   const canSave = selectedMode === "realtime" || address.trim().length > 0;
 
-  const handleSave = () => {
-    if (!canSave) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    if (selectedMode === "fixed") {
-      onSave(selectedMode, address, radius, addressLat, addressLng);
-    } else {
-      onSave(selectedMode, fixedAddress, radius);
+  const handleSave = async () => {
+    if (!canSave || saving) return;
+    setSaving(true);
+    try {
+      if (selectedMode === "fixed") {
+        await onSave(selectedMode, address, radius, addressLat, addressLng);
+      } else {
+        await onSave(selectedMode, fixedAddress, radius);
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSaved(true);
+      setTimeout(() => {
+        setSaving(false);
+        setSaved(false);
+        onClose();
+      }, 1200);
+    } catch {
+      setSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      onClose();
-    }, 1200);
   };
 
   return (
@@ -505,16 +513,22 @@ export function LocationSheet({
           {/* Save button */}
           <Pressable
             onPress={handleSave}
-            disabled={!canSave}
+            disabled={!canSave || saving}
             style={[
               styles.saveBtn,
-              !canSave && styles.saveBtnDisabled,
+              (!canSave || saving) && styles.saveBtnDisabled,
             ]}
           >
-            <Feather name={saved ? "check" : "save"} size={15} color={!canSave ? colors.textDim : "#fff"} />
+            <Feather
+              name={saved ? "check" : saving ? "loader" : "save"}
+              size={15}
+              color={!canSave ? colors.textDim : "#fff"}
+            />
             <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>
               {saved
                 ? "Salvo!"
+                : saving
+                ? "Salvando..."
                 : !canSave
                 ? "Informe a localização para continuar"
                 : "Salvar"}

@@ -355,9 +355,9 @@ export default function ProfileScreen() {
         fixedLng={location.fixedLng}
         serviceRadius={location.serviceRadiusMeters}
         realtimeUpdatedAt={location.realtimeUpdatedAt}
-        onSave={(mode, address, radius, lat, lng) => {
-          saveLocation(mode, address, radius, lat, lng);
-        }}
+        onSave={(mode, address, radius, lat, lng) =>
+          saveLocation(mode, address, radius, lat, lng)
+        }
       />
       <ProfileReadinessSheet
         visible={readinessSheetOpen}
