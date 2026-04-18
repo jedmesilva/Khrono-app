@@ -347,31 +347,7 @@ export default function UserProfileScreen() {
           />
         )}
 
-        {provider.services.length > 0 && (
-          <>
-            <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>services</Text>
-            <View style={{ gap: 10, marginBottom: 24 }}>
-              {provider.services.map((service) => {
-                const serviceSkills: Skill[] = provider.serviceSkillsMap[service.id] ?? [];
-                const serviceTools: Tool[] = provider.serviceToolsMap[service.id] ?? [];
-                return (
-                  <ServiceCard
-                    key={service.id}
-                    service={service}
-                    skills={serviceSkills}
-                    tools={serviceTools}
-                    active={service.active}
-                    colors={colors}
-                    onPress={() => router.push(`/provider-service/${service.id}?profileId=${provider.id}` as any)}
-                    onVerifiedPress={handleVerifiedPress}
-                  />
-                );
-              })}
-            </View>
-          </>
-        )}
-
-        <View style={[styles.compactRow, { marginBottom: 28 }]}>
+        <View style={[styles.compactRow, { marginBottom: 14 }]}>
           <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
               <Feather name="star" size={16} color="#e06030" />
@@ -395,6 +371,30 @@ export default function UserProfileScreen() {
             </View>
           </View>
         </View>
+
+        {provider.services.length > 0 && (
+          <>
+            <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>services</Text>
+            <View style={{ gap: 10, marginBottom: 24 }}>
+              {provider.services.map((service) => {
+                const serviceSkills: Skill[] = provider.serviceSkillsMap[service.id] ?? [];
+                const serviceTools: Tool[] = provider.serviceToolsMap[service.id] ?? [];
+                return (
+                  <ServiceCard
+                    key={service.id}
+                    service={service}
+                    skills={serviceSkills}
+                    tools={serviceTools}
+                    active={service.active}
+                    colors={colors}
+                    onPress={() => router.push(`/provider-service/${service.id}?profileId=${provider.id}` as any)}
+                    onVerifiedPress={handleVerifiedPress}
+                  />
+                );
+              })}
+            </View>
+          </>
+        )}
 
         {provider.services.length === 0 && (
           <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
