@@ -499,6 +499,7 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
     alignItems: "center",
+    alignSelf: "flex-start",
     gap: 4,
     borderWidth: 1,
     borderRadius: 100,
