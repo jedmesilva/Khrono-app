@@ -290,7 +290,7 @@ export default function SkillDetailScreen() {
         contentContainerStyle={styles.body}
       >
         {/* Toggle ativo */}
-        <View style={[styles.toggleCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+        <View style={[styles.toggleCard, { backgroundColor: colors.card }]}>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={[styles.toggleTitle, { color: colors.text }]}>
               {isActive ? "Skill ativa no perfil" : "Skill oculta do perfil público"}
@@ -549,7 +549,6 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 16,
     padding: 14,
-    borderWidth: 1,
   },
   toggleTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   toggleSub: {

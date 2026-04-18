@@ -317,10 +317,7 @@ export default function ToolDetailScreen() {
         <View
           style={[
             styles.toggleCard,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.cardBorder,
-            },
+            { backgroundColor: colors.card },
           ]}
         >
           <View style={{ flex: 1, gap: 2 }}>
@@ -624,7 +621,6 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 16,
     padding: 14,
-    borderWidth: 1,
   },
   toggleTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
   toggleSub: { fontFamily: "DMSans_400Regular", fontSize: 11, marginTop: 1 },
