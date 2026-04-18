@@ -39,6 +39,9 @@ Set in Replit secrets (do not hardcode):
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon key (secret)
 - `EXPO_SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (secret)
 - `SUPABASE_ACCESS_TOKEN` — Supabase personal access token (secret)
+- `STRIPE_SECRET_KEY` — Stripe secret key used only by the API server
+- `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret for `/api/stripe/webhook`
+- `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key used by the mobile app
 
 ## Database
 Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase/migrations/`. The app uses Supabase's Row Level Security (RLS) policies for authorization.
@@ -48,6 +51,7 @@ Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase
 - The `.replit` file still contains a Supabase MCP access token from the imported project configuration. `.replit` is protected in this environment, so rotate this token in the Supabase dashboard (Settings > Access Tokens) before using that MCP configuration again.
 - RLS is enabled on all Supabase tables; users can only access data allowed by policies.
 - The Supabase anon key is designed to be exposed to the mobile app, but service-role and access tokens must never be shipped to the client.
+- Stripe can be configured either through Replit's Stripe connection or through the requested secrets above. The server code supports both paths and never embeds Stripe credentials in source files.
 
 ## Replit Migration Notes (April 2026)
 - Workspace dependencies were installed via `pnpm install` from the existing lockfile.
