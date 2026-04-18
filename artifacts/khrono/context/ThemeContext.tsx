@@ -1,13 +1,9 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
-  useState,
 } from "react";
 
-const STORAGE_KEY = "@khrono_theme";
 
 export type ThemePreference = "light" | "dark" | "system";
 
@@ -151,31 +147,11 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themePreference, setThemePreference] = useState<ThemePreference>("light");
-
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (val === "dark" || val === "light" || val === "system") {
-        setThemePreference(val);
-      }
-    });
-  }, []);
-
-  const setThemeMode = useCallback((mode: ThemePreference) => {
-    setThemePreference(mode);
-    AsyncStorage.setItem(STORAGE_KEY, mode);
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setThemePreference((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      AsyncStorage.setItem(STORAGE_KEY, next);
-      return next;
-    });
-  }, []);
-
-  const isDark = themePreference === "dark";
-  const colors = isDark ? darkColors : lightColors;
+  const isDark = false;
+  const colors = lightColors;
+  const themePreference: ThemePreference = "light";
+  const setThemeMode = useCallback((_mode: ThemePreference) => {}, []);
+  const toggleTheme = useCallback(() => {}, []);
 
   return (
     <ThemeContext.Provider value={{ isDark, themePreference, colors, toggleTheme, setThemeMode }}>

@@ -106,8 +106,8 @@ export default function DefinicoesScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const topPadding = isWeb ? insets.top + 67 : insets.top;
-  const { colors, isDark } = useTheme();
-  const { settings, isLoading, isSaving, error, updateSetting } = useUserSettings();
+  const { colors } = useTheme();
+  const { settings, updateSetting } = useUserSettings();
 
   const sectionStyle = useMemo(
     () => ({
@@ -201,16 +201,6 @@ export default function DefinicoesScreen() {
             sublabel="Feedback tátil nas interações"
             value={settings.haptics_enabled}
             onValueChange={(value) => updateSetting("haptics_enabled", value)}
-            colors={colors}
-          />
-          <View style={[staticStyles.rowDivider, { backgroundColor: colors.surface }]} />
-          <ToggleRow
-            icon="moon"
-            label="Tema escuro"
-            sublabel={isDark ? "Tema escuro ativado" : "Tema claro ativado"}
-            value={isDark}
-            onValueChange={(value) => updateSetting("theme_preference", value ? "dark" : "light")}
-            accentGreen
             colors={colors}
           />
         </View>
