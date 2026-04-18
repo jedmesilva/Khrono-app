@@ -38,8 +38,6 @@ type ProviderData = {
   initials: string;
   since: string;
   totalContracts: number;
-  nota: number;
-  avaliacoes: number;
   locationMode: LocationMode;
   serviceRadius: number;
   fixedAddress: string;
@@ -123,7 +121,7 @@ const areaStyles = StyleSheet.create({
 async function fetchProviderData(profileId: string): Promise<ProviderData | null> {
   const [profileRes, ppRes, servicesRes, skillsRes, toolsRes, locationRes, contractsRes, punctualityRes] = await Promise.all([
     supabase.from("profiles").select("id, name, first_name, created_at").eq("id", profileId).single(),
-    supabase.from("provider_profiles").select("nota, avaliacoes, total_contracts, verified").eq("profile_id", profileId).single(),
+    supabase.from("provider_profiles").select("total_contracts, verified").eq("profile_id", profileId).single(),
     supabase.from("provider_services")
       .select(`id, nome, valor_hora, nota, avaliacoes, is_active, created_at, service_skills(skill_id, skill:skills_catalog(id, nome, category, verified)), service_tools(tool_id, tool:provider_tools(id, nome, tipo, details, is_available))`)
       .eq("profile_id", profileId)
@@ -245,8 +243,6 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     initials: getInitials(profile.name ?? profile.first_name ?? ""),
     since: formatMonthYear(profile.created_at),
     totalContracts: Number(pp?.total_contracts ?? 0),
-    nota: Number(pp?.nota ?? 0),
-    avaliacoes: Number(pp?.avaliacoes ?? 0),
     locationMode: (location?.location_mode as LocationMode) ?? "realtime",
     serviceRadius: Number(location?.service_radius_meters ?? 5000),
     fixedAddress: location?.fixed_address ?? "",
@@ -329,7 +325,6 @@ export default function UserProfileScreen() {
             {[
               { val: String(provider.totalContracts), label: "contratos" },
               { val: String(provider.services.length), label: "services" },
-              { val: provider.nota > 0 ? provider.nota.toFixed(1) : "—", label: "avaliação" },
             ].map((item, i, arr) => (
               <React.Fragment key={item.label}>
                 <View style={styles.statItem}>
