@@ -330,14 +330,28 @@ export function LocationSheet({
   const [saveError, setSaveError] = useState(false);
   const [addressSheetOpen, setAddressSheetOpen] = useState(false);
 
+  // Tracks whether the AddressSheet is open so we can block onDismiss
+  const addressSheetOpenRef = useRef(false);
+  // Preserves the user's address selection across the BottomSheetModal dismiss/re-present cycle
+  const pendingSelectionRef = useRef<{ address: string; lat?: number; lng?: number } | null>(null);
+
   const snapPoints = useMemo(() => ["80%"], []);
 
   useEffect(() => {
     if (visible) {
       setSelectedMode(mode);
-      setAddress(fixedAddress);
-      setAddressLat(fixedLat != null ? fixedLat : undefined);
-      setAddressLng(fixedLng != null ? fixedLng : undefined);
+      // Restore pending selection (from before AddressSheet opened) or reset from props
+      if (pendingSelectionRef.current) {
+        const { address: a, lat, lng } = pendingSelectionRef.current;
+        setAddress(a);
+        setAddressLat(lat);
+        setAddressLng(lng);
+        pendingSelectionRef.current = null;
+      } else {
+        setAddress(fixedAddress);
+        setAddressLat(fixedLat != null ? fixedLat : undefined);
+        setAddressLng(fixedLng != null ? fixedLng : undefined);
+      }
       setRadius(serviceRadius);
       setSaving(false);
       setSaved(false);
@@ -349,9 +363,23 @@ export function LocationSheet({
   }, [visible]);
 
   const handleAddressSelect = useCallback((result: AddressResult) => {
+    // Save in ref so the selection survives a BottomSheetModal dismiss/present cycle
+    pendingSelectionRef.current = { address: result.label, lat: result.lat, lng: result.lng };
     setAddress(result.label);
     setAddressLat(result.lat);
     setAddressLng(result.lng);
+  }, []);
+
+  const handleOpenAddressSheet = useCallback(() => {
+    addressSheetOpenRef.current = true;
+    setAddressSheetOpen(true);
+  }, []);
+
+  const handleCloseAddressSheet = useCallback(() => {
+    addressSheetOpenRef.current = false;
+    setAddressSheetOpen(false);
+    // Re-present the BottomSheetModal in case it was dismissed while AddressSheet was open
+    ref.current?.present();
   }, []);
 
   const renderBackdrop = useCallback(
@@ -413,7 +441,12 @@ export function LocationSheet({
         borderColor: colors.sheetBorder,
       }}
       handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
-      onDismiss={onClose}
+      onDismiss={() => {
+        // Don't propagate dismiss while AddressSheet is open — it will re-present itself
+        if (!addressSheetOpenRef.current) {
+          onClose();
+        }
+      }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
@@ -477,7 +510,7 @@ export function LocationSheet({
                 pressed && styles.addressDisplayPressed,
                 address.length > 0 && styles.addressDisplayFilled,
               ]}
-              onPress={() => setAddressSheetOpen(true)}
+              onPress={handleOpenAddressSheet}
             >
               <Feather
                 name="map-pin"
@@ -547,7 +580,7 @@ export function LocationSheet({
 
       <AddressSheet
         visible={addressSheetOpen}
-        onClose={() => setAddressSheetOpen(false)}
+        onClose={handleCloseAddressSheet}
         onSelect={handleAddressSelect}
         title="Localização fixa"
         placeholder="Ex: Belo Horizonte, MG"
