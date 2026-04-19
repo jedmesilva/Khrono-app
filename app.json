@@ -11,7 +11,8 @@
     "splash": {
       "image": "./artifacts/khrono/assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#060606"
+      "backgroundColor": "#060606",
+      "favicon": "./artifacts/khrono/assets/images/icon.png"
     },
     "ios": {
       "supportsTablet": false,
@@ -46,7 +47,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
+          "icon": "./artifacts/khrono/assets/images/icon.png",
           "color": "#e06030",
           "defaultChannel": "default",
           "sounds": []
