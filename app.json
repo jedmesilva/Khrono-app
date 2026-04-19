@@ -4,12 +4,12 @@
     "slug": "krono-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./artifacts/khrono/assets/images/icon.png",
     "scheme": "khrono",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./artifacts/khrono/assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#060606"
     },
