@@ -28,10 +28,12 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        working-directory: artifacts/khrono
         run: pnpm install
+        working-directory: artifacts/khrono
 
       - name: Build
-        working-directory: artifacts/khrono
         run: eas build --platform android --profile preview --non-interactive --local
+        working-directory: artifacts/khrono
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
