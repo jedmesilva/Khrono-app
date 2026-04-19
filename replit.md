@@ -42,6 +42,7 @@ Set in Replit secrets (do not hardcode):
 - `STRIPE_SECRET_KEY` — Stripe secret key used only by the API server
 - `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret for `/api/stripe/webhook`
 - `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key used by the mobile app
+- `EXPO_PUBLIC_API_URL` — Base URL of the Railway API server (e.g. `https://xxx.railway.app`)
 
 ## Database
 Supabase is used for auth, PostgreSQL, and Realtime. Migrations are in `supabase/migrations/`. The app uses Supabase's Row Level Security (RLS) policies for authorization.
@@ -93,3 +94,13 @@ Both detail screens were rewritten to match the richness of `provider-service/[s
 - Security toggles for 2FA, biometrics, and facial recognition now show an explanatory alert instead of saving a fake enabled state.
 - `UserSettingsProvider` wraps `NotificationsProvider` in `app/_layout.tsx` so notifications can read user preferences.
 - Theme preference now drives `ThemeContext` (`light`, `dark`, or `system`) and the settings screen cycles through those modes from "Tema do app".
+
+## Stripe Payment Flow (April 2026)
+- `artifacts/khrono/lib/stripeApi.ts` — helper that calls the Railway API server to create/query PaymentIntents.
+- `EXPO_PUBLIC_API_URL` must be set to the Railway base URL (e.g. `https://xxx.railway.app`).
+- When `paymentMethod === "cartao"`:
+  - **`on_start` contracts**: PaymentIntent is created via Railway immediately when the contract is opened; stored in `stripe_payment_links` (Railway Postgres) linked to `contractId`.
+  - **`on_end` contracts**: PaymentIntent is created at the moment both parties confirm the end; uses the real measured amount.
+  - Payment status is set to `"pending_payment"` while awaiting Stripe confirmation; falls back to `"held"` if the server call fails.
+- Webhook at `POST /api/stripe/webhook` (Railway) handles `payment_intent.succeeded` / `payment_intent.payment_failed` events. Must be manually registered in Stripe Dashboard pointing to the Railway URL.
+- Card collection UI (Stripe payment sheet) requires `@stripe/stripe-react-native` with a custom dev client or EAS build — not yet implemented.

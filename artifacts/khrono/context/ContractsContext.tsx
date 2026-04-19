@@ -13,6 +13,7 @@ import { AppState, AppStateStatus, Platform, Vibration } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useNotifications } from "@/context/NotificationsContext";
 import { formatCurrency } from "@/lib/format";
+import { createStripePaymentIntent } from "@/lib/stripeApi";
 
 export type ContractTool = {
   nome: string;
@@ -746,8 +747,23 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
               await supabase.from("contracts").update({ payment_status: "failed" }).eq("id", contract.id);
             }
           } else if (contractData.paymentMethod === "cartao") {
-            // Pré-autorização de cartão (held) – captura real no encerramento
-            prePaymentStatus = "held";
+            // Cria PaymentIntent real no servidor Railway
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              await createStripePaymentIntent({
+                contractId: contract.id,
+                amount: preAmount,
+                customerEmail: session?.user?.email,
+                customerName: session?.user?.user_metadata?.name ?? contractData.person.name,
+                payerProfileId: payerId,
+                payeeProfileId: payeeId ?? undefined,
+                metadata: { billing_trigger: "on_start" },
+              });
+              prePaymentStatus = "pending_payment";
+            } catch (err) {
+              console.warn("[ContractsContext] Falha ao criar PaymentIntent (on_start):", err);
+              prePaymentStatus = "held";
+            }
           } else if (contractData.paymentMethod === "pix") {
             // PIX será exibido no modal – status aguardando confirmação
             prePaymentStatus = "pending_request";
@@ -1188,6 +1204,24 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           } else {
             finalPaymentStatus = "failed";
             contractPendingExtra = Number(realAmount);
+          }
+        } else if (contract.paymentMethod === "cartao") {
+          // Cria PaymentIntent real no servidor Railway para cobrar o cartão
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            await createStripePaymentIntent({
+              contractId: id,
+              amount: realAmount,
+              customerEmail: session?.user?.email,
+              customerName: session?.user?.user_metadata?.name,
+              payerProfileId: payerId ?? undefined,
+              payeeProfileId: payeeId ?? undefined,
+              metadata: { billing_trigger: "on_end" },
+            });
+            finalPaymentStatus = "pending_payment";
+          } catch (err) {
+            console.warn("[ContractsContext] Falha ao criar PaymentIntent (on_end):", err);
+            finalPaymentStatus = "paid";
           }
         } else {
           finalPaymentStatus = "paid";
