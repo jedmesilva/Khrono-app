@@ -21,28 +21,20 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Fix gradlew permissions
-        run: chmod +x artifacts/khrono/android/gradlew
-
       - name: Install dependencies
         run: pnpm install
         working-directory: artifacts/khrono
 
-      - name: Build
-        run: eas build --platform android --profile preview --non-interactive --local --output ./build.apk
-        working-directory: artifacts/khrono
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      - name: Fix gradlew permissions
+        run: chmod +x artifacts/khrono/android/gradlew
+
+      - name: Build APK
+        run: ./gradlew assembleRelease
+        working-directory: artifacts/khrono/android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-preview
-          path: artifacts/khrono/build.apk
+          path: artifacts/khrono/android/app/build/outputs/apk/release/app-release.apk
 
