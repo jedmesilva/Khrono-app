@@ -18,6 +18,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
@@ -26,9 +29,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: artifacts/khrono
-        run: npm install
+        run: pnpm install
 
       - name: Build
         working-directory: artifacts/khrono
-        run: eas build --platform android --profile preview --non-interactive
+        run: eas build --platform android --profile preview --non-interactive --local
 
