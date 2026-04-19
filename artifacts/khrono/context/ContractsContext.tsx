@@ -96,13 +96,13 @@ type ContractsContextType = {
   startContract: (
     contract: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string },
     initialStatus?: "active" | "pending_signature"
-  ) => Promise<string>;
+  ) => Promise<{ id: string; clientSecret?: string }>;
   acceptContract: (id: string) => Promise<void>;
   rejectContract: (id: string) => Promise<void>;
   beginContract: (id: string) => Promise<void>;
   cancelContract: (id: string) => Promise<void>;
   requestEndContract: (id: string, reason: string) => Promise<void>;
-  confirmEndContract: (id: string) => Promise<void>;
+  confirmEndContract: (id: string) => Promise<{ clientSecret?: string }>;
   rejectEndRequest: (id: string) => Promise<void>;
   requestCancelContract: (id: string, reason: string) => Promise<void>;
   confirmCancelContract: (id: string) => Promise<void>;
@@ -644,7 +644,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         serviceId?: string;
       },
       initialStatus: "active" | "pending_signature" = "active"
-    ): Promise<string> => {
+    ): Promise<{ id: string; clientSecret?: string }> => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -706,6 +706,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       // ── Pré-pagamento para contratos DEFINIDOS ────────────────────────────
       // Contratos de tempo definido têm billing_trigger='on_start':
       // o pagamento é criado/bloqueado na criação do contrato.
+      let pendingClientSecret: string | undefined;
       if (isDefinido && contractData.paymentMethod && contractData.duracaoTotal) {
         const preAmount = parseFloat(
           ((contractData.duracaoTotal / 3600000) * contractData.ratePerHour).toFixed(2)
@@ -750,7 +751,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
             // Cria PaymentIntent real no servidor Railway
             try {
               const { data: { session } } = await supabase.auth.getSession();
-              await createStripePaymentIntent({
+              const intent = await createStripePaymentIntent({
                 contractId: contract.id,
                 amount: preAmount,
                 customerEmail: session?.user?.email,
@@ -759,6 +760,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
                 payeeProfileId: payeeId ?? undefined,
                 metadata: { billing_trigger: "on_start" },
               });
+              pendingClientSecret = intent.clientSecret;
               prePaymentStatus = "pending_payment";
             } catch (err) {
               console.warn("[ContractsContext] Falha ao criar PaymentIntent (on_start):", err);
@@ -832,7 +834,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         "contract_created"
       ).catch(() => {});
 
-      return contract.id;
+      return { id: contract.id, clientSecret: pendingClientSecret };
     },
     [loadContracts, sendPushNotification]
   );
@@ -1171,6 +1173,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       let finalPaymentStatus: string;
       let contractPendingExtra: number | null = null;
       let contractPendingRefund: number | null = null;
+      let endClientSecret: string | undefined;
 
       if (contract.billingTrigger === "on_end") {
         // ── Contrato ABERTO ─────────────────────────────────────────────────
@@ -1209,7 +1212,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           // Cria PaymentIntent real no servidor Railway para cobrar o cartão
           try {
             const { data: { session } } = await supabase.auth.getSession();
-            await createStripePaymentIntent({
+            const intent = await createStripePaymentIntent({
               contractId: id,
               amount: realAmount,
               customerEmail: session?.user?.email,
@@ -1218,6 +1221,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
               payeeProfileId: payeeId ?? undefined,
               metadata: { billing_trigger: "on_end" },
             });
+            endClientSecret = intent.clientSecret;
             finalPaymentStatus = "pending_payment";
           } catch (err) {
             console.warn("[ContractsContext] Falha ao criar PaymentIntent (on_end):", err);
@@ -1439,6 +1443,8 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         { contract_id: id },
         "contract_ended"
       ).catch(() => {});
+
+      return { clientSecret: endClientSecret };
     },
     [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
   );

@@ -22,6 +22,7 @@ import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ServiceSelectionSheet } from "@/components/ServiceSelectionSheet";
 import { formatCurrency, formatRate } from "@/lib/format";
+import { useStripePaymentSheet } from "@/lib/stripePaymentSheet";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -47,6 +48,7 @@ export default function ContractConfirmScreen() {
   const { startContract } = useContracts();
   const { cards } = useWallet();
   const { location } = useLocation();
+  const { presentSheet } = useStripePaymentSheet();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -181,14 +183,28 @@ export default function ContractConfirmScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setConfirmLoading(true);
     try {
-      const id = await startContract(buildContractData(), "pending_signature");
+      const { id, clientSecret } = await startContract(buildContractData(), "pending_signature");
       setActiveContractId(id);
+
       if (metodoPagamento === "pix") {
         setPixPaymentAberta(true);
-      } else {
-        setPendingProvider(null);
-        router.replace(`/contract-detail/${id}` as any);
+        return;
       }
+
+      // Contratos definidos com cartão: apresentar payment sheet do Stripe
+      if (metodoPagamento === "cartao" && tipoContrato === "definido" && clientSecret) {
+        const result = await presentSheet(clientSecret);
+        if (!result.success && !result.canceled) {
+          Alert.alert(
+            "Falha no pagamento",
+            result.error ?? "Não foi possível processar o pagamento. Tente outro método.",
+            [{ text: "OK" }]
+          );
+        }
+      }
+
+      setPendingProvider(null);
+      router.replace(`/contract-detail/${id}` as any);
     } catch (e: any) {
       console.warn("[ContractConfirm] confirmar error:", e);
       Alert.alert(

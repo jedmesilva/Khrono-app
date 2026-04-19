@@ -35,6 +35,7 @@ import { AppDialog } from "@/components/AppDialog";
 import { ContractPaymentSheet } from "@/components/ContractPaymentSheet";
 import { ReasonSheet } from "@/components/ReasonSheet";
 import { useToast } from "@/context/ToastContext";
+import { useStripePaymentSheet } from "@/lib/stripePaymentSheet";
 import {
   Contract,
   isContractRunning,
@@ -1195,6 +1196,7 @@ export default function ContractDetailScreen() {
   const [cardUiState, setCardUiState] = useState<"awaiting_other_party" | "awaiting_my_confirmation" | null>(null);
   const loading = loadingAction !== null;
   const showToast = useToast();
+  const { presentSheet } = useStripePaymentSheet();
 
   const helpRef = useRef<BottomSheetModal>(null);
   const helpSnapPoints = useMemo(() => ["70%"], []);
@@ -1337,15 +1339,28 @@ export default function ContractDetailScreen() {
   const handleConfirmEnd = useCallback(async () => {
     if (!contract) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await withLoading(
-      "confirmEnd",
-      () => confirmEndContract(contract.id),
-      {
-        onSuccess: "Contrato encerrado com sucesso.",
-        onError: "Não foi possível confirmar o encerramento.",
+    setLoadingAction("confirmEnd");
+    try {
+      const { clientSecret } = await confirmEndContract(contract.id);
+      showToast("Contrato encerrado com sucesso.", "success");
+
+      // Contrato aberto com cartão: cobrar agora pelo valor real medido
+      if (contract.paymentMethod === "cartao" && clientSecret) {
+        const result = await presentSheet(clientSecret);
+        if (!result.success && !result.canceled) {
+          showToast(
+            result.error ?? "Falha ao processar pagamento no cartão.",
+            "error"
+          );
+        }
       }
-    );
-  }, [confirmEndContract, contract?.id]);
+    } catch (e) {
+      console.warn("[ContractDetail] confirmEnd error:", e);
+      showToast("Não foi possível confirmar o encerramento.", "error");
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [confirmEndContract, contract?.id, contract?.paymentMethod, presentSheet, showToast]);
 
   const handleRejectEnd = useCallback(async () => {
     if (!contract) return;

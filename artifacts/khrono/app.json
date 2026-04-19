@@ -29,6 +29,13 @@
       "expo-font",
       "expo-web-browser",
       [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.khrono.app",
+          "enableGooglePay": false
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "O Khrono precisa da câmera para escanear QR Codes de usuários.",

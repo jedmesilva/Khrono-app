@@ -18,6 +18,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -131,12 +132,19 @@ export default function RootLayout() {
 
   if (!fontsLoaded && !fontError) return null;
 
+  const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
+
   return (
     <SafeAreaProvider>
       <KeyboardProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
+            <StripeProvider
+              publishableKey={stripeKey}
+              urlScheme="khrono"
+              merchantIdentifier="merchant.com.khrono.app"
+            >
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
@@ -168,6 +176,7 @@ export default function RootLayout() {
                 </AuthProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>
+            </StripeProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
       </ErrorBoundary>
