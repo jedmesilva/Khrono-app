@@ -13,5 +13,5 @@
     "typescript": "~5.9.2",
     "prettier": "^3.8.1"
   },
-  "main": "artifacts/khrono/node_modules/expo/AppEntry.js"
+  "main": "artifacts/khrono/node_modules/expo-router/entry.js"
 }
