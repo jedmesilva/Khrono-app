@@ -27,6 +27,8 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
@@ -514,6 +516,56 @@ function LinkContent({
 
 // ─── ANIMATED TOGGLE ────────────────────────────────────────────────────────
 
+function LiveDot({ color }: { color: string }) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(0.55);
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(withTiming(1.9, { duration: 750 }), withTiming(1, { duration: 750 })),
+      -1,
+      false
+    );
+    opacity.value = withRepeat(
+      withSequence(withTiming(0, { duration: 750 }), withTiming(0.55, { duration: 750 })),
+      -1,
+      false
+    );
+  }, []);
+
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+    position: "absolute",
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: color,
+  }));
+
+  return (
+    <View style={{ width: 10, height: 10, alignItems: "center", justifyContent: "center" }}>
+      <Animated.View style={ringStyle} />
+      <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: color }} />
+    </View>
+  );
+}
+
+function StatusIndicator({ status, color }: { status: SessionStatus; color: string }) {
+  if (status === "starting" || status === "ending") {
+    return <ActivityIndicator size={13} color={color} />;
+  }
+  if (status === "active") {
+    return <LiveDot color={color} />;
+  }
+  const iconMap: Record<string, "clock" | "wifi-off" | "slash"> = {
+    pending: "clock",
+    paused:  "wifi-off",
+    idle:    "slash",
+  };
+  return <Feather name={iconMap[status] ?? "slash"} size={13} color={color} />;
+}
+
 function AnimatedToggle({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
   const offset = useSharedValue(value ? 1 : 0);
 
@@ -624,6 +676,8 @@ export function HireSheet({ open, onClose }: Props) {
   const disponivel = sessionStatus !== "idle";
   const isTransitioning = sessionStatus === "starting" || sessionStatus === "ending";
   const toggleValue = optimisticOn || disponivel;
+  const displayStatus: SessionStatus =
+    optimisticOn && sessionStatus === "idle" ? "starting" : sessionStatus;
 
   const subRef = useRef<BottomSheetModal>(null);
 
@@ -835,8 +889,8 @@ export function HireSheet({ open, onClose }: Props) {
               <View style={styles.availHeaderRow}>
                 <Text style={styles.availTitle}>Disponibilidade</Text>
                 <View style={styles.toggleRow}>
-                  <Text style={[styles.toggleLabel, { color: statusColor(sessionStatus) }]}>
-                    {statusLabel(sessionStatus)}
+                  <Text style={[styles.toggleLabel, { color: statusColor(displayStatus) }]}>
+                    {statusLabel(displayStatus)}
                   </Text>
                   <AnimatedToggle
                     value={toggleValue}
@@ -879,17 +933,16 @@ export function HireSheet({ open, onClose }: Props) {
 
               <View style={[
                 styles.availStatusBanner,
-                disponivel
-                  ? { backgroundColor: statusColor(sessionStatus) + "12", borderColor: statusColor(sessionStatus) + "35" }
-                  : { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                displayStatus !== "idle"
+                  ? { backgroundColor: statusColor(displayStatus) + "12" }
+                  : { backgroundColor: colors.card },
               ]}>
-                <Feather
-                  name={statusIcon(sessionStatus)}
-                  size={13}
-                  color={disponivel ? statusColor(sessionStatus) : colors.textMuted}
+                <StatusIndicator
+                  status={displayStatus}
+                  color={displayStatus !== "idle" ? statusColor(displayStatus) : colors.textMuted}
                 />
-                <Text style={[styles.availStatusMsg, { color: disponivel ? statusColor(sessionStatus) : colors.textMuted }]}>
-                  {statusBannerMessage(sessionStatus)}
+                <Text style={[styles.availStatusMsg, { color: displayStatus !== "idle" ? statusColor(displayStatus) : colors.textMuted }]}>
+                  {statusBannerMessage(displayStatus)}
                 </Text>
               </View>
 
@@ -1078,7 +1131,7 @@ function createMainStyles(colors: ColorPalette) {
     toggleLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.3 },
     availStatusBanner: {
       flexDirection: "row", alignItems: "center", gap: 8,
-      borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
+      borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
       marginBottom: 14,
     },
     availStatusMsg: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 0.2, flex: 1 },
