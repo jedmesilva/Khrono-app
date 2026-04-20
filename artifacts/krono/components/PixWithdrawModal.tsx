@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
+import { useWallet } from "@/context/WalletContext";
 
 type KeyType = "cpf" | "email" | "phone" | "random";
 
@@ -38,6 +39,7 @@ type Step = "form" | "confirm" | "success";
 
 export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   const { colors } = useTheme();
+  const { recordWithdrawal } = useWallet();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const ref = useRef<BottomSheetModal>(null);
@@ -134,8 +136,13 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
     setStep("confirm");
   }
 
-  function handlePay() {
+  async function handlePay() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    try {
+      await recordWithdrawal(parsedAmount, pixKey, keyType);
+    } catch (e) {
+      console.warn("[PixWithdrawModal] recordWithdrawal error:", e);
+    }
     setStep("success");
   }
 

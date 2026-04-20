@@ -19,6 +19,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
+import { useWallet } from "@/context/WalletContext";
 
 type Step = "form" | "qr" | "success";
 
@@ -31,6 +32,7 @@ const PIX_KEY = "krono@app.com.br";
 
 export function PixDepositModal({ visible, onClose }: Props) {
   const { colors } = useTheme();
+  const { recordDeposit } = useWallet();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const ref = useRef<BottomSheetModal>(null);
@@ -109,8 +111,13 @@ export function PixDepositModal({ visible, onClose }: Props) {
     setStep("qr");
   }
 
-  function handleDone() {
+  async function handleDone() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    try {
+      await recordDeposit(parsedAmount);
+    } catch (e) {
+      console.warn("[PixDepositModal] recordDeposit error:", e);
+    }
     setStep("success");
   }
 
