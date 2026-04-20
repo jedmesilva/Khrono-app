@@ -16,9 +16,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackButton } from "@/components/BackButton";
 import { CadastroDone } from "@/components/CadastroDone";
+import { IconBox } from "@/components/IconBox";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { GlobalStyles } from "@/constants/globalStyles";
+import { SKILL_ICON } from "@/constants/catalog-icons";
 import { type Skill, type Tool, type VerificationType } from "@/constants/profile-data";
 import { useCatalog, type CatalogService } from "@/context/CatalogContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
@@ -772,9 +774,9 @@ function SelectableSkillCard({ skill, selected, recommended, colors, onPress }: 
       ]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#e0603060" : colors.surfaceBorder }]}>
-        <Feather name="star" size={16} color={selected ? "#e06030" : colors.textMuted} />
-      </View>
+      <IconBox size="md" bg={selected ? "#e0603012" : colors.surface}>
+        <Feather name={SKILL_ICON} size={16} color={selected ? "#e06030" : colors.textMuted} />
+      </IconBox>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Text style={[styles.selectableName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{skill.name}</Text>
@@ -816,9 +818,9 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
       style={[styles.selectableCard, { backgroundColor: colors.card, borderColor, borderWidth: selected ? 1.5 : 1, opacity: tool.available ? 1 : 0.6 }]}
       onPress={onPress}
     >
-      <View style={[styles.selectableIcon, { backgroundColor: colors.surface, borderColor: selected ? "#e0603060" : colors.surfaceBorder }]}>
+      <IconBox size="md" bg={selected ? "#e0603012" : colors.surface}>
         <Feather name={tool.icon} size={16} color={iconColor} />
-      </View>
+      </IconBox>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Text style={[styles.selectableName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>{tool.name}</Text>
@@ -893,7 +895,6 @@ const styles = StyleSheet.create({
   warningActionText: { fontFamily: "Sora_600SemiBold", fontSize: 12, color: "#e06030" },
   selectionList: { gap: 10 },
   selectableCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 14 },
-  selectableIcon: { width: 40, height: 40, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   selectableName: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 2 },
   selectableSub: { fontFamily: "DMSans_400Regular", fontSize: 10, lineHeight: 15 },
   recommendedBadge: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },

@@ -28,7 +28,6 @@ import { SKILL_ICON, TOOL_SECTION_ICON } from "@/constants/catalog-icons";
 // ── Design tokens ────────────────────────────────────────────────────────────
 const ACCENT = "#e06030";
 const GREEN = "#00e5a0";
-const GREEN_SOLID = "#18a06b";
 const HERO_HEIGHT = 280;
 
 const DARK_GRADIENTS: [string, string][] = [
@@ -338,8 +337,6 @@ export default function ProviderServiceScreen() {
   const decorOpacity = isDark ? 0.09 : 0.06;
   const accentBg = isDark ? "rgba(224,96,48,0.09)" : "rgba(224,96,48,0.07)";
   const accentBorder = isDark ? "rgba(224,96,48,0.24)" : "rgba(224,96,48,0.20)";
-  const greenBg = isDark ? "rgba(24,160,107,0.09)" : "rgba(24,160,107,0.07)";
-  const greenBorder = isDark ? "rgba(24,160,107,0.24)" : "rgba(24,160,107,0.20)";
   const heroFadeColor = isDark ? "#0e0d0b" : (gradStart === "#f0e9e3" ? "#f8f5f2" : "#f8f5f2");
 
   return (
@@ -485,20 +482,20 @@ export default function ProviderServiceScreen() {
         {service.tools.length > 0 && (
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBadge, { backgroundColor: greenBg }]}>
-                <Feather name={TOOL_SECTION_ICON} size={13} color={GREEN_SOLID} />
+              <View style={[styles.sectionIconBadge, { backgroundColor: accentBg }]}>
+                <Feather name={TOOL_SECTION_ICON} size={13} color={ACCENT} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Tools</Text>
             </View>
             <ChipOverflowRow
               key={service.tools.map((t) => t.id).join()}
               items={service.tools}
-              overflowBg={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
-              overflowBorder={colors.surfaceBorder}
-              overflowColor={colors.textMuted}
+              overflowBg={accentBg}
+              overflowBorder={accentBorder}
+              overflowColor={ACCENT}
               renderChip={(t) => (
-                <View style={[styles.chipNeutral, { backgroundColor: colors.surface }]}>
-                  <Text style={[styles.chipNeutralText, { color: colors.textMuted }]} numberOfLines={1}>{t.name}</Text>
+                <View style={[styles.chipAccent, { backgroundColor: accentBg }]}>
+                  <Text style={[styles.chipAccentText, { color: ACCENT }]} numberOfLines={1}>{t.name}</Text>
                 </View>
               )}
             />

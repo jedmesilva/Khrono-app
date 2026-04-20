@@ -23,6 +23,7 @@ import { useServices } from "@/context/ServicesContext";
 import { useCatalog } from "@/context/CatalogContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Skill, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { SKILL_ICON, TOOL_SECTION_ICON } from "@/constants/catalog-icons";
 import { formatRateValue } from "@/lib/format";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -215,8 +216,6 @@ export default function ServiceDetailScreen() {
   const decorOpacity = (isDark ? 0.09 : 0.06) * (active ? 1 : 0.4);
   const accentBg = isDark ? "rgba(224,96,48,0.09)" : "rgba(224,96,48,0.07)";
   const accentBorder = isDark ? "rgba(224,96,48,0.24)" : "rgba(224,96,48,0.20)";
-  const greenBg = isDark ? "rgba(24,160,107,0.09)" : "rgba(24,160,107,0.07)";
-  const greenBorder = isDark ? "rgba(24,160,107,0.24)" : "rgba(24,160,107,0.20)";
   const heroFadeColor = isDark ? "#0e0d0b" : "#f8f5f2";
 
   // ── Handlers ───────────────────────────────────────────────────────────────
@@ -376,7 +375,7 @@ export default function ServiceDetailScreen() {
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
               <View style={[styles.sectionIconBadge, { backgroundColor: accentBg }]}>
-                <Feather name="star" size={13} color={ACCENT} />
+                <Feather name={SKILL_ICON} size={13} color={ACCENT} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Skills</Text>
             </View>
@@ -397,7 +396,7 @@ export default function ServiceDetailScreen() {
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
               <View style={[styles.sectionIconBadge, { backgroundColor: colors.surface }]}>
-                <Feather name="star" size={13} color={colors.textDim} />
+                <Feather name={SKILL_ICON} size={13} color={colors.textDim} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Skills</Text>
             </View>
@@ -409,20 +408,20 @@ export default function ServiceDetailScreen() {
         {tools.length > 0 ? (
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIconBadge, { backgroundColor: greenBg }]}>
-                <Feather name="key" size={13} color={GREEN_SOLID} />
+              <View style={[styles.sectionIconBadge, { backgroundColor: accentBg }]}>
+                <Feather name={TOOL_SECTION_ICON} size={13} color={ACCENT} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Tools</Text>
             </View>
             <ChipOverflowRow
               key={tools.map((t) => t.id).join()}
               items={tools}
-              overflowBg={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
-              overflowBorder={colors.surfaceBorder}
-              overflowColor={colors.textMuted}
+              overflowBg={accentBg}
+              overflowBorder={accentBorder}
+              overflowColor={ACCENT}
               renderChip={(t) => (
-                <View style={[styles.chipNeutral, { backgroundColor: colors.surface }]}>
-                  <Text style={[styles.chipText, { color: colors.textMuted }]} numberOfLines={1}>{t.name}</Text>
+                <View style={[styles.chipAccent, { backgroundColor: accentBg }]}>
+                  <Text style={[styles.chipText, { color: ACCENT }]} numberOfLines={1}>{t.name}</Text>
                 </View>
               )}
             />
@@ -431,7 +430,7 @@ export default function ServiceDetailScreen() {
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
               <View style={[styles.sectionIconBadge, { backgroundColor: colors.surface }]}>
-                <Feather name="key" size={13} color={colors.textDim} />
+                <Feather name={TOOL_SECTION_ICON} size={13} color={colors.textDim} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Tools</Text>
             </View>
