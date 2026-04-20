@@ -1,13 +1,9 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { WebhookHandlers } from "./webhookHandlers";
-
-const EXPO_METRO_PORT = process.env["EXPO_METRO_PORT"] ?? "22861";
-const EXPO_METRO_URL = `http://localhost:${EXPO_METRO_PORT}`;
 
 const app: Express = express();
 
@@ -67,19 +63,17 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-app.use(
-  createProxyMiddleware({
-    target: EXPO_METRO_URL,
-    changeOrigin: true,
-    ws: true,
-    on: {
-      error: (_err, _req, res) => {
-        if (res && "status" in res && typeof res.status === "function") {
-          res.status(502).json({ error: "Expo Metro server not available" });
-        }
-      },
+app.get("/", (_req, res) => {
+  res.json({
+    name: "Krono API",
+    version: "1.0.0",
+    status: "running",
+    endpoints: {
+      health: "/api/healthz",
+      stripeConfig: "/api/stripe/config",
+      stripeWebhook: "/api/stripe/webhook",
     },
-  }),
-);
+  });
+});
 
 export default app;
