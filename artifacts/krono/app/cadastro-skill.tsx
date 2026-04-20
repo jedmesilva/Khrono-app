@@ -99,7 +99,7 @@ export default function CadastroSkillScreen() {
         // Custom skill: insert into catalog as unverified, then link to user
         const { data: newSkill } = await supabase
           .from("skills_catalog")
-          .insert({ nome: skillName.trim(), description: description.trim() || null, status: "active", verified: false })
+          .insert({ nome: skillName.trim(), description: description.trim(), status: "active", verified: false })
           .select("id")
           .single();
         if (newSkill) {
@@ -304,7 +304,7 @@ export default function CadastroSkillScreen() {
             <Text style={[styles.stepTitle, { color: colors.text }]}>Descreva sua skill</Text>
             <Text style={[styles.stepSub, { color: colors.textSecondary }]}>
               Conte brevemente o que você faz com{" "}
-              <Text style={{ color: "#e06030" }}>{skillName}</Text>. Isso é opcional.
+              <Text style={{ color: "#e06030" }}>{skillName}</Text>. Isso é obrigatório.
             </Text>
 
             <TextInput
@@ -321,20 +321,9 @@ export default function CadastroSkillScreen() {
 
           <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20, borderTopColor: colors.surface }]}>
             <Pressable
-              style={[styles.skipBtn, { borderColor: colors.inputBorder }]}
+              style={[GlobalStyles.primaryBtn, { flex: 1 }, (!description.trim() || isSaving) && styles.primaryBtnDisabled]}
               onPress={handleFinish}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <ActivityIndicator size="small" color={colors.textSecondary} />
-              ) : (
-                <Text style={[styles.skipBtnText, { color: colors.textSecondary }]}>pular</Text>
-              )}
-            </Pressable>
-            <Pressable
-              style={[GlobalStyles.primaryBtn, { flex: 1 }, isSaving && styles.primaryBtnDisabled]}
-              onPress={handleFinish}
-              disabled={isSaving}
+              disabled={!description.trim() || isSaving}
             >
               {isSaving ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -374,8 +363,6 @@ const styles = StyleSheet.create({
   nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },
   textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 140, lineHeight: 22 },
   bottomBar: { flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1 },
-  skipBtn: { paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  skipBtnText: { fontFamily: "DMSans_400Regular", fontSize: 13 },
   primaryBtnDisabled: { opacity: 0.35 },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
 });
