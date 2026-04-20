@@ -10,6 +10,7 @@ import {
   Text,
   View,
   Alert,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -282,10 +283,14 @@ export default function DefinicoesScreen() {
         <SectionHeader title="SOBRE" colors={colors} />
         <View style={[sectionStyle, staticStyles.aboutSection]}>
           <View style={[staticStyles.aboutLogoWrap, { backgroundColor: colors.accent + "15", borderColor: colors.accent + "30" }]}>
-            <Text style={[staticStyles.aboutLogo, { color: colors.accent }]}>K</Text>
+            <Image
+              source={require("@/assets/images/LogoKronoTransparentOrange.png")}
+              style={staticStyles.aboutLogoImg}
+              resizeMode="contain"
+            />
           </View>
           <Text style={[staticStyles.aboutName, { color: colors.text }]}>Krono</Text>
-          <Text style={[staticStyles.aboutVersion, { color: colors.textDim }]}>Versão 1.0.0</Text>
+          <Text style={[staticStyles.aboutVersion, { color: colors.textDim }]}>Versão 0.0.1 beta</Text>
           <Text style={[staticStyles.aboutTagline, { color: colors.textDim }]}>Desenvolvido no Brasil</Text>
         </View>
       </ScrollView>
@@ -362,9 +367,9 @@ const staticStyles = StyleSheet.create({
     gap: 4,
   },
   aboutLogoWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 15,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     backgroundColor: "#e0603015",
     borderWidth: 1.5,
     borderColor: "#e0603030",
@@ -372,10 +377,9 @@ const staticStyles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  aboutLogo: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 24,
-    color: "#e06030",
+  aboutLogoImg: {
+    width: 44,
+    height: 44,
   },
   aboutName: {
     fontFamily: "Sora_700Bold",

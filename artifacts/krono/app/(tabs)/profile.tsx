@@ -271,7 +271,7 @@ export default function ProfileScreen() {
         {/* Skills + Tools compact */}
         <View style={styles.compactRow}>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push("/skills")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+            <View style={[styles.compactIcon, { backgroundColor: "#e0603015" }]}>
               <Feather name={SKILL_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
@@ -281,7 +281,7 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push("/tools")}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+            <View style={[styles.compactIcon, { backgroundColor: "#e0603015" }]}>
               <Feather name={TOOL_SECTION_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
