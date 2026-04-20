@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,8 +18,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BackButton } from "@/components/BackButton";
 import { AppDialog } from "@/components/AppDialog";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
@@ -287,7 +286,7 @@ export default function UserProfileScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
+      <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
         <ActivityIndicator color="#e06030" />
       </View>
     );
@@ -295,21 +294,17 @@ export default function UserProfileScreen() {
 
   if (!provider) {
     return (
-      <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
-        <BackButton />
+      <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
+        <ScreenHeader title="Perfil" />
         <Text style={[styles.errorText, { color: colors.textSecondary }]}>Perfil não encontrado.</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
+    <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
+      <ScreenHeader title="Perfil" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <View style={styles.headerRow}>
-          <BackButton />
-          <Text style={[styles.screenLabel, { color: colors.textMuted }]}>perfil</Text>
-        </View>
-
         <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
           <View style={styles.avatarWrap}>
             <View style={styles.avatar}>
@@ -413,9 +408,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 },
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 24 },
-  backBtn: { padding: 4, flexShrink: 0 },
-  screenLabel: { fontFamily: "DMSans_400Regular", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
   profileCard: { borderRadius: 20, padding: 24, alignItems: "center", marginBottom: 14 },
   avatarWrap: { marginBottom: 16 },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#e0603015", borderWidth: 2, borderColor: "#e0603030", alignItems: "center", justifyContent: "center" },

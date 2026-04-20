@@ -294,7 +294,7 @@ export default function CadastroServiceScreen() {
     : true;
 
   return (
-    <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
+    <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <BackButton onPress={handleBack} />
         <View style={{ flex: 1 }}>
@@ -848,7 +848,7 @@ function SelectableToolCard({ tool, selected, recommended, colors, onPress }: {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, marginBottom: 24 },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
   backBtn: { padding: 4, flexShrink: 0 },
   stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
   progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
