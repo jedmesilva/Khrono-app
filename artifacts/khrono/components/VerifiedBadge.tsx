@@ -12,7 +12,7 @@ interface VerifiedBadgeProps {
 export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
   const content = (
     <>
-      <Feather name="check-circle" size={9} color="#18a06b" />
+      <Feather name="shield" size={9} color="#18a06b" />
       {variant === "full" && <Text style={styles.text}>Verificado</Text>}
     </>
   );

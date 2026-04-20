@@ -305,7 +305,7 @@ export default function SkillDetailScreen() {
                   { backgroundColor: "rgba(24,160,107,0.12)" },
                 ]}
               >
-                <Feather name="check-circle" size={16} color={GREEN} />
+                <Feather name="shield" size={16} color={GREEN} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[styles.verifyTitle, { color: colors.text }]}>

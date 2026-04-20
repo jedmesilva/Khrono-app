@@ -331,7 +331,7 @@ export default function ServiceDetailScreen() {
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
             hitSlop={10}
           >
-            <Feather name="check-circle" size={13} color={GREEN_BADGE} />
+            <Feather name="shield" size={13} color={GREEN_BADGE} />
           </Pressable>
         )}
 
