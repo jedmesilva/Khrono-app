@@ -381,12 +381,6 @@ export default function SkillDetailScreen() {
           activeOpacity={0.80}
           onPress={() => handleToggleActive(!isActive)}
         >
-          <Feather
-            name={isActive ? "pause-circle" : "play-circle"}
-            size={16}
-            color={isActive ? colors.textMuted : ACCENT}
-            style={{ marginRight: 8 }}
-          />
           <Text style={[styles.ctaBtnLabel, { color: isActive ? colors.textMuted : ACCENT }]}>
             {isActive ? "Desativar skill" : "Ativar skill"}
           </Text>

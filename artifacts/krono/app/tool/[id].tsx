@@ -504,12 +504,6 @@ export default function ToolDetailScreen() {
           activeOpacity={0.80}
           onPress={() => handleToggleAvailable(!available)}
         >
-          <Feather
-            name={available ? "pause-circle" : "play-circle"}
-            size={16}
-            color={available ? colors.textMuted : ACCENT}
-            style={{ marginRight: 8 }}
-          />
           <Text style={[styles.ctaBtnLabel, { color: available ? colors.textMuted : ACCENT }]}>
             {available ? "Desativar ferramenta" : "Ativar ferramenta"}
           </Text>

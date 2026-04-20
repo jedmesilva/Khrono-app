@@ -537,12 +537,6 @@ export default function ServiceDetailScreen() {
           activeOpacity={0.80}
           onPress={() => toggleActive(service.id)}
         >
-          <Feather
-            name={active ? "pause-circle" : "play-circle"}
-            size={16}
-            color={active ? colors.textMuted : ACCENT}
-            style={{ marginRight: 8 }}
-          />
           <Text style={[styles.ctaBtnText, { color: active ? colors.textMuted : ACCENT }]}>
             {active ? "Desativar serviço" : "Ativar serviço"}
           </Text>
