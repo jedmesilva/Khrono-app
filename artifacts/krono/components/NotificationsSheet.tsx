@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   BottomSheetModal,
   BottomSheetBackdrop,
@@ -25,29 +25,28 @@ type Props = {
   onClose: () => void;
 };
 
-type NotifMeta = {
-  icon: keyof typeof Feather.glyphMap;
-  color: string;
-};
+type NotifMeta =
+  | { iconSet: "feather"; icon: keyof typeof Feather.glyphMap; color: string }
+  | { iconSet: "mci"; icon: keyof typeof MaterialCommunityIcons.glyphMap; color: string };
 
 function getNotifMeta(type: string): NotifMeta {
   switch (type) {
     case "contract_created":
-      return { icon: "user-check", color: "#e06030" };
+      return { iconSet: "mci", icon: "handshake-outline", color: "#e06030" };
     case "contract_accepted":
-      return { icon: "check-circle", color: "#18a06b" };
+      return { iconSet: "mci", icon: "handshake", color: "#18a06b" };
     case "contract_started":
-      return { icon: "play-circle", color: "#e06030" };
+      return { iconSet: "feather", icon: "play-circle", color: "#e06030" };
     case "contract_ended":
-      return { icon: "flag", color: "#18a06b" };
+      return { iconSet: "feather", icon: "flag", color: "#18a06b" };
     case "contract_cancelled":
-      return { icon: "x-circle", color: "#e06030" };
+      return { iconSet: "feather", icon: "x-circle", color: "#e06030" };
     case "payment":
-      return { icon: "dollar-sign", color: "#18a06b" };
+      return { iconSet: "feather", icon: "dollar-sign", color: "#18a06b" };
     case "rating":
-      return { icon: "star", color: "#f5c518" };
+      return { iconSet: "feather", icon: "star", color: "#f5c518" };
     default:
-      return { icon: "bell", color: "#8888aa" };
+      return { iconSet: "feather", icon: "bell", color: "#8888aa" };
   }
 }
 
@@ -174,7 +173,7 @@ export function NotificationsSheet({ visible, onClose }: Props) {
         )}
 
         {notifications.map((n, i) => {
-          const { icon, color } = getNotifMeta(n.type);
+          const meta = getNotifMeta(n.type);
           const isRead = !!n.read_at;
           return (
             <View key={n.id}>
@@ -185,10 +184,14 @@ export function NotificationsSheet({ visible, onClose }: Props) {
                 <View
                   style={[
                     staticStyles.iconWrap,
-                    { backgroundColor: color + "18" },
+                    { backgroundColor: meta.color + "18" },
                   ]}
                 >
-                  <Feather name={icon} size={16} color={color} />
+                  {meta.iconSet === "mci" ? (
+                    <MaterialCommunityIcons name={meta.icon} size={18} color={meta.color} />
+                  ) : (
+                    <Feather name={meta.icon} size={16} color={meta.color} />
+                  )}
                 </View>
                 <View style={staticStyles.itemContent}>
                   <View style={staticStyles.itemTop}>
