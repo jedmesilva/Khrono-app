@@ -22,21 +22,16 @@ import { useServices } from "@/context/ServicesContext";
 import { useTheme } from "@/context/ThemeContext";
 import { GlobalStyles } from "@/constants/globalStyles";
 import { supabase } from "@/lib/supabase";
+import { TOOL_TYPES, toolIconForTipo, toolLabelForTipo, type FeatherIconName } from "@/constants/catalog-icons";
 
 interface ToolTemplate {
   id: string;
   name: string;
   type: string;
   typeLabel: string;
-  icon: "truck" | "tool" | "box";
+  icon: FeatherIconName;
   description: string;
 }
-
-const TOOL_TYPES = [
-  { id: "veiculo", label: "Veículo", icon: "truck" as const },
-  { id: "ferramenta", label: "Ferramenta", icon: "tool" as const },
-  { id: "equipamento", label: "Equipamento", icon: "box" as const },
-];
 
 const TOTAL_STEPS = 2;
 type Step = 1 | 2 | "done";
@@ -46,21 +41,13 @@ function normalize(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function typeLabel(tipo: string) {
-  return TOOL_TYPES.find((t) => t.id === tipo)?.label ?? "Equipamento";
-}
-
-function typeIcon(tipo: string): "truck" | "tool" | "box" {
-  return TOOL_TYPES.find((t) => t.id === tipo)?.icon ?? "box";
-}
-
 function mapCatalogTool(tool: CatalogTool): ToolTemplate {
   return {
     id: tool.id,
     name: tool.nome,
     type: tool.tipo,
-    typeLabel: typeLabel(tool.tipo),
-    icon: typeIcon(tool.tipo),
+    typeLabel: toolLabelForTipo(tool.tipo),
+    icon: toolIconForTipo(tool.tipo),
     description: tool.description ?? "",
   };
 }

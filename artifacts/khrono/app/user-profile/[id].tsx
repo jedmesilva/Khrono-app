@@ -27,6 +27,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool, type Service } from "@/constants/profile-data";
 import { supabase } from "@/lib/supabase";
 import { formatMonthYear } from "@/context/ServicesContext";
+import { SKILL_ICON, TOOL_SECTION_ICON, toolIconForTipo } from "@/constants/catalog-icons";
 
 type LocationMode = "realtime" | "fixed";
 
@@ -56,12 +57,6 @@ function getInitials(name: string): string {
     .join("");
 }
 
-function iconForTipo(tipo: string): "truck" | "tool" | "box" {
-  const t = (tipo ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  if (t === "veiculo") return "truck";
-  if (t === "ferramenta") return "tool";
-  return "box";
-}
 
 function PulsingDot({ size = 8 }: { size?: number }) {
   const scale = useSharedValue(1);
@@ -157,7 +152,7 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     id: t.id,
     name: t.nome,
     type: t.tipo ?? "equipamento",
-    icon: iconForTipo(t.tipo),
+    icon: toolIconForTipo(t.tipo),
     details: t.details ?? "",
     available: Boolean(t.is_available),
     verified: null,
@@ -204,7 +199,7 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
         id: pt?.id ?? st.tool_id,
         name: pt?.nome ?? "",
         type: pt?.tipo ?? "equipamento",
-        icon: iconForTipo(pt?.tipo ?? ""),
+        icon: toolIconForTipo(pt?.tipo ?? ""),
         details: pt?.details ?? "",
         available: Boolean(pt?.is_available),
         verified: null,
@@ -345,7 +340,7 @@ export default function UserProfileScreen() {
         <View style={styles.compactRow}>
           <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-              <Feather name="tool" size={16} color="#e06030" />
+              <Feather name={SKILL_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
@@ -356,7 +351,7 @@ export default function UserProfileScreen() {
           </View>
           <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-              <Feather name="box" size={16} color="#e06030" />
+              <Feather name={TOOL_SECTION_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>

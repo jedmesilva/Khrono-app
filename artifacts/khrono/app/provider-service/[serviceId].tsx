@@ -23,6 +23,7 @@ import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool } from "@/
 import { supabase } from "@/lib/supabase";
 import { formatMonthYear } from "@/context/ServicesContext";
 import { formatRateValue } from "@/lib/format";
+import { SKILL_ICON, TOOL_SECTION_ICON } from "@/constants/catalog-icons";
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const ACCENT = "#e06030";
@@ -461,7 +462,7 @@ export default function ProviderServiceScreen() {
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
               <View style={[styles.sectionIconBadge, { backgroundColor: accentBg }]}>
-                <Feather name="star" size={13} color={ACCENT} />
+                <Feather name={SKILL_ICON} size={13} color={ACCENT} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Skills</Text>
             </View>
@@ -485,7 +486,7 @@ export default function ProviderServiceScreen() {
           <View style={[styles.sectionCard, { backgroundColor: colors.card }]}>
             <View style={styles.sectionHeader}>
               <View style={[styles.sectionIconBadge, { backgroundColor: greenBg }]}>
-                <Feather name="key" size={13} color={GREEN_SOLID} />
+                <Feather name={TOOL_SECTION_ICON} size={13} color={GREEN_SOLID} />
               </View>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Tools</Text>
             </View>

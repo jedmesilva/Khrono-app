@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { GlobalStyles, cardColors } from "@/constants/globalStyles";
 import { IconBox } from "@/components/IconBox";
+import { SKILL_ICON } from "@/constants/catalog-icons";
 
 interface SkillListCardProps {
   name: string;
@@ -32,7 +33,7 @@ export function SkillListCard({
       {...(onPress ? { onPress } : {})}
     >
       <IconBox size="sm" bg={isNew ? colors.surface : "#e0603012"}>
-        <Feather name="star" size={16} color={isNew ? colors.textMuted : "#e06030"} />
+        <Feather name={SKILL_ICON} size={16} color={isNew ? colors.textMuted : "#e06030"} />
       </IconBox>
       <View style={{ flex: 1 }}>
         <View style={styles.nameRow}>

@@ -13,6 +13,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
 import { formatMonthYear } from "@/context/ServicesContext";
 import { Skill, VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
+import { SKILL_ICON } from "@/constants/catalog-icons";
 import { useState } from "react";
 
 export default function SkillsScreen() {
@@ -69,7 +70,7 @@ export default function SkillsScreen() {
       >
         {skills.length === 0 && (
           <View style={styles.emptyState}>
-            <Feather name="tool" size={28} color={colors.textDim} />
+            <Feather name={SKILL_ICON} size={28} color={colors.textDim} />
             <Text style={[styles.emptyText, { color: colors.textDim }]}>nenhuma skill cadastrada</Text>
           </View>
         )}

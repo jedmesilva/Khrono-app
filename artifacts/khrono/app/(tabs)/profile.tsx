@@ -34,6 +34,7 @@ import {
   VERIFICATION_LABELS,
   VerificationType,
 } from "@/constants/profile-data";
+import { SKILL_ICON, TOOL_SECTION_ICON } from "@/constants/catalog-icons";
 
 type DialogState = { title: string; message?: string; buttons?: AppDialogButton[] } | null;
 
@@ -271,7 +272,7 @@ export default function ProfileScreen() {
         <View style={styles.compactRow}>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push("/skills")}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-              <Feather name="tool" size={16} color="#e06030" />
+              <Feather name={SKILL_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
@@ -281,7 +282,7 @@ export default function ProfileScreen() {
           </Pressable>
           <Pressable style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} onPress={() => router.push("/tools")}>
             <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
-              <Feather name="box" size={16} color="#e06030" />
+              <Feather name={TOOL_SECTION_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
