@@ -271,6 +271,13 @@ export default function ServiceDetailScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
+      {/* ── Fixed transparent header ─────────────────────────────────── */}
+      <View style={[styles.fixedHeader, { top: topPadding }]} pointerEvents="box-none">
+        <BackButton />
+        <View style={{ flex: 1 }} pointerEvents="none" />
+        <SimpleIconButton icon="more-horizontal" size={18} onPress={handleMoreOptions} />
+      </View>
+
       {/* ── Scrollable body (hero + conteúdo) ───────────────────────── */}
       <ScrollView
         style={{ flex: 1 }}
@@ -299,16 +306,6 @@ export default function ServiceDetailScreen() {
         <Text style={[styles.decorLabel, { color: ACCENT, opacity: decorOpacity, bottom: 52 }]} numberOfLines={1}>
           {decorText}
         </Text>
-
-        {/* Back button */}
-        <View style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}>
-          <BackButton />
-        </View>
-
-        {/* More options button */}
-        <View style={{ position: "absolute", top: topPadding + 12, right: 14, zIndex: 10 }}>
-          <SimpleIconButton icon="more-horizontal" size={18} onPress={handleMoreOptions} />
-        </View>
 
         {/* Status badge */}
         <View style={[
@@ -567,6 +564,16 @@ export default function ServiceDetailScreen() {
 // ── Styles ─────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  fixedHeader: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    zIndex: 100,
+  },
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
 

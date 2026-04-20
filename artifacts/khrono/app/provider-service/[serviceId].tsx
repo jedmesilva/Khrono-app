@@ -344,6 +344,11 @@ export default function ProviderServiceScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
 
+      {/* ── Fixed transparent header ─────────────────────────────────── */}
+      <View style={[styles.fixedHeader, { top: topPadding }]} pointerEvents="box-none">
+        <BackButton />
+      </View>
+
       {/* ── Scrollable body (hero + conteúdo) ───────────────────────── */}
       <ScrollView
         style={{ flex: 1 }}
@@ -372,11 +377,6 @@ export default function ProviderServiceScreen() {
         <Text style={[styles.decorLabel, { color: ACCENT, opacity: decorOpacity, bottom: 52 }]} numberOfLines={1}>
           {decorText}
         </Text>
-
-        {/* Back button */}
-        <View style={{ position: "absolute", top: topPadding + 12, left: 14, zIndex: 10 }}>
-          <BackButton />
-        </View>
 
         {/* Status badge */}
         <View style={[styles.statusBadge, { top: topPadding + 16 }]}>
@@ -570,6 +570,16 @@ export default function ProviderServiceScreen() {
 // ── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  fixedHeader: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    zIndex: 100,
+  },
   loadingContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
   errorText: { fontFamily: "Sora_400Regular", fontSize: 14, marginTop: 20, paddingHorizontal: 20 },
   backBtn: { padding: 4, position: "absolute", top: 20, left: 20 },

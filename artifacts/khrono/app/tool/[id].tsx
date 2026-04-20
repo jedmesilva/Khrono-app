@@ -167,6 +167,13 @@ export default function ToolDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* ── Fixed transparent header ─────────────────────────────────── */}
+      <View style={[styles.fixedHeader, { top: insets.top }]} pointerEvents="box-none">
+        <BackButton />
+        <View style={{ flex: 1 }} pointerEvents="none" />
+        <SimpleIconButton icon="more-horizontal" size={18} onPress={handleOptions} />
+      </View>
+
       {/* ── Hero ───────────────────────────────────────────────── */}
       <LinearGradient
         colors={gradient}
@@ -174,14 +181,6 @@ export default function ToolDetailScreen() {
         end={{ x: 1, y: 1 }}
         style={[styles.hero, { height: HERO_H + insets.top }]}
       >
-        <View style={{ position: "absolute", top: insets.top + 14, left: 14, zIndex: 10 }}>
-          <BackButton />
-        </View>
-
-        <View style={{ position: "absolute", top: insets.top + 14, right: 14, zIndex: 10 }}>
-          <SimpleIconButton icon="more-horizontal" size={18} onPress={handleOptions} />
-        </View>
-
         {/* Status badge — mesmo padrão da tela de serviço: esquerda, abaixo do botão de voltar */}
         <View style={{
           position: "absolute",
@@ -526,6 +525,16 @@ export default function ToolDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  fixedHeader: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    zIndex: 100,
+  },
 
   hero: { width: "100%", overflow: "hidden", position: "relative" },
   decor: {
