@@ -53,6 +53,7 @@ function TabLayoutInner() {
             borderTopWidth: 1,
             borderTopColor: colors.surface,
             elevation: 0,
+            overflow: "visible",
             paddingBottom: isWeb ? 0 : safeAreaInsets.bottom,
             ...(isWeb ? { height: 84 } : {}),
           },
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     top: -10,
+    overflow: "visible",
   },
   centerTabButtonInner: {
     width: 52,
