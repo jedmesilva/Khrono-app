@@ -4,6 +4,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "@/lib/haptics";
 import React, {
   useCallback,
@@ -154,6 +155,7 @@ function statusMessage(
 export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const {
     reportCashPaid,
     reportCashReceived,
@@ -803,7 +805,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
         android_keyboardInputMode="adjustResize"
       >
         <BottomSheetScrollView
-          contentContainerStyle={[styles.content, { paddingBottom: 24 }]}
+          contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >

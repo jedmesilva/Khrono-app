@@ -4,6 +4,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "@/lib/haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -67,6 +68,7 @@ export function PaymentSheet({
 }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
   const { cards, balance: walletBalance } = useWallet();
   const ref = useRef<BottomSheetModal>(null);
 
@@ -472,7 +474,7 @@ export function PaymentSheet({
       enableDynamicSizing={false}
     >
       <BottomSheetScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: 24 }]}
+        contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
