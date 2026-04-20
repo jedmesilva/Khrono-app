@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useRef, useState } from "react";
@@ -331,7 +331,7 @@ export default function ServiceDetailScreen() {
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
             hitSlop={10}
           >
-            <Feather name="shield" size={13} color={GREEN_BADGE} />
+            <MaterialCommunityIcons name="check-decagram" size={13} color={GREEN_BADGE} />
           </Pressable>
         )}
 

@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -277,7 +277,7 @@ export function ServiceCard({
               }
               hitSlop={10}
             >
-              <Feather name="shield" size={13} color={GREEN} />
+              <MaterialCommunityIcons name="check-decagram" size={13} color={GREEN} />
             </Pressable>
           )}
         </View>

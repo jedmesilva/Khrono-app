@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -48,7 +48,7 @@ function pickGradient(id: string, isDark: boolean): [string, string] {
 const VERIFY_STATUS = {
   unverified: { label: "Não verificado", color: null, icon: "shield-off" as const },
   pending: { label: "Verificação pendente", color: ORANGE_PENDING, icon: "clock" as const },
-  verified: { label: "Verificado pela Khrono", color: GREEN, icon: "shield" as const },
+  verified: { label: "Verificado pela Khrono", color: GREEN, icon: "check-decagram" as const },
 };
 
 export default function ToolDetailScreen() {
@@ -426,11 +426,19 @@ export default function ToolDetailScreen() {
                 },
               ]}
             >
-              <Feather
-                name={verifyMeta.icon}
-                size={16}
-                color={verifyMeta.color ?? colors.textMuted}
-              />
+              {vstatus === "verified" ? (
+                <MaterialCommunityIcons
+                  name="check-decagram"
+                  size={16}
+                  color={verifyMeta.color ?? colors.textMuted}
+                />
+              ) : (
+                <Feather
+                  name={verifyMeta.icon as "shield-off" | "clock"}
+                  size={16}
+                  color={verifyMeta.color ?? colors.textMuted}
+                />
+              )}
             </View>
 
             <View style={{ flex: 1, gap: 2 }}>

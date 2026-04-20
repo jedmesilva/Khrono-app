@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -305,7 +305,7 @@ export default function SkillDetailScreen() {
                   { backgroundColor: "rgba(24,160,107,0.12)" },
                 ]}
               >
-                <Feather name="shield" size={16} color={GREEN} />
+                <MaterialCommunityIcons name="check-decagram" size={16} color={GREEN} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[styles.verifyTitle, { color: colors.text }]}>

@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -12,7 +12,7 @@ interface VerifiedBadgeProps {
 export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
   const content = (
     <>
-      <Feather name="shield" size={9} color="#18a06b" />
+      <MaterialCommunityIcons name="check-decagram" size={9} color="#18a06b" />
       {variant === "full" && <Text style={styles.text}>Verificado</Text>}
     </>
   );
