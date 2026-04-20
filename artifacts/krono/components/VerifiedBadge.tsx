@@ -21,40 +21,40 @@ export function VerifiedIcon({ size = 13, color = GREEN }: VerifiedIconProps) {
 }
 
 export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
+  if (variant === "icon") {
+    if (onPress) {
+      return (
+        <Pressable onPress={onPress}>
+          <VerifiedIcon size={18} color={GREEN} />
+        </Pressable>
+      );
+    }
+    return <VerifiedIcon size={18} color={GREEN} />;
+  }
+
   const content = (
-    <>
-      <VerifiedIcon size={9} color={GREEN} />
-      {variant === "full" && <Text style={styles.text}>Verificado</Text>}
-    </>
+    <View style={styles.fullRow}>
+      <VerifiedIcon size={14} color={GREEN} />
+      <Text style={styles.text}>Verificado</Text>
+    </View>
   );
 
   if (onPress) {
-    return (
-      <Pressable onPress={onPress} style={styles.badge}>
-        {content}
-      </Pressable>
-    );
+    return <Pressable onPress={onPress}>{content}</Pressable>;
   }
 
-  return <View style={styles.badge}>{content}</View>;
+  return content;
 }
 
 const styles = StyleSheet.create({
-  badge: {
+  fullRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: `${GREEN}12`,
-    borderWidth: 1,
-    borderColor: `${GREEN}30`,
-    borderRadius: 20,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    flexShrink: 0,
   },
   text: {
     fontFamily: "DMSans_500Medium",
-    fontSize: 9,
+    fontSize: 11,
     color: GREEN,
   },
 });
