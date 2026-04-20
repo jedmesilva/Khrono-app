@@ -47,7 +47,8 @@ export function StatsBar({ items, style }: Props) {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 24,
-    padding: 14,
+    paddingVertical: 20,
+    paddingHorizontal: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

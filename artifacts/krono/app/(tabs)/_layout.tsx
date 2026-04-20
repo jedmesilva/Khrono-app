@@ -160,8 +160,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     shadowColor: "#e06030",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOpacity: 0.45,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });
