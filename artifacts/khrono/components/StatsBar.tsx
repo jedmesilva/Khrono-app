@@ -8,6 +8,7 @@ export type StatItem = {
   value: string | number;
   color?: string;
   align?: "flex-start" | "center" | "flex-end";
+  flex?: number;
 };
 
 type Props = {
@@ -28,7 +29,7 @@ export function StatsBar({ items, style }: Props) {
     >
       {items.map((item, index) => (
         <React.Fragment key={item.label}>
-          <View style={[styles.item, { alignItems: item.align ?? "flex-start" }]}>
+          <View style={[styles.item, { alignItems: item.align ?? "flex-start", flex: item.flex ?? 1 }]}>
             <Text style={[styles.label, { color: colors.textSecondary }]}>{item.label}</Text>
             <Text style={[styles.value, { color: colors.text }, item.color ? { color: item.color } : undefined]}>
               {item.value}

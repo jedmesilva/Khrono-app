@@ -250,9 +250,9 @@ export default function HomeScreen() {
           <StatsBar
             style={styles.summaryBar}
             items={[
-              { label: "A PAGAR", value: formatCurrency(totalPagar), color: "#e06030" },
-              { label: "ATIVOS", value: activeContracts.length, align: "center" },
-              { label: "A RECEBER", value: formatCurrency(totalReceber), color: "#18a06b", align: "flex-end" },
+              { label: "A PAGAR", value: formatCurrency(totalPagar), color: "#e06030", flex: 1.3 },
+              { label: "ATIVOS", value: activeContracts.length, align: "center", flex: 0.7 },
+              { label: "A RECEBER", value: formatCurrency(totalReceber), color: "#18a06b", align: "flex-end", flex: 1.3 },
             ]}
           />
         )}
