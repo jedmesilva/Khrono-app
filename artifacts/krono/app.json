@@ -11,14 +11,14 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#060606"
+      "backgroundColor": "#e06030"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.krono.app"
     },
     "android": {
-      "backgroundColor": "#060606",
+      "backgroundColor": "#e06030",
       "package": "com.krono.app",
       "permissions": [
         "android.permission.CAMERA"
