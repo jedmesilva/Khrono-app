@@ -7,7 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "@/lib/haptics";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatAmountInput, parseAmountInput } from "@/lib/format";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -67,10 +67,12 @@ export function PixDepositModal({ visible, onClose }: Props) {
   );
 
   const [step, setStep] = useState<Step>("form");
-  const [amount, setAmount] = useState("");
+  // Store only digit characters; display value is derived via formatAmountInput
+  const [amountDigits, setAmountDigits] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
+  const displayAmount = formatAmountInput(amountDigits);
+  const parsedAmount = parseAmountInput(amountDigits);
   const isValid = parsedAmount > 0;
 
   useEffect(() => {
@@ -92,8 +94,14 @@ export function PixDepositModal({ visible, onClose }: Props) {
   function handleClose() {
     ref.current?.dismiss();
     setStep("form");
-    setAmount("");
+    setAmountDigits("");
     onClose();
+  }
+
+  function handleAmountChange(text: string) {
+    // Extract only numeric digits, cap at 10 chars (max R$ 99.999,99)
+    const digits = text.replace(/\D/g, "").slice(0, 10);
+    setAmountDigits(digits);
   }
 
   function handleContinue() {
@@ -145,11 +153,11 @@ export function PixDepositModal({ visible, onClose }: Props) {
               <BottomSheetTextInput
                 ref={amountRef}
                 style={styles.amountInput}
-                value={amount}
-                onChangeText={setAmount}
+                value={displayAmount}
+                onChangeText={handleAmountChange}
                 placeholder="0,00"
                 placeholderTextColor={colors.textDim}
-                keyboardType="decimal-pad"
+                keyboardType="number-pad"
                 returnKeyType="done"
               />
             </View>

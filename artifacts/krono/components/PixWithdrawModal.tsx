@@ -6,7 +6,7 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "@/lib/haptics";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatAmountInput, parseAmountInput, maskCPF, maskPhone } from "@/lib/format";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -74,12 +74,14 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   );
 
   const [step, setStep] = useState<Step>("form");
-  const [amount, setAmount] = useState("");
+  // Store only digit characters; display value is derived via formatAmountInput
+  const [amountDigits, setAmountDigits] = useState("");
   const [keyType, setKeyType] = useState<KeyType>("cpf");
   const [pixKey, setPixKey] = useState("");
 
-  const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
-  const isValid = parsedAmount > 0 && pixKey.trim().length > 3;
+  const displayAmount = formatAmountInput(amountDigits);
+  const parsedAmount = parseAmountInput(amountDigits);
+  const isValid = parsedAmount > 0 && parsedAmount <= balance && pixKey.trim().length > 3;
 
   useEffect(() => {
     if (visible) {
@@ -100,10 +102,31 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   function handleClose() {
     ref.current?.dismiss();
     setStep("form");
-    setAmount("");
+    setAmountDigits("");
     setPixKey("");
     setKeyType("cpf");
     onClose();
+  }
+
+  function handleAmountChange(text: string) {
+    // Extract only numeric digits, cap at 10 chars (max R$ 99.999,99)
+    const digits = text.replace(/\D/g, "").slice(0, 10);
+    setAmountDigits(digits);
+  }
+
+  function handleKeyTypeChange(type: KeyType) {
+    setKeyType(type);
+    setPixKey(""); // clear key when type changes
+  }
+
+  function handlePixKeyChange(text: string) {
+    if (keyType === "cpf") {
+      setPixKey(maskCPF(text));
+    } else if (keyType === "phone") {
+      setPixKey(maskPhone(text));
+    } else {
+      setPixKey(text);
+    }
   }
 
   function handleConfirm() {
@@ -117,6 +140,12 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
   }
 
   const placeholder = KEY_TYPES.find((k) => k.id === keyType)?.placeholder ?? "";
+
+  const pixKeyboardType =
+    keyType === "cpf" ? ("number-pad" as const) :
+    keyType === "phone" ? ("phone-pad" as const) :
+    keyType === "email" ? ("email-address" as const) :
+    ("default" as const);
 
   return (
     <BottomSheetModal
@@ -150,11 +179,11 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
               <BottomSheetTextInput
                 ref={amountRef}
                 style={styles.amountInput}
-                value={amount}
-                onChangeText={setAmount}
+                value={displayAmount}
+                onChangeText={handleAmountChange}
                 placeholder="0,00"
                 placeholderTextColor={colors.textDim}
-                keyboardType="decimal-pad"
+                keyboardType="number-pad"
                 returnKeyType="done"
               />
             </View>
@@ -169,7 +198,7 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
                 <Pressable
                   key={k.id}
                   style={[styles.keyTypeBtn, keyType === k.id && styles.keyTypeBtnActive]}
-                  onPress={() => setKeyType(k.id)}
+                  onPress={() => handleKeyTypeChange(k.id)}
                 >
                   <Text style={[styles.keyTypeTxt, keyType === k.id && styles.keyTypeTxtActive]}>
                     {k.label}
@@ -182,11 +211,12 @@ export function PixWithdrawModal({ visible, balance, onClose }: Props) {
             <BottomSheetTextInput
               style={styles.keyInput}
               value={pixKey}
-              onChangeText={setPixKey}
+              onChangeText={handlePixKeyChange}
               placeholder={placeholder}
               placeholderTextColor={colors.textDim}
               autoCapitalize="none"
-              keyboardType={keyType === "phone" || keyType === "cpf" ? "numeric" : "default"}
+              autoCorrect={false}
+              keyboardType={pixKeyboardType}
             />
 
             <Pressable
