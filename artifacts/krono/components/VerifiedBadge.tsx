@@ -17,19 +17,30 @@ interface VerifiedIconProps {
 }
 
 export function VerifiedIcon({ size = 13, color = GREEN }: VerifiedIconProps) {
-  return <MaterialCommunityIcons name="check-decagram" size={size} color={color} />;
+  return (
+    <MaterialCommunityIcons
+      name="check-decagram"
+      size={size}
+      color={color}
+      style={{ lineHeight: size, height: size, textAlignVertical: "center", includeFontPadding: false } as any}
+    />
+  );
 }
 
 export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
   if (variant === "icon") {
     if (onPress) {
       return (
-        <Pressable onPress={onPress}>
+        <Pressable onPress={onPress} style={{ height: 18, justifyContent: "center" }}>
           <VerifiedIcon size={18} color={GREEN} />
         </Pressable>
       );
     }
-    return <VerifiedIcon size={18} color={GREEN} />;
+    return (
+      <View style={{ height: 18, justifyContent: "center" }}>
+        <VerifiedIcon size={18} color={GREEN} />
+      </View>
+    );
   }
 
   const content = (

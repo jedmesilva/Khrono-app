@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   avatarLargeText: { fontFamily: "Sora_700Bold", fontSize: 26, color: "#e06030" },
   profileInfo: { flex: 1, gap: 4 },
   nameWithBadge: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  profileName: { fontFamily: "Sora_700Bold", fontSize: 20, flexShrink: 1 },
+  profileName: { fontFamily: "Sora_700Bold", fontSize: 20, lineHeight: 24, includeFontPadding: false, flexShrink: 1 },
   sinceText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
 
   statsCard: { flexDirection: "row", alignItems: "center", borderRadius: 20, padding: 18, marginBottom: 12 },
