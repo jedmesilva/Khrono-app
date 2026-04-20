@@ -15,14 +15,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
-import { VerifiedBadge, VerifiedIcon } from "@/components/VerifiedBadge";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
 import { useServices, formatMonthYear } from "@/context/ServicesContext";
 import { VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
 
 const ACCENT = "#e06030";
-const GREEN = "#18a06b";
 const HERO_H = 220;
 
 const DARK_PAIRS: [string, string][] = [
@@ -289,68 +288,6 @@ export default function SkillDetailScreen() {
           </View>
         )}
 
-        {/* Verificação */}
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: colors.card, borderColor: colors.cardBorder },
-          ]}
-        >
-          {skill.verified ? (
-            <View style={styles.verifyRow}>
-              <View
-                style={[
-                  styles.verifyIcon,
-                  { backgroundColor: "rgba(24,160,107,0.12)" },
-                ]}
-              >
-                <VerifiedIcon size={16} color={GREEN} />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[styles.verifyTitle, { color: colors.text }]}>
-                  Verificado pela Comunidade
-                </Text>
-                <Text
-                  style={[styles.verifySub, { color: colors.textMuted }]}
-                >
-                  Validado por avaliações reais de contratos concluídos
-                </Text>
-              </View>
-            </View>
-          ) : (
-            <View style={styles.verifyRow}>
-              <View
-                style={[
-                  styles.verifyIcon,
-                  {
-                    backgroundColor: isDark
-                      ? "rgba(255,255,255,0.05)"
-                      : "rgba(0,0,0,0.05)",
-                  },
-                ]}
-              >
-                <Feather name="clock" size={16} color={colors.textMuted} />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text
-                  style={[
-                    styles.verifyTitle,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  Aguardando verificação
-                </Text>
-                <Text
-                  style={[styles.verifySub, { color: colors.textMuted }]}
-                >
-                  A verificação acontece automaticamente com avaliações de
-                  contratos realizados
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-
         {/* Serviços */}
         <View
           style={[
@@ -552,26 +489,6 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_400Regular",
     fontSize: 13,
     lineHeight: 20,
-  },
-
-  verifyRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  verifyIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  verifyTitle: { fontFamily: "Sora_600SemiBold", fontSize: 13 },
-  verifySub: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    lineHeight: 16,
   },
 
   svcRow: {
