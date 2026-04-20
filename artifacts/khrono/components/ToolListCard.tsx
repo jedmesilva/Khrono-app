@@ -48,8 +48,8 @@ export function ToolListCard({
         ) : null}
       </View>
       {badge ? (
-        <View style={[styles.badge, { backgroundColor: available ? "#e0603012" : colors.surface, borderColor: available ? "#e0603030" : colors.surfaceBorder }]}>
-          <Text style={[styles.badgeText, { color: available ? "#e06030" : colors.textMuted }]}>{badge}</Text>
+        <View style={[styles.badge, { backgroundColor: "#e0603012", borderColor: "#e0603030" }]}>
+          <Text style={[styles.badgeText, { color: "#e06030" }]}>{badge}</Text>
         </View>
       ) : null}
       {onPress ? (

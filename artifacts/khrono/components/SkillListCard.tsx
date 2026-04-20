@@ -46,8 +46,8 @@ export function SkillListCard({
         ) : null}
       </View>
       {badge ? (
-        <View style={[styles.badge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-          <Text style={[styles.badgeText, { color: colors.textMuted }]}>{badge}</Text>
+        <View style={[styles.badge, { backgroundColor: "#e0603012", borderColor: "#e0603030" }]}>
+          <Text style={[styles.badgeText, { color: "#e06030" }]}>{badge}</Text>
         </View>
       ) : null}
       {onPress ? (
