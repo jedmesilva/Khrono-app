@@ -19,10 +19,10 @@ import { useWallet } from "@/context/WalletContext";
 import { useLocation } from "@/context/LocationContext";
 import { ScheduleSheet } from "@/components/ScheduleSheet";
 import { PaymentSheet, PaymentMethod } from "@/components/PaymentSheet";
+import { ContractPaymentProcessSheet } from "@/components/ContractPaymentProcessSheet";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ServiceSelectionSheet } from "@/components/ServiceSelectionSheet";
 import { formatCurrency, formatRate } from "@/lib/format";
-import { useStripePaymentSheet } from "@/lib/stripePaymentSheet";
 
 const DURACOES = [
   { label: "30 min", ms: 30 * 60 * 1000 },
@@ -45,10 +45,9 @@ export default function ContractConfirmScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pendingProvider, setPendingProvider } = useConfirmation();
-  const { startContract } = useContracts();
+  const { createDraftContract } = useContracts();
   const { cards } = useWallet();
   const { location } = useLocation();
-  const { presentSheet } = useStripePaymentSheet();
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -62,7 +61,8 @@ export default function ContractConfirmScreen() {
   const [serviceSheetAberta, setServiceSheetAberta] = useState(false);
   const [scheduleSheetAberta, setScheduleSheetAberta] = useState(false);
   const [paymentSheetAberta, setPaymentSheetAberta] = useState(false);
-  const [pixPaymentAberta, setPixPaymentAberta] = useState(false);
+  const [processSheetAberta, setProcessSheetAberta] = useState(false);
+  const [draftContractId, setDraftContractId] = useState<string | null>(null);
   const [metodoPagamento, setMetodoPagamento] = useState<PaymentMethod | null>(null);
   const [cartaoSelecionadoId, setCartaoSelecionadoId] = useState<string | null>(null);
   const [agendado, setAgendado] = useState(false);
@@ -73,7 +73,6 @@ export default function ContractConfirmScreen() {
     d.setDate(d.getDate() + 1);
     return d;
   });
-  const [activeContractId, setActiveContractId] = useState<string | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   useEffect(() => {
@@ -178,33 +177,15 @@ export default function ContractConfirmScreen() {
     };
   };
 
+  // Step 1: create draft contract → open payment process sheet
   const confirmar = async () => {
     if (!metodoPagamento || confirmLoading) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setConfirmLoading(true);
     try {
-      const { id, clientSecret } = await startContract(buildContractData(), "pending_signature");
-      setActiveContractId(id);
-
-      if (metodoPagamento === "pix") {
-        setPixPaymentAberta(true);
-        return;
-      }
-
-      // Contratos definidos com cartão: apresentar payment sheet do Stripe
-      if (metodoPagamento === "cartao" && tipoContrato === "definido" && clientSecret) {
-        const result = await presentSheet(clientSecret);
-        if (!result.success && !result.canceled) {
-          Alert.alert(
-            "Falha no pagamento",
-            result.error ?? "Não foi possível processar o pagamento. Tente outro método.",
-            [{ text: "OK" }]
-          );
-        }
-      }
-
-      setPendingProvider(null);
-      router.replace(`/contract-detail/${id}` as any);
+      const { id } = await createDraftContract(buildContractData());
+      setDraftContractId(id);
+      setProcessSheetAberta(true);
     } catch (e: any) {
       console.warn("[ContractConfirm] confirmar error:", e);
       Alert.alert(
@@ -217,14 +198,21 @@ export default function ContractConfirmScreen() {
     }
   };
 
-  const finishPixFlow = () => {
-    const id = activeContractId;
-    setPixPaymentAberta(false);
-    setActiveContractId(null);
+  // Step 2a: payment processed and contract finalized → navigate to detail
+  const handlePaymentSuccess = () => {
+    const id = draftContractId;
+    setProcessSheetAberta(false);
+    setDraftContractId(null);
     setPendingProvider(null);
     if (id) {
       router.replace(`/contract-detail/${id}` as any);
     }
+  };
+
+  // Step 2b: user cancelled payment → draft deleted by the sheet, just reset
+  const handlePaymentCancel = () => {
+    setProcessSheetAberta(false);
+    setDraftContractId(null);
   };
 
   const goBack = () => {
@@ -580,18 +568,17 @@ export default function ContractConfirmScreen() {
         }}
       />
 
-      {/* ── PIX STEP (after contract created) ── */}
-      <PaymentSheet
-        visible={pixPaymentAberta}
-        onClose={finishPixFlow}
-        onConfirm={finishPixFlow}
-        showPixStep={true}
-        initialMethod="pix"
-        initialCardId={null}
-        recipientName={provider.name}
-        amount={tipoContrato === "definido" ? Number(valorTotal ?? 0) : valorHora}
+      {/* ── CONTRACT PAYMENT PROCESS SHEET ── */}
+      <ContractPaymentProcessSheet
+        visible={processSheetAberta}
+        contractId={draftContractId}
         contractType={tipoContrato}
-        hideSaldo={true}
+        paymentMethod={metodoPagamento}
+        totalAmount={tipoContrato === "definido" ? (duracaoMs / 3600000) * valorHora : valorHora}
+        ratePerHour={valorHora}
+        personName={provider.name}
+        onSuccess={handlePaymentSuccess}
+        onCancel={handlePaymentCancel}
       />
 
       {/* ── SCHEDULE SHEET ── */}

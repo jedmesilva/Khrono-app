@@ -97,6 +97,21 @@ type ContractsContextType = {
     contract: Omit<Contract, "id" | "status" | "startedAt"> & { serviceId?: string },
     initialStatus?: "active" | "pending_signature"
   ) => Promise<{ id: string; clientSecret?: string }>;
+  /** Creates a draft contract (invisible to hired party). Must be followed by processPaymentForDraftContract + finalizeContract. */
+  createDraftContract: (
+    contract: Omit<Contract, "id" | "status" | "startedAt" | "paymentStatus" | "billingTrigger" | "createdAt" | "endedAt" | "totalAmount" | "endReason" | "cancelReason" | "endRequestedBy" | "cancelRequestedBy" | "pendingExtraAmount" | "pendingRefundAmount"> & { serviceId?: string }
+  ) => Promise<{ id: string }>;
+  /** Processes payment for a draft contract (creates contract_payments record). For card, returns clientSecret. */
+  processPaymentForDraftContract: (
+    contractId: string,
+    params: { method: string; amount: number }
+  ) => Promise<{ clientSecret?: string }>;
+  /** Moves draft → pending_signature and creates contract_deliveries record to notify hired party. */
+  finalizeContract: (contractId: string) => Promise<void>;
+  /** Deletes a draft contract (user cancelled before finalizing). */
+  deleteDraftContract: (contractId: string) => Promise<void>;
+  /** Marks a contract delivery as seen (called when hired party opens contract detail). */
+  markDeliveryAsSeen: (contractId: string) => Promise<void>;
   acceptContract: (id: string) => Promise<void>;
   rejectContract: (id: string) => Promise<void>;
   beginContract: (id: string) => Promise<void>;
@@ -487,6 +502,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let contractorChannel: ReturnType<typeof supabase.channel> | null = null;
     let hiredChannel: ReturnType<typeof supabase.channel> | null = null;
+    let deliveriesChannel: ReturnType<typeof supabase.channel> | null = null;
 
     const init = async () => {
       const {
@@ -551,6 +567,30 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
                 lastNewContractVibratedAt.current = now;
                 Vibration.vibrate([0, 700, 300, 700, 300, 700]);
               }
+            }
+            await handleChange();
+          }
+        )
+        .subscribe(makeReconnectHandler(handleChange));
+
+      // contract_deliveries: hired party gets notified when contractor finalizes.
+      // The draft contract becomes visible only after the delivery INSERT fires,
+      // because RLS hides 'draft' status contracts from the hired party.
+      deliveriesChannel = supabase
+        .channel("contract-deliveries-as-recipient")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "contract_deliveries",
+            filter: `recipient_id=eq.${user.id}`,
+          },
+          async () => {
+            const now = Date.now();
+            if (now - lastNewContractVibratedAt.current > 2000) {
+              lastNewContractVibratedAt.current = now;
+              Vibration.vibrate([0, 700, 300, 700, 300, 700]);
             }
             await handleChange();
           }
@@ -628,6 +668,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
       if (contractorChannel) supabase.removeChannel(contractorChannel);
       if (hiredChannel) supabase.removeChannel(hiredChannel);
+      if (deliveriesChannel) supabase.removeChannel(deliveriesChannel);
       if (broadcastChannelRef.current) {
         broadcastReadyRef.current = false;
         supabase.removeChannel(broadcastChannelRef.current);
@@ -838,6 +879,263 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     },
     [loadContracts, sendPushNotification]
   );
+
+  // ── Draft contract flow ───────────────────────────────────────────────────────
+  // createDraftContract → processPaymentForDraftContract → finalizeContract
+  // (or deleteDraftContract on cancel)
+
+  const createDraftContract = useCallback(
+    async (contractData: Omit<Contract, "id" | "status" | "startedAt" | "paymentStatus" | "billingTrigger" | "createdAt" | "endedAt" | "totalAmount" | "endReason" | "cancelReason" | "endRequestedBy" | "cancelRequestedBy" | "pendingExtraAmount" | "pendingRefundAmount"> & { serviceId?: string }) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const contractorId = user.id;
+      const hiredId = contractData.person.profileId ?? user.id;
+      const audit = await getAuditSnapshot();
+      const scheduledFor = contractData.scheduledFor ?? Date.now();
+
+      const { data: contract, error } = await supabase
+        .from("contracts")
+        .insert({
+          status: "draft",
+          contractor_id: contractorId,
+          hired_id: hiredId,
+          type: contractData.tipo === "cronometro" ? "open" : "defined",
+          total_hours:
+            contractData.tipo === "timer" && contractData.duracaoTotal
+              ? contractData.duracaoTotal / 3600000
+              : null,
+          service_id: contractData.serviceId ?? null,
+          hourly_rate: contractData.ratePerHour ?? 0,
+          payment_method: mapPaymentMethodToDb(contractData.paymentMethod),
+          payment_card_label: contractData.paymentCardLabel ?? null,
+          payment_status: "pending",
+          billing_trigger:
+            contractData.tipo === "timer" ? "on_start" : "on_end",
+          agendado: contractData.agendado ?? false,
+          scheduled_for: new Date(scheduledFor).toISOString(),
+          location: contractData.location ?? null,
+          ...audit,
+        })
+        .select("id")
+        .single();
+
+      if (error || !contract) throw new Error(error?.message ?? "Erro ao criar rascunho");
+
+      await supabase.from("contract_parties").insert({
+        contract_id: contract.id,
+        user_id: contractorId,
+        role: "contractor",
+      });
+      await supabase.from("contract_parties").insert({
+        contract_id: contract.id,
+        user_id: hiredId,
+        role: "hired",
+      });
+
+      return { id: contract.id as string };
+    },
+    []
+  );
+
+  const processPaymentForDraftContract = useCallback(
+    async (
+      contractId: string,
+      params: { method: string; amount: number }
+    ): Promise<{ clientSecret?: string }> => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { method, amount } = params;
+      let clientSecret: string | undefined;
+
+      if (method === "cartao" && amount > 0) {
+        // Create a Stripe PaymentIntent and return the client secret
+        const { data: row } = await supabase
+          .from("contracts")
+          .select("hired_id")
+          .eq("id", contractId)
+          .single();
+        const hiredId = row?.hired_id ?? "";
+        const piResult = await createStripePaymentIntent({
+          contractId,
+          amount: Math.round(amount * 100),
+          payerProfileId: user.id,
+          payeeProfileId: hiredId,
+        });
+        clientSecret = piResult?.clientSecret;
+        await supabase.from("contract_payments").insert({
+          contract_id: contractId,
+          amount,
+          method: "card",
+          status: "pending_request",
+          stripe_payment_intent_id: piResult?.paymentIntentId ?? null,
+          payer_id: user.id,
+          payee_id: hiredId,
+        });
+      } else if (method === "saldo" && amount > 0) {
+        // Debit wallet immediately
+        const { data: wallet } = await supabase
+          .from("wallets")
+          .select("id, balance")
+          .eq("owner_id", user.id)
+          .single();
+        if (!wallet) throw new Error("Carteira não encontrada");
+        const balance = Number(wallet.balance);
+        if (balance < amount) throw new Error("Saldo insuficiente");
+        const newBalance = balance - amount;
+        const { data: row } = await supabase
+          .from("contracts")
+          .select("hired_id")
+          .eq("id", contractId)
+          .single();
+        const hiredId = row?.hired_id ?? "";
+        await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
+        await supabase.from("wallet_transactions").insert({
+          wallet_id: wallet.id,
+          type: "debit",
+          amount,
+          description: `Débito para contrato #${contractId.substring(0, 8)}`,
+          related_contract_id: contractId,
+        });
+        await supabase.from("contract_payments").insert({
+          contract_id: contractId,
+          amount,
+          method: "wallet",
+          status: "completed",
+          payer_id: user.id,
+          payee_id: hiredId,
+        });
+        await supabase
+          .from("contracts")
+          .update({ payment_status: "completed" })
+          .eq("id", contractId);
+      } else {
+        // Cash, PIX, card-open — payment at end; just record the intent
+        const { data: row } = await supabase
+          .from("contracts")
+          .select("hired_id")
+          .eq("id", contractId)
+          .single();
+        const hiredId = row?.hired_id ?? "";
+        await supabase.from("contract_payments").insert({
+          contract_id: contractId,
+          amount: amount > 0 ? amount : 0,
+          method:
+            method === "cartao" ? "card" : method === "pix" ? "pix" : "cash",
+          status: "pending_request",
+          payer_id: user.id,
+          payee_id: hiredId,
+        });
+      }
+
+      return { clientSecret };
+    },
+    []
+  );
+
+  const finalizeContract = useCallback(
+    async (contractId: string) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      // Fetch contract details for notification and delivery
+      const { data: contract, error: fetchError } = await supabase
+        .from("contracts")
+        .select("hired_id, service:provider_services!service_id(nome)")
+        .eq("id", contractId)
+        .single();
+
+      if (fetchError || !contract) throw new Error("Contrato não encontrado");
+
+      // Move contract from draft → pending_signature
+      const { error: updateError } = await supabase
+        .from("contracts")
+        .update({ status: "pending_signature" })
+        .eq("id", contractId)
+        .eq("status", "draft");
+
+      if (updateError) throw new Error(updateError.message);
+
+      // Create delivery record — this is what the hired party's realtime listens for
+      await supabase.from("contract_deliveries").insert({
+        contract_id: contractId,
+        recipient_id: contract.hired_id,
+        status: "pending",
+        delivered_at: new Date().toISOString(),
+      });
+
+      const hiredId = contract.hired_id as string;
+      const serviceName =
+        (contract as any).service?.nome ?? "serviço";
+
+      // Broadcast and push notify
+      if (broadcastChannelRef.current && broadcastReadyRef.current) {
+        broadcastChannelRef.current.send({
+          type: "broadcast",
+          event: "contract-created",
+          payload: { hired_id: hiredId, contract_id: contractId },
+        });
+      }
+
+      await recordContractEvent({
+        contractId,
+        actorId: user.id,
+        actorRole: "contractor",
+        eventType: "created",
+      });
+
+      if (hiredId) {
+        sendPushNotification(
+          hiredId,
+          "Nova contratação!",
+          `Você foi contratado para ${serviceName}.`,
+          { contract_id: contractId },
+          "contract_created"
+        ).catch(() => {});
+      }
+
+      sendPushNotification(
+        user.id,
+        "Contrato enviado",
+        `Sua solicitação de ${serviceName} foi enviada.`,
+        { contract_id: contractId },
+        "contract_created"
+      ).catch(() => {});
+
+      if (userIdRef.current)
+        await loadContracts(userIdRef.current, { showLoading: false });
+    },
+    [loadContracts, sendPushNotification]
+  );
+
+  const deleteDraftContract = useCallback(async (contractId: string) => {
+    await supabase
+      .from("contracts")
+      .delete()
+      .eq("id", contractId)
+      .eq("status", "draft");
+  }, []);
+
+  const markDeliveryAsSeen = useCallback(async (contractId: string) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+    const now = new Date().toISOString();
+    await supabase
+      .from("contract_deliveries")
+      .update({ status: "seen", seen_at: now })
+      .eq("contract_id", contractId)
+      .eq("recipient_id", user.id)
+      .neq("status", "seen");
+  }, []);
 
   // ── Aceitar contrato ──────────────────────────────────────────────────────────
 
@@ -2256,6 +2554,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         history,
         isLoading,
         startContract,
+        createDraftContract,
+        processPaymentForDraftContract,
+        finalizeContract,
+        deleteDraftContract,
+        markDeliveryAsSeen,
         acceptContract,
         rejectContract,
         beginContract,
