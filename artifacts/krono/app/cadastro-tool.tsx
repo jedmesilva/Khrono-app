@@ -354,19 +354,8 @@ export default function CadastroToolScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={[styles.nameCard, { backgroundColor: colors.card, borderColor: "#e0603030" }]}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Text style={[styles.nameCardValue, { color: colors.text, flex: 1 }]}>{toolName}</Text>
-                <View style={[styles.typeBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
-                  <Feather
-                    name={TOOL_TYPES.find((t) => t.id === toolType)?.icon ?? "box"}
-                    size={10}
-                    color={colors.textMuted}
-                  />
-                  <Text style={[styles.typeBadgeText, { color: colors.textMuted }]}>
-                    {TOOL_TYPES.find((t) => t.id === toolType)?.label ?? toolType}
-                  </Text>
-                </View>
-              </View>
+              <Text style={[styles.nameCardLabel, { color: colors.textMuted }]}>TOOL</Text>
+              <Text style={[styles.nameCardValue, { color: colors.text }]}>{toolName}</Text>
             </View>
 
             <Text style={[styles.stepTitle, { color: colors.text }]}>Detalhes</Text>
@@ -386,7 +375,7 @@ export default function CadastroToolScreen() {
               textAlignVertical="top"
             />
 
-            <View style={[styles.availCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.availCard, { backgroundColor: colors.card }]}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.availTitle, { color: colors.text }]}>Disponível agora</Text>
                 <Text style={[styles.availSub, { color: colors.textMuted }]}>
@@ -443,11 +432,10 @@ const styles = StyleSheet.create({
   typeChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 8 },
   typeChipText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
   nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
+  nameCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
   nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },
-  typeBadge: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  typeBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.5 },
   textarea: { borderWidth: 1, borderRadius: 14, padding: 16, fontFamily: "Sora_400Regular", fontSize: 14, minHeight: 120, lineHeight: 22, marginBottom: 16 },
-  availCard: { borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 },
+  availCard: { borderRadius: 14, padding: 16, flexDirection: "row", alignItems: "center", gap: 16 },
   availTitle: { fontFamily: "Sora_600SemiBold", fontSize: 14, marginBottom: 3 },
   availSub: { fontFamily: "DMSans_400Regular", fontSize: 10, lineHeight: 15 },
   errorText: { color: "#e06030", fontFamily: "DMSans_400Regular", fontSize: 12, lineHeight: 17, marginTop: 12 },
