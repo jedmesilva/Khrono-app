@@ -893,7 +893,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
 
       const contractorId = user.id;
       const hiredId = contractData.person.profileId ?? user.id;
-      const audit = await getAuditSnapshot();
       const scheduledFor = contractData.scheduledFor ?? Date.now();
 
       const { data: contract, error } = await supabase
@@ -917,7 +916,6 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           agendado: contractData.agendado ?? false,
           scheduled_for: new Date(scheduledFor).toISOString(),
           location: contractData.location ?? null,
-          ...audit,
         })
         .select("id")
         .single();
