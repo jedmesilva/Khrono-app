@@ -24,11 +24,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: artifacts/khrono
+        working-directory: artifacts/krono
 
       - name: Build
         run: eas build --platform android --profile preview --non-interactive
-        working-directory: artifacts/khrono
+        working-directory: artifacts/krono
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
