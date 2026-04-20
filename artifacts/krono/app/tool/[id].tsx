@@ -382,25 +382,29 @@ export default function ToolDetailScreen() {
           </View>
         )}
 
-        {/* Detalhes */}
-        {!!tool.details && (
-          <View
-            style={[
-              styles.section,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.cardBorder,
-              },
-            ]}
-          >
-            <Text style={[styles.infoLabel, { color: colors.textMuted }]}>
-              DETALHES
-            </Text>
+        {/* Descrição */}
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.cardBorder,
+            },
+          ]}
+        >
+          <Text style={[styles.infoLabel, { color: colors.textMuted }]}>
+            DESCRIÇÃO
+          </Text>
+          {tool.details ? (
             <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
               {tool.details}
             </Text>
-          </View>
-        )}
+          ) : (
+            <Text style={[styles.bodyText, { color: colors.textMuted, fontStyle: "italic" }]}>
+              Nenhuma descrição cadastrada
+            </Text>
+          )}
+        </View>
 
         {/* Verificação Krono */}
         <View
