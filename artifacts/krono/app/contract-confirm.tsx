@@ -478,6 +478,7 @@ export default function ContractConfirmScreen() {
                   metodoPagamento === "cartao" ? "credit-card"
                   : metodoPagamento === "pix" ? "zap"
                   : metodoPagamento === "dinheiro" ? "dollar-sign"
+                  : metodoPagamento === "saldo" ? "layers"
                   : "credit-card"
                 }
                 size={16}
@@ -512,6 +513,12 @@ export default function ContractConfirmScreen() {
                 <>
                   <Text style={[styles.scheduleLabel, { color: colors.textSecondary }]}>Dinheiro</Text>
                   <Text style={styles.scheduleSub}>pague direto ao contratado</Text>
+                </>
+              )}
+              {metodoPagamento === "saldo" && (
+                <>
+                  <Text style={[styles.scheduleLabel, { color: colors.text }]}>Saldo Krono</Text>
+                  <Text style={styles.scheduleSub}>debitado do seu saldo na carteira</Text>
                 </>
               )}
             </View>
