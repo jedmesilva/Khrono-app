@@ -43,7 +43,7 @@ EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
 PORT = "5000"
 EXPO_METRO_PORT = "22861"
 NODE_ENV = "development"
-EXPO_PUBLIC_EAS_PROJECT_ID = "6c5c0688-f8a0-4c5e-ba06-87e9b465621c"
+EXPO_PUBLIC_EAS_PROJECT_ID = "e73f6f13-4f20-4ee3-979d-ee9435474236"
 
 [[ports]]
 localPort = 5000
