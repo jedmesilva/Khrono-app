@@ -40,6 +40,8 @@ const styles = StyleSheet.create({
     fontFamily: "Sora_600SemiBold",
     fontSize: 15,
     letterSpacing: -0.3,
+    lineHeight: 20,
+    includeFontPadding: false,
   },
   rightSlot: {
     flexShrink: 0,

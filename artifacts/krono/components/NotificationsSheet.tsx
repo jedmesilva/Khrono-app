@@ -82,11 +82,6 @@ export function NotificationsSheet({ visible, onClose }: Props) {
     [colors]
   );
 
-  const handleStyle = useMemo(
-    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
-    [colors]
-  );
-
   useEffect(() => {
     if (visible) {
       ref.current?.present();
@@ -119,7 +114,7 @@ export function NotificationsSheet({ visible, onClose }: Props) {
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={sheetBgStyle}
-      handleIndicatorStyle={handleStyle}
+      handleComponent={null}
       onDismiss={onClose}
     >
       {/* Header */}
@@ -134,20 +129,15 @@ export function NotificationsSheet({ visible, onClose }: Props) {
             </Text>
           )}
         </View>
-        <View style={staticStyles.headerActions}>
-          {unreadCount > 0 && (
-            <Pressable
-              onPress={markAllAsRead}
-              hitSlop={12}
-              style={staticStyles.markAllBtn}
-            >
-              <Text style={staticStyles.markAllText}>Marcar todas lidas</Text>
-            </Pressable>
-          )}
-          <Pressable onPress={onClose} hitSlop={12}>
-            <Feather name="x" size={18} color={colors.textSecondary} />
+        {unreadCount > 0 && (
+          <Pressable
+            onPress={markAllAsRead}
+            hitSlop={12}
+            style={staticStyles.markAllBtn}
+          >
+            <Text style={staticStyles.markAllText}>Marcar todas lidas</Text>
           </Pressable>
-        </View>
+        )}
       </View>
 
       <BottomSheetScrollView
@@ -248,7 +238,7 @@ const staticStyles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 24,
-    paddingTop: 4,
+    paddingTop: 20,
     marginBottom: 20,
   },
   title: {
@@ -261,11 +251,6 @@ const staticStyles = StyleSheet.create({
     color: "#e06030",
     marginTop: 2,
     letterSpacing: 0.3,
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
   },
   markAllBtn: {
     paddingHorizontal: 8,
