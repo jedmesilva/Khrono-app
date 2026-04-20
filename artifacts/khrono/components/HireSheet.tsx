@@ -27,10 +27,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withRepeat,
-  withSequence,
   withSpring,
-  withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -517,35 +514,8 @@ function LinkContent({
 // ─── ANIMATED TOGGLE ────────────────────────────────────────────────────────
 
 function LiveDot({ color }: { color: string }) {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.55);
-
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(withTiming(1.9, { duration: 750 }), withTiming(1, { duration: 750 })),
-      -1,
-      false
-    );
-    opacity.value = withRepeat(
-      withSequence(withTiming(0, { duration: 750 }), withTiming(0.55, { duration: 750 })),
-      -1,
-      false
-    );
-  }, []);
-
-  const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-    position: "absolute",
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: color,
-  }));
-
   return (
     <View style={{ width: 10, height: 10, alignItems: "center", justifyContent: "center" }}>
-      <Animated.View style={ringStyle} />
       <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: color }} />
     </View>
   );
