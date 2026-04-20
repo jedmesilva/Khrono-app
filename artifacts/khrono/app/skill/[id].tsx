@@ -1,4 +1,4 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { VerifiedBadge, VerifiedIcon } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
 import { useServices, formatMonthYear } from "@/context/ServicesContext";
@@ -305,7 +305,7 @@ export default function SkillDetailScreen() {
                   { backgroundColor: "rgba(24,160,107,0.12)" },
                 ]}
               >
-                <MaterialCommunityIcons name="check-decagram" size={16} color={GREEN} />
+                <VerifiedIcon size={16} color={GREEN} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={[styles.verifyTitle, { color: colors.text }]}>

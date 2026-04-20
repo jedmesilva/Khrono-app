@@ -1,4 +1,4 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { VerifiedBadge, VerifiedIcon } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { useServices } from "@/context/ServicesContext";
 import { VERIFICATION_LABELS, VerificationType } from "@/constants/profile-data";
@@ -427,11 +427,7 @@ export default function ToolDetailScreen() {
               ]}
             >
               {vstatus === "verified" ? (
-                <MaterialCommunityIcons
-                  name="check-decagram"
-                  size={16}
-                  color={verifyMeta.color ?? colors.textMuted}
-                />
+                <VerifiedIcon size={16} color={verifyMeta.color ?? colors.textMuted} />
               ) : (
                 <Feather
                   name={verifyMeta.icon as "shield-off" | "clock"}

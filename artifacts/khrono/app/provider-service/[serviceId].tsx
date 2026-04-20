@@ -1,4 +1,4 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { VerifiedBadge, VerifiedIcon } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
 import { VERIFICATION_LABELS, VerificationType, type Skill, type Tool } from "@/constants/profile-data";
 import { supabase } from "@/lib/supabase";
@@ -391,7 +391,7 @@ export default function ProviderServiceScreen() {
             onPress={() => service.verified && handleVerifiedPress(service.verified.type, "service")}
             hitSlop={10}
           >
-            <MaterialCommunityIcons name="check-decagram" size={13} color={GREEN} />
+            <VerifiedIcon size={13} color={GREEN} />
           </Pressable>
         )}
 

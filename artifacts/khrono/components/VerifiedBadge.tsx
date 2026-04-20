@@ -1,6 +1,8 @@
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+
+const GREEN = "#18a06b";
 
 type VerifiedBadgeVariant = "full" | "icon";
 
@@ -9,10 +11,19 @@ interface VerifiedBadgeProps {
   onPress?: () => void;
 }
 
+interface VerifiedIconProps {
+  size?: number;
+  color?: string;
+}
+
+export function VerifiedIcon({ size = 13, color = GREEN }: VerifiedIconProps) {
+  return <MaterialCommunityIcons name="check-decagram" size={size} color={color} />;
+}
+
 export function VerifiedBadge({ variant = "icon", onPress }: VerifiedBadgeProps) {
   const content = (
     <>
-      <MaterialCommunityIcons name="check-decagram" size={9} color="#18a06b" />
+      <VerifiedIcon size={9} color={GREEN} />
       {variant === "full" && <Text style={styles.text}>Verificado</Text>}
     </>
   );
@@ -33,9 +44,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#18a06b12",
+    backgroundColor: `${GREEN}12`,
     borderWidth: 1,
-    borderColor: "#18a06b30",
+    borderColor: `${GREEN}30`,
     borderRadius: 20,
     paddingHorizontal: 7,
     paddingVertical: 2,
@@ -44,6 +55,6 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: "DMSans_500Medium",
     fontSize: 9,
-    color: "#18a06b",
+    color: GREEN,
   },
 });
