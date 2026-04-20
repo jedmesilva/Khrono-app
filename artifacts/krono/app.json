@@ -1,18 +1,17 @@
 {
   "expo": {
     "name": "Krono",
-    "slug": "krono-app",
+    "slug": "krono",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./artifacts/krono/assets/images/icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "krono",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./artifacts/krono/assets/images/splash-icon.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#060606",
-      "favicon": "./artifacts/krono/assets/images/icon.png"
+      "backgroundColor": "#060606"
     },
     "ios": {
       "supportsTablet": false,
@@ -20,7 +19,10 @@
     },
     "android": {
       "backgroundColor": "#060606",
-      "package": "com.krono.app"
+      "package": "com.krono.app",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/images/icon.png"
@@ -47,7 +49,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./artifacts/krono/assets/images/icon.png",
+          "icon": "./assets/images/icon.png",
           "color": "#e06030",
           "defaultChannel": "default",
           "sounds": []
@@ -59,9 +61,11 @@
       "reactCompiler": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "6c5c0688-f8a0-4c5e-ba06-87e9b465621c"
+        "projectId": "e73f6f13-4f20-4ee3-979d-ee9435474236"
       }
-    }
+    },
+    "owner": "jedmesilva1"
   }
 }

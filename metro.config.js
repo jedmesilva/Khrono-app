@@ -4,7 +4,7 @@ const path = require("path");
 const config = getDefaultConfig(__dirname);
 
 const workspaceRoot = __dirname;
-const projectRoot = path.resolve(__dirname, "artifacts/khrono");
+const projectRoot = path.resolve(__dirname, "artifacts/krono");
 
 config.watchFolders = [workspaceRoot];
 config.resolver = {

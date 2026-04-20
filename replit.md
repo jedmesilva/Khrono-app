@@ -1,7 +1,7 @@
-# Khrono — Replit Project
+# Krono — Replit Project
 
 ## Overview
-Khrono is a mobile-first service marketplace platform (React Native / Expo) that connects contractors and service providers. It handles real-time contracts, availability sessions, push notifications, and an in-app wallet (BRL).
+Krono is a mobile-first service marketplace platform (React Native / Expo) that connects contractors and service providers. It handles real-time contracts, availability sessions, push notifications, and an in-app wallet (BRL).
 
 ## Tech Stack
 - **Mobile App**: Expo SDK 54 (React Native 0.81), `expo-router` for file-based routing
@@ -14,7 +14,7 @@ Khrono is a mobile-first service marketplace platform (React Native / Expo) that
 ## Project Structure
 ```
 artifacts/
-  khrono/          — Expo mobile app (primary)
+  krono/          — Expo mobile app (primary)
   api-server/      — Express.js backend + Metro proxy
   mockup-sandbox/  — Vite component preview environment
 lib/
@@ -28,7 +28,7 @@ supabase/
 ## How to Run
 The "Start application" workflow runs:
 ```
-node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/khrono run dev
+node artifacts/krono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/krono run dev
 ```
 - Metro bundler starts on port 5000 (web preview)
 - Expo proxy on port 22861 for Expo Go connections
@@ -75,7 +75,7 @@ Both detail screens were rewritten to match the richness of `provider-service/[s
 - **Hero section**: 220px gradient, decorative oversized text, pill badges for status/category, back + options buttons with frosted style
 - **Active/Available toggle**: Prominent Switch card below hero (no longer buried in options menu)
 - **Info grid**: 2-column cards for category/type, added-at date, brand/model/year for tools
-- **Verification section**: Skills verify automatically via community reviews; tools verify via Khrono documentation flow with a "Request Verification" CTA
+- **Verification section**: Skills verify automatically via community reviews; tools verify via Krono documentation flow with a "Request Verification" CTA
 - **Services list** (skill screen): lists services using that skill with navigation to each
 - **Edit CTA footer**: Fixed bottom bar with "Editar skill" / "Editar ferramenta" button
 
@@ -88,7 +88,7 @@ Both detail screens were rewritten to match the richness of `provider-service/[s
 - `toggleToolAvailable(id, available)`, `removeTool(id)`, `requestToolVerification(id)` added to `ServicesContext`
 
 ## Settings Screen Behavior Updates (April 2026)
-- Haptics now use `artifacts/khrono/lib/haptics.ts`, which respects the user's `haptics_enabled` preference globally.
+- Haptics now use `artifacts/krono/lib/haptics.ts`, which respects the user's `haptics_enabled` preference globally.
 - Notification settings now affect in-app filtering and push token handling through `NotificationsContext`.
 - Push token rows can store `notification_push_enabled`, `notification_contracts_enabled`, and `notification_schedule_enabled`; migration: `supabase/migrations/20260418_push_token_preferences.sql`.
 - Security toggles for 2FA, biometrics, and facial recognition now show an explanatory alert instead of saving a fake enabled state.
@@ -96,7 +96,7 @@ Both detail screens were rewritten to match the richness of `provider-service/[s
 - Theme preference now drives `ThemeContext` (`light`, `dark`, or `system`) and the settings screen cycles through those modes from "Tema do app".
 
 ## Stripe Payment Flow (April 2026)
-- `artifacts/khrono/lib/stripeApi.ts` — helper that calls the Railway API server to create/query PaymentIntents.
+- `artifacts/krono/lib/stripeApi.ts` — helper that calls the Railway API server to create/query PaymentIntents.
 - `EXPO_PUBLIC_API_URL` must be set to the Railway base URL (e.g. `https://xxx.railway.app`).
 - When `paymentMethod === "cartao"`:
   - **`on_start` contracts**: PaymentIntent is created via Railway immediately when the contract is opened; stored in `stripe_payment_links` (Railway Postgres) linked to `contractId`.

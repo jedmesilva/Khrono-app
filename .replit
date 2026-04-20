@@ -30,7 +30,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node artifacts/khrono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/khrono run dev"
+args = "node artifacts/krono/server/expo-proxy.js & PORT=5000 pnpm --filter @workspace/krono run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
