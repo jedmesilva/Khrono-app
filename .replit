@@ -19,7 +19,7 @@ integrations = ["javascript_database:1.0.0"]
   [userenv.shared]
 EXPO_PUBLIC_SUPABASE_URL = "https://hbekmqzdoxcsznykuxdj.supabase.co"
 PORT = "5000"
-EXPO_METRO_PORT = "22861"
+EXPO_METRO_PORT = "5000"
 NODE_ENV = "development"
 EXPO_PUBLIC_EAS_PROJECT_ID = "e73f6f13-4f20-4ee3-979d-ee9435474236"
 

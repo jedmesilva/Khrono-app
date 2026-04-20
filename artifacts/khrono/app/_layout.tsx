@@ -40,6 +40,18 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+function AppReadyManager({ fontsReady }: { fontsReady: boolean }) {
+  const { isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (fontsReady && !authLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsReady, authLoading]);
+
+  return null;
+}
+
 function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
@@ -124,13 +136,9 @@ export default function RootLayout() {
     DMSans_600SemiBold,
   });
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+  const fontsReady = fontsLoaded || !!fontError;
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsReady) return null;
 
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
 
@@ -148,6 +156,7 @@ export default function RootLayout() {
             <ThemeProvider>
               <BottomSheetModalProvider>
                 <AuthProvider>
+                  <AppReadyManager fontsReady={fontsReady} />
                   <UserSettingsProvider>
                   <NotificationsProvider>
                     <AvailabilityProvider>
