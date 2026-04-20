@@ -545,7 +545,7 @@ function AnimatedToggle({ value, onValueChange }: { value: boolean; onValueChang
     >
       <Animated.View style={[{
         width: 44, height: 26, borderRadius: 13,
-        justifyContent: "center",
+        flexDirection: "row", alignItems: "center",
       }, trackStyle]}>
         <Animated.View style={[{
           width: 22, height: 22, borderRadius: 11,
@@ -1135,7 +1135,7 @@ function createMainStyles(colors: ColorPalette) {
     roleIconWrap: {
       width: 60, height: 60, borderRadius: 18,
       alignItems: "center", justifyContent: "center",
-      backgroundColor: "#e0603012", borderWidth: 1, borderColor: "#e0603030",
+      backgroundColor: colors.menuIconBg,
     },
     roleCardTitle: {
       fontFamily: "Sora_700Bold", fontSize: 15, color: colors.text,
