@@ -45,6 +45,7 @@ import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { GlobalStyles } from "@/constants/globalStyles";
 import { formatCurrency } from "@/lib/format";
 import { useConfirmation, ProviderData, ProviderService } from "@/context/ConfirmationContext";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Role theme tokens (mirrors ContractCard) ─────────────────────────────────
 
@@ -324,9 +325,11 @@ function LocationRow({
 function ServiceRow({
   servico,
   colors,
+  onPress,
 }: {
   servico: NonNullable<import("@/context/ContractsContext").Contract["servico"]>;
   colors: ColorPalette;
+  onPress?: () => void;
 }) {
   const subtitle = [
     servico.skill && servico.skill !== servico.nome ? servico.skill : null,
@@ -338,8 +341,13 @@ function ServiceRow({
     .filter(Boolean)
     .join(" · ");
 
+  const Wrapper = onPress ? Pressable : View;
+
   return (
-    <View style={[s.detailRow, { borderBottomColor: colors.divider }]}>
+    <Wrapper
+      style={[s.detailRow, { borderBottomColor: colors.divider }]}
+      {...(onPress ? { onPress } : {})}
+    >
       <View style={[s.iconWrap, { backgroundColor: colors.surface }]}>
         <Feather name="tool" size={15} color={colors.textSecondary} />
       </View>
@@ -351,7 +359,10 @@ function ServiceRow({
           <Text style={[s.detailSub, { color: colors.textMuted }]}>{subtitle}</Text>
         )}
       </View>
-    </View>
+      {!!onPress && (
+        <Feather name="chevron-right" size={15} color={colors.textMuted} />
+      )}
+    </Wrapper>
   );
 }
 
@@ -1164,6 +1175,7 @@ export default function ContractDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { setPendingProvider } = useConfirmation();
+  const { user } = useAuth();
 
   const {
     activeContracts,
@@ -1699,7 +1711,23 @@ export default function ContractDetailScreen() {
 
         {/* Service row */}
         {!!contract.servico?.nome && (
-          <ServiceRow servico={contract.servico} colors={colors} />
+          <ServiceRow
+            servico={contract.servico}
+            colors={colors}
+            onPress={
+              contract.servico.serviceId
+                ? () => {
+                    const serviceProfileId = isHiring
+                      ? contract.person?.profileId
+                      : user?.id;
+                    if (!serviceProfileId) return;
+                    router.push(
+                      `/provider-service/${contract.servico!.serviceId}?profileId=${serviceProfileId}` as any
+                    );
+                  }
+                : undefined
+            }
+          />
         )}
 
         {/* Location row */}
