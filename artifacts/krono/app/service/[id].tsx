@@ -672,5 +672,5 @@ const styles = StyleSheet.create({
   // CTA bar
   ctaBar: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1 },
   ctaBtn: { borderRadius: 14, paddingVertical: 15, flexDirection: "row", alignItems: "center", justifyContent: "center" },
-  ctaBtnText: { fontFamily: "Sora_700Bold", fontSize: 15, letterSpacing: -0.2 },
+  ctaBtnText: { fontFamily: "DMSans_500Medium", fontSize: 14 },
 });

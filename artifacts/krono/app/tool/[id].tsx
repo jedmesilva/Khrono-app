@@ -654,8 +654,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   ctaBtnLabel: {
-    fontFamily: "Sora_700Bold",
-    fontSize: 15,
-    letterSpacing: -0.2,
+    fontFamily: "DMSans_500Medium",
+    fontSize: 14,
   },
 });
