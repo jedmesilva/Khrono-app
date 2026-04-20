@@ -845,7 +845,7 @@ export function HireSheet({ open, onClose }: Props) {
                       if (!val) {
                         setDialog({
                           title: "Encerrar sessão?",
-                          message: "Você ficará indisponível e o PINCODE atual será invalidado.",
+                          message: "Você ficará indisponível e não poderá receber novas contratações.",
                           buttons: [
                             { text: "Cancelar", style: "cancel" },
                             {
