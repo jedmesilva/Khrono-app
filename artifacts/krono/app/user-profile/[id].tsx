@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog } from "@/components/AppDialog";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { formatRadius } from "@/components/LocationSheet";
 import { PunctualidadeCard, PunctualidadeStats, computePunctualidade } from "@/components/PunctualidadeCard";
 import { ServiceCard } from "@/components/ServiceCard";
@@ -36,6 +37,7 @@ type ProviderData = {
   name: string;
   initials: string;
   since: string;
+  verified: boolean;
   totalContracts: number;
   locationMode: LocationMode;
   serviceRadius: number;
@@ -235,6 +237,7 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     name: profile.name ?? profile.first_name ?? "Prestador",
     initials: getInitials(profile.name ?? profile.first_name ?? ""),
     since: formatMonthYear(profile.created_at),
+    verified: Boolean(pp?.verified),
     totalContracts: Number(pp?.total_contracts ?? 0),
     locationMode: (location?.location_mode as LocationMode) ?? "realtime",
     serviceRadius: Number(location?.service_radius_meters ?? 5000),
@@ -306,7 +309,12 @@ export default function UserProfileScreen() {
               <Text style={styles.avatarText}>{provider.initials}</Text>
             </View>
           </View>
-          <Text style={[styles.profileName, { color: colors.text }]}>{provider.name}</Text>
+          <View style={styles.nameRow}>
+            <Text style={[styles.profileName, { color: colors.text }]}>{provider.name}</Text>
+            {provider.verified && (
+              <VerifiedBadge onPress={() => handleVerifiedPress("documentation")} />
+            )}
+          </View>
           {provider.since ? (
             <Text style={[styles.sinceTxt, { color: colors.textDim }]}>membro desde {provider.since}</Text>
           ) : null}
@@ -407,7 +415,8 @@ const styles = StyleSheet.create({
   avatarWrap: { marginBottom: 16 },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#e0603015", borderWidth: 2, borderColor: "#e0603030", alignItems: "center", justifyContent: "center" },
   avatarText: { fontFamily: "Sora_700Bold", fontSize: 24, color: "#e06030" },
-  profileName: { fontFamily: "Sora_700Bold", fontSize: 20, marginBottom: 4, textAlign: "center" },
+  nameRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" },
+  profileName: { fontFamily: "Sora_700Bold", fontSize: 20, lineHeight: 24, includeFontPadding: false, textAlign: "center" },
   sinceTxt: { fontFamily: "DMSans_400Regular", fontSize: 11, marginBottom: 8 },
   statsRow: { flexDirection: "row", alignItems: "center", width: "100%", paddingTop: 16, borderTopWidth: 1 },
   statItem: { flex: 1, alignItems: "center", gap: 4 },
