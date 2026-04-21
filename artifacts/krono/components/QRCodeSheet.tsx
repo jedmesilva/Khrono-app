@@ -19,6 +19,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/context/ThemeContext";
 import { type QRPayload } from "@/context/AvailabilityContext";
 
+const STATUS_GREEN = "#18a06b";
+
 type Props = {
   visible: boolean;
   qrPayload: QRPayload | null;
@@ -46,7 +48,7 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
     setRegenerating(false);
   }, [qrPayload]);
 
-  const snapPoints = useMemo(() => ["68%"], []);
+  const snapPoints = useMemo(() => ["62%"], []);
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -59,10 +61,7 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
     [colors]
   );
 
-  const handleStyle = useMemo(
-    () => ({ height: 0, width: 0 }),
-    [colors]
-  );
+  const handleStyle = useMemo(() => ({ height: 0, width: 0 }), []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -116,47 +115,38 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.accent + "12" }]}>
-            <Feather name="maximize" size={20} color={colors.accent} />
-          </View>
-          <Text style={[styles.title, { color: colors.text }]}>QR Code</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Meu QR Code</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
             Peça ao contratante para escanear o código abaixo
           </Text>
         </View>
 
         {/* Status */}
-        <View style={[styles.statusRow, { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }]}>
+        <View style={styles.statusRow}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
 
-        {/* QR Card */}
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>QR CODE</Text>
-
+        {/* QR */}
+        <View style={styles.qrCenter}>
           {qrValue ? (
-            <View style={[styles.qrWrap, { backgroundColor: "#ffffff" }]}>
+            <View style={styles.qrWrap}>
               <QRCode
                 value={qrValue}
-                size={190}
+                size={200}
                 color="#1a1a1a"
                 backgroundColor="#ffffff"
                 ecl="M"
               />
             </View>
           ) : (
-            <View style={[styles.qrUnavailable, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
+            <View style={[styles.qrUnavailable, { borderColor: colors.surfaceBorder }]}>
               <Feather name="wifi-off" size={28} color={colors.textMuted} />
               <Text style={[styles.qrUnavailableText, { color: colors.textMuted }]}>
                 QR Code disponível{"\n"}ao conectar com internet
               </Text>
             </View>
           )}
-
-          <Text style={[styles.cardHint, { color: colors.textDim }]}>
-            Válido para uma única contratação nesta sessão
-          </Text>
         </View>
 
         {/* Regenerate button */}
@@ -201,21 +191,12 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
-    paddingTop: 8,
-    gap: 10,
+    paddingTop: 12,
+    gap: 18,
   },
   header: {
     alignItems: "center",
-    marginBottom: 4,
     gap: 6,
-  },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
   },
   title: {
     fontFamily: "Sora_700Bold",
@@ -224,52 +205,42 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    letterSpacing: 0.2,
+    fontSize: 12,
+    letterSpacing: 0.1,
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 17,
   },
   statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    justifyContent: "center",
+    gap: 7,
   },
   statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: "#18a06b",
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: STATUS_GREEN,
   },
   statusText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    color: "#18a06b",
-    letterSpacing: 0.3,
+    fontFamily: "DMSans_500Medium",
+    fontSize: 12,
+    color: STATUS_GREEN,
+    letterSpacing: 0.2,
   },
-  card: {
-    borderRadius: 20,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
+  qrCenter: {
     alignItems: "center",
-    gap: 16,
-  },
-  cardLabel: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 9,
-    letterSpacing: 2,
-    textTransform: "uppercase",
+    justifyContent: "center",
+    paddingVertical: 4,
   },
   qrWrap: {
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 16,
   },
   qrUnavailable: {
-    width: 190,
-    height: 190,
+    width: 200,
+    height: 200,
     borderRadius: 16,
     borderWidth: 1,
     alignItems: "center",
@@ -281,12 +252,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: "center",
     lineHeight: 16,
-  },
-  cardHint: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    letterSpacing: 0.2,
-    textAlign: "center",
   },
   regenBtn: {
     flexDirection: "row",
@@ -311,6 +276,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     letterSpacing: 0.1,
     paddingHorizontal: 8,
-    marginTop: -4,
+    marginTop: -10,
   },
 });

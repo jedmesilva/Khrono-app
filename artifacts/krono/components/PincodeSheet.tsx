@@ -18,6 +18,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "@/context/ThemeContext";
 
+const STATUS_GREEN = "#18a06b";
+
 type Props = {
   visible: boolean;
   pinCode: string;
@@ -47,7 +49,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
     setCopied(false);
   }, [pinCode]);
 
-  const snapPoints = useMemo(() => ["62%"], []);
+  const snapPoints = useMemo(() => ["56%"], []);
 
   const sheetBgStyle = useMemo(
     () => ({
@@ -60,10 +62,7 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
     [colors]
   );
 
-  const handleStyle = useMemo(
-    () => ({ height: 0, width: 0 }),
-    [colors]
-  );
+  const handleStyle = useMemo(() => ({ height: 0, width: 0 }), []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -124,37 +123,28 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.accent + "12" }]}>
-            <Feather name="hash" size={20} color={colors.accent} />
-          </View>
           <Text style={[styles.title, { color: colors.text }]}>Meu PINCODE</Text>
           <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            Válido para uma única contratação nesta sessão
+            Informe-o ao contratante para ser contratado
           </Text>
         </View>
 
         {/* Status */}
-        <View style={[styles.statusRow, { backgroundColor: "#18a06b10", borderColor: "#18a06b25" }]}>
+        <View style={styles.statusRow}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>Aguardando contratação</Text>
         </View>
 
-        {/* PIN Card */}
-        <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>SEU PINCODE</Text>
-          <View style={styles.digitsRow}>
-            {digits.map((d, i) => (
-              <View
-                key={i}
-                style={[styles.digitBox, { backgroundColor: colors.card, borderColor: colors.accent + "30" }]}
-              >
-                <Text style={[styles.digitText, { color: colors.accent }]}>{d}</Text>
-              </View>
-            ))}
-          </View>
-          <Text style={[styles.cardHint, { color: colors.textDim }]}>
-            Informe este código ao contratante
-          </Text>
+        {/* Digits */}
+        <View style={styles.digitsRow}>
+          {digits.map((d, i) => (
+            <View
+              key={i}
+              style={[styles.digitBox, { borderColor: colors.surfaceBorder }]}
+            >
+              <Text style={[styles.digitText, { color: colors.accent }]}>{d}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Copy button */}
@@ -162,8 +152,8 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           style={({ pressed }) => [
             styles.actionBtn,
             {
-              backgroundColor: copied ? "#18a06b10" : colors.accent + "10",
-              borderColor: copied ? "#18a06b30" : colors.accent + "30",
+              backgroundColor: copied ? STATUS_GREEN + "10" : colors.accent + "10",
+              borderColor: copied ? STATUS_GREEN + "30" : colors.accent + "30",
             },
             pressed && { opacity: 0.7 },
           ]}
@@ -172,9 +162,9 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
           <Feather
             name={copied ? "check" : "copy"}
             size={15}
-            color={copied ? "#18a06b" : colors.accent}
+            color={copied ? STATUS_GREEN : colors.accent}
           />
-          <Text style={[styles.actionBtnText, { color: copied ? "#18a06b" : colors.accent }]}>
+          <Text style={[styles.actionBtnText, { color: copied ? STATUS_GREEN : colors.accent }]}>
             {copied ? "Copiado!" : "Copiar código"}
           </Text>
         </Pressable>
@@ -221,21 +211,12 @@ export function PincodeSheet({ visible, pinCode, onClose, onRegenerate }: Props)
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
-    paddingTop: 8,
-    gap: 10,
+    paddingTop: 12,
+    gap: 18,
   },
   header: {
     alignItems: "center",
-    marginBottom: 4,
     gap: 6,
-  },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
   },
   title: {
     fontFamily: "Sora_700Bold",
@@ -244,54 +225,40 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    letterSpacing: 0.2,
+    fontSize: 12,
+    letterSpacing: 0.1,
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 17,
   },
   statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    justifyContent: "center",
+    gap: 7,
   },
   statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: "#18a06b",
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: STATUS_GREEN,
   },
   statusText: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 11,
-    color: "#18a06b",
-    letterSpacing: 0.3,
-  },
-  card: {
-    borderRadius: 20,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    gap: 16,
-  },
-  cardLabel: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 9,
-    letterSpacing: 2,
-    textTransform: "uppercase",
+    fontFamily: "DMSans_500Medium",
+    fontSize: 12,
+    color: STATUS_GREEN,
+    letterSpacing: 0.2,
   },
   digitsRow: {
     flexDirection: "row",
     gap: 12,
+    justifyContent: "center",
+    paddingVertical: 4,
   },
   digitBox: {
     width: 58,
     height: 72,
-    borderRadius: 24,
-    borderWidth: 1.5,
+    borderRadius: 18,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -299,12 +266,6 @@ const styles = StyleSheet.create({
     fontFamily: "DMSans_500Medium",
     fontSize: 36,
     lineHeight: 42,
-  },
-  cardHint: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    letterSpacing: 0.2,
-    textAlign: "center",
   },
   actionBtn: {
     flexDirection: "row",
@@ -342,6 +303,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     letterSpacing: 0.1,
     paddingHorizontal: 8,
-    marginTop: -4,
+    marginTop: -10,
   },
 });
