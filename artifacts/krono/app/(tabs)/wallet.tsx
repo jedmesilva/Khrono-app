@@ -20,13 +20,11 @@ import { PixDepositModal } from "@/components/PixDepositModal";
 import { PixWithdrawModal } from "@/components/PixWithdrawModal";
 import { PageHeader } from "@/components/PageHeader";
 import { useTheme } from "@/context/ThemeContext";
-import { useWallet } from "@/context/WalletContext";
+import { type CardBandeira, useWallet } from "@/context/WalletContext";
 import { useContracts } from "@/context/ContractsContext";
 import { formatCurrency } from "@/lib/format";
 
 const RECENT_LIMIT = 5;
-
-type CardBandeira = "Visa" | "Mastercard";
 
 function BandeiraTag({ bandeira }: { bandeira: CardBandeira }) {
   const isVisa = bandeira === "Visa";

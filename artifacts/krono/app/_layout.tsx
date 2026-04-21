@@ -61,8 +61,11 @@ function AuthGuard() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "auth";
-    const inRootEntry = segments.length === 0 || segments[0] === "index";
-    const inSignupFlow = ["boas-vindas", "senha", "nome", "verificacao", "nova-senha", "codigo-recuperacao"].includes(segments[1] as string);
+    const inRootEntry = segments[0] === "index";
+    const authStep = inAuthGroup ? segments.slice(1)[0] : undefined;
+    const inSignupFlow = authStep
+      ? ["boas-vindas", "senha", "nome", "verificacao", "nova-senha", "codigo-recuperacao"].includes(authStep)
+      : false;
 
     if (!isAuthenticated && !inAuthGroup && !inRootEntry) {
       router.replace("/auth");

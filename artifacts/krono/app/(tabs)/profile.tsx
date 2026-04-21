@@ -121,7 +121,7 @@ export default function ProfileScreen() {
     refreshProfileReadiness();
   }, [refreshProfileReadiness, activeServicesCount, myServices.length]);
 
-  function handleVerifiedPress(type: VerificationType, context?: "service") {
+  function handleVerifiedPress(type: VerificationType, context?: string) {
     const baseMessage =
       type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
       : type === "community" ? "Verificado por avaliações da comunidade de usuários."

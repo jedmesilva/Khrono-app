@@ -113,7 +113,6 @@ export default function EntradaScreen() {
         source={require("@/assets/images/krnoconcept.webp")}
         style={styles.bgImage}
         resizeMode="cover"
-        pointerEvents="none"
       />
 
       <View style={styles.spacer} />

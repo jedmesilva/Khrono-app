@@ -729,7 +729,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         throw new Error(error?.message ?? "Falha ao criar contrato");
       }
 
-      const sideEffects: Promise<any>[] = [
+      const sideEffects: Array<PromiseLike<any>> = [
         supabase.from("contract_parties").insert({
           contract_id: contract.id,
           role: "contractor",

@@ -57,6 +57,7 @@ Set in Replit secrets (do not hardcode):
 - `STRIPE_SECRET_KEY` — Stripe secret key used only by the API server
 - `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret for `/api/stripe/webhook`
 - `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key used by the mobile app
+- `CORS_ALLOWED_ORIGINS` — comma-separated allowlist for web origins (supports `*` wildcard, e.g. `https://krono.app,https://*.up.railway.app`)
 
 ## Database
 - **Supabase**: Used by the mobile app for auth, PostgreSQL, and Realtime. Migrations are in `supabase/migrations/`. RLS policies are enabled on all tables.

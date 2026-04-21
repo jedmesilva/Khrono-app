@@ -20,6 +20,8 @@ import { useUserSettings, type UserSettings } from "@/context/UserSettingsContex
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),

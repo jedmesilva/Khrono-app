@@ -36,7 +36,9 @@ type LinkRowProps = {
   danger?: boolean;
 };
 
-function SectionHeader({ title, colors }: { title: string; colors: typeof Colors }) {
+type ThemeColors = ReturnType<typeof useTheme>["colors"];
+
+function SectionHeader({ title, colors }: { title: string; colors: ThemeColors }) {
   return (
     <Text style={[staticStyles.sectionHeader, { color: colors.textDim }]}>
       {title}
@@ -44,7 +46,7 @@ function SectionHeader({ title, colors }: { title: string; colors: typeof Colors
   );
 }
 
-function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen, colors }: ToggleRowProps & { colors: typeof Colors }) {
+function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen, colors }: ToggleRowProps & { colors: ThemeColors }) {
   const color = accentGreen ? colors.accentGreen : colors.accent;
   return (
     <View style={staticStyles.row}>
@@ -70,7 +72,7 @@ function ToggleRow({ icon, label, sublabel, value, onValueChange, accentGreen, c
   );
 }
 
-function LinkRow({ icon, label, sublabel, onPress, danger, colors }: LinkRowProps & { colors: typeof Colors }) {
+function LinkRow({ icon, label, sublabel, onPress, danger, colors }: LinkRowProps & { colors: ThemeColors }) {
   const color = danger ? "#ff3b30" : colors.textSecondary;
   return (
     <Pressable

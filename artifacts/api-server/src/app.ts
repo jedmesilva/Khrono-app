@@ -26,10 +26,31 @@ app.use(
     },
   }),
 );
-const allowedOrigins = [
+const defaultAllowedOriginPatterns = [
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/.*\.replit\.dev$/,
   /^https?:\/\/.*\.replit\.app$/,
+  /^https?:\/\/.*\.railway\.app$/,
+  /^https?:\/\/.*\.expo\.dev$/,
+];
+
+function patternFromEnvOrigin(origin: string): RegExp {
+  const trimmed = origin.trim();
+  const escaped = trimmed
+    .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\\\*/g, ".*");
+  return new RegExp(`^${escaped}$`);
+}
+
+const envAllowedOriginPatterns = (process.env["CORS_ALLOWED_ORIGINS"] ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+  .map(patternFromEnvOrigin);
+
+const allowedOriginPatterns = [
+  ...defaultAllowedOriginPatterns,
+  ...envAllowedOriginPatterns,
 ];
 
 app.use(
@@ -40,7 +61,7 @@ app.use(
         callback(null, true);
         return;
       }
-      const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
+      const allowed = allowedOriginPatterns.some((pattern) => pattern.test(origin));
       if (allowed) {
         callback(null, true);
       } else {

@@ -1,6 +1,20 @@
 import { supabase } from "@/lib/supabase";
+import {
+  createStripePaymentIntent as createStripePaymentIntentRequest,
+  createStripePixIntent,
+  createStripeSetupIntent as createStripeSetupIntentRequest,
+  getStripeContractPayments,
+  setAuthTokenGetter,
+  setBaseUrl,
+} from "@workspace/api-client-react";
 
 const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+
+setBaseUrl(API_URL || null);
+setAuthTokenGetter(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+});
 
 export type CreatePaymentIntentResult = {
   paymentIntentId: string;
@@ -9,17 +23,6 @@ export type CreatePaymentIntentResult = {
   amountCents: number;
   currency: string;
 };
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (session?.access_token) {
-    headers["Authorization"] = `Bearer ${session.access_token}`;
-  }
-  return headers;
-}
 
 export async function createStripePaymentIntent(params: {
   contractId: string;
@@ -33,33 +36,21 @@ export async function createStripePaymentIntent(params: {
   if (!API_URL) {
     throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
   }
-
-  const headers = await getAuthHeaders();
-
-  const res = await fetch(`${API_URL}/api/stripe/payment-intents`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      contractId: params.contractId,
-      amount: params.amount,
-      currency: "brl",
-      customerEmail: params.customerEmail,
-      customerName: params.customerName,
-      payerProfileId: params.payerProfileId,
-      payeeProfileId: params.payeeProfileId,
-      metadata: params.metadata,
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      (body as { error?: string }).error ??
-        `Falha ao criar PaymentIntent (HTTP ${res.status})`,
-    );
-  }
-
-  return res.json() as Promise<CreatePaymentIntentResult>;
+  return createStripePaymentIntentRequest({
+    contractId: params.contractId,
+    amount: params.amount,
+    currency: "brl",
+    customerEmail: params.customerEmail,
+    customerName: params.customerName,
+    payerProfileId: params.payerProfileId,
+    payeeProfileId: params.payeeProfileId,
+    metadata: params.metadata,
+  }).then((result) => ({
+    ...result,
+    clientSecret: result.clientSecret ?? "",
+    amountCents: result.amountCents ?? Math.round(params.amount * 100),
+    currency: result.currency ?? "brl",
+  }));
 }
 
 export type CreatePixPaymentResult = {
@@ -79,30 +70,12 @@ export async function createStripePixPayment(params: {
   if (!API_URL) {
     throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
   }
-
-  const headers = await getAuthHeaders();
-
-  const res = await fetch(`${API_URL}/api/stripe/pix-intents`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      contractId: params.contractId,
-      amount: params.amount,
-      currency: "brl",
-      payerProfileId: params.payerProfileId,
-      payeeProfileId: params.payeeProfileId,
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      (body as { error?: string }).error ??
-        `Falha ao criar pagamento Pix (HTTP ${res.status})`,
-    );
-  }
-
-  return res.json() as Promise<CreatePixPaymentResult>;
+  return createStripePixIntent({
+    contractId: params.contractId,
+    amount: params.amount,
+    payerProfileId: params.payerProfileId,
+    payeeProfileId: params.payeeProfileId,
+  }) as Promise<CreatePixPaymentResult>;
 }
 
 export type CreateSetupIntentResult = {
@@ -118,39 +91,15 @@ export async function createStripeSetupIntent(params: {
   if (!API_URL) {
     throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
   }
-
-  const headers = await getAuthHeaders();
-
-  const res = await fetch(`${API_URL}/api/stripe/setup-intents`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(params),
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      (body as { error?: string }).error ??
-        `Falha ao criar SetupIntent (HTTP ${res.status})`,
-    );
-  }
-
-  return res.json() as Promise<CreateSetupIntentResult>;
+  return createStripeSetupIntentRequest(params).then((result) => ({
+    setupIntentId: result.setupIntentId,
+    clientSecret: result.clientSecret ?? "",
+  }));
 }
 
 export async function getStripePaymentIntentsForContract(
   contractId: string,
 ): Promise<{ data: { stripe_payment_intent_id: string; status: string; amount_cents: number }[] }> {
   if (!API_URL) return { data: [] };
-
-  const headers = await getAuthHeaders();
-
-  const res = await fetch(
-    `${API_URL}/api/stripe/contracts/${encodeURIComponent(contractId)}/payments`,
-    { headers },
-  );
-
-  if (!res.ok) return { data: [] };
-
-  return res.json();
+  return getStripeContractPayments(contractId) as Promise<{ data: { stripe_payment_intent_id: string; status: string; amount_cents: number }[] }>;
 }

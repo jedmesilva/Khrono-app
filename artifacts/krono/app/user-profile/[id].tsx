@@ -154,7 +154,7 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
     id: t.id,
     name: t.nome,
     type: t.tipo ?? "equipamento",
-    icon: toolIconForTipo(t.tipo),
+    icon: toolIconForTipo(t.tipo) as Tool["icon"],
     details: t.details ?? "",
     available: Boolean(t.is_available),
     verified: null,
@@ -201,7 +201,7 @@ async function fetchProviderData(profileId: string): Promise<ProviderData | null
         id: pt?.id ?? st.tool_id,
         name: pt?.nome ?? "",
         type: pt?.tipo ?? "equipamento",
-        icon: toolIconForTipo(pt?.tipo ?? ""),
+        icon: toolIconForTipo(pt?.tipo ?? "") as Tool["icon"],
         details: pt?.details ?? "",
         available: Boolean(pt?.is_available),
         verified: null,
@@ -270,7 +270,7 @@ export default function UserProfileScreen() {
       .finally(() => setIsLoading(false));
   }, [id]);
 
-  function handleVerifiedPress(type: VerificationType, context?: "service") {
+  function handleVerifiedPress(type: VerificationType, context?: string) {
     const baseMessage = type === "documentation" ? "Identidade e documentação verificadas pela equipe Krono."
       : type === "community" ? "Verificado por avaliações da comunidade de usuários."
       : "Verificação em análise pela equipe Krono.";

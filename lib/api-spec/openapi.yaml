@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
+  version: 0.2.0
   description: API specification
 servers:
   - url: /api
@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: stripe
+    description: Stripe payment operations
 paths:
   /healthz:
     get:
@@ -24,13 +26,404 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /stripe/config:
+    get:
+      operationId: getStripeConfig
+      tags: [stripe]
+      summary: Stripe config status
+      responses:
+        "200":
+          description: Stripe configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StripeConfigResponse"
+        "503":
+          description: Stripe not configured
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/StripeConfigResponse"
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+
+  /stripe/payment-intents:
+    post:
+      operationId: createStripePaymentIntent
+      tags: [stripe]
+      summary: Create card payment intent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentIntentRequest"
+      responses:
+        "201":
+          description: Payment intent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatePaymentIntentResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Auth not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stripe/payment-intents/{paymentIntentId}:
+    get:
+      operationId: getStripePaymentIntent
+      tags: [stripe]
+      summary: Get payment intent status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: paymentIntentId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payment intent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentIntentStatusResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stripe/payment-intents/{paymentIntentId}/cancel:
+    post:
+      operationId: cancelStripePaymentIntent
+      tags: [stripe]
+      summary: Cancel payment intent
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: paymentIntentId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payment intent canceled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelPaymentIntentResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stripe/contracts/{contractId}/payments:
+    get:
+      operationId: getStripeContractPayments
+      tags: [stripe]
+      summary: List payment intents for a contract
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: contractId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contract payments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractPaymentsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stripe/setup-intents:
+    post:
+      operationId: createStripeSetupIntent
+      tags: [stripe]
+      summary: Create setup intent to save card
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSetupIntentRequest"
+      responses:
+        "201":
+          description: Setup intent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateSetupIntentResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stripe/pix-intents:
+    post:
+      operationId: createStripePixIntent
+      tags: [stripe]
+      summary: Create PIX payment intent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePixIntentRequest"
+      responses:
+        "201":
+          description: PIX intent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatePixIntentResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    StripeConfigResponse:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        publishableKey:
+          type: ["string", "null"]
+        source:
+          type: ["string", "null"]
+      required: [configured, publishableKey]
+
+    CreatePaymentIntentRequest:
+      type: object
+      properties:
+        contractId:
+          type: string
+        amount:
+          type: number
+        amountCents:
+          type: integer
+        currency:
+          type: string
+        customerEmail:
+          type: string
+        customerName:
+          type: string
+        payerProfileId:
+          type: string
+        payeeProfileId:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+      required: [contractId]
+
+    CreatePaymentIntentResponse:
+      type: object
+      properties:
+        paymentIntentId:
+          type: string
+        clientSecret:
+          type: ["string", "null"]
+        status:
+          type: string
+        amountCents:
+          type: integer
+        currency:
+          type: string
+      required: [paymentIntentId, status]
+
+    PaymentIntentStatusResponse:
+      type: object
+      properties:
+        paymentIntentId:
+          type: string
+        status:
+          type: string
+        amountCents:
+          type: integer
+        currency:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+      required: [paymentIntentId, status, amountCents, currency]
+
+    CancelPaymentIntentResponse:
+      type: object
+      properties:
+        paymentIntentId:
+          type: string
+        status:
+          type: string
+      required: [paymentIntentId, status]
+
+    StripePaymentLink:
+      type: object
+      properties:
+        id:
+          type: ["string", "null"]
+        contract_id:
+          type: string
+        stripe_payment_intent_id:
+          type: string
+        amount_cents:
+          type: integer
+        currency:
+          type: string
+        status:
+          type: string
+        customer_id:
+          type: ["string", "null"]
+        payer_profile_id:
+          type: ["string", "null"]
+        payee_profile_id:
+          type: ["string", "null"]
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: ["string", "null"]
+        updated_at:
+          type: ["string", "null"]
+      required:
+        [
+          contract_id,
+          stripe_payment_intent_id,
+          amount_cents,
+          currency,
+          status,
+          metadata,
+        ]
+
+    ContractPaymentsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/StripePaymentLink"
+      required: [data]
+
+    CreateSetupIntentRequest:
+      type: object
+      properties:
+        customerEmail:
+          type: string
+        customerName:
+          type: string
+        payerProfileId:
+          type: string
+
+    CreateSetupIntentResponse:
+      type: object
+      properties:
+        setupIntentId:
+          type: string
+        clientSecret:
+          type: ["string", "null"]
+      required: [setupIntentId]
+
+    CreatePixIntentRequest:
+      type: object
+      properties:
+        contractId:
+          type: string
+        amount:
+          type: number
+        amountCents:
+          type: integer
+        customerEmail:
+          type: string
+        customerName:
+          type: string
+        payerProfileId:
+          type: string
+        payeeProfileId:
+          type: string
+      required: [contractId]
+
+    CreatePixIntentResponse:
+      type: object
+      properties:
+        paymentIntentId:
+          type: string
+        clientSecret:
+          type: ["string", "null"]
+        pixCode:
+          type: ["string", "null"]
+        pixQrImageUrl:
+          type: ["string", "null"]
+        expiresAt:
+          type: ["integer", "null"]
+      required: [paymentIntentId]

@@ -1,4 +1,12 @@
 import { Router, type IRouter } from "express";
+import {
+  CancelStripePaymentIntentParams,
+  CreateStripePaymentIntentBody,
+  CreateStripePixIntentBody,
+  CreateStripeSetupIntentBody,
+  GetStripeContractPaymentsParams,
+  GetStripePaymentIntentParams,
+} from "@workspace/api-zod";
 import { getStripeCredentials, getUncachableStripeClient } from "../lib/stripeClient";
 import {
   getStripePaymentLinksForContract,
@@ -6,21 +14,13 @@ import {
 } from "../lib/stripeStorage";
 import { requireAuth } from "../middleware/auth";
 
-type CreatePaymentIntentBody = {
-  contractId?: string;
-  amount?: number;
-  amountCents?: number;
-  currency?: string;
-  customerEmail?: string;
-  customerName?: string;
-  payerProfileId?: string;
-  payeeProfileId?: string;
-  metadata?: Record<string, string>;
-};
-
 const router: IRouter = Router();
+function asSingleParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+}
 
-function normalizeAmountCents(body: CreatePaymentIntentBody) {
+function normalizeAmountCents(body: { amountCents?: number; amount?: number }) {
   if (typeof body.amountCents === "number") {
     return Math.round(body.amountCents);
   }
@@ -52,7 +52,12 @@ router.get("/stripe/config", async (_req, res) => {
 
 router.post("/stripe/payment-intents", requireAuth, async (req, res) => {
   try {
-    const body = req.body as CreatePaymentIntentBody;
+    const bodyParse = CreateStripePaymentIntentBody.safeParse(req.body);
+    if (!bodyParse.success) {
+      res.status(400).json({ error: "Invalid payload for create payment intent." });
+      return;
+    }
+    const body = bodyParse.data;
     const contractId = body.contractId?.trim();
     const amountCents = normalizeAmountCents(body);
     const currency = (body.currency ?? "brl").toLowerCase();
@@ -130,10 +135,16 @@ router.post("/stripe/payment-intents", requireAuth, async (req, res) => {
 
 router.get("/stripe/payment-intents/:paymentIntentId", requireAuth, async (req, res) => {
   try {
+    const paramsParse = GetStripePaymentIntentParams.safeParse({
+      paymentIntentId: asSingleParam(req.params.paymentIntentId),
+    });
+    if (!paramsParse.success) {
+      res.status(400).json({ error: "Invalid paymentIntentId." });
+      return;
+    }
+    const paymentIntentId = paramsParse.data.paymentIntentId;
     const stripe = await getUncachableStripeClient();
-    const paymentIntent = await stripe.paymentIntents.retrieve(
-      req.params.paymentIntentId,
-    );
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     res.json({
       paymentIntentId: paymentIntent.id,
@@ -151,10 +162,16 @@ router.get("/stripe/payment-intents/:paymentIntentId", requireAuth, async (req, 
 
 router.post("/stripe/payment-intents/:paymentIntentId/cancel", requireAuth, async (req, res) => {
   try {
+    const paramsParse = CancelStripePaymentIntentParams.safeParse({
+      paymentIntentId: asSingleParam(req.params.paymentIntentId),
+    });
+    if (!paramsParse.success) {
+      res.status(400).json({ error: "Invalid paymentIntentId." });
+      return;
+    }
+    const paymentIntentId = paramsParse.data.paymentIntentId;
     const stripe = await getUncachableStripeClient();
-    const paymentIntent = await stripe.paymentIntents.cancel(
-      req.params.paymentIntentId,
-    );
+    const paymentIntent = await stripe.paymentIntents.cancel(paymentIntentId);
 
     await upsertStripePaymentLink({
       contract_id: paymentIntent.metadata.contract_id ?? "unknown",
@@ -183,13 +200,25 @@ router.post("/stripe/payment-intents/:paymentIntentId/cancel", requireAuth, asyn
 });
 
 router.get("/stripe/contracts/:contractId/payments", requireAuth, async (req, res) => {
-  const payments = await getStripePaymentLinksForContract(req.params.contractId);
+  const paramsParse = GetStripeContractPaymentsParams.safeParse({
+    contractId: asSingleParam(req.params.contractId),
+  });
+  if (!paramsParse.success) {
+    res.status(400).json({ error: "Invalid contractId." });
+    return;
+  }
+  const payments = await getStripePaymentLinksForContract(paramsParse.data.contractId);
   res.json({ data: payments });
 });
 
 router.post("/stripe/setup-intents", requireAuth, async (req, res) => {
   try {
-    const body = req.body as { customerEmail?: string; customerName?: string; payerProfileId?: string };
+    const bodyParse = CreateStripeSetupIntentBody.safeParse(req.body ?? {});
+    if (!bodyParse.success) {
+      res.status(400).json({ error: "Invalid payload for setup intent." });
+      return;
+    }
+    const body = bodyParse.data;
     const stripe = await getUncachableStripeClient();
     let customerId: string | undefined;
 
@@ -225,7 +254,12 @@ router.post("/stripe/setup-intents", requireAuth, async (req, res) => {
 
 router.post("/stripe/pix-intents", requireAuth, async (req, res) => {
   try {
-    const body = req.body as CreatePaymentIntentBody;
+    const bodyParse = CreateStripePixIntentBody.safeParse(req.body);
+    if (!bodyParse.success) {
+      res.status(400).json({ error: "Invalid payload for pix intent." });
+      return;
+    }
+    const body = bodyParse.data;
     const contractId = body.contractId?.trim();
     const amountCents = normalizeAmountCents(body);
 
