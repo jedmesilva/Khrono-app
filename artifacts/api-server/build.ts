@@ -37,6 +37,7 @@ async function buildAll() {
     platform: "node",
     bundle: true,
     format: "esm",
+    banner: { js: "import { createRequire } from "module"; const require = createRequire(import.meta.url);" },
     outfile: path.resolve(distDir, "index.js"),
     define: {
       "process.env.NODE_ENV": '"production"',
