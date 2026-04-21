@@ -3,6 +3,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
+  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "@/lib/haptics";
@@ -18,7 +19,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
@@ -561,7 +561,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
         <View style={styles.bigInputWrap}>
           <Text style={[styles.bigInputPrefix, { color: colors.textMuted }]}>R$</Text>
-          <TextInput
+          <BottomSheetTextInput
             style={[styles.bigInput, { color: colors.text }]}
             value={formatAmountInput(amountInput)}
             onChangeText={(t) => setAmountInput(t.replace(/\D/g, ""))}
@@ -630,7 +630,7 @@ export function ContractPaymentSheet({ visible, onClose, contract, isHiring }: P
 
         <View style={styles.bigInputWrap}>
           <Text style={[styles.bigInputPrefix, { color: colors.textMuted }]}>R$</Text>
-          <TextInput
+          <BottomSheetTextInput
             style={[styles.bigInput, { color: colors.text }]}
             value={formatAmountInput(amountInput)}
             onChangeText={(t) => setAmountInput(t.replace(/\D/g, ""))}
