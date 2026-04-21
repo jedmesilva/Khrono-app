@@ -138,6 +138,49 @@ export async function createStripeSetupIntent(params: {
   return res.json() as Promise<CreateSetupIntentResult>;
 }
 
+export type SettlementResult = {
+  contractId: string;
+  endedAt: string;
+  durationHours: number;
+  fixedHours: number | null;
+  realAmount: number;
+  totalPaid: number;
+  delta: number;
+  paymentStatus: string;
+  pendingExtraAmount: number | null;
+  pendingRefundAmount: number | null;
+};
+
+export async function settleContractEnd(
+  contractId: string,
+  reason?: string,
+): Promise<SettlementResult> {
+  if (!API_URL) {
+    throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
+  }
+
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(
+    `${API_URL}/api/contracts/${encodeURIComponent(contractId)}/end`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ reason }),
+    },
+  );
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string }).error ??
+        `Falha ao encerrar contrato (HTTP ${res.status})`,
+    );
+  }
+
+  return res.json() as Promise<SettlementResult>;
+}
+
 export async function getStripePaymentIntentsForContract(
   contractId: string,
 ): Promise<{ data: { stripe_payment_intent_id: string; status: string; amount_cents: number }[] }> {
