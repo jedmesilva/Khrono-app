@@ -299,15 +299,12 @@ function createStyles(colors: ColorPalette) {
       height: 40,
       borderRadius: 12,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
     },
     optionIconActive: {
       backgroundColor: colors.accent + "15",
-      borderColor: colors.accent + "30",
     },
     optionLabel: {
       fontFamily: "Sora_600SemiBold",
