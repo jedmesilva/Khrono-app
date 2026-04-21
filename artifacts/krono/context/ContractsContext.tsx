@@ -1576,7 +1576,11 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           .limit(1)
           .maybeSingle();
 
-        const preAmount = prePayment ? Number(prePayment.amount) : 0;
+        const expectedPreAmount = fixedHours != null
+          ? parseFloat((fixedHours * contract.ratePerHour).toFixed(2))
+          : Number(realAmount);
+        const rawPreAmount = prePayment ? Number(prePayment.amount) : 0;
+        const preAmount = rawPreAmount > 0 ? rawPreAmount : expectedPreAmount;
         const delta = parseFloat((Number(realAmount) - preAmount).toFixed(2));
 
         if (Math.abs(delta) < 0.01) {
