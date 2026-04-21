@@ -187,4 +187,84 @@ router.get("/stripe/contracts/:contractId/payments", requireAuth, async (req, re
   res.json({ data: payments });
 });
 
+router.post("/stripe/pix-intents", requireAuth, async (req, res) => {
+  try {
+    const body = req.body as CreatePaymentIntentBody;
+    const contractId = body.contractId?.trim();
+    const amountCents = normalizeAmountCents(body);
+
+    if (!contractId) {
+      res.status(400).json({ error: "contractId is required." });
+      return;
+    }
+
+    if (!Number.isFinite(amountCents) || amountCents <= 0) {
+      res.status(400).json({ error: "amount must be greater than zero." });
+      return;
+    }
+
+    const stripe = await getUncachableStripeClient();
+    let customerId: string | undefined;
+
+    if (body.customerEmail) {
+      const existing = await stripe.customers.list({ email: body.customerEmail, limit: 1 });
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({
+          email: body.customerEmail,
+          name: body.customerName,
+          metadata: { payer_profile_id: body.payerProfileId ?? "" },
+        });
+        customerId = customer.id;
+      }
+    }
+
+    const pi = await stripe.paymentIntents.create({
+      amount: amountCents,
+      currency: "brl",
+      payment_method_types: ["pix"],
+      customer: customerId,
+      metadata: {
+        contract_id: contractId,
+        payer_profile_id: body.payerProfileId ?? "",
+        payee_profile_id: body.payeeProfileId ?? "",
+      },
+    });
+
+    const confirmed = await stripe.paymentIntents.confirm(pi.id, {
+      payment_method_data: { type: "pix" },
+    } as Parameters<typeof stripe.paymentIntents.confirm>[1]);
+
+    const pixAction = (confirmed.next_action as Record<string, unknown> | null)
+      ?.pix_display_qr_code as
+      | { data?: string; image_url_png?: string; image_url_svg?: string; expires_at?: number }
+      | undefined;
+
+    await upsertStripePaymentLink({
+      contract_id: contractId,
+      stripe_payment_intent_id: confirmed.id,
+      amount_cents: amountCents,
+      currency: "brl",
+      status: confirmed.status,
+      customer_id: customerId ?? null,
+      payer_profile_id: body.payerProfileId ?? null,
+      payee_profile_id: body.payeeProfileId ?? null,
+      metadata: confirmed.metadata,
+    });
+
+    res.status(201).json({
+      paymentIntentId: confirmed.id,
+      clientSecret: confirmed.client_secret,
+      pixCode: pixAction?.data ?? null,
+      pixQrImageUrl: pixAction?.image_url_png ?? pixAction?.image_url_svg ?? null,
+      expiresAt: pixAction?.expires_at ?? null,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to create Pix PaymentIntent.",
+    });
+  }
+});
+
 export default router;

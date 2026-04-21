@@ -104,7 +104,7 @@ type ContractsContextType = {
   /** Processes payment for a draft contract (creates contract_payments record). For card, returns clientSecret. */
   processPaymentForDraftContract: (
     contractId: string,
-    params: { method: string; amount: number }
+    params: { method: string; amount: number; pixPaymentIntentId?: string }
   ) => Promise<{ clientSecret?: string }>;
   /** Moves draft → pending_signature and creates contract_deliveries record to notify hired party. */
   finalizeContract: (contractId: string) => Promise<void>;
@@ -941,7 +941,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
   const processPaymentForDraftContract = useCallback(
     async (
       contractId: string,
-      params: { method: string; amount: number }
+      params: { method: string; amount: number; pixPaymentIntentId?: string }
     ): Promise<{ clientSecret?: string }> => {
       const {
         data: { user },
@@ -1026,6 +1026,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
           method:
             method === "cartao" ? "card" : method === "pix" ? "pix" : "cash",
           status: "pending_request",
+          stripe_payment_intent_id: params.pixPaymentIntentId ?? null,
           payer_id: user.id,
           payee_id: hiredId,
         });

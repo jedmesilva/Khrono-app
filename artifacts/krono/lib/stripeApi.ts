@@ -62,6 +62,49 @@ export async function createStripePaymentIntent(params: {
   return res.json() as Promise<CreatePaymentIntentResult>;
 }
 
+export type CreatePixPaymentResult = {
+  paymentIntentId: string;
+  clientSecret: string;
+  pixCode: string | null;
+  pixQrImageUrl: string | null;
+  expiresAt: number | null;
+};
+
+export async function createStripePixPayment(params: {
+  contractId: string;
+  amount: number;
+  payerProfileId?: string;
+  payeeProfileId?: string;
+}): Promise<CreatePixPaymentResult> {
+  if (!API_URL) {
+    throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
+  }
+
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(`${API_URL}/api/stripe/pix-intents`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      contractId: params.contractId,
+      amount: params.amount,
+      currency: "brl",
+      payerProfileId: params.payerProfileId,
+      payeeProfileId: params.payeeProfileId,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string }).error ??
+        `Falha ao criar pagamento Pix (HTTP ${res.status})`,
+    );
+  }
+
+  return res.json() as Promise<CreatePixPaymentResult>;
+}
+
 export async function getStripePaymentIntentsForContract(
   contractId: string,
 ): Promise<{ data: { stripe_payment_intent_id: string; status: string; amount_cents: number }[] }> {

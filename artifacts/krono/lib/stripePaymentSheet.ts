@@ -1,10 +1,11 @@
-import { useStripe } from "@stripe/stripe-react-native";
+import { useStripe, useConfirmPayment } from "@stripe/stripe-react-native";
 import { useCallback } from "react";
 
 export type PaymentSheetResult =
   | { success: true }
   | { success: false; canceled: boolean; error?: string };
 
+/** @deprecated Use useStripeCardConfirm for a fully native card form. */
 export function useStripePaymentSheet() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
@@ -69,4 +70,41 @@ export function useStripePaymentSheet() {
   );
 
   return { presentSheet };
+}
+
+/**
+ * Fully native card payment confirmation — no Stripe-hosted UI.
+ * Pair with <CardField> component rendered inside your own screen.
+ */
+export function useStripeCardConfirm() {
+  const { confirmPayment, loading } = useConfirmPayment();
+
+  const confirmCard = useCallback(
+    async (clientSecret: string): Promise<PaymentSheetResult> => {
+      const { paymentIntent, error } = await confirmPayment(clientSecret, {
+        paymentMethodType: "Card",
+      });
+
+      if (error) {
+        if ((error as { code?: string }).code === "Canceled") {
+          return { success: false, canceled: true };
+        }
+        return { success: false, canceled: false, error: error.message };
+      }
+
+      const status = paymentIntent?.status;
+      if (status === "Succeeded" || status === "Processing") {
+        return { success: true };
+      }
+
+      return {
+        success: false,
+        canceled: false,
+        error: "Pagamento não confirmado pelo servidor.",
+      };
+    },
+    [confirmPayment]
+  );
+
+  return { confirmCard, loading };
 }
