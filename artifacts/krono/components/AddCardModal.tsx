@@ -235,12 +235,14 @@ export function AddCardModal({ visible, onClose }: Props) {
             {/* Cardholder name */}
             <Text style={styles.fieldLabel}>NOME DO TITULAR</Text>
             <BottomSheetTextInput
+              key="titular-input"
               style={styles.input}
-              value={titular}
+              defaultValue={titular}
               onChangeText={setTitular}
               placeholder="Como aparece no cartão"
               placeholderTextColor={colors.textDim}
               autoCapitalize="words"
+              autoCorrect={false}
               editable={step === "form"}
             />
 
