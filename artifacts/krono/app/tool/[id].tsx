@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
+import { OverflowMenu } from "@/components/OverflowMenu";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { VerifiedBadge, VerifiedIcon } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
@@ -61,6 +62,7 @@ export default function ToolDetailScreen() {
     message?: string;
     buttons?: AppDialogButton[];
   } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const tool = useMemo(
     () => myTools.find((t) => t.id === id) ?? null,
@@ -93,9 +95,9 @@ export default function ToolDetailScreen() {
       message:
         "Nossa equipe irá analisar as informações da ferramenta. Você receberá uma notificação com o resultado em até 5 dias úteis.",
       buttons: [
-        { label: "Cancelar", onPress: () => setDialog(null) },
+        { text: "Cancelar", style: "cancel", onPress: () => setDialog(null) },
         {
-          label: "Solicitar",
+          text: "Solicitar",
           onPress: async () => {
             setDialog(null);
             await requestToolVerification(id!);
@@ -107,39 +109,25 @@ export default function ToolDetailScreen() {
 
   function handleOptions() {
     if (!tool) return;
+    setMenuOpen(true);
+  }
+
+  function handleDeleteRequest() {
+    if (!tool) return;
     setDialog({
-      title: tool.name,
+      title: "Excluir ferramenta?",
+      message: `"${tool.name}" será removida do seu perfil permanentemente.`,
       buttons: [
+        { text: "Cancelar", style: "cancel", onPress: () => setDialog(null) },
         {
-          label: "Editar ferramenta",
-          onPress: () => {
-            setDialog(null);
-            router.push("/cadastro-tool");
-          },
-        },
-        {
-          label: "Excluir ferramenta",
+          text: "Excluir",
           style: "destructive" as const,
-          onPress: () => {
-            setDialog({
-              title: "Excluir ferramenta?",
-              message: `"${tool.name}" será removida do seu perfil permanentemente.`,
-              buttons: [
-                { label: "Cancelar", onPress: () => setDialog(null) },
-                {
-                  label: "Excluir",
-                  style: "destructive" as const,
-                  onPress: async () => {
-                    setDialog(null);
-                    await removeTool(tool.id);
-                    router.back();
-                  },
-                },
-              ],
-            });
+          onPress: async () => {
+            setDialog(null);
+            await removeTool(tool.id);
+            router.back();
           },
         },
-        { label: "Cancelar", onPress: () => setDialog(null) },
       ],
     });
   }
@@ -514,6 +502,25 @@ export default function ToolDetailScreen() {
         message={dialog?.message}
         buttons={dialog?.buttons}
         onDismiss={() => setDialog(null)}
+      />
+
+      <OverflowMenu
+        visible={menuOpen}
+        onDismiss={() => setMenuOpen(false)}
+        anchorTop={insets.top + 50}
+        items={[
+          {
+            label: "Editar ferramenta",
+            icon: "edit-2",
+            onPress: () => router.push("/cadastro-tool"),
+          },
+          {
+            label: "Excluir ferramenta",
+            icon: "trash-2",
+            destructive: true,
+            onPress: handleDeleteRequest,
+          },
+        ]}
       />
     </View>
   );

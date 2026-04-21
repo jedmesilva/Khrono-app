@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
+import { OverflowMenu } from "@/components/OverflowMenu";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useTheme } from "@/context/ThemeContext";
@@ -56,6 +57,7 @@ export default function SkillDetailScreen() {
     message?: string;
     buttons?: AppDialogButton[];
   } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const entry = useMemo(
     () => userSkills.find((s) => s.skill_id === id) ?? null,
@@ -100,39 +102,25 @@ export default function SkillDetailScreen() {
 
   function handleOptions() {
     if (!skill) return;
+    setMenuOpen(true);
+  }
+
+  function handleDeleteRequest() {
+    if (!skill) return;
     setDialog({
-      title: skill.name,
+      title: "Excluir skill?",
+      message: `"${skill.name}" será removida do seu perfil permanentemente.`,
       buttons: [
+        { text: "Cancelar", style: "cancel", onPress: () => setDialog(null) },
         {
-          label: "Editar skill",
-          onPress: () => {
-            setDialog(null);
-            router.push("/cadastro-skill");
-          },
-        },
-        {
-          label: "Excluir skill",
+          text: "Excluir",
           style: "destructive",
-          onPress: () => {
-            setDialog({
-              title: "Excluir skill?",
-              message: `"${skill.name}" será removida do seu perfil permanentemente.`,
-              buttons: [
-                { label: "Cancelar", onPress: () => setDialog(null) },
-                {
-                  label: "Excluir",
-                  style: "destructive",
-                  onPress: async () => {
-                    setDialog(null);
-                    await removeSkill(skill.id);
-                    router.back();
-                  },
-                },
-              ],
-            });
+          onPress: async () => {
+            setDialog(null);
+            await removeSkill(skill.id);
+            router.back();
           },
         },
-        { label: "Cancelar", onPress: () => setDialog(null) },
       ],
     });
   }
@@ -391,6 +379,25 @@ export default function SkillDetailScreen() {
         message={dialog?.message}
         buttons={dialog?.buttons}
         onDismiss={() => setDialog(null)}
+      />
+
+      <OverflowMenu
+        visible={menuOpen}
+        onDismiss={() => setMenuOpen(false)}
+        anchorTop={insets.top + 50}
+        items={[
+          {
+            label: "Editar skill",
+            icon: "edit-2",
+            onPress: () => router.push("/cadastro-skill"),
+          },
+          {
+            label: "Excluir skill",
+            icon: "trash-2",
+            destructive: true,
+            onPress: handleDeleteRequest,
+          },
+        ]}
       />
     </View>
   );

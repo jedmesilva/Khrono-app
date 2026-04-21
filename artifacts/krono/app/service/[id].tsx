@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppDialog, AppDialogButton } from "@/components/AppDialog";
 import { BackButton } from "@/components/BackButton";
+import { OverflowMenu } from "@/components/OverflowMenu";
 import { SimpleIconButton } from "@/components/SimpleIconButton";
 import { VerifiedBadge, VerifiedIcon } from "@/components/VerifiedBadge";
 import { useServices } from "@/context/ServicesContext";
@@ -165,6 +166,7 @@ export default function ServiceDetailScreen() {
 
   const [expanded, setExpanded] = useState<ExpandedCard>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -229,32 +231,20 @@ export default function ServiceDetailScreen() {
   }
 
   function handleMoreOptions() {
+    setMenuOpen(true);
+  }
+
+  function handleDeleteRequest() {
     setDialog({
-      title: service!.name,
+      title: "Excluir serviço?",
+      message: `"${service!.name}" será removido do seu perfil permanentemente.`,
       buttons: [
+        { text: "Cancelar", style: "cancel", onPress: () => setDialog(null) },
         {
-          label: "Editar serviço",
-          onPress: () => { setDialog(null); router.push("/cadastro-service"); },
-        },
-        {
-          label: "Excluir serviço",
+          text: "Excluir",
           style: "destructive",
-          onPress: () => {
-            setDialog({
-              title: "Excluir serviço?",
-              message: `"${service!.name}" será removido do seu perfil permanentemente.`,
-              buttons: [
-                { label: "Cancelar", onPress: () => setDialog(null) },
-                {
-                  label: "Excluir",
-                  style: "destructive",
-                  onPress: () => { setDialog(null); router.back(); },
-                },
-              ],
-            });
-          },
+          onPress: () => { setDialog(null); router.back(); },
         },
-        { label: "Cancelar", onPress: () => setDialog(null) },
       ],
     });
   }
@@ -550,6 +540,25 @@ export default function ServiceDetailScreen() {
         message={dialog?.message}
         buttons={dialog?.buttons}
         onDismiss={() => setDialog(null)}
+      />
+
+      <OverflowMenu
+        visible={menuOpen}
+        onDismiss={() => setMenuOpen(false)}
+        anchorTop={topPadding + 50}
+        items={[
+          {
+            label: "Editar serviço",
+            icon: "edit-2",
+            onPress: () => router.push("/cadastro-service"),
+          },
+          {
+            label: "Excluir serviço",
+            icon: "trash-2",
+            destructive: true,
+            onPress: handleDeleteRequest,
+          },
+        ]}
       />
     </View>
   );
