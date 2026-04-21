@@ -177,8 +177,8 @@ export default function ToolDetailScreen() {
             alignItems: "center",
             gap: 5,
             borderWidth: 1,
-            borderColor: available ? "rgba(24,160,107,0.30)" : isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
-            backgroundColor: available ? "rgba(24,160,107,0.12)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+            borderColor: available ? (isDark ? "rgba(24,160,107,0.30)" : "rgba(15,110,71,0.45)") : isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
+            backgroundColor: available ? (isDark ? "rgba(24,160,107,0.12)" : "rgba(15,110,71,0.16)") : isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
             borderRadius: 100,
             paddingHorizontal: 9,
             paddingVertical: 4,
@@ -186,8 +186,8 @@ export default function ToolDetailScreen() {
           }}
           pointerEvents="none"
         >
-          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: available ? "#00e5a0" : (isDark ? "#504840" : "#bbb") }} />
-          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: available ? "#00e5a0" : (isDark ? "#706860" : "#999") }}>
+          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: available ? (isDark ? "#00e5a0" : "#0f6e47") : (isDark ? "#504840" : "#bbb") }} />
+          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: available ? (isDark ? "#00e5a0" : "#0f6e47") : (isDark ? "#706860" : "#999") }}>
             {available ? "disponível" : "indisponível"}
           </Text>
         </View>

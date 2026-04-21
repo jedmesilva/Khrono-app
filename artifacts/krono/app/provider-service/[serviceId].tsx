@@ -344,9 +344,18 @@ export default function ProviderServiceScreen() {
       <View style={[styles.fixedHeader, { top: topPadding }]} pointerEvents="box-none">
         <BackButton />
         <View style={{ flex: 1 }} pointerEvents="none" />
-        <View style={[styles.statusBadge, { position: "relative", right: 0 }]} pointerEvents="none">
-          <View style={[styles.statusDot, { backgroundColor: GREEN }]} />
-          <Text style={[styles.statusText, { color: GREEN }]}>ativo</Text>
+        <View
+          style={[
+            styles.statusBadge,
+            { position: "relative", right: 0 },
+            isDark
+              ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
+              : { borderColor: "rgba(15,110,71,0.45)", backgroundColor: "rgba(15,110,71,0.16)" },
+          ]}
+          pointerEvents="none"
+        >
+          <View style={[styles.statusDot, { backgroundColor: isDark ? GREEN : "#0f6e47" }]} />
+          <Text style={[styles.statusText, { color: isDark ? GREEN : "#0f6e47" }]}>ativo</Text>
         </View>
       </View>
 

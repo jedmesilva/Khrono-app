@@ -277,13 +277,15 @@ export default function ServiceDetailScreen() {
             styles.statusBadge,
             { position: "relative", left: 0, marginRight: 8 },
             active
-              ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
+              ? (isDark
+                  ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
+                  : { borderColor: "rgba(15,110,71,0.45)", backgroundColor: "rgba(15,110,71,0.16)" })
               : { borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)", backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" },
           ]}
           pointerEvents="none"
         >
-          <View style={[styles.statusDot, { backgroundColor: active ? GREEN_BADGE : (isDark ? "#504840" : "#bbb") }]} />
-          <Text style={[styles.statusText, { color: active ? GREEN_BADGE : (isDark ? "#706860" : "#999") }]}>
+          <View style={[styles.statusDot, { backgroundColor: active ? (isDark ? GREEN_BADGE : "#0f6e47") : (isDark ? "#504840" : "#bbb") }]} />
+          <Text style={[styles.statusText, { color: active ? (isDark ? GREEN_BADGE : "#0f6e47") : (isDark ? "#706860" : "#999") }]}>
             {active ? "ativo" : "inativo"}
           </Text>
         </View>
