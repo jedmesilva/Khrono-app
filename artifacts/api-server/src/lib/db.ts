@@ -1,4 +1,5 @@
 import pg from "pg";
+import type { QueryResultRow } from "pg";
 
 const { Pool } = pg;
 
@@ -10,7 +11,7 @@ export const pool = new Pool({
   connectionString: process.env["DATABASE_URL"],
 });
 
-export async function query<T = Record<string, unknown>>(
+export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: unknown[] = [],
 ) {
