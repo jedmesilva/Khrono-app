@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { VerifiedIcon } from "@/components/VerifiedBadge";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useRef, useState } from "react";
@@ -320,7 +320,7 @@ export function ServiceCard({
               <Text style={[styles.metaDivider, { color: colors.textDim }]}>·</Text>
             </>
           )}
-          <Feather name="file-text" size={11} color={colors.textDim} />
+          <MaterialCommunityIcons name="handshake-outline" size={13} color={colors.textDim} />
           <Text style={[styles.metaText, { color: colors.textMuted }]}>
             {service.contracts} contrato{service.contracts !== 1 ? "s" : ""}
           </Text>

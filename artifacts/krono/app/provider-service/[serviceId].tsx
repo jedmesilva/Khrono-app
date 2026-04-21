@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -421,13 +421,9 @@ export default function ProviderServiceScreen() {
               <Text style={[styles.metaDot, { color: colors.textDim }]}>·</Text>
             </>
           )}
-          <Feather name="file-text" size={12} color={colors.textDim} />
+          <MaterialCommunityIcons name="handshake-outline" size={14} color={colors.textDim} />
           <Text style={[styles.metaValue, { color: colors.textMuted }]}>
-            {service.avaliacoes} avaliações
-          </Text>
-          <Text style={[styles.metaDot, { color: colors.textDim }]}>·</Text>
-          <Text style={[styles.metaValue, { color: colors.textMuted }]}>
-            {service.contracts} contratos
+            {service.contracts} contrato{service.contracts !== 1 ? "s" : ""}
           </Text>
         </View>
 
@@ -441,12 +437,6 @@ export default function ProviderServiceScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.providerName, { color: colors.text }]}>{provider.name}</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-              <Feather name="star" size={9} color={ACCENT} />
-              <Text style={[styles.providerMeta, { color: colors.textSecondary }]}>
-                {provider.nota > 0 ? provider.nota.toFixed(1) : "—"} · {provider.avaliacoes} avaliações
-              </Text>
-            </View>
           </View>
           <Feather name="chevron-right" size={14} color={colors.chevron} />
         </Pressable>

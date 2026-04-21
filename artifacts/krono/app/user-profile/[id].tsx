@@ -347,24 +347,24 @@ export default function UserProfileScreen() {
 
         <View style={styles.compactRow}>
           <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+            <View style={[styles.compactIcon, { backgroundColor: "#e0603015" }]}>
               <Feather name={SKILL_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
               <Text style={[styles.compactMeta, { color: colors.textDim }]}>
-                {provider.skills.length} · {provider.skills.filter((s) => s.verified !== null).length} verificadas
+                {provider.skills.length} skill{provider.skills.length !== 1 ? "s" : ""}
               </Text>
             </View>
           </View>
           <View style={[styles.compactCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}>
-            <View style={[styles.compactIcon, { backgroundColor: colors.menuIconBg }]}>
+            <View style={[styles.compactIcon, { backgroundColor: "#e0603015" }]}>
               <Feather name={TOOL_SECTION_ICON} size={16} color="#e06030" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
               <Text style={[styles.compactMeta, { color: colors.textDim }]}>
-                {provider.tools.length} · {provider.tools.filter((t) => t.available).length} disponíveis
+                {provider.tools.length} tool{provider.tools.length !== 1 ? "s" : ""}
               </Text>
             </View>
           </View>

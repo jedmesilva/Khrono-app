@@ -276,7 +276,7 @@ export default function ProfileScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Skills</Text>
-              <Text style={[styles.compactMeta, { color: colors.textDim }]}>{mappedSkills.length} · {verifiedSkillsCount} verificadas</Text>
+              <Text style={[styles.compactMeta, { color: colors.textDim }]}>{mappedSkills.length} skill{mappedSkills.length !== 1 ? "s" : ""}</Text>
             </View>
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>
@@ -286,7 +286,7 @@ export default function ProfileScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.compactTitle, { color: colors.text }]}>Tools</Text>
-              <Text style={[styles.compactMeta, { color: colors.textDim }]}>{myTools.length} · {verifiedToolsCount} verificadas</Text>
+              <Text style={[styles.compactMeta, { color: colors.textDim }]}>{myTools.length} tool{myTools.length !== 1 ? "s" : ""}</Text>
             </View>
             <Feather name="chevron-right" size={14} color={colors.chevron} />
           </Pressable>

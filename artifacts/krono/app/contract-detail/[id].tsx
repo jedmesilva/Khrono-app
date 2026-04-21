@@ -2334,7 +2334,7 @@ export default function ContractDetailScreen() {
         ref={helpRef}
         snapPoints={helpSnapPoints}
         backgroundStyle={helpBgStyle}
-        handleIndicatorStyle={helpHandleStyle}
+        handleComponent={() => null}
         backdropComponent={renderBackdrop}
         onDismiss={() => setHelpOpen(false)}
       >
