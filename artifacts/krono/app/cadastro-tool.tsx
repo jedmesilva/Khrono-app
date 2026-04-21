@@ -33,7 +33,6 @@ interface ToolTemplate {
   description: string;
 }
 
-const TOTAL_STEPS = 2;
 type Step = 1 | 2 | "done";
 type Step1Sub = "search" | "new_form";
 
@@ -69,14 +68,12 @@ export default function CadastroToolScreen() {
   const [available, setAvailable] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [createdToolId, setCreatedToolId] = useState<string | null>(null);
 
   const toolTemplates = React.useMemo(
     () => catalogTools.map(mapCatalogTool),
     [catalogTools]
   );
-
-  const currentStep = step === "done" ? TOTAL_STEPS : (step as number);
-  const progress = currentStep / TOTAL_STEPS;
 
   const filteredTemplates = query.length > 0
     ? toolTemplates.filter((t) =>
@@ -126,15 +123,16 @@ export default function CadastroToolScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const { error } = await supabase.from("provider_tools").insert({
+      const { data, error } = await supabase.from("provider_tools").insert({
         profile_id: user.id,
         nome: toolName.trim(),
         tipo: toolType,
         details: details.trim() || null,
         is_available: available,
-      });
+      }).select("id").single();
 
       if (error) throw error;
+      if (data?.id) setCreatedToolId(data.id);
       await refresh();
       setStep("done");
     } catch (e) {
@@ -154,6 +152,7 @@ export default function CadastroToolScreen() {
     setDetails("");
     setAvailable(true);
     setSaveError(null);
+    setCreatedToolId(null);
   }
 
   if (step === "done") {
@@ -167,8 +166,9 @@ export default function CadastroToolScreen() {
             {` foi cadastrada no seu perfil como ${available ? "disponível" : "indisponível"}.`}
           </>
         }
+        primaryLabel="Ver tool"
         secondaryAction={{ label: "Adicionar outra tool", icon: "plus", onPress: handleReset }}
-        onVerPerfil={() => router.back()}
+        onVerPerfil={() => createdToolId ? router.replace(`/tool/${createdToolId}` as any) : router.back()}
       />
     );
   }
@@ -177,20 +177,7 @@ export default function CadastroToolScreen() {
     <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <BackButton onPress={handleBack} />
-        <View style={{ flex: 1 }}>
-          {step !== 1 || step1Sub === "new_form" ? (
-            <>
-              <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>
-                Passo {currentStep} de {TOTAL_STEPS}
-              </Text>
-              <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
-                <View style={[styles.progressFill, { width: `${progress * 100}%` as any }]} />
-              </View>
-            </>
-          ) : (
-            <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>NOVA TOOL</Text>
-          )}
-        </View>
+        <Text style={[styles.headerTitle, { color: colors.textMuted }]}>NOVA TOOL</Text>
       </View>
 
       {/* STEP 1 — SEARCH */}
@@ -232,7 +219,7 @@ export default function CadastroToolScreen() {
                   style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
                   onPress={handleCreateNew}
                 >
-                  <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                  <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020" }]}>
                     <Feather name="plus" size={18} color="#e06030" />
                   </View>
                   <View style={{ flex: 1 }}>
@@ -309,27 +296,31 @@ export default function CadastroToolScreen() {
             </View>
 
             <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>TIPO</Text>
-            <View style={styles.typeRow}>
-              {TOOL_TYPES.map((t) => (
-                <Pressable
-                  key={t.id}
-                  style={[
-                    styles.typeChip,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: toolType === t.id ? "#e06030" : colors.cardBorder,
-                      borderWidth: toolType === t.id ? 1.5 : 1,
-                    },
-                  ]}
-                  onPress={() => setToolType(t.id)}
-                >
-                  <Feather name={t.icon} size={14} color={toolType === t.id ? "#e06030" : colors.textMuted} />
-                  <Text style={[styles.typeChipText, { color: toolType === t.id ? colors.text : colors.textSecondary }]}>
-                    {t.label}
-                  </Text>
-                  {toolType === t.id && <Feather name="check" size={12} color="#e06030" />}
-                </Pressable>
-              ))}
+            <View style={styles.typeList}>
+              {TOOL_TYPES.map((t) => {
+                const selected = toolType === t.id;
+                return (
+                  <Pressable
+                    key={t.id}
+                    style={[
+                      styles.typeRow,
+                      {
+                        backgroundColor: selected ? "#e0603010" : colors.card,
+                        borderColor: selected ? "#e0603050" : colors.cardBorder,
+                      },
+                    ]}
+                    onPress={() => setToolType(t.id)}
+                  >
+                    <View style={[styles.typeIconWrap, { backgroundColor: selected ? "#e0603020" : colors.surface }]}>
+                      <Feather name={t.icon} size={16} color={selected ? "#e06030" : colors.textMuted} />
+                    </View>
+                    <Text style={[styles.typeLabel, { color: selected ? colors.text : colors.textSecondary }]}>
+                      {t.label}
+                    </Text>
+                    {selected && <Feather name="check" size={16} color="#e06030" />}
+                  </Pressable>
+                );
+              })}
             </View>
           </ScrollView>
 
@@ -410,10 +401,7 @@ export default function CadastroToolScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
-  backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
-  progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#e06030", borderRadius: 2 },
+  headerTitle: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase" },
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
@@ -421,16 +409,17 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
   listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   templateList: { gap: 10 },
-  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 16, marginBottom: 20 },
-  createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
+  createOptionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   createOptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#e06030", marginBottom: 2 },
   createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
   createOptionSmallText: { flex: 1, fontFamily: "DMSans_400Regular", fontSize: 12 },
   fieldLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 },
-  typeRow: { flexDirection: "row", gap: 8, marginBottom: 24 },
-  typeChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 8 },
-  typeChipText: { fontFamily: "DMSans_400Regular", fontSize: 11 },
+  typeList: { gap: 8, marginBottom: 24 },
+  typeRow: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 14 },
+  typeIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  typeLabel: { flex: 1, fontFamily: "DMSans_500Medium", fontSize: 14 },
   nameCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 20 },
   nameCardLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
   nameCardValue: { fontFamily: "Sora_700Bold", fontSize: 20 },

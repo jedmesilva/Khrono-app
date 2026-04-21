@@ -22,7 +22,6 @@ import { useCatalog } from "@/context/CatalogContext";
 import { useUserCatalog } from "@/context/UserCatalogContext";
 import { supabase } from "@/lib/supabase";
 
-const TOTAL_STEPS = 2;
 type Step = 1 | 2 | "done";
 type Step1Sub = "search" | "new_form";
 
@@ -46,9 +45,7 @@ export default function CadastroSkillScreen() {
   const [query, setQuery] = useState("");
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  const currentStep = step === "done" ? TOTAL_STEPS : (step as number);
-  const progress = currentStep / TOTAL_STEPS;
+  const [createdSkillId, setCreatedSkillId] = useState<string | null>(null);
 
   const filteredTemplates = query.length > 0
     ? catalogSkills.filter((t) =>
@@ -95,8 +92,8 @@ export default function CadastroSkillScreen() {
     try {
       if (selectedSkillId) {
         await addSkill(selectedSkillId);
+        setCreatedSkillId(selectedSkillId);
       } else {
-        // Custom skill: insert into catalog as unverified, then link to user
         const { data: newSkill } = await supabase
           .from("skills_catalog")
           .insert({ nome: skillName.trim(), description: description.trim(), status: "active", verified: false })
@@ -104,6 +101,7 @@ export default function CadastroSkillScreen() {
           .single();
         if (newSkill) {
           await addSkill(newSkill.id);
+          setCreatedSkillId(newSkill.id);
         }
       }
     } catch (e) {
@@ -121,6 +119,7 @@ export default function CadastroSkillScreen() {
     setDescription("");
     setQuery("");
     setSelectedSkillId(null);
+    setCreatedSkillId(null);
   }
 
   if (step === "done") {
@@ -128,6 +127,7 @@ export default function CadastroSkillScreen() {
       <CadastroDone
         topPadding={topPadding}
         title="Skill adicionada!"
+        primaryLabel="Ver skill"
         secondaryAction={{ label: "Adicionar outra skill", icon: "plus", onPress: handleReset }}
         subtitle={
           <>
@@ -135,7 +135,7 @@ export default function CadastroSkillScreen() {
             {" foi cadastrada no seu perfil."}
           </>
         }
-        onVerPerfil={() => router.back()}
+        onVerPerfil={() => createdSkillId ? router.replace(`/skill/${createdSkillId}` as any) : router.back()}
       />
     );
   }
@@ -144,20 +144,7 @@ export default function CadastroSkillScreen() {
     <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <BackButton onPress={handleBack} />
-        <View style={{ flex: 1 }}>
-          {step !== 1 || step1Sub === "new_form" ? (
-            <>
-              <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>
-                Passo {currentStep} de {TOTAL_STEPS}
-              </Text>
-              <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
-                <View style={[styles.progressFill, { width: `${progress * 100}%` as any }]} />
-              </View>
-            </>
-          ) : (
-            <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>NOVA SKILL</Text>
-          )}
-        </View>
+        <Text style={[styles.headerTitle, { color: colors.textMuted }]}>NOVA SKILL</Text>
       </View>
 
       {/* STEP 1 — SEARCH */}
@@ -199,7 +186,7 @@ export default function CadastroSkillScreen() {
                   style={[styles.createOptionCard, { backgroundColor: colors.card, borderColor: "#e06030" }]}
                   onPress={handleCreateNew}
                 >
-                  <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020", borderColor: "#e0603040" }]}>
+                  <View style={[styles.createOptionIcon, { backgroundColor: "#e0603020" }]}>
                     <Feather name="plus" size={18} color="#e06030" />
                   </View>
                   <View style={{ flex: 1 }}>
@@ -341,10 +328,7 @@ export default function CadastroSkillScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
-  backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
-  progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#e06030", borderRadius: 2 },
+  headerTitle: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase" },
   content: { paddingHorizontal: 20 },
   stepTitle: { fontFamily: "Sora_700Bold", fontSize: 22, marginBottom: 8 },
   stepSub: { fontFamily: "Sora_400Regular", fontSize: 13, lineHeight: 20, marginBottom: 24 },
@@ -352,8 +336,8 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontFamily: "Sora_400Regular", fontSize: 14 },
   listLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 },
   templateList: { gap: 10 },
-  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 16, marginBottom: 20 },
-  createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 16, padding: 16, marginBottom: 20 },
+  createOptionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   createOptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#e06030", marginBottom: 2 },
   createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },

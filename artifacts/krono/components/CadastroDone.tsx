@@ -3,7 +3,6 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "@/context/ThemeContext";
-import { GlobalStyles } from "@/constants/globalStyles";
 
 interface SecondaryAction {
   label: string;
@@ -16,6 +15,7 @@ interface CadastroDoneProps {
   title: string;
   subtitle: React.ReactNode;
   onVerPerfil: () => void;
+  primaryLabel?: string;
   secondaryAction?: SecondaryAction;
 }
 
@@ -24,6 +24,7 @@ export function CadastroDone({
   title,
   subtitle,
   onVerPerfil,
+  primaryLabel = "Ver perfil",
   secondaryAction,
 }: CadastroDoneProps) {
   const { colors } = useTheme();
@@ -31,7 +32,7 @@ export function CadastroDone({
   return (
     <View style={[styles.container, { paddingTop: topPadding + 20, backgroundColor: colors.background }]}>
       <View style={styles.doneWrap}>
-        <View style={styles.doneIcon}>
+        <View style={[styles.doneIcon, { backgroundColor: "#e0603015" }]}>
           <Feather name="check" size={32} color="#e06030" />
         </View>
         <Text style={[styles.doneTitle, { color: colors.text }]}>{title}</Text>
@@ -45,7 +46,7 @@ export function CadastroDone({
         )}
 
         <Pressable style={styles.primaryBtn} onPress={onVerPerfil}>
-          <Text style={styles.primaryBtnText}>Ver perfil</Text>
+          <Text style={styles.primaryBtnText}>{primaryLabel}</Text>
         </Pressable>
       </View>
     </View>
@@ -55,9 +56,10 @@ export function CadastroDone({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   doneWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, gap: 16 },
-  doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#e0603015", borderWidth: 1, borderColor: "#e0603030", alignItems: "center", justifyContent: "center", marginBottom: 8 },
+  doneIcon: { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center", marginBottom: 8 },
   doneTitle: { fontFamily: "Sora_700Bold", fontSize: 22, textAlign: "center" },
   doneSub: { fontFamily: "Sora_400Regular", fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 12 },
+  primaryBtn: { backgroundColor: "#e06030", borderRadius: 14, paddingVertical: 14, width: "100%", alignItems: "center", justifyContent: "center" },
   primaryBtnText: { fontFamily: "Sora_700Bold", fontSize: 14, color: "#fff" },
   secondaryBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#e0603012", borderWidth: 1, borderColor: "#e0603030", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, width: "100%", justifyContent: "center" },
   secondaryBtnText: { fontFamily: "Sora_600SemiBold", fontSize: 14, color: "#e06030" },

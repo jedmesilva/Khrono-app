@@ -61,8 +61,6 @@ const EMPTY_DRAFT: Draft = {
   hourlyRateInput: "",
 };
 
-const TOTAL_STEPS = 4;
-
 function normalize(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
@@ -266,9 +264,6 @@ export default function CadastroServiceScreen() {
     setDraft({ hourlyRateInput: cleaned });
   }
 
-  const currentStep = draft.step === "done" ? TOTAL_STEPS : (draft.step as number);
-  const progress = Math.min(currentStep / TOTAL_STEPS, 1);
-
   if (!draftLoaded) return null;
 
   if (draft.step === "done") {
@@ -282,6 +277,7 @@ export default function CadastroServiceScreen() {
             {" foi adicionado ao seu perfil."}
           </>
         }
+        primaryLabel="Ver meus services"
         secondaryAction={{ label: "Criar outro service", icon: "plus", onPress: clearDraft }}
         onVerPerfil={() => { clearDraft(); router.back(); }}
       />
@@ -299,20 +295,7 @@ export default function CadastroServiceScreen() {
     <View style={[styles.container, { paddingTop: topPadding, backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <BackButton onPress={handleBack} />
-        <View style={{ flex: 1 }}>
-          {draft.step !== 1 || draft.step1Sub === "new_form" ? (
-            <>
-              <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>
-                Passo {currentStep} de {TOTAL_STEPS}
-              </Text>
-              <View style={[styles.progressBar, { backgroundColor: colors.surface }]}>
-                <View style={[styles.progressFill, { width: `${progress * 100}%` as any }]} />
-              </View>
-            </>
-          ) : (
-            <Text style={[styles.stepIndicator, { color: colors.textMuted }]}>NOVO SERVICE</Text>
-          )}
-        </View>
+        <Text style={[styles.headerTitle, { color: colors.textMuted }]}>NOVO SERVICE</Text>
         {draft.step !== 1 && (
           <View style={[styles.draftBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <Feather name="save" size={10} color={colors.textMuted} />
@@ -852,9 +835,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
   backBtn: { padding: 4, flexShrink: 0 },
-  stepIndicator: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 8 },
-  progressBar: { height: 3, borderRadius: 2, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#e06030", borderRadius: 2 },
+  headerTitle: { fontFamily: "DMSans_400Regular", fontSize: 10, letterSpacing: 0.8, textTransform: "uppercase", flex: 1 },
   draftBadge: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   draftBadgeText: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.5 },
   content: { paddingHorizontal: 20 },
@@ -874,7 +855,7 @@ const styles = StyleSheet.create({
   compositionChip: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
   compositionChipText: { fontFamily: "DMSans_400Regular", fontSize: 10 },
   createOptionCard: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1, borderRadius: 24, padding: 16, marginBottom: 20 },
-  createOptionIcon: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  createOptionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   createOptionLabel: { fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 1, textTransform: "uppercase", color: "#e06030", marginBottom: 2 },
   createOptionName: { fontFamily: "Sora_700Bold", fontSize: 16 },
   createOptionCardSmall: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 14 },
