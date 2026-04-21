@@ -56,6 +56,9 @@ export function AddCardModal({ visible, onClose }: Props) {
   const { saveCard, loading: saving } = useStripeSetupCard();
   const ref = useRef<BottomSheetModal>(null);
 
+  const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
+  const stripeReady = stripeKey.startsWith("pk_");
+
   const snapPoints = useMemo(() => ["90%"], []);
 
   const sheetBgStyle = useMemo(
@@ -132,6 +135,13 @@ export function AddCardModal({ visible, onClose }: Props) {
   }
 
   async function handleAdd() {
+    if (!stripeReady) {
+      setErrorMsg(
+        "Pagamentos por cartão não estão configurados neste build. Adicione EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY nas variáveis de ambiente do EAS e gere um novo build."
+      );
+      setStep("error");
+      return;
+    }
     if (!isValid || saving) return;
     Keyboard.dismiss();
     setStep("saving");
@@ -236,29 +246,42 @@ export function AddCardModal({ visible, onClose }: Props) {
 
             {/* Stripe secure card field */}
             <Text style={[styles.fieldLabel, { marginTop: 14 }]}>DADOS DO CARTÃO</Text>
-            <CardField
-              postalCodeEnabled={false}
-              style={styles.cardField}
-              cardStyle={{
-                backgroundColor: colors.surface as string,
-                textColor: colors.text as string,
-                placeholderColor: colors.textDim as string,
-                borderColor: colors.surfaceBorder as string,
-                borderRadius: 12,
-                borderWidth: 1,
-                fontSize: 14,
-                cursorColor: "#e06030",
-              }}
-              onCardChange={(details: CardFieldInput.Details) => {
-                setCardComplete(details.complete);
-                setCardDetails({
-                  brand: details.brand ?? "unknown",
-                  last4: details.last4 ?? "",
-                  expiryMonth: details.expiryMonth,
-                  expiryYear: details.expiryYear,
-                });
-              }}
-            />
+            {stripeReady ? (
+              <CardField
+                postalCodeEnabled={false}
+                style={styles.cardField}
+                cardStyle={{
+                  backgroundColor: colors.surface as string,
+                  textColor: colors.text as string,
+                  placeholderColor: colors.textDim as string,
+                  borderColor: colors.surfaceBorder as string,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  fontSize: 14,
+                  cursorColor: "#e06030",
+                }}
+                onCardChange={(details: CardFieldInput.Details) => {
+                  setCardComplete(details.complete);
+                  setCardDetails({
+                    brand: details.brand ?? "unknown",
+                    last4: details.last4 ?? "",
+                    expiryMonth: details.expiryMonth,
+                    expiryYear: details.expiryYear,
+                  });
+                }}
+              />
+            ) : (
+              <View style={[styles.errorBox, { marginTop: 0 }]}>
+                <Feather name="alert-triangle" size={14} color="#e05050" />
+                <Text style={styles.errorText}>
+                  O Stripe não está configurado neste build. Defina{" "}
+                  <Text style={{ fontFamily: "DMSans_500Medium" }}>
+                    EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY
+                  </Text>{" "}
+                  nas variáveis de ambiente do EAS (expo.dev) e gere um novo build para habilitar o cadastro de cartões.
+                </Text>
+              </View>
+            )}
 
             <Text style={styles.secureNote}>
               <Feather name="lock" size={11} color={colors.textMuted} /> Os dados do cartão são criptografados pelo Stripe e nunca passam pelos nossos servidores.
