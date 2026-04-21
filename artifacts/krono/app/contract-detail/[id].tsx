@@ -2341,6 +2341,7 @@ export default function ContractDetailScreen() {
         <BottomSheetScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
+            paddingTop: 24,
             paddingHorizontal: 20,
             paddingBottom: insets.bottom + 24,
           }}
