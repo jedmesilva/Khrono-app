@@ -187,6 +187,42 @@ router.get("/stripe/contracts/:contractId/payments", requireAuth, async (req, re
   res.json({ data: payments });
 });
 
+router.post("/stripe/setup-intents", requireAuth, async (req, res) => {
+  try {
+    const body = req.body as { customerEmail?: string; customerName?: string; payerProfileId?: string };
+    const stripe = await getUncachableStripeClient();
+    let customerId: string | undefined;
+
+    if (body.customerEmail) {
+      const existing = await stripe.customers.list({ email: body.customerEmail, limit: 1 });
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({
+          email: body.customerEmail,
+          name: body.customerName,
+          metadata: { payer_profile_id: body.payerProfileId ?? "" },
+        });
+        customerId = customer.id;
+      }
+    }
+
+    const setupIntent = await stripe.setupIntents.create({
+      customer: customerId,
+      payment_method_types: ["card"],
+    });
+
+    res.status(201).json({
+      setupIntentId: setupIntent.id,
+      clientSecret: setupIntent.client_secret,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to create SetupIntent.",
+    });
+  }
+});
+
 router.post("/stripe/pix-intents", requireAuth, async (req, res) => {
   try {
     const body = req.body as CreatePaymentIntentBody;

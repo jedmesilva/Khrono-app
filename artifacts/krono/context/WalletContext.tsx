@@ -18,6 +18,7 @@ export type WalletCard = {
   titular: string;
   validade: string;
   isDefault: boolean;
+  stripePaymentMethodId: string | null;
 };
 
 export type TransactionType =
@@ -64,7 +65,7 @@ type WalletContextType = {
   cards: WalletCard[];
   transactions: WalletTransaction[];
   isLoading: boolean;
-  addCard: (card: Omit<WalletCard, "id" | "isDefault">) => Promise<void>;
+  addCard: (card: Omit<WalletCard, "id" | "isDefault" | "stripePaymentMethodId">, stripePaymentMethodId?: string | null) => Promise<void>;
   removeCard: (id: string) => Promise<void>;
   setDefaultCard: (id: string) => Promise<void>;
   recordDeposit: (amount: number, pixKey?: string, pixKeyType?: string) => Promise<void>;
@@ -82,6 +83,7 @@ function mapCard(row: any): WalletCard {
     titular: row.titular,
     validade: row.validade,
     isDefault: row.is_default,
+    stripePaymentMethodId: row.stripe_payment_method_id ?? null,
   };
 }
 
@@ -199,7 +201,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   // ── Cards ────────────────────────────────────────────────────────────────
 
   const addCard = useCallback(
-    async (card: Omit<WalletCard, "id" | "isDefault">) => {
+    async (card: Omit<WalletCard, "id" | "isDefault" | "stripePaymentMethodId">, stripePaymentMethodId?: string | null) => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -207,14 +209,20 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       const isFirst = cards.length === 0;
 
-      const { error } = await supabase.from("wallet_cards").insert({
+      const row: Record<string, unknown> = {
         profile_id: user.id,
         bandeira: card.bandeira,
         last_four: card.lastFour,
         titular: card.titular,
         validade: card.validade,
         is_default: isFirst,
-      });
+      };
+
+      if (stripePaymentMethodId) {
+        row.stripe_payment_method_id = stripePaymentMethodId;
+      }
+
+      const { error } = await supabase.from("wallet_cards").insert(row);
 
       if (error) throw new Error(error.message);
       await loadData(user.id);

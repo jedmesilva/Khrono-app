@@ -581,6 +581,7 @@ export default function ContractConfirmScreen() {
         contractId={draftContractId}
         contractType={tipoContrato}
         paymentMethod={metodoPagamento}
+        selectedCardId={cartaoSelecionadoId}
         totalAmount={tipoContrato === "definido" ? (duracaoMs / 3600000) * valorHora : valorHora}
         ratePerHour={valorHora}
         personName={provider.name}

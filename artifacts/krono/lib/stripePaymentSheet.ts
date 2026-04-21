@@ -1,4 +1,4 @@
-import { useStripe, useConfirmPayment } from "@stripe/stripe-react-native";
+import { useStripe, useConfirmPayment, useConfirmSetupIntent } from "@stripe/stripe-react-native";
 import { useCallback } from "react";
 
 export type PaymentSheetResult =
@@ -107,4 +107,79 @@ export function useStripeCardConfirm() {
   );
 
   return { confirmCard, loading };
+}
+
+/**
+ * Confirm payment using an already-saved Stripe PaymentMethod.
+ * No <CardField> required — the user does not need to re-enter card data.
+ */
+export function useStripeCardConfirmWithSavedPM() {
+  const { confirmPayment, loading } = useConfirmPayment();
+
+  const confirmSavedCard = useCallback(
+    async (clientSecret: string, paymentMethodId: string): Promise<PaymentSheetResult> => {
+      const { paymentIntent, error } = await confirmPayment(clientSecret, {
+        paymentMethodType: "Card",
+        paymentMethodData: { paymentMethodId } as any,
+      });
+
+      if (error) {
+        if ((error as { code?: string }).code === "Canceled") {
+          return { success: false, canceled: true };
+        }
+        return { success: false, canceled: false, error: error.message };
+      }
+
+      const status = paymentIntent?.status;
+      if (status === "Succeeded" || status === "Processing") {
+        return { success: true };
+      }
+
+      return {
+        success: false,
+        canceled: false,
+        error: "Pagamento não confirmado pelo servidor.",
+      };
+    },
+    [confirmPayment]
+  );
+
+  return { confirmSavedCard, loading };
+}
+
+/**
+ * Save a card via Stripe SetupIntent — no charge is made.
+ * Pair with a mounted <CardField> component.
+ * Returns the saved PaymentMethod ID (pm_xxx) to persist in your DB.
+ */
+export function useStripeSetupCard() {
+  const { confirmSetupIntent, loading } = useConfirmSetupIntent();
+
+  const saveCard = useCallback(
+    async (
+      clientSecret: string,
+      cardholderName: string
+    ): Promise<{ success: true; paymentMethodId: string } | { success: false; error: string }> => {
+      const { setupIntent, error } = await confirmSetupIntent(clientSecret, {
+        paymentMethodType: "Card",
+        paymentMethodData: {
+          billingDetails: { name: cardholderName },
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      const pmId = setupIntent?.paymentMethodId;
+      if (!pmId) {
+        return { success: false, error: "Não foi possível salvar o cartão." };
+      }
+
+      return { success: true, paymentMethodId: pmId };
+    },
+    [confirmSetupIntent]
+  );
+
+  return { saveCard, loading };
 }

@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { useContracts } from "@/context/ContractsContext";
 import { useWallet } from "@/context/WalletContext";
-import { useStripeCardConfirm } from "@/lib/stripePaymentSheet";
+import { useStripeCardConfirm, useStripeCardConfirmWithSavedPM } from "@/lib/stripePaymentSheet";
 import { createStripePixPayment } from "@/lib/stripeApi";
 import { PaymentMethod } from "@/components/PaymentSheet";
 import { formatCurrency } from "@/lib/format";
@@ -42,6 +42,7 @@ type Props = {
   contractId: string | null;
   contractType: "aberto" | "definido";
   paymentMethod: PaymentMethod | null;
+  selectedCardId?: string | null;
   totalAmount: number;
   ratePerHour: number;
   personName: string;
@@ -195,6 +196,7 @@ export function ContractPaymentProcessSheet({
   contractId,
   contractType,
   paymentMethod,
+  selectedCardId,
   totalAmount,
   ratePerHour,
   personName,
@@ -203,8 +205,15 @@ export function ContractPaymentProcessSheet({
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { finalizeContract, deleteDraftContract, processPaymentForDraftContract } = useContracts();
-  const { balance: walletBalance } = useWallet();
+  const { balance: walletBalance, cards } = useWallet();
   const { confirmCard, loading: cardConfirming } = useStripeCardConfirm();
+  const { confirmSavedCard, loading: savedCardConfirming } = useStripeCardConfirmWithSavedPM();
+
+  const selectedCard = useMemo(
+    () => cards.find((c) => c.id === selectedCardId) ?? null,
+    [cards, selectedCardId]
+  );
+  const savedPMId = selectedCard?.stripePaymentMethodId ?? null;
 
   const ref = useRef<BottomSheetModal>(null);
   const [step, setStep] = useState<InternalStep>("info");
@@ -332,7 +341,6 @@ export function ContractPaymentProcessSheet({
 
     try {
       if (isCardDefinido) {
-        // Create payment intent → move to card input form
         const { clientSecret } = await processPaymentForDraftContract(contractId, {
           method: "cartao",
           amount: totalAmount,
@@ -340,6 +348,26 @@ export function ContractPaymentProcessSheet({
         if (!clientSecret) {
           throw new Error("Não foi possível iniciar o pagamento.");
         }
+
+        if (savedPMId) {
+          // Saved card — confirm directly, no CardField needed
+          const result = await confirmSavedCard(clientSecret, savedPMId);
+          if (!result.success) {
+            if (!result.canceled) {
+              setStep("error");
+              setErrorMessage(result.error ?? "Pagamento recusado. Verifique o cartão e tente novamente.");
+            } else {
+              setStep("info");
+            }
+            return;
+          }
+          await finalizeContract(contractId);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          onSuccess();
+          return;
+        }
+
+        // No saved PM — show CardField form
         setCardClientSecret(clientSecret);
         setStep("card_input");
         return;
@@ -378,6 +406,8 @@ export function ContractPaymentProcessSheet({
     isSaldoDefinido,
     isPixDefinido,
     hasSufficientBalance,
+    savedPMId,
+    confirmSavedCard,
     processPaymentForDraftContract,
     finalizeContract,
     totalAmount,

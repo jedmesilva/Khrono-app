@@ -5,9 +5,11 @@ import {
   BottomSheetScrollView,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
+import { CardField, CardFieldInput } from "@stripe/stripe-react-native";
 import * as Haptics from "@/lib/haptics";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Keyboard,
   Pressable,
   StyleSheet,
@@ -18,29 +20,32 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 import { type CardBandeira, useWallet } from "@/context/WalletContext";
+import { createStripeSetupIntent } from "@/lib/stripeApi";
+import { useStripeSetupCard } from "@/lib/stripePaymentSheet";
+import { supabase } from "@/lib/supabase";
 
-type Step = "form" | "success";
+type Step = "form" | "saving" | "success" | "error";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
 };
 
-function detectBandeira(num: string): CardBandeira {
-  const clean = num.replace(/\s/g, "");
-  if (clean.startsWith("4")) return "Visa";
-  return "Mastercard";
+function stripeBrandToLocal(brand: string): CardBandeira {
+  switch (brand.toLowerCase()) {
+    case "visa":       return "Visa";
+    case "mastercard": return "Mastercard";
+    case "amex":       return "Amex";
+    case "elo":        return "Elo";
+    default:           return "Mastercard";
+  }
 }
 
-function formatCardNumber(raw: string) {
-  const digits = raw.replace(/\D/g, "").slice(0, 16);
-  return digits.replace(/(.{4})/g, "$1 ").trim();
-}
-
-function formatExpiry(raw: string) {
-  const digits = raw.replace(/\D/g, "").slice(0, 4);
-  if (digits.length <= 2) return digits;
-  return digits.slice(0, 2) + "/" + digits.slice(2);
+function formatExpiry(month: number | undefined, year: number | undefined): string {
+  if (!month || !year) return "";
+  const mm = String(month).padStart(2, "0");
+  const yy = String(year).slice(-2);
+  return `${mm}/${yy}`;
 }
 
 export function AddCardModal({ visible, onClose }: Props) {
@@ -48,6 +53,7 @@ export function AddCardModal({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { addCard } = useWallet();
+  const { saveCard, loading: saving } = useStripeSetupCard();
   const ref = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ["90%"], []);
@@ -63,10 +69,7 @@ export function AddCardModal({ visible, onClose }: Props) {
     [colors]
   );
 
-  const handleStyle = useMemo(
-    () => ({ height: 0, width: 0 }),
-    [colors]
-  );
+  const handleStyle = useMemo(() => ({ height: 0, width: 0 }), []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -81,20 +84,23 @@ export function AddCardModal({ visible, onClose }: Props) {
   );
 
   const [step, setStep] = useState<Step>("form");
-  const [numero, setNumero] = useState("");
   const [titular, setTitular] = useState("");
-  const [validade, setValidade] = useState("");
-  const [cvv, setCvv] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const digits = numero.replace(/\s/g, "");
-  const isValid =
-    digits.length === 16 &&
-    titular.trim().length > 2 &&
-    validade.length === 5 &&
-    cvv.length === 3;
+  // Stripe CardField state
+  const [cardComplete, setCardComplete] = useState(false);
+  const [cardDetails, setCardDetails] = useState<{
+    brand: string;
+    last4: string;
+    expiryMonth?: number;
+    expiryYear?: number;
+  }>({ brand: "unknown", last4: "" });
 
-  const bandeira = detectBandeira(numero);
-  const lastFour = digits.slice(-4) || "••••";
+  const previewBandeira = stripeBrandToLocal(cardDetails.brand);
+  const previewLast4 = cardDetails.last4 || "••••";
+  const previewValidade = formatExpiry(cardDetails.expiryMonth, cardDetails.expiryYear) || "MM/AA";
+
+  const isValid = titular.trim().length > 1 && cardComplete;
 
   useEffect(() => {
     if (visible) {
@@ -111,29 +117,59 @@ export function AddCardModal({ visible, onClose }: Props) {
     return () => sub.remove();
   }, []);
 
+  function resetForm() {
+    setStep("form");
+    setTitular("");
+    setCardComplete(false);
+    setCardDetails({ brand: "unknown", last4: "" });
+    setErrorMsg(null);
+  }
+
   function handleClose() {
     ref.current?.dismiss();
-    setStep("form");
-    setNumero("");
-    setTitular("");
-    setValidade("");
-    setCvv("");
+    resetForm();
     onClose();
   }
 
   async function handleAdd() {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (!isValid || saving) return;
+    Keyboard.dismiss();
+    setStep("saving");
+    setErrorMsg(null);
+
     try {
-      await addCard({
-        bandeira,
-        lastFour,
-        titular: titular.trim(),
-        validade,
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { clientSecret } = await createStripeSetupIntent({
+        customerEmail: user?.email,
+        customerName: titular.trim(),
+        payerProfileId: user?.id,
       });
-    } catch (e) {
-      console.warn("[AddCardModal] addCard error:", e);
+
+      const result = await saveCard(clientSecret, titular.trim());
+
+      if (!result.success) {
+        setErrorMsg(result.error);
+        setStep("error");
+        return;
+      }
+
+      await addCard(
+        {
+          bandeira: previewBandeira,
+          lastFour: cardDetails.last4 || "0000",
+          titular: titular.trim(),
+          validade: previewValidade,
+        },
+        result.paymentMethodId
+      );
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setStep("success");
+    } catch (e: any) {
+      setErrorMsg(e?.message ?? "Não foi possível salvar o cartão.");
+      setStep("error");
     }
-    setStep("success");
   }
 
   return (
@@ -153,7 +189,8 @@ export function AddCardModal({ visible, onClose }: Props) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {step === "form" && (
+        {/* ── FORM step ─────────────────────────────────────────────── */}
+        {(step === "form" || step === "saving" || step === "error") && (
           <>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Adicionar cartão</Text>
@@ -162,15 +199,14 @@ export function AddCardModal({ visible, onClose }: Props) {
               </Pressable>
             </View>
 
+            {/* Card preview */}
             <View style={styles.cardPreview}>
               <View style={styles.cardPreviewTop}>
                 <View style={styles.cardChip} />
-                <Text style={styles.cardBandeiraText}>{bandeira}</Text>
+                <Text style={styles.cardBandeiraText}>{previewBandeira}</Text>
               </View>
               <Text style={styles.cardNumPreview}>
-                {numero.length > 0
-                  ? numero.padEnd(19, " •").slice(0, 19)
-                  : "•••• •••• •••• ••••"}
+                •••• •••• •••• {previewLast4}
               </Text>
               <View style={styles.cardPreviewBottom}>
                 <View>
@@ -181,23 +217,13 @@ export function AddCardModal({ visible, onClose }: Props) {
                 </View>
                 <View>
                   <Text style={styles.cardPreviewLabel}>VALIDADE</Text>
-                  <Text style={styles.cardPreviewValue}>{validade || "MM/AA"}</Text>
+                  <Text style={styles.cardPreviewValue}>{previewValidade}</Text>
                 </View>
               </View>
             </View>
 
-            <Text style={styles.fieldLabel}>NÚMERO DO CARTÃO</Text>
-            <BottomSheetTextInput
-              style={styles.input}
-              value={numero}
-              onChangeText={(t) => setNumero(formatCardNumber(t))}
-              placeholder="0000 0000 0000 0000"
-              placeholderTextColor={colors.textDim}
-              keyboardType="numeric"
-              maxLength={19}
-            />
-
-            <Text style={[styles.fieldLabel, { marginTop: 14 }]}>NOME DO TITULAR</Text>
+            {/* Cardholder name */}
+            <Text style={styles.fieldLabel}>NOME DO TITULAR</Text>
             <BottomSheetTextInput
               style={styles.input}
               value={titular}
@@ -205,56 +231,74 @@ export function AddCardModal({ visible, onClose }: Props) {
               placeholder="Como aparece no cartão"
               placeholderTextColor={colors.textDim}
               autoCapitalize="words"
+              editable={step === "form"}
             />
 
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.fieldLabel, { marginTop: 14 }]}>VALIDADE</Text>
-                <BottomSheetTextInput
-                  style={styles.input}
-                  value={validade}
-                  onChangeText={(t) => setValidade(formatExpiry(t))}
-                  placeholder="MM/AA"
-                  placeholderTextColor={colors.textDim}
-                  keyboardType="numeric"
-                  maxLength={5}
-                />
+            {/* Stripe secure card field */}
+            <Text style={[styles.fieldLabel, { marginTop: 14 }]}>DADOS DO CARTÃO</Text>
+            <CardField
+              postalCodeEnabled={false}
+              style={styles.cardField}
+              cardStyle={{
+                backgroundColor: colors.surface as string,
+                textColor: colors.text as string,
+                placeholderColor: colors.textDim as string,
+                borderColor: colors.surfaceBorder as string,
+                borderRadius: 12,
+                borderWidth: 1,
+                fontSize: 14,
+                cursorColor: "#e06030",
+              }}
+              onCardChange={(details: CardFieldInput.Details) => {
+                setCardComplete(details.complete);
+                setCardDetails({
+                  brand: details.brand ?? "unknown",
+                  last4: details.last4 ?? "",
+                  expiryMonth: details.expiryMonth,
+                  expiryYear: details.expiryYear,
+                });
+              }}
+            />
+
+            <Text style={styles.secureNote}>
+              <Feather name="lock" size={11} color={colors.textMuted} /> Os dados do cartão são criptografados pelo Stripe e nunca passam pelos nossos servidores.
+            </Text>
+
+            {step === "error" && errorMsg && (
+              <View style={styles.errorBox}>
+                <Feather name="alert-circle" size={14} color="#e05050" />
+                <Text style={styles.errorText}>{errorMsg}</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.fieldLabel, { marginTop: 14 }]}>CVV</Text>
-                <BottomSheetTextInput
-                  style={styles.input}
-                  value={cvv}
-                  onChangeText={(t) => setCvv(t.replace(/\D/g, "").slice(0, 3))}
-                  placeholder="•••"
-                  placeholderTextColor={colors.textDim}
-                  keyboardType="numeric"
-                  maxLength={3}
-                  secureTextEntry
-                />
-              </View>
-            </View>
+            )}
 
             <Pressable
-              style={[styles.addBtn, !isValid && styles.addBtnDisabled]}
-              onPress={isValid ? handleAdd : undefined}
+              style={[styles.addBtn, (!isValid || saving) && styles.addBtnDisabled]}
+              onPress={isValid && !saving ? handleAdd : undefined}
             >
-              <Feather name="credit-card" size={16} color={isValid ? "#fff" : colors.textDim} />
-              <Text style={[styles.addBtnText, !isValid && { color: colors.textDim }]}>
-                Adicionar cartão
-              </Text>
+              {saving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Feather name="credit-card" size={16} color={isValid ? "#fff" : colors.textDim} />
+                  <Text style={[styles.addBtnText, !isValid && { color: colors.textDim }]}>
+                    {step === "error" ? "Tentar novamente" : "Salvar cartão"}
+                  </Text>
+                </>
+              )}
             </Pressable>
           </>
         )}
 
+        {/* ── SUCCESS step ──────────────────────────────────────────── */}
         {step === "success" && (
           <View style={styles.successContainer}>
             <View style={styles.successIcon}>
               <Feather name="check" size={32} color="#e06030" />
             </View>
-            <Text style={styles.successTitle}>Cartão adicionado!</Text>
+            <Text style={styles.successTitle}>Cartão salvo!</Text>
             <Text style={styles.successSub}>
-              {bandeira} •••• {lastFour} foi salvo{"\n"}com sucesso.
+              {previewBandeira} •••• {cardDetails.last4 || "••••"} foi salvo{"\n"}
+              com segurança para pagamentos futuros.
             </Text>
             <Pressable style={styles.doneBtn} onPress={handleClose}>
               <Text style={styles.doneBtnText}>Concluir</Text>
@@ -352,9 +396,37 @@ function createStyles(colors: ColorPalette) {
       fontSize: 14,
       color: colors.text,
     },
-    row: {
+    cardField: {
+      width: "100%",
+      height: 52,
+      borderRadius: 12,
+      overflow: "hidden",
+    },
+    secureNote: {
+      fontFamily: "DMSans_400Regular",
+      fontSize: 11,
+      color: colors.textMuted,
+      marginTop: 10,
+      marginBottom: 4,
+      lineHeight: 16,
+    },
+    errorBox: {
       flexDirection: "row",
-      gap: 12,
+      alignItems: "flex-start",
+      gap: 8,
+      backgroundColor: "#e0505010",
+      borderWidth: 1,
+      borderColor: "#e0505030",
+      borderRadius: 10,
+      padding: 12,
+      marginTop: 12,
+    },
+    errorText: {
+      fontFamily: "DMSans_400Regular",
+      fontSize: 12,
+      color: "#e05050",
+      flex: 1,
+      lineHeight: 18,
     },
     addBtn: {
       flexDirection: "row",

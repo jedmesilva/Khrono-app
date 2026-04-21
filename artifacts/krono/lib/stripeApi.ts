@@ -105,6 +105,39 @@ export async function createStripePixPayment(params: {
   return res.json() as Promise<CreatePixPaymentResult>;
 }
 
+export type CreateSetupIntentResult = {
+  setupIntentId: string;
+  clientSecret: string;
+};
+
+export async function createStripeSetupIntent(params: {
+  customerEmail?: string;
+  customerName?: string;
+  payerProfileId?: string;
+}): Promise<CreateSetupIntentResult> {
+  if (!API_URL) {
+    throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
+  }
+
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(`${API_URL}/api/stripe/setup-intents`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string }).error ??
+        `Falha ao criar SetupIntent (HTTP ${res.status})`,
+    );
+  }
+
+  return res.json() as Promise<CreateSetupIntentResult>;
+}
+
 export async function getStripePaymentIntentsForContract(
   contractId: string,
 ): Promise<{ data: { stripe_payment_intent_id: string; status: string; amount_cents: number }[] }> {
