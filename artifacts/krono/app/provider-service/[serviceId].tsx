@@ -147,12 +147,10 @@ const chipStyles = StyleSheet.create({
 });
 
 // ── StarRow ──────────────────────────────────────────────────────────────────
-function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
+function StarRow({ rating: _rating, size = 11 }: { rating: number; size?: number }) {
   return (
     <View style={{ flexDirection: "row", gap: 2 }}>
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Feather key={s} name="star" size={size} color={ACCENT} style={{ opacity: s <= rating ? 1 : 0.2 }} />
-      ))}
+      <Feather name="star" size={size} color={ACCENT} />
     </View>
   );
 }
@@ -345,6 +343,11 @@ export default function ProviderServiceScreen() {
       {/* ── Fixed transparent header ─────────────────────────────────── */}
       <View style={[styles.fixedHeader, { top: topPadding }]} pointerEvents="box-none">
         <BackButton />
+        <View style={{ flex: 1 }} pointerEvents="none" />
+        <View style={[styles.statusBadge, { position: "relative", right: 0 }]} pointerEvents="none">
+          <View style={[styles.statusDot, { backgroundColor: GREEN }]} />
+          <Text style={[styles.statusText, { color: GREEN }]}>ativo</Text>
+        </View>
       </View>
 
       {/* ── Scrollable body (hero + conteúdo) ───────────────────────── */}
@@ -375,12 +378,6 @@ export default function ProviderServiceScreen() {
         <Text style={[styles.decorLabel, { color: ACCENT, opacity: decorOpacity, bottom: 52 }]} numberOfLines={1}>
           {decorText}
         </Text>
-
-        {/* Status badge */}
-        <View style={[styles.statusBadge, { top: topPadding + 16 }]}>
-          <View style={[styles.statusDot, { backgroundColor: GREEN }]} />
-          <Text style={[styles.statusText, { color: GREEN }]}>ativo</Text>
-        </View>
 
         {/* Verified badge top-right (if any) */}
         {service.verified && (

@@ -1,8 +1,8 @@
 const http = require("http");
 const net = require("net");
 
-const METRO_PORT = 5000;
-const PROXY_PORT = 22861;
+const METRO_PORT = 22861;
+const PROXY_PORT = 5000;
 const RETRY_INTERVAL = 500;
 const MAX_RETRIES = 60;
 

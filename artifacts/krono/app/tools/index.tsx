@@ -32,12 +32,7 @@ export default function ToolsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <View style={styles.header}>
         <BackButton onPress={() => router.back()} />
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: colors.text }]}>Tools</Text>
-          <Text style={[styles.meta, { color: colors.textMuted }]}>
-            {myTools.length} tools · {verifiedCount} verificadas
-          </Text>
-        </View>
+        <Text style={[styles.title, { color: colors.text, flex: 1 }]}>Tools</Text>
         <Pressable
           style={[styles.addBtn, { borderColor: colors.surfaceBorder }]}
           onPress={() => router.push("/cadastro-tool")}

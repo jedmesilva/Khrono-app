@@ -141,12 +141,10 @@ const chipStyles = StyleSheet.create({
 });
 
 // ── StarRow ───────────────────────────────────────────────────────────────────
-function StarRow({ rating, size = 11 }: { rating: number; size?: number }) {
+function StarRow({ rating: _rating, size = 11 }: { rating: number; size?: number }) {
   return (
     <View style={{ flexDirection: "row", gap: 2 }}>
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Feather key={s} name="star" size={size} color={ACCENT} style={{ opacity: s <= rating ? 1 : 0.2 }} />
-      ))}
+      <Feather name="star" size={size} color={ACCENT} />
     </View>
   );
 }
@@ -274,6 +272,21 @@ export default function ServiceDetailScreen() {
       <View style={[styles.fixedHeader, { top: topPadding }]} pointerEvents="box-none">
         <BackButton />
         <View style={{ flex: 1 }} pointerEvents="none" />
+        <View
+          style={[
+            styles.statusBadge,
+            { position: "relative", left: 0, marginRight: 8 },
+            active
+              ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
+              : { borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)", backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" },
+          ]}
+          pointerEvents="none"
+        >
+          <View style={[styles.statusDot, { backgroundColor: active ? GREEN_BADGE : (isDark ? "#504840" : "#bbb") }]} />
+          <Text style={[styles.statusText, { color: active ? GREEN_BADGE : (isDark ? "#706860" : "#999") }]}>
+            {active ? "ativo" : "inativo"}
+          </Text>
+        </View>
         <SimpleIconButton icon="more-horizontal" size={18} onPress={handleMoreOptions} />
       </View>
 
@@ -305,20 +318,6 @@ export default function ServiceDetailScreen() {
         <Text style={[styles.decorLabel, { color: ACCENT, opacity: decorOpacity, bottom: 52 }]} numberOfLines={1}>
           {decorText}
         </Text>
-
-        {/* Status badge */}
-        <View style={[
-          styles.statusBadge,
-          { top: topPadding + 60 },
-          active
-            ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
-            : { borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)", backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" },
-        ]}>
-          <View style={[styles.statusDot, { backgroundColor: active ? GREEN_BADGE : (isDark ? "#504840" : "#bbb") }]} />
-          <Text style={[styles.statusText, { color: active ? GREEN_BADGE : (isDark ? "#706860" : "#999") }]}>
-            {active ? "ativo" : "inativo"}
-          </Text>
-        </View>
 
         {/* Verified badge */}
         {service.verified && (

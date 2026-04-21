@@ -86,7 +86,7 @@ export function PaymentSheet({
   );
 
   const handleStyle = useMemo(
-    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    () => ({ height: 0, width: 0 }),
     [colors]
   );
 

@@ -33,7 +33,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=5000 pnpm --filter @workspace/api-server run dev"
+args = "bash -c 'echo Krono running via artifacts/krono workflow && tail -f /dev/null'"
 waitForPort = 5000
 
   [userenv]
@@ -48,18 +48,6 @@ EXPO_PUBLIC_EAS_PROJECT_ID = "e73f6f13-4f20-4ee3-979d-ee9435474236"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 8080
-externalPort = 8080
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 3002
 
 [[ports]]
 localPort = 22861

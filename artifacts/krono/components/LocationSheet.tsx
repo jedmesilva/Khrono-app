@@ -440,7 +440,7 @@ export function LocationSheet({
         borderTopWidth: 1,
         borderColor: colors.sheetBorder,
       }}
-      handleIndicatorStyle={{ backgroundColor: colors.handleColor, width: 36, height: 4 }}
+      handleIndicatorStyle={{ height: 0, width: 0 }}
       onDismiss={() => {
         // Don't propagate dismiss while AddressSheet is open — it will re-present itself
         if (!addressSheetOpenRef.current) {

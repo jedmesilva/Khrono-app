@@ -60,7 +60,7 @@ export function QRCodeSheet({ visible, qrPayload, onClose, onRegenerate }: Props
   );
 
   const handleStyle = useMemo(
-    () => ({ backgroundColor: colors.handleColor, width: 36, height: 4 }),
+    () => ({ height: 0, width: 0 }),
     [colors]
   );
 

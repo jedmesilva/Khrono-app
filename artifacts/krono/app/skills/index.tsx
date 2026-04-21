@@ -51,12 +51,7 @@ export default function SkillsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <View style={styles.header}>
         <BackButton onPress={() => router.back()} />
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: colors.text }]}>Skills</Text>
-          <Text style={[styles.meta, { color: colors.textMuted }]}>
-            {skills.length} skills · {verifiedCount} verificadas
-          </Text>
-        </View>
+        <Text style={[styles.title, { color: colors.text, flex: 1 }]}>Skills</Text>
         <Pressable style={[styles.addBtn, { borderColor: colors.surfaceBorder }]} onPress={() => router.push("/cadastro-skill")}>
           <Feather name="plus" size={11} color={colors.textSecondary} />
           <Text style={[styles.addBtnText, { color: colors.textSecondary }]}>adicionar</Text>
