@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { IconBox } from "@/components/IconBox";
 import { ColorPalette, useTheme } from "@/context/ThemeContext";
 
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -163,9 +164,9 @@ export function ScheduleSheet({
           onPress={handleAgoraPress}
           style={[styles.optionRow, !isAgendado && styles.optionRowActive]}
         >
-          <View style={[styles.optionIcon, !isAgendado && styles.optionIconActive]}>
+          <IconBox bg={!isAgendado ? colors.accent + "15" : colors.surface}>
             <Feather name="zap" size={18} color={!isAgendado ? colors.accent : colors.textMuted} />
-          </View>
+          </IconBox>
           <View style={{ flex: 1 }}>
             <Text style={[styles.optionLabel, !isAgendado && styles.optionLabelActive]}>
               Agora
@@ -184,9 +185,9 @@ export function ScheduleSheet({
           onPress={() => openPicker("date")}
           style={[styles.optionRow, isAgendado && picker === "date" && styles.optionRowFocused]}
         >
-          <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
+          <IconBox bg={isAgendado ? colors.accent + "15" : colors.surface}>
             <Feather name="calendar" size={18} color={isAgendado ? colors.accent : colors.textMuted} />
-          </View>
+          </IconBox>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Dia</Text>
             <Text style={[styles.optionSub, isAgendado && { color: colors.accent }]}>
@@ -201,9 +202,9 @@ export function ScheduleSheet({
           onPress={() => openPicker("time")}
           style={[styles.optionRow, isAgendado && picker === "time" && styles.optionRowFocused]}
         >
-          <View style={[styles.optionIcon, isAgendado && styles.optionIconActive]}>
+          <IconBox bg={isAgendado ? colors.accent + "15" : colors.surface}>
             <Feather name="clock" size={18} color={isAgendado ? colors.accent : colors.textMuted} />
-          </View>
+          </IconBox>
           <View style={{ flex: 1 }}>
             <Text style={styles.optionLabel}>Horário</Text>
             <Text style={[styles.optionSub, isAgendado && { color: colors.accent }]}>
@@ -293,18 +294,6 @@ function createStyles(colors: ColorPalette) {
     },
     optionRowFocused: {
       backgroundColor: colors.surface,
-    },
-    optionIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      backgroundColor: colors.surface,
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-    },
-    optionIconActive: {
-      backgroundColor: colors.accent + "15",
     },
     optionLabel: {
       fontFamily: "Sora_600SemiBold",
