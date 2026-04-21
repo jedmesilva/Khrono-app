@@ -26,7 +26,30 @@ app.use(
     },
   }),
 );
-app.use(cors());
+const allowedOrigins = [
+  /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/.*\.replit\.dev$/,
+  /^https?:\/\/.*\.replit\.app$/,
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Native mobile apps send no Origin header — always allow
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
+      if (allowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin not allowed — ${origin}`));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.post(
   "/api/stripe/webhook",

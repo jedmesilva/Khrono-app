@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase";
+
 const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 export type CreatePaymentIntentResult = {
@@ -7,6 +9,17 @@ export type CreatePaymentIntentResult = {
   amountCents: number;
   currency: string;
 };
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
+  return headers;
+}
 
 export async function createStripePaymentIntent(params: {
   contractId: string;
@@ -21,9 +34,11 @@ export async function createStripePaymentIntent(params: {
     throw new Error("EXPO_PUBLIC_API_URL não está configurado.");
   }
 
+  const headers = await getAuthHeaders();
+
   const res = await fetch(`${API_URL}/api/stripe/payment-intents`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({
       contractId: params.contractId,
       amount: params.amount,
@@ -52,8 +67,11 @@ export async function getStripePaymentIntentsForContract(
 ): Promise<{ data: { stripe_payment_intent_id: string; status: string; amount_cents: number }[] }> {
   if (!API_URL) return { data: [] };
 
+  const headers = await getAuthHeaders();
+
   const res = await fetch(
     `${API_URL}/api/stripe/contracts/${encodeURIComponent(contractId)}/payments`,
+    { headers },
   );
 
   if (!res.ok) return { data: [] };

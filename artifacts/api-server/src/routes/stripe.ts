@@ -4,6 +4,7 @@ import {
   getStripePaymentLinksForContract,
   upsertStripePaymentLink,
 } from "../lib/stripeStorage";
+import { requireAuth } from "../middleware/auth";
 
 type CreatePaymentIntentBody = {
   contractId?: string;
@@ -49,7 +50,7 @@ router.get("/stripe/config", async (_req, res) => {
   }
 });
 
-router.post("/stripe/payment-intents", async (req, res) => {
+router.post("/stripe/payment-intents", requireAuth, async (req, res) => {
   try {
     const body = req.body as CreatePaymentIntentBody;
     const contractId = body.contractId?.trim();
@@ -70,15 +71,22 @@ router.post("/stripe/payment-intents", async (req, res) => {
     let customerId: string | undefined;
 
     if (body.customerEmail) {
-      const customer = await stripe.customers.create({
+      const existing = await stripe.customers.list({
         email: body.customerEmail,
-        name: body.customerName,
-        metadata: {
-          contract_id: contractId,
-          payer_profile_id: body.payerProfileId ?? "",
-        },
+        limit: 1,
       });
-      customerId = customer.id;
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({
+          email: body.customerEmail,
+          name: body.customerName,
+          metadata: {
+            payer_profile_id: body.payerProfileId ?? "",
+          },
+        });
+        customerId = customer.id;
+      }
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -120,7 +128,7 @@ router.post("/stripe/payment-intents", async (req, res) => {
   }
 });
 
-router.get("/stripe/payment-intents/:paymentIntentId", async (req, res) => {
+router.get("/stripe/payment-intents/:paymentIntentId", requireAuth, async (req, res) => {
   try {
     const stripe = await getUncachableStripeClient();
     const paymentIntent = await stripe.paymentIntents.retrieve(
@@ -141,7 +149,7 @@ router.get("/stripe/payment-intents/:paymentIntentId", async (req, res) => {
   }
 });
 
-router.post("/stripe/payment-intents/:paymentIntentId/cancel", async (req, res) => {
+router.post("/stripe/payment-intents/:paymentIntentId/cancel", requireAuth, async (req, res) => {
   try {
     const stripe = await getUncachableStripeClient();
     const paymentIntent = await stripe.paymentIntents.cancel(
@@ -174,7 +182,7 @@ router.post("/stripe/payment-intents/:paymentIntentId/cancel", async (req, res) 
   }
 });
 
-router.get("/stripe/contracts/:contractId/payments", async (req, res) => {
+router.get("/stripe/contracts/:contractId/payments", requireAuth, async (req, res) => {
   const payments = await getStripePaymentLinksForContract(req.params.contractId);
   res.json({ data: payments });
 });

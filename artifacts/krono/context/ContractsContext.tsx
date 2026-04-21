@@ -961,7 +961,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         const hiredId = row?.hired_id ?? "";
         const piResult = await createStripePaymentIntent({
           contractId,
-          amount: Math.round(amount * 100),
+          amount,
           payerProfileId: user.id,
           payeeProfileId: hiredId,
         });
@@ -980,7 +980,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
         const { data: wallet } = await supabase
           .from("wallets")
           .select("id, balance")
-          .eq("owner_id", user.id)
+          .eq("profile_id", user.id)
           .single();
         if (!wallet) throw new Error("Carteira não encontrada");
         const balance = Number(wallet.balance);
