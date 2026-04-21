@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { useNotifications } from "@/context/NotificationsContext";
 import { formatCurrency } from "@/lib/format";
 import { createStripePaymentIntent, settleContractEnd } from "@/lib/stripeApi";
+import { contractsApi } from "@/lib/contractsApi";
 
 export type ContractTool = {
   nome: string;
@@ -153,17 +154,6 @@ function mapPaymentMethodToUi(
     balance: "saldo",
   };
   return map[pm];
-}
-
-function mapPaymentMethodToDb(pm: string | undefined | null): string | null {
-  if (!pm) return null;
-  const map: Record<string, string> = {
-    cartao: "card",
-    pix: "pix",
-    dinheiro: "cash",
-    saldo: "balance",
-  };
-  return map[pm] ?? null;
 }
 
 function mapDbStatusToUi(status: string): ContractStatus {
@@ -330,97 +320,6 @@ async function getAuditSnapshot(): Promise<AuditSnapshot> {
     longitude,
     location_accuracy_meters,
   };
-}
-
-function getActorRole(contract: Contract | undefined, actorId: string): "contractor" | "hired" | "unknown" {
-  if (!contract) return "unknown";
-  const otherId = contract.person.profileId;
-  if (contract.role === "hiring") {
-    return actorId === otherId ? "hired" : "contractor";
-  }
-  return actorId === otherId ? "contractor" : "hired";
-}
-
-async function recordContractEvent({
-  contractId,
-  actorId,
-  actorRole,
-  eventType,
-  reason,
-  metadata,
-}: {
-  contractId: string;
-  actorId: string;
-  actorRole: "contractor" | "hired" | "platform" | "admin" | "unknown";
-  eventType: string;
-  reason?: string;
-  metadata?: Record<string, any>;
-}) {
-  const audit = await getAuditSnapshot();
-  const row = {
-    contract_id: contractId,
-    actor_id: actorId,
-    actor_role: actorRole,
-    event_type: eventType,
-    reason: reason ?? null,
-    metadata: metadata ?? {},
-    ...audit,
-  };
-
-  const eventRes = await supabase.from("contract_events").insert(row);
-
-  if (eventRes.error) {
-    console.warn("[ContractsContext] contract_events insert error:", eventRes.error.message);
-  }
-}
-
-async function createActionRequest({
-  contractId,
-  type,
-  requestedBy,
-  reason,
-  amount,
-}: {
-  contractId: string;
-  type: "end" | "cancel" | "payment" | "change_amount" | "dispute_resolution";
-  requestedBy: string;
-  reason?: string;
-  amount?: number;
-}) {
-  const { error } = await supabase.from("contract_action_requests").insert({
-    contract_id: contractId,
-    type,
-    requested_by: requestedBy,
-    reason: reason ?? null,
-    amount: amount ?? null,
-  });
-  if (error) {
-    console.warn("[ContractsContext] action request insert error:", error.message);
-  }
-}
-
-async function settleActionRequest(
-  contractId: string,
-  type: "end" | "cancel" | "payment" | "change_amount" | "dispute_resolution",
-  status: "accepted" | "rejected" | "cancelled" | "expired",
-  respondedBy: string,
-  responseReason?: string
-) {
-  const { error } = await supabase
-    .from("contract_action_requests")
-    .update({
-      status,
-      responded_by: respondedBy,
-      response_reason: responseReason ?? null,
-      responded_at: new Date().toISOString(),
-    })
-    .eq("contract_id", contractId)
-    .eq("type", type)
-    .eq("status", "pending");
-
-  if (error) {
-    console.warn("[ContractsContext] action request update error:", error.message);
-  }
 }
 
 export function ContractsProvider({ children }: { children: React.ReactNode }) {
@@ -677,1609 +576,615 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     };
   }, [loadContracts]);
 
-  // ── Criar contrato ────────────────────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+    // Toda lógica/cálculo financeiro vive no backend (api-server).
+    // Este contexto é uma casca: chama a API, refaz fetch e dispara
+    // broadcasts/push notifications com os dados retornados.
 
-  const startContract = useCallback(
-    async (
-      contractData: Omit<Contract, "id" | "status" | "startedAt"> & {
-        serviceId?: string;
+    const findContract = useCallback(
+      (id: string): Contract | undefined => {
+        return [...activeContracts, ...history].find((c) => c.id === id);
       },
-      initialStatus: "active" | "pending_signature" = "active"
-    ): Promise<{ id: string; clientSecret?: string }> => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      [activeContracts, history]
+    );
 
-      const serviceId =
-        contractData.serviceId ?? contractData.servico?.serviceId ?? null;
-
-      const isDefinido = contractData.tipo === "timer";
-      const billingTrigger = isDefinido ? "on_start" : "on_end";
-
-      const { data: contract, error } = await supabase
-        .from("contracts")
-        .insert({
-          contractor_id: user.id,
-          hired_id: contractData.person.profileId ?? user.id,
-          type: isDefinido ? "defined" : "open",
-          status: initialStatus,
-          hourly_rate: contractData.ratePerHour,
-          total_hours: contractData.duracaoTotal
-            ? contractData.duracaoTotal / 3600000
-            : null,
-          service_id: serviceId,
-          payment_method: mapPaymentMethodToDb(contractData.paymentMethod),
-          payment_card_label: contractData.paymentCardLabel ?? null,
-          billing_trigger: billingTrigger,
-          agendado: contractData.agendado ?? false,
-          scheduled_for: contractData.scheduledFor
-            ? new Date(contractData.scheduledFor).toISOString()
-            : null,
-          started_at:
-            initialStatus === "active" ? new Date().toISOString() : null,
-          location: contractData.location ?? null,
-          distance_km: contractData.person.distancia ?? null,
-        })
-        .select()
-        .single();
-
-      if (error || !contract) {
-        console.warn("[ContractsContext] insert error:", error?.message);
-        throw new Error(error?.message ?? "Falha ao criar contrato");
-      }
-
-      const sideEffects: Promise<any>[] = [
-        supabase.from("contract_parties").insert({
-          contract_id: contract.id,
-          role: "contractor",
-          user_id: user.id,
-          name: user.user_metadata?.name ?? user.email ?? "Contratante",
-        }),
-        supabase.from("contract_parties").insert({
-          contract_id: contract.id,
-          role: "hired",
-          user_id: contractData.person.profileId ?? null,
-          name: contractData.person.name,
-        }),
-      ];
-
-      // ── Pré-pagamento para contratos DEFINIDOS ────────────────────────────
-      // Contratos de tempo definido têm billing_trigger='on_start':
-      // o pagamento é criado/bloqueado na criação do contrato.
-      let pendingClientSecret: string | undefined;
-      if (isDefinido && contractData.paymentMethod && contractData.duracaoTotal) {
-        const preAmount = parseFloat(
-          ((contractData.duracaoTotal / 3600000) * contractData.ratePerHour).toFixed(2)
-        );
-        const payerId = user.id;
-        const payeeId = contractData.person.profileId;
-        const methodDb = mapPaymentMethodToDb(contractData.paymentMethod);
-
-        if (payerId && payeeId && methodDb && preAmount > 0) {
-          let prePaymentStatus: string;
-
-          if (contractData.paymentMethod === "saldo") {
-            // Debita da wallet imediatamente
-            const { data: wallet } = await supabase
-              .from("wallets")
-              .select("id, balance")
-              .eq("profile_id", payerId)
-              .maybeSingle();
-
-            if (wallet && wallet.balance >= preAmount) {
-              const newBalance = parseFloat((wallet.balance - preAmount).toFixed(2));
-              await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
-              await supabase.from("wallet_transactions").insert({
-                wallet_id: wallet.id,
-                profile_id: payerId,
-                type: "payment",
-                status: "completed",
-                amount: preAmount,
-                balance_before: wallet.balance,
-                balance_after: newBalance,
-                description: `Pagamento antecipado – contrato #${contract.id.slice(0, 8)}`,
-                contract_id: contract.id,
-                
-              });
-              prePaymentStatus = "confirmed";
-            } else {
-              // Saldo insuficiente – registra como falha para tratar no detalhe
-              prePaymentStatus = "pending_retry";
-              await supabase.from("contracts").update({ payment_status: "failed" }).eq("id", contract.id);
-            }
-          } else if (contractData.paymentMethod === "cartao") {
-            // Cria PaymentIntent real no servidor Railway
-            try {
-              const { data: { session } } = await supabase.auth.getSession();
-              const intent = await createStripePaymentIntent({
-                contractId: contract.id,
-                amount: preAmount,
-                customerEmail: session?.user?.email,
-                customerName: session?.user?.user_metadata?.name ?? contractData.person.name,
-                payerProfileId: payerId,
-                payeeProfileId: payeeId ?? undefined,
-                metadata: { billing_trigger: "on_start" },
-              });
-              pendingClientSecret = intent.clientSecret;
-              prePaymentStatus = "pending_payment";
-            } catch (err) {
-              console.warn("[ContractsContext] Falha ao criar PaymentIntent (on_start):", err);
-              prePaymentStatus = "held";
-            }
-          } else if (contractData.paymentMethod === "pix") {
-            // PIX será exibido no modal – status aguardando confirmação
-            prePaymentStatus = "pending_request";
-          } else {
-            // dinheiro – confirmação dupla no encerramento
-            prePaymentStatus = "awaiting_dual_confirmation";
-          }
-
-          sideEffects.push(
-            supabase.from("contract_payments").insert({
-              contract_id: contract.id,
-              payer_id: payerId,
-              payee_id: payeeId,
-              method: methodDb === "balance" ? "wallet_balance" : methodDb,
-              amount: preAmount,
-              status: prePaymentStatus,
-              requested_by: user.id,
-              confirmed_at: contractData.paymentMethod === "saldo" && prePaymentStatus === "confirmed"
-                ? new Date().toISOString()
-                : null,
-            })
-          );
+    const notifyParties = useCallback(
+      (
+        otherPartyId: string | null | undefined,
+        selfId: string,
+        payload: {
+          otherTitle: string;
+          otherBody: string;
+          selfTitle: string;
+          selfBody: string;
+          contractId: string;
+          category?: string;
+          extraData?: Record<string, unknown>;
+        },
+      ) => {
+        const data = { contract_id: payload.contractId, ...(payload.extraData ?? {}) };
+        const cat = payload.category ?? "contract_updated";
+        if (otherPartyId) {
+          sendPushNotification(otherPartyId, payload.otherTitle, payload.otherBody, data, cat).catch(() => {});
         }
-      }
+        sendPushNotification(selfId, payload.selfTitle, payload.selfBody, data, cat).catch(() => {});
+      },
+      [sendPushNotification]
+    );
 
-      await Promise.all(sideEffects);
-      await recordContractEvent({
-        contractId: contract.id,
-        actorId: user.id,
-        actorRole: "contractor",
-        eventType: initialStatus === "active" ? "started" : "created",
-      });
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
+    const broadcastByContract = useCallback(
+      (id: string, contractorId: string | null, hiredId: string | null) => {
+        broadcastUpdate(id, contractorId, hiredId);
+      },
+      [broadcastUpdate]
+    );
 
-      const hiredId = contractData.person.profileId;
+    // ── Criar contrato (modo direto) ──────────────────────────────────────────────
 
-      if (hiredId && broadcastChannelRef.current && broadcastReadyRef.current) {
-        broadcastChannelRef.current.send({
-          type: "broadcast",
-          event: "contract-created",
-          payload: { hired_id: hiredId, contract_id: contract.id },
+    const startContract = useCallback(
+      async (
+        contractData: Omit<Contract, "id" | "status" | "startedAt"> & {
+          serviceId?: string;
+        },
+        initialStatus: "active" | "pending_signature" = "active"
+      ): Promise<{ id: string; clientSecret?: string }> => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+
+        const audit = await getAuditSnapshot();
+        const result = await contractsApi.startNow(
+          {
+            hiredProfileId: contractData.person.profileId ?? user.id,
+            type: contractData.tipo,
+            ratePerHour: contractData.ratePerHour,
+            duracaoTotalMs: contractData.duracaoTotal ?? null,
+            serviceId: contractData.serviceId ?? contractData.servico?.serviceId ?? null,
+            paymentMethod: contractData.paymentMethod ?? null,
+            paymentCardLabel: contractData.paymentCardLabel ?? null,
+            agendado: contractData.agendado ?? false,
+            scheduledForMs: contractData.scheduledFor ?? null,
+            location: contractData.location ?? null,
+            distanceKm: contractData.person.distancia ?? null,
+            initialStatus,
+          },
+          audit
+        );
+
+        let clientSecret: string | undefined;
+        if (result.needsCardIntent && result.preAmount > 0 && result.payeeId) {
+          const { data: { session } } = await supabase.auth.getSession();
+          try {
+            const intent = await createStripePaymentIntent({
+              contractId: result.id,
+              amount: result.preAmount,
+              customerEmail: session?.user?.email,
+              customerName: session?.user?.user_metadata?.name ?? contractData.person.name,
+              payerProfileId: user.id,
+              payeeProfileId: result.payeeId,
+              metadata: { billing_trigger: "on_start" },
+            });
+            clientSecret = intent.clientSecret;
+          } catch (err) {
+            console.warn("[ContractsContext] PaymentIntent (on_start) error:", err);
+          }
+        }
+
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+
+        const hiredId = result.payeeId;
+        if (hiredId && broadcastChannelRef.current && broadcastReadyRef.current) {
+          broadcastChannelRef.current.send({
+            type: "broadcast",
+            event: "contract-created",
+            payload: { hired_id: hiredId, contract_id: result.id },
+          });
+        }
+
+        const serviceName = contractData.servico?.nome ?? contractData.servico?.skill ?? "serviço";
+        notifyParties(hiredId, user.id, {
+          otherTitle: "Nova contratação!",
+          otherBody: `Você foi contratado para ${serviceName}.`,
+          selfTitle: initialStatus === "active" ? "Contrato criado" : "Contrato enviado",
+          selfBody: `Sua solicitação de ${serviceName} foi enviada.`,
+          contractId: result.id,
+          category: "contract_created",
         });
-      }
 
-      const serviceName =
-        contractData.servico?.nome ??
-        contractData.servico?.skill ??
-        "serviço";
+        return { id: result.id, clientSecret };
+      },
+      [loadContracts, notifyParties]
+    );
 
-      if (hiredId) {
-        sendPushNotification(
-          hiredId,
-          "Nova contratação!",
-          `Você foi contratado para ${serviceName}.`,
-          { contract_id: contract.id },
-          "contract_created"
-        ).catch(() => {});
-      }
+    // ── Draft contract flow ───────────────────────────────────────────────────────
 
-      sendPushNotification(
-        user.id,
-        "Contrato criado",
-        `Sua solicitação de ${serviceName} foi enviada.`,
-        { contract_id: contract.id },
-        "contract_created"
-      ).catch(() => {});
+    const createDraftContract = useCallback(
+      async (contractData: Omit<Contract, "id" | "status" | "startedAt" | "paymentStatus" | "billingTrigger" | "createdAt" | "endedAt" | "totalAmount" | "endReason" | "cancelReason" | "endRequestedBy" | "cancelRequestedBy" | "pendingExtraAmount" | "pendingRefundAmount"> & { serviceId?: string }) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
 
-      return { id: contract.id, clientSecret: pendingClientSecret };
-    },
-    [loadContracts, sendPushNotification]
-  );
-
-  // ── Draft contract flow ───────────────────────────────────────────────────────
-  // createDraftContract → processPaymentForDraftContract → finalizeContract
-  // (or deleteDraftContract on cancel)
-
-  const createDraftContract = useCallback(
-    async (contractData: Omit<Contract, "id" | "status" | "startedAt" | "paymentStatus" | "billingTrigger" | "createdAt" | "endedAt" | "totalAmount" | "endReason" | "cancelReason" | "endRequestedBy" | "cancelRequestedBy" | "pendingExtraAmount" | "pendingRefundAmount"> & { serviceId?: string }) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contractorId = user.id;
-      const hiredId = contractData.person.profileId ?? user.id;
-      const scheduledFor = contractData.scheduledFor ?? Date.now();
-
-      const { data: contract, error } = await supabase
-        .from("contracts")
-        .insert({
-          status: "draft",
-          contractor_id: contractorId,
-          hired_id: hiredId,
-          type: contractData.tipo === "cronometro" ? "open" : "defined",
-          total_hours:
-            contractData.tipo === "timer" && contractData.duracaoTotal
-              ? contractData.duracaoTotal / 3600000
-              : null,
-          service_id: contractData.serviceId ?? null,
-          hourly_rate: contractData.ratePerHour ?? 0,
-          payment_method: mapPaymentMethodToDb(contractData.paymentMethod),
-          payment_card_label: contractData.paymentCardLabel ?? null,
-          payment_status: "pending",
-          billing_trigger:
-            contractData.tipo === "timer" ? "on_start" : "on_end",
+        const result = await contractsApi.createDraft({
+          hiredProfileId: contractData.person.profileId ?? user.id,
+          type: contractData.tipo,
+          ratePerHour: contractData.ratePerHour ?? 0,
+          duracaoTotalMs: contractData.duracaoTotal ?? null,
+          serviceId: contractData.serviceId ?? null,
+          paymentMethod: contractData.paymentMethod ?? null,
+          paymentCardLabel: contractData.paymentCardLabel ?? null,
           agendado: contractData.agendado ?? false,
-          scheduled_for: new Date(scheduledFor).toISOString(),
+          scheduledForMs: contractData.scheduledFor ?? null,
           location: contractData.location ?? null,
-        })
-        .select("id")
-        .single();
+        });
+        return result;
+      },
+      []
+    );
 
-      if (error || !contract) throw new Error(error?.message ?? "Erro ao criar rascunho");
+    const processPaymentForDraftContract = useCallback(
+      async (
+        contractId: string,
+        params: { method: string; amount: number; pixPaymentIntentId?: string }
+      ): Promise<{ clientSecret?: string }> => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
 
-      await supabase.from("contract_parties").insert({
-        contract_id: contract.id,
-        user_id: contractorId,
-        role: "contractor",
-      });
-      await supabase.from("contract_parties").insert({
-        contract_id: contract.id,
-        user_id: hiredId,
-        role: "hired",
-      });
+        let clientSecret: string | undefined;
+        let stripePaymentIntentId: string | undefined;
 
-      return { id: contract.id as string };
-    },
-    []
-  );
+        // For card payments, create the Stripe intent first (the backend just
+        // records the payment row with the intent id).
+        if (params.method === "cartao" && params.amount > 0) {
+          const { data: row } = await supabase
+            .from("contracts")
+            .select("hired_id")
+            .eq("id", contractId)
+            .single();
+          const hiredId = row?.hired_id ?? "";
+          const intent = await createStripePaymentIntent({
+            contractId,
+            amount: params.amount,
+            payerProfileId: user.id,
+            payeeProfileId: hiredId,
+          });
+          clientSecret = intent.clientSecret;
+          stripePaymentIntentId = intent.paymentIntentId;
+        }
 
-  const processPaymentForDraftContract = useCallback(
-    async (
-      contractId: string,
-      params: { method: string; amount: number; pixPaymentIntentId?: string }
-    ): Promise<{ clientSecret?: string }> => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+        await contractsApi.processPayment(contractId, {
+          method: params.method,
+          amount: params.amount,
+          stripePaymentIntentId,
+          pixPaymentIntentId: params.pixPaymentIntentId,
+        });
 
-      const { method, amount } = params;
-      let clientSecret: string | undefined;
+        return { clientSecret };
+      },
+      []
+    );
 
-      if (method === "cartao" && amount > 0) {
-        // Create a Stripe PaymentIntent and return the client secret
-        const { data: row } = await supabase
-          .from("contracts")
-          .select("hired_id")
-          .eq("id", contractId)
-          .single();
-        const hiredId = row?.hired_id ?? "";
-        const piResult = await createStripePaymentIntent({
+    const finalizeContract = useCallback(
+      async (contractId: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+
+        const audit = await getAuditSnapshot();
+        const result = await contractsApi.finalize(contractId, audit);
+
+        if (broadcastChannelRef.current && broadcastReadyRef.current) {
+          broadcastChannelRef.current.send({
+            type: "broadcast",
+            event: "contract-created",
+            payload: { hired_id: result.hiredId, contract_id: contractId },
+          });
+        }
+
+        notifyParties(result.hiredId, user.id, {
+          otherTitle: "Nova contratação!",
+          otherBody: `Você foi contratado para ${result.serviceName}.`,
+          selfTitle: "Contrato enviado",
+          selfBody: `Sua solicitação de ${result.serviceName} foi enviada.`,
           contractId,
-          amount,
-          payerProfileId: user.id,
-          payeeProfileId: hiredId,
+          category: "contract_created",
         });
-        clientSecret = piResult?.clientSecret;
-        await supabase.from("contract_payments").insert({
-          contract_id: contractId,
-          amount,
-          method: "card",
-          status: "pending_request",
-          stripe_payment_intent_id: piResult?.paymentIntentId ?? null,
-          payer_id: user.id,
-          payee_id: hiredId,
-        });
-      } else if (method === "saldo" && amount > 0) {
-        // Debit wallet immediately
-        const { data: wallet } = await supabase
-          .from("wallets")
-          .select("id, balance")
-          .eq("profile_id", user.id)
-          .single();
-        if (!wallet) throw new Error("Carteira não encontrada");
-        const balance = Number(wallet.balance);
-        if (balance < amount) throw new Error("Saldo insuficiente");
-        const newBalance = balance - amount;
-        const { data: row } = await supabase
-          .from("contracts")
-          .select("hired_id")
-          .eq("id", contractId)
-          .single();
-        const hiredId = row?.hired_id ?? "";
-        await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
-        await supabase.from("wallet_transactions").insert({
-          wallet_id: wallet.id,
-          type: "debit",
-          amount,
-          description: `Débito para contrato #${contractId.substring(0, 8)}`,
-          related_contract_id: contractId,
-        });
-        await supabase.from("contract_payments").insert({
-          contract_id: contractId,
-          amount,
-          method: "wallet",
-          status: "completed",
-          payer_id: user.id,
-          payee_id: hiredId,
-        });
-        await supabase
-          .from("contracts")
-          .update({ payment_status: "completed" })
-          .eq("id", contractId);
-      } else {
-        // Cash, PIX, card-open — payment at end; just record the intent
-        const { data: row } = await supabase
-          .from("contracts")
-          .select("hired_id")
-          .eq("id", contractId)
-          .single();
-        const hiredId = row?.hired_id ?? "";
-        await supabase.from("contract_payments").insert({
-          contract_id: contractId,
-          amount: amount > 0 ? amount : 0,
-          method:
-            method === "cartao" ? "card" : method === "pix" ? "pix" : "cash",
-          status: "pending_request",
-          stripe_payment_intent_id: params.pixPaymentIntentId ?? null,
-          payer_id: user.id,
-          payee_id: hiredId,
-        });
-      }
 
-      return { clientSecret };
-    },
-    []
-  );
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+      },
+      [loadContracts, notifyParties]
+    );
 
-  const finalizeContract = useCallback(
-    async (contractId: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+    const deleteDraftContract = useCallback(async (contractId: string) => {
+      await contractsApi.deleteDraft(contractId);
+    }, []);
 
-      // Fetch contract details for notification and delivery
-      const { data: contract, error: fetchError } = await supabase
-        .from("contracts")
-        .select("hired_id, service:provider_services!service_id(nome)")
-        .eq("id", contractId)
-        .single();
-
-      if (fetchError || !contract) throw new Error("Contrato não encontrado");
-
-      // Move contract from draft → pending_signature
-      const { error: updateError } = await supabase
-        .from("contracts")
-        .update({ status: "pending_signature" })
-        .eq("id", contractId)
-        .eq("status", "draft");
-
-      if (updateError) throw new Error(updateError.message);
-
-      // Create delivery record — this is what the hired party's realtime listens for
-      await supabase.from("contract_deliveries").insert({
-        contract_id: contractId,
-        recipient_id: contract.hired_id,
-        status: "pending",
-        delivered_at: new Date().toISOString(),
-      });
-
-      const hiredId = contract.hired_id as string;
-      const serviceName =
-        (contract as any).service?.nome ?? "serviço";
-
-      // Broadcast and push notify
-      if (broadcastChannelRef.current && broadcastReadyRef.current) {
-        broadcastChannelRef.current.send({
-          type: "broadcast",
-          event: "contract-created",
-          payload: { hired_id: hiredId, contract_id: contractId },
-        });
-      }
-
-      await recordContractEvent({
-        contractId,
-        actorId: user.id,
-        actorRole: "contractor",
-        eventType: "created",
-      });
-
-      if (hiredId) {
-        sendPushNotification(
-          hiredId,
-          "Nova contratação!",
-          `Você foi contratado para ${serviceName}.`,
-          { contract_id: contractId },
-          "contract_created"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Contrato enviado",
-        `Sua solicitação de ${serviceName} foi enviada.`,
-        { contract_id: contractId },
-        "contract_created"
-      ).catch(() => {});
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-    },
-    [loadContracts, sendPushNotification]
-  );
-
-  const deleteDraftContract = useCallback(async (contractId: string) => {
-    await supabase
-      .from("contracts")
-      .delete()
-      .eq("id", contractId)
-      .eq("status", "draft");
-  }, []);
-
-  const markDeliveryAsSeen = useCallback(async (contractId: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-    const now = new Date().toISOString();
-    await supabase
-      .from("contract_deliveries")
-      .update({ status: "seen", seen_at: now })
-      .eq("contract_id", contractId)
-      .eq("recipient_id", user.id)
-      .neq("status", "seen");
-  }, []);
-
-  // ── Aceitar contrato ──────────────────────────────────────────────────────────
-
-  const acceptContract = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({ status: "accepted" })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: "hired",
-        eventType: "accepted",
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const { data: row } = await supabase
-        .from("contracts")
-        .select("contractor_id, hired_id")
-        .eq("id", id)
-        .single();
-
-      broadcastUpdate(id, row?.contractor_id ?? null, row?.hired_id ?? null);
-
-      if (row?.contractor_id) {
-        sendPushNotification(
-          row.contractor_id,
-          "Contrato aceito!",
-          "O prestador aceitou sua solicitação.",
-          { contract_id: id },
-          "contract_accepted"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Contrato aceito",
-        "Você aceitou o contrato. Aguarde o início.",
-        { contract_id: id },
-        "contract_accepted"
-      ).catch(() => {});
-    },
-    [loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Recusar contrato ──────────────────────────────────────────────────────────
-
-  const rejectContract = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({ status: "rejected", ended_at: new Date().toISOString() })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: "hired",
-        eventType: "rejected",
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const { data: row } = await supabase
-        .from("contracts")
-        .select("contractor_id, hired_id")
-        .eq("id", id)
-        .single();
-
-      broadcastUpdate(id, row?.contractor_id ?? null, row?.hired_id ?? null);
-
-      if (row?.contractor_id) {
-        sendPushNotification(
-          row.contractor_id,
-          "Contrato recusado",
-          "O prestador recusou sua solicitação de contrato.",
-          { contract_id: id },
-          "contract_cancelled"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Contrato recusado",
-        "Você recusou esta solicitação de contrato.",
-        { contract_id: id },
-        "contract_cancelled"
-      ).catch(() => {});
-    },
-    [loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Iniciar trabalho ──────────────────────────────────────────────────────────
-
-  const beginContract = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const startedAt = new Date().toISOString();
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({ status: "active", started_at: startedAt, agendado: false })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: "hired",
-        eventType: "started",
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const { data: row } = await supabase
-        .from("contracts")
-        .select("contractor_id, hired_id")
-        .eq("id", id)
-        .single();
-
-      broadcastUpdate(id, row?.contractor_id ?? null, row?.hired_id ?? null);
-
-      if (row?.contractor_id) {
-        sendPushNotification(
-          row.contractor_id,
-          "Serviço iniciado!",
-          "O prestador começou a trabalhar no seu contrato.",
-          { contract_id: id },
-          "contract_started"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Serviço iniciado",
-        "Você iniciou o trabalho. Bom serviço!",
-        { contract_id: id },
-        "contract_started"
-      ).catch(() => {});
-    },
-    [loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Cancelamento direto (antes de iniciar) ────────────────────────────────────
-
-  const cancelContract = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    const markDeliveryAsSeen = useCallback(async (contractId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      const contract = activeContracts.find((c) => c.id === id);
-
+      const now = new Date().toISOString();
       await supabase
-        .from("contracts")
-        .update({ status: "cancelled", ended_at: new Date().toISOString() })
-        .eq("id", id);
+        .from("contract_deliveries")
+        .update({ status: "seen", seen_at: now })
+        .eq("contract_id", contractId)
+        .eq("recipient_id", user.id)
+        .neq("status", "seen");
+    }, []);
 
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "cancelled",
-      });
+    // ── Aceitar / Recusar / Iniciar / Cancelar ────────────────────────────────────
 
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
+    const acceptContract = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.accept(id, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        notifyParties(parties.contractorId, user.id, {
+          otherTitle: "Contrato aceito!",
+          otherBody: "O prestador aceitou sua solicitação.",
+          selfTitle: "Contrato aceito",
+          selfBody: "Você aceitou o contrato. Aguarde o início.",
+          contractId: id,
+          category: "contract_accepted",
+        });
+      },
+      [loadContracts, notifyParties, broadcastByContract]
+    );
 
-      const otherPartyId = contract?.person.profileId;
-      const isHiring = contract?.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
+    const rejectContract = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.reject(id, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        notifyParties(parties.contractorId, user.id, {
+          otherTitle: "Contrato recusado",
+          otherBody: "O prestador recusou sua solicitação de contrato.",
+          selfTitle: "Contrato recusado",
+          selfBody: "Você recusou esta solicitação de contrato.",
+          contractId: id,
+          category: "contract_cancelled",
+        });
+      },
+      [loadContracts, notifyParties, broadcastByContract]
+    );
 
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Contrato cancelado",
-          isHiring
+    const beginContract = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.begin(id, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        notifyParties(parties.contractorId, user.id, {
+          otherTitle: "Serviço iniciado!",
+          otherBody: "O prestador começou a trabalhar no seu contrato.",
+          selfTitle: "Serviço iniciado",
+          selfBody: "Você iniciou o trabalho. Bom serviço!",
+          contractId: id,
+          category: "contract_started",
+        });
+      },
+      [loadContracts, notifyParties, broadcastByContract]
+    );
+
+    const cancelContract = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.cancelNow(id, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+
+        const contract = findContract(id);
+        const otherPartyId = contract?.person.profileId;
+        const isHiring = contract?.role === "hiring";
+        notifyParties(otherPartyId, user.id, {
+          otherTitle: "Contrato cancelado",
+          otherBody: isHiring
             ? "O contratante cancelou o contrato."
             : "O prestador cancelou o contrato.",
-          { contract_id: id },
-          "contract_cancelled"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Contrato cancelado",
-        "Você cancelou o contrato.",
-        { contract_id: id },
-        "contract_cancelled"
-      ).catch(() => {});
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Solicitar encerramento ────────────────────────────────────────────────────
-
-  const requestEndContract = useCallback(
-    async (id: string, reason: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          status: "pending_end",
-        })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      await createActionRequest({
-        contractId: id,
-        type: "end",
-        requestedBy: user.id,
-        reason,
-      });
-
-      const contract = activeContracts.find((c) => c.id === id);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "end_requested",
-        reason,
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract?.person.profileId;
-      const isHiring = contract?.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Solicitação de encerramento",
-          `${isHiring ? "O contratante" : "O prestador"} solicitou encerrar o contrato. Motivo: ${reason}`,
-          { contract_id: id },
-          "contract_ended"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Encerramento solicitado",
-        `Sua solicitação de encerramento foi enviada. Aguardando confirmação da contraparte.`,
-        { contract_id: id },
-        "contract_ended"
-      ).catch(() => {});
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Confirmar encerramento ────────────────────────────────────────────────────
-  //
-  // Toda a contabilidade (tempo decorrido, soma de pagamentos, delta,
-  // reembolso/excedente, atualização do contrato e settle do action_request)
-  // roda no backend (api-server: POST /api/contracts/:id/end).
-  // O frontend só dispara a chamada e atualiza UI/notificações com o resultado.
-
-  const confirmEndContract = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = activeContracts.find((c) => c.id === id);
-      if (!contract) throw new Error("Contrato não encontrado");
-
-      const reason = contract.endReason ?? "Encerrado com acordo mútuo";
-
-      const settlement = await settleContractEnd(id, reason);
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract.person.profileId;
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      const amountLabel = formatCurrency(settlement.realAmount);
-      const extraLabel = settlement.pendingExtraAmount
-        ? ` Valor extra pendente: ${formatCurrency(settlement.pendingExtraAmount)}.`
-        : "";
-      const refundLabel = settlement.pendingRefundAmount
-        ? ` Reembolso de ${formatCurrency(settlement.pendingRefundAmount)} processado.`
-        : "";
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Contrato encerrado",
-          `Contrato encerrado. Valor: ${amountLabel}.${extraLabel}${refundLabel}`,
-          { contract_id: id },
-          "contract_ended"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Contrato encerrado",
-        `Você confirmou o encerramento. Valor: ${amountLabel}.${extraLabel}${refundLabel}`,
-        { contract_id: id },
-        "contract_ended"
-      ).catch(() => {});
-
-      return {};
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Recusar encerramento ──────────────────────────────────────────────────────
-
-  const rejectEndRequest = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          status: "active",
-        })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      await settleActionRequest(id, "end", "rejected", user.id);
-
-      const contract = activeContracts.find((c) => c.id === id);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "end_rejected",
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract?.person.profileId;
-      const isHiring = contract?.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Encerramento recusado",
-          "A outra parte recusou o encerramento. O contrato continua ativo.",
-          { contract_id: id },
-          "contract_updated"
-        ).catch(() => {});
-      }
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Solicitar cancelamento (após iniciado) ────────────────────────────────────
-
-  const requestCancelContract = useCallback(
-    async (id: string, reason: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          status: "pending_cancel",
-        })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      await createActionRequest({
-        contractId: id,
-        type: "cancel",
-        requestedBy: user.id,
-        reason,
-      });
-
-      const contract = activeContracts.find((c) => c.id === id);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "cancel_requested",
-        reason,
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract?.person.profileId;
-      const isHiring = contract?.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Solicitação de cancelamento",
-          `${isHiring ? "O contratante" : "O prestador"} quer cancelar o contrato. Motivo: ${reason}`,
-          { contract_id: id },
-          "contract_cancelled"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Cancelamento solicitado",
-        "Sua solicitação de cancelamento foi enviada. Aguardando confirmação.",
-        { contract_id: id },
-        "contract_cancelled"
-      ).catch(() => {});
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Confirmar cancelamento ────────────────────────────────────────────────────
-
-  const confirmCancelContract = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = activeContracts.find((c) => c.id === id);
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          status: "cancelled",
-          ended_at: new Date().toISOString(),
-        })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      const reason = contract?.cancelReason ?? "Cancelado com acordo mútuo";
-
-      await settleActionRequest(id, "cancel", "accepted", user.id, reason);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "cancel_confirmed",
-        reason,
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract?.person.profileId;
-      const isHiring = contract?.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Contrato cancelado",
-          `Contrato cancelado. Motivo: ${reason}.`,
-          { contract_id: id },
-          "contract_cancelled"
-        ).catch(() => {});
-      }
-
-      sendPushNotification(
-        user.id,
-        "Contrato cancelado",
-        "Você confirmou o cancelamento do contrato.",
-        { contract_id: id },
-        "contract_cancelled"
-      ).catch(() => {});
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Recusar cancelamento ──────────────────────────────────────────────────────
-
-  const rejectCancelRequest = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contractBeforeUpdate = activeContracts.find((c) => c.id === id);
-
-      const { error } = await supabase
-        .from("contracts")
-        .update({
-          status: "active",
-        })
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
-
-      const reason = contractBeforeUpdate?.cancelReason ?? undefined;
-      await settleActionRequest(id, "cancel", "rejected", user.id, reason);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contractBeforeUpdate, user.id),
-        eventType: "cancel_rejected",
-        reason,
-      });
-
-      if (userIdRef.current)
-        await loadContracts(userIdRef.current, { showLoading: false });
-
-      const contract = activeContracts.find((c) => c.id === id);
-      const otherPartyId = contract?.person.profileId;
-      const isHiring = contract?.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          "Cancelamento recusado",
-          "A outra parte recusou o cancelamento. O contrato continua ativo.",
-          { contract_id: id },
-          "contract_updated"
-        ).catch(() => {});
-      }
-    },
-    [activeContracts, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  const ensureCashPayment = useCallback(
-    async (contract: Contract, userId: string) => {
-      const { data: existing, error: existingError } = await supabase
-        .from("contract_payments")
-        .select("*")
-        .eq("contract_id", contract.id)
-        .eq("method", "cash")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (existingError) throw new Error(existingError.message);
-      if (existing) return existing;
-
-      const payerId = contract.role === "hiring" ? userId : contract.person.profileId;
-      const payeeId = contract.role === "hiring" ? contract.person.profileId : userId;
-      if (!payerId || !payeeId) throw new Error("Partes do pagamento não encontradas");
-
-      const { data, error } = await supabase
-        .from("contract_payments")
-        .insert({
-          contract_id: contract.id,
-          payer_id: payerId,
-          payee_id: payeeId,
-          method: "cash",
-          amount: contract.totalAmount ?? 0,
-          status: "awaiting_dual_confirmation",
-          requested_by: userId,
-        })
-        .select()
-        .single();
-
-      if (error || !data) {
-        throw new Error(error?.message ?? "Falha ao criar pagamento em dinheiro");
-      }
-
-      return data;
-    },
-    []
-  );
-
-  const confirmCashPayment = useCallback(
-    async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = [...activeContracts, ...history].find((c) => c.id === id);
-      if (!contract) throw new Error("Contrato não encontrado");
-      if (contract.paymentMethod !== "dinheiro") {
-        throw new Error("Este contrato não usa pagamento em dinheiro");
-      }
-
-      const payment = await ensureCashPayment(contract, user.id);
-      const audit = await getAuditSnapshot();
-      const role = user.id === payment.payer_id ? "payer" : "payee";
-      const confirmationType = role === "payer" ? "paid" : "received";
-
-      const { error: confirmationError } = await supabase
-        .from("contract_payment_confirmations")
-        .upsert(
-          {
-            payment_id: payment.id,
-            user_id: user.id,
-            role,
-            confirmation_type: confirmationType,
-            ...audit,
-          },
-          { onConflict: "payment_id,user_id" }
-        );
-
-      if (confirmationError) throw new Error(confirmationError.message);
-
-      const { data: confirmations, error: confirmationsError } = await supabase
-        .from("contract_payment_confirmations")
-        .select("user_id, confirmation_type")
-        .eq("payment_id", payment.id);
-
-      if (confirmationsError) throw new Error(confirmationsError.message);
-
-      const payerConfirmed = confirmations?.some(
-        (c) => c.user_id === payment.payer_id && c.confirmation_type === "paid"
-      );
-      const payeeConfirmed = confirmations?.some(
-        (c) => c.user_id === payment.payee_id && c.confirmation_type === "received"
-      );
-      const confirmed = !!payerConfirmed && !!payeeConfirmed;
-      const nextStatus = confirmed
-        ? "confirmed"
-        : payerConfirmed
-        ? "awaiting_payee_confirmation"
-        : "awaiting_payer_confirmation";
-
-      const { error: paymentError } = await supabase
-        .from("contract_payments")
-        .update({
-          status: nextStatus,
-          confirmed_at: confirmed ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", payment.id);
-
-      if (paymentError) throw new Error(paymentError.message);
-
-      const { error: contractError } = await supabase
-        .from("contracts")
-        .update({
-          payment_status: confirmed ? "paid" : "awaiting_confirmation",
-        })
-        .eq("id", id);
-
-      if (contractError) throw new Error(contractError.message);
-
-      if (confirmed) {
-        await settleActionRequest(id, "payment", "accepted", user.id);
-      }
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "payment_confirmed",
-        metadata: {
-          payment_id: payment.id,
-          confirmation_type: confirmationType,
-          payment_status: nextStatus,
-        },
-      });
-
-      if (userIdRef.current) {
-        await loadContracts(userIdRef.current, { showLoading: false });
-      }
-
-      const otherPartyId = contract.person.profileId;
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        sendPushNotification(
-          otherPartyId,
-          confirmed ? "Pagamento confirmado" : "Confirmação de pagamento",
-          confirmed
-            ? "O pagamento em dinheiro foi confirmado pelas duas partes."
-            : "A outra parte confirmou o pagamento em dinheiro. Confirme também para concluir.",
-          { contract_id: id, payment_id: payment.id },
-          "payment"
-        ).catch(() => {});
-      }
-    },
-    [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  const disputeCashPayment = useCallback(
-    async (id: string, reason = "Pagamento em dinheiro contestado") => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = [...activeContracts, ...history].find((c) => c.id === id);
-      if (!contract) throw new Error("Contrato não encontrado");
-      if (contract.paymentMethod !== "dinheiro") {
-        throw new Error("Este contrato não usa pagamento em dinheiro");
-      }
-
-      const payment = await ensureCashPayment(contract, user.id);
-      const againstUserId = contract.person.profileId ?? null;
-
-      const { error: paymentError } = await supabase
-        .from("contract_payments")
-        .update({
-          status: "disputed",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", payment.id);
-
-      if (paymentError) throw new Error(paymentError.message);
-
-      const { error: contractError } = await supabase
-        .from("contracts")
-        .update({
-          status: "disputed",
-          payment_status: "disputed",
-        })
-        .eq("id", id);
-
-      if (contractError) throw new Error(contractError.message);
-
-      const { error: disputeError } = await supabase.from("contract_disputes").insert({
-        contract_id: id,
-        payment_id: payment.id,
-        opened_by: user.id,
-        against_user_id: againstUserId,
-        reason,
-        category: "payment_not_received",
-      });
-
-      if (disputeError) throw new Error(disputeError.message);
-
-      await settleActionRequest(id, "payment", "rejected", user.id, reason);
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "payment_disputed",
-        reason,
-        metadata: { payment_id: payment.id },
-      });
-
-      if (userIdRef.current) {
-        await loadContracts(userIdRef.current, { showLoading: false });
-      }
-
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (againstUserId ?? null);
-      const hiredId = isHiring ? (againstUserId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (againstUserId) {
-        sendPushNotification(
-          againstUserId,
-          "Pagamento contestado",
-          "A outra parte abriu uma disputa sobre o pagamento em dinheiro.",
-          { contract_id: id, payment_id: payment.id },
-          "payment"
-        ).catch(() => {});
-      }
-    },
-    [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Reportar pagamento em dinheiro (contratante) ──────────────────────────────
-
-  const reportCashPaid = useCallback(
-    async (id: string, amountReported: number) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = [...activeContracts, ...history].find((c) => c.id === id);
-      if (!contract) throw new Error("Contrato não encontrado");
-      if (contract.paymentMethod !== "dinheiro") throw new Error("Método não é dinheiro");
-
-      const payment = await ensureCashPayment(contract, user.id);
-      const audit = await getAuditSnapshot();
-
-      await supabase.from("contract_payment_confirmations").upsert(
-        {
-          payment_id: payment.id,
-          user_id: user.id,
-          role: "payer",
-          confirmation_type: "paid",
-          amount_reported: amountReported,
-          is_incomplete: false,
-          ...audit,
-        },
-        { onConflict: "payment_id,user_id" }
-      );
-
-      const { data: payeeConf } = await supabase
-        .from("contract_payment_confirmations")
-        .select("amount_reported, is_incomplete")
-        .eq("payment_id", payment.id)
-        .eq("user_id", payment.payee_id)
-        .maybeSingle();
-
-      const payeeAmount = payeeConf?.amount_reported ?? null;
-      const bothConfirmed = payeeAmount !== null;
-      const amountsMatch = bothConfirmed && Math.abs(amountReported - payeeAmount) < 0.02;
-      const hasInconsistency = bothConfirmed && !amountsMatch;
-
-      await supabase.from("contract_payments").update({
-        status: amountsMatch ? "confirmed" : "awaiting_payee_confirmation",
-        payer_amount_reported: amountReported,
-        has_inconsistency: hasInconsistency,
-        confirmed_at: amountsMatch ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      }).eq("id", payment.id);
-
-      await supabase.from("contracts").update({
-        payment_status: amountsMatch ? "paid" : "awaiting_confirmation",
-        updated_at: new Date().toISOString(),
-      }).eq("id", id);
-
-      if (amountsMatch) {
-        await settleActionRequest(id, "payment", "accepted", user.id);
-      }
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "payment_confirmed",
-        metadata: { amount_reported: amountReported, role: "payer", match: amountsMatch },
-      });
-
-      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract.person.profileId;
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        const title = amountsMatch ? "Pagamento confirmado!" : "Confirme o pagamento";
-        const body = amountsMatch
-          ? "O pagamento em dinheiro foi confirmado pelas duas partes."
-          : `${contract.person.name} informou o pagamento. Confirme o valor recebido.`;
-        sendPushNotification(otherPartyId, title, body, { contract_id: id }, "payment").catch(() => {});
-      }
-    },
-    [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Reportar recebimento em dinheiro (contratado) ─────────────────────────────
-
-  const reportCashReceived = useCallback(
-    async (id: string, amountReceived: number, isIncomplete: boolean) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = [...activeContracts, ...history].find((c) => c.id === id);
-      if (!contract) throw new Error("Contrato não encontrado");
-      if (contract.paymentMethod !== "dinheiro") throw new Error("Método não é dinheiro");
-
-      const payment = await ensureCashPayment(contract, user.id);
-      const audit = await getAuditSnapshot();
-
-      await supabase.from("contract_payment_confirmations").upsert(
-        {
-          payment_id: payment.id,
-          user_id: user.id,
-          role: "payee",
-          confirmation_type: isIncomplete ? "denied" : "received",
-          amount_reported: amountReceived,
-          is_incomplete: isIncomplete,
-          ...audit,
-        },
-        { onConflict: "payment_id,user_id" }
-      );
-
-      const { data: payerConf } = await supabase
-        .from("contract_payment_confirmations")
-        .select("amount_reported")
-        .eq("payment_id", payment.id)
-        .eq("user_id", payment.payer_id)
-        .maybeSingle();
-
-      const payerAmount = payerConf?.amount_reported ?? null;
-      const bothConfirmed = payerAmount !== null;
-      const amountsMatch = bothConfirmed && !isIncomplete && Math.abs(amountReceived - payerAmount) < 0.02;
-      const hasInconsistency = bothConfirmed && (!amountsMatch);
-
-      await supabase.from("contract_payments").update({
-        status: amountsMatch ? "confirmed" : "awaiting_payer_confirmation",
-        payee_amount_reported: amountReceived,
-        has_inconsistency: hasInconsistency,
-        confirmed_at: amountsMatch ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      }).eq("id", payment.id);
-
-      await supabase.from("contracts").update({
-        payment_status: amountsMatch ? "paid" : "awaiting_confirmation",
-        updated_at: new Date().toISOString(),
-      }).eq("id", id);
-
-      if (amountsMatch) {
-        await settleActionRequest(id, "payment", "accepted", user.id);
-      }
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "payment_confirmed",
-        metadata: { amount_reported: amountReceived, role: "payee", is_incomplete: isIncomplete, match: amountsMatch },
-      });
-
-      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract.person.profileId;
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-
-      if (otherPartyId) {
-        const title = amountsMatch ? "Pagamento confirmado!" : "Confirme o pagamento";
-        const body = amountsMatch
-          ? "O pagamento em dinheiro foi confirmado pelas duas partes."
-          : isIncomplete
-          ? "O prestador informou que faltou parte do valor. Confira e confirme."
-          : `${contract.person.name} informou o recebimento. Confirme o valor pago.`;
-        sendPushNotification(otherPartyId, title, body, { contract_id: id }, "payment").catch(() => {});
-      }
-    },
-    [activeContracts, history, ensureCashPayment, loadContracts, sendPushNotification, broadcastUpdate]
-  );
-
-  // ── Alterar método de pagamento ───────────────────────────────────────────────
-
-  const changeContractPaymentMethod = useCallback(
-    async (id: string, newMethod: "cartao" | "pix" | "saldo" | "dinheiro", cardLabel?: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = [...activeContracts, ...history].find((c) => c.id === id);
-      if (!contract) throw new Error("Contrato não encontrado");
-
-      const methodMap: Record<string, string> = {
-        cartao: "card",
-        pix: "pix",
-        saldo: "balance",
-        dinheiro: "cash",
-      };
-
-      await supabase.from("contracts").update({
-        payment_method: methodMap[newMethod] ?? newMethod,
-        payment_card_label: newMethod === "cartao" ? (cardLabel ?? null) : null,
-        payment_status: newMethod !== "dinheiro" ? "paid" : "pending",
-        updated_at: new Date().toISOString(),
-      }).eq("id", id);
-
-      if (newMethod !== "dinheiro") {
-        const { data: existing } = await supabase
-          .from("contract_payments")
-          .select("id")
-          .eq("contract_id", id)
-          .limit(1)
-          .maybeSingle();
-
-        const payerId = contract.role === "hiring" ? user.id : contract.person.profileId;
-        const payeeId = contract.role === "hiring" ? contract.person.profileId : user.id;
-
-        if (!existing && payerId && payeeId) {
-          await supabase.from("contract_payments").insert({
-            contract_id: id,
-            payer_id: payerId,
-            payee_id: payeeId,
-            method: methodMap[newMethod] === "balance" ? "wallet_balance" : methodMap[newMethod],
-            amount: contract.totalAmount ?? 0,
-            status: "confirmed",
-            requested_by: user.id,
-            confirmed_at: new Date().toISOString(),
-          });
-        } else if (existing) {
-          await supabase.from("contract_payments").update({
-            method: methodMap[newMethod] === "balance" ? "wallet_balance" : methodMap[newMethod],
-            status: "confirmed",
-            confirmed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }).eq("id", existing.id);
-        }
-      }
-
-      await recordContractEvent({
-        contractId: id,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "payment_confirmed",
-        metadata: { new_method: newMethod, method_changed: true },
-      });
-
-      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
-
-      const otherPartyId = contract.person.profileId;
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(id, contractorId, hiredId);
-    },
-    [activeContracts, history, loadContracts, broadcastUpdate]
-  );
-
-  // ── Pagar valor pendente excedente (encerramento atrasado) ───────────────────
-  const payPendingBalance = useCallback(
-    async (contractId: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const contract = [...activeContracts, ...history].find((c) => c.id === contractId);
-      if (!contract) throw new Error("Contrato não encontrado");
-
-      const pendingAmount = contract.pendingExtraAmount;
-      if (!pendingAmount || pendingAmount <= 0) throw new Error("Nenhum valor pendente neste contrato");
-
-      const { data: pendingPayment } = await supabase
-        .from("contract_payments")
-        .select("id, amount, method")
-        .eq("contract_id", contractId)
-        .eq("status", "pending_retry")
-        .limit(1)
-        .maybeSingle();
-
-      if (!pendingPayment) throw new Error("Registro de pagamento pendente não encontrado");
-
-      if (contract.paymentMethod === "saldo") {
-        const payerId = contract.role === "hiring" ? user.id : contract.person.profileId;
-        if (!payerId) throw new Error("Pagador não identificado");
-
-        const { data: wallet } = await supabase
-          .from("wallets")
-          .select("id, balance")
-          .eq("profile_id", payerId)
-          .maybeSingle();
-
-        if (!wallet || Number(wallet.balance) < pendingAmount) {
-          throw new Error(`Saldo insuficiente. Disponível: ${formatCurrency(Number(wallet?.balance ?? 0))}`);
-        }
-
-        const prev = Number(wallet.balance);
-        const newBalance = parseFloat((prev - pendingAmount).toFixed(2));
-        await supabase.from("wallets").update({ balance: newBalance }).eq("id", wallet.id);
-        await supabase.from("wallet_transactions").insert({
-          wallet_id: wallet.id,
-          profile_id: payerId,
-          type: "payment",
-          status: "completed",
-          amount: pendingAmount,
-          balance_before: prev,
-          balance_after: newBalance,
-          description: `Pagamento excedente – contrato #${contractId.slice(0, 8)}`,
-          contract_id: contractId,
-          
+          selfTitle: "Contrato cancelado",
+          selfBody: "Você cancelou o contrato.",
+          contractId: id,
+          category: "contract_cancelled",
         });
-      }
+      },
+      [findContract, loadContracts, notifyParties, broadcastByContract]
+    );
 
-      await supabase.from("contract_payments").update({
-        status: "confirmed",
-        confirmed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }).eq("id", pendingPayment.id);
+    // ── Encerramento ──────────────────────────────────────────────────────────────
 
-      await supabase.from("contracts").update({
-        payment_status: "paid",
-        pending_extra_amount: null,
-        updated_at: new Date().toISOString(),
-      }).eq("id", contractId);
+    const requestEndContract = useCallback(
+      async (id: string, reason: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.requestEnd(id, reason, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        const contract = findContract(id);
+        const isHiring = contract?.role === "hiring";
+        notifyParties(contract?.person.profileId, user.id, {
+          otherTitle: "Solicitação de encerramento",
+          otherBody: `${isHiring ? "O contratante" : "O prestador"} solicitou encerrar o contrato. Motivo: ${reason}`,
+          selfTitle: "Encerramento solicitado",
+          selfBody: "Sua solicitação de encerramento foi enviada. Aguardando confirmação da contraparte.",
+          contractId: id,
+          category: "contract_ended",
+        });
+      },
+      [findContract, loadContracts, notifyParties, broadcastByContract]
+    );
 
-      await recordContractEvent({
-        contractId,
-        actorId: user.id,
-        actorRole: getActorRole(contract, user.id),
-        eventType: "payment_confirmed",
-        metadata: { pending_amount: pendingAmount, method: contract.paymentMethod },
-      });
+    // O encerramento real (cálculo proporcional + reembolsos/excedentes) acontece
+    // 100% no backend (api-server: POST /api/contracts/:id/end via settleContractEnd).
+    const confirmEndContract = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
 
-      if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        const contract = findContract(id);
+        if (!contract) throw new Error("Contrato não encontrado");
+        const reason = contract.endReason ?? "Encerrado com acordo mútuo";
+        const settlement = await settleContractEnd(id, reason);
 
-      const otherPartyId = contract.person.profileId;
-      const isHiring = contract.role === "hiring";
-      const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
-      const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
-      broadcastUpdate(contractId, contractorId, hiredId);
-    },
-    [activeContracts, history, loadContracts, broadcastUpdate]
-  );
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
 
-  const refreshContracts = useCallback(async () => {
+        const otherPartyId = contract.person.profileId;
+        const isHiring = contract.role === "hiring";
+        const contractorId = isHiring ? userIdRef.current : (otherPartyId ?? null);
+        const hiredId = isHiring ? (otherPartyId ?? null) : userIdRef.current;
+        broadcastByContract(id, contractorId, hiredId);
+
+        const amountLabel = formatCurrency(settlement.realAmount);
+        const extraLabel = settlement.pendingExtraAmount
+          ? ` Valor extra pendente: ${formatCurrency(settlement.pendingExtraAmount)}.`
+          : "";
+        const refundLabel = settlement.pendingRefundAmount
+          ? ` Reembolso de ${formatCurrency(settlement.pendingRefundAmount)} processado.`
+          : "";
+
+        notifyParties(otherPartyId, user.id, {
+          otherTitle: "Contrato encerrado",
+          otherBody: `Contrato encerrado. Valor: ${amountLabel}.${extraLabel}${refundLabel}`,
+          selfTitle: "Contrato encerrado",
+          selfBody: `Você confirmou o encerramento. Valor: ${amountLabel}.${extraLabel}${refundLabel}`,
+          contractId: id,
+          category: "contract_ended",
+        });
+
+        return {};
+      },
+      [findContract, loadContracts, notifyParties, broadcastByContract]
+    );
+
+    const rejectEndRequest = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.rejectEnd(id, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        const contract = findContract(id);
+        if (contract?.person.profileId) {
+          sendPushNotification(
+            contract.person.profileId,
+            "Encerramento recusado",
+            "A outra parte recusou o encerramento. O contrato continua ativo.",
+            { contract_id: id },
+            "contract_updated"
+          ).catch(() => {});
+        }
+      },
+      [findContract, loadContracts, sendPushNotification, broadcastByContract]
+    );
+
+    // ── Cancelamento (após iniciado) ──────────────────────────────────────────────
+
+    const requestCancelContract = useCallback(
+      async (id: string, reason: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.requestCancel(id, reason, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        const contract = findContract(id);
+        const isHiring = contract?.role === "hiring";
+        notifyParties(contract?.person.profileId, user.id, {
+          otherTitle: "Solicitação de cancelamento",
+          otherBody: `${isHiring ? "O contratante" : "O prestador"} quer cancelar o contrato. Motivo: ${reason}`,
+          selfTitle: "Cancelamento solicitado",
+          selfBody: "Sua solicitação de cancelamento foi enviada. Aguardando confirmação.",
+          contractId: id,
+          category: "contract_cancelled",
+        });
+      },
+      [findContract, loadContracts, notifyParties, broadcastByContract]
+    );
+
+    const confirmCancelContract = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const contract = findContract(id);
+        const reason = contract?.cancelReason ?? "Cancelado com acordo mútuo";
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.confirmCancel(id, reason, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        notifyParties(contract?.person.profileId, user.id, {
+          otherTitle: "Contrato cancelado",
+          otherBody: `Contrato cancelado. Motivo: ${reason}.`,
+          selfTitle: "Contrato cancelado",
+          selfBody: "Você confirmou o cancelamento do contrato.",
+          contractId: id,
+          category: "contract_cancelled",
+        });
+      },
+      [findContract, loadContracts, notifyParties, broadcastByContract]
+    );
+
+    const rejectCancelRequest = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const contract = findContract(id);
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.rejectCancel(id, contract?.cancelReason, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+        if (contract?.person.profileId) {
+          sendPushNotification(
+            contract.person.profileId,
+            "Cancelamento recusado",
+            "A outra parte recusou o cancelamento. O contrato continua ativo.",
+            { contract_id: id },
+            "contract_updated"
+          ).catch(() => {});
+        }
+      },
+      [findContract, loadContracts, sendPushNotification, broadcastByContract]
+    );
+
+    // ── Pagamentos em dinheiro ────────────────────────────────────────────────────
+
+    const confirmCashPayment = useCallback(
+      async (id: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const contract = findContract(id);
+        if (!contract) throw new Error("Contrato não encontrado");
+        if (contract.paymentMethod !== "dinheiro") {
+          throw new Error("Este contrato não usa pagamento em dinheiro");
+        }
+        const audit = await getAuditSnapshot();
+        const result = await contractsApi.confirmCash(id, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, result.contractorId, result.hiredId);
+        const otherPartyId = contract.person.profileId;
+        if (otherPartyId) {
+          sendPushNotification(
+            otherPartyId,
+            result.confirmed ? "Pagamento confirmado" : "Confirmação de pagamento",
+            result.confirmed
+              ? "O pagamento em dinheiro foi confirmado pelas duas partes."
+              : "A outra parte confirmou o pagamento em dinheiro. Confirme também para concluir.",
+            { contract_id: id, payment_id: result.paymentId },
+            "payment"
+          ).catch(() => {});
+        }
+      },
+      [findContract, loadContracts, sendPushNotification, broadcastByContract]
+    );
+
+    const disputeCashPayment = useCallback(
+      async (id: string, reason = "Pagamento em dinheiro contestado") => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const contract = findContract(id);
+        if (!contract) throw new Error("Contrato não encontrado");
+        if (contract.paymentMethod !== "dinheiro") {
+          throw new Error("Este contrato não usa pagamento em dinheiro");
+        }
+        const audit = await getAuditSnapshot();
+        const result = await contractsApi.disputeCash(id, reason, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, result.contractorId, result.hiredId);
+        if (result.againstUserId) {
+          sendPushNotification(
+            result.againstUserId,
+            "Pagamento contestado",
+            "A outra parte abriu uma disputa sobre o pagamento em dinheiro.",
+            { contract_id: id, payment_id: result.paymentId },
+            "payment"
+          ).catch(() => {});
+        }
+      },
+      [findContract, loadContracts, sendPushNotification, broadcastByContract]
+    );
+
+    const reportCashPaid = useCallback(
+      async (id: string, amountReported: number) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const contract = findContract(id);
+        if (!contract) throw new Error("Contrato não encontrado");
+        if (contract.paymentMethod !== "dinheiro") throw new Error("Método não é dinheiro");
+        const audit = await getAuditSnapshot();
+        const result = await contractsApi.cashPaid(id, amountReported, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, result.contractorId, result.hiredId);
+        const otherPartyId = contract.person.profileId;
+        if (otherPartyId) {
+          const title = result.amountsMatch ? "Pagamento confirmado!" : "Confirme o pagamento";
+          const body = result.amountsMatch
+            ? "O pagamento em dinheiro foi confirmado pelas duas partes."
+            : `${contract.person.name} informou o pagamento. Confirme o valor recebido.`;
+          sendPushNotification(otherPartyId, title, body, { contract_id: id }, "payment").catch(() => {});
+        }
+      },
+      [findContract, loadContracts, sendPushNotification, broadcastByContract]
+    );
+
+    const reportCashReceived = useCallback(
+      async (id: string, amountReceived: number, isIncomplete: boolean) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const contract = findContract(id);
+        if (!contract) throw new Error("Contrato não encontrado");
+        if (contract.paymentMethod !== "dinheiro") throw new Error("Método não é dinheiro");
+        const audit = await getAuditSnapshot();
+        const result = await contractsApi.cashReceived(id, amountReceived, isIncomplete, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, result.contractorId, result.hiredId);
+        const otherPartyId = contract.person.profileId;
+        if (otherPartyId) {
+          const title = result.amountsMatch ? "Pagamento confirmado!" : "Confirme o pagamento";
+          const body = result.amountsMatch
+            ? "O pagamento em dinheiro foi confirmado pelas duas partes."
+            : isIncomplete
+            ? "O prestador informou que faltou parte do valor. Confira e confirme."
+            : `${contract.person.name} informou o recebimento. Confirme o valor pago.`;
+          sendPushNotification(otherPartyId, title, body, { contract_id: id }, "payment").catch(() => {});
+        }
+      },
+      [findContract, loadContracts, sendPushNotification, broadcastByContract]
+    );
+
+    // ── Trocar método de pagamento ────────────────────────────────────────────────
+
+    const changeContractPaymentMethod = useCallback(
+      async (id: string, newMethod: "cartao" | "pix" | "saldo" | "dinheiro", cardLabel?: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.changePaymentMethod(id, newMethod, cardLabel, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(id, parties.contractorId, parties.hiredId);
+      },
+      [loadContracts, broadcastByContract]
+    );
+
+    // ── Pagar valor pendente excedente ────────────────────────────────────────────
+
+    const payPendingBalance = useCallback(
+      async (contractId: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuário não autenticado");
+        const audit = await getAuditSnapshot();
+        const parties = await contractsApi.payPending(contractId, audit);
+        if (userIdRef.current) await loadContracts(userIdRef.current, { showLoading: false });
+        broadcastByContract(contractId, parties.contractorId, parties.hiredId);
+      },
+      [loadContracts, broadcastByContract]
+    );
+
+    const refreshContracts = useCallback(async () => {
     if (userIdRef.current)
       await loadContracts(userIdRef.current, { showLoading: false });
   }, [loadContracts]);

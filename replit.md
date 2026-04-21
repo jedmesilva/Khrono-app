@@ -78,6 +78,14 @@ Set in Replit secrets (do not hardcode):
 - All secrets (`EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_SUPABASE_SERVICE_ROLE_KEY`, etc.) confirmed present.
 - Server starts cleanly; only a non-blocking Stripe warning appears (expected until Stripe keys are added).
 
+## Contracts Backend Migration (April 2026)
+All contract/payment business logic was moved out of the mobile app into the API server. The mobile `ContractsContext` is now a thin shell that loads/realtime-syncs data and dispatches notifications/broadcasts after API calls.
+- **Backend service**: `artifacts/api-server/src/lib/contractsService.ts` owns the entire contract lifecycle (draft, finalize, accept/reject/begin/cancel, request/confirm/reject end & cancel, cash flows, payment-method change, pay-pending) plus audit snapshots and `contract_events` recording.
+- **REST routes**: `artifacts/api-server/src/routes/contracts.ts` exposes one endpoint per operation under `/api/contracts/*`. All endpoints use `requireAuth` + ownership check.
+- **Frontend wrapper**: `artifacts/krono/lib/contractsApi.ts` provides typed methods for every endpoint. Audit snapshot (GPS/device) is captured client-side and sent as a payload field.
+- **Stripe specifics**: card PaymentIntents are still created from the mobile app via `stripeApi` (Stripe SDK requires `clientSecret` client-side). The backend records the payment row with the resulting intent id. Settlement on contract end uses the existing `/api/stripe/contracts/:id/settle-end` route via `settleContractEnd`.
+- **Result**: `ContractsContext.tsx` shrunk from 2329 → ~1325 lines; backend `pnpm typecheck` passes; mobile `tsc --noEmit` shows no errors in any contract-related file.
+
 ## Stripe Payment Flow
 - `artifacts/krono/lib/stripeApi.ts` — helper that calls the API server to create/query PaymentIntents.
 - `EXPO_PUBLIC_API_URL` must be set to the API server's public URL for the mobile app to communicate with it.
