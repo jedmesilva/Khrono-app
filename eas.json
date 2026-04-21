@@ -6,40 +6,19 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://hbekmqzdoxcsznykuxdj.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhiZWttcXpkb3hjc3pueWt1eGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzQ0ODYsImV4cCI6MjA4OTk1MDQ4Nn0.jfdk_KFUYp5Gw85gj_TM3HNyJVgnv9AETCV1mJsques",
-        "EXPO_PUBLIC_API_URL": "https://SEU-PROJETO-DEV.up.railway.app",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_SUBSTITUA_AQUI",
-        "EXPO_PUBLIC_EAS_PROJECT_ID": "e73f6f13-4f20-4ee3-979d-ee9435474236"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
-      "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://hbekmqzdoxcsznykuxdj.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhiZWttcXpkb3hjc3pueWt1eGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzQ0ODYsImV4cCI6MjA4OTk1MDQ4Nn0.jfdk_KFUYp5Gw85gj_TM3HNyJVgnv9AETCV1mJsques",
-        "EXPO_PUBLIC_API_URL": "https://SEU-PROJETO-PREVIEW.up.railway.app",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_SUBSTITUA_AQUI",
-        "EXPO_PUBLIC_EAS_PROJECT_ID": "e73f6f13-4f20-4ee3-979d-ee9435474236"
-      },
       "node": "20.0.0",
       "pnpm": "9.15.9",
       "resourceClass": "medium"
     },
     "production": {
-      "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://hbekmqzdoxcsznykuxdj.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhiZWttcXpkb3hjc3pueWt1eGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzQ0ODYsImV4cCI6MjA4OTk1MDQ4Nn0.jfdk_KFUYp5Gw85gj_TM3HNyJVgnv9AETCV1mJsques",
-        "EXPO_PUBLIC_API_URL": "https://SEU-PROJETO-PROD.up.railway.app",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_SUBSTITUA_AQUI",
-        "EXPO_PUBLIC_EAS_PROJECT_ID": "e73f6f13-4f20-4ee3-979d-ee9435474236"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
