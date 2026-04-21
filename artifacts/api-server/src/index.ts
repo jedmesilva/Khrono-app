@@ -1,6 +1,7 @@
 import app from "./app";
 import { initStripeInfrastructure } from "./lib/stripeInit";
 import { logger } from "./lib/logger";
+import { assertAuthConfiguration } from "./middleware/auth";
 
 async function main() {
   const rawPort = process.env["PORT"];
@@ -17,6 +18,7 @@ async function main() {
     throw new Error(`Invalid PORT value: "${rawPort}"`);
   }
 
+  assertAuthConfiguration();
   await initStripeInfrastructure();
 
   app.listen(port, "0.0.0.0", () => {

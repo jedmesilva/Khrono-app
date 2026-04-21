@@ -19,6 +19,10 @@ type CreatePaymentIntentBody = {
 };
 
 const router: IRouter = Router();
+function asSingleParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+}
 
 function normalizeAmountCents(body: CreatePaymentIntentBody) {
   if (typeof body.amountCents === "number") {
@@ -130,10 +134,9 @@ router.post("/stripe/payment-intents", requireAuth, async (req, res) => {
 
 router.get("/stripe/payment-intents/:paymentIntentId", requireAuth, async (req, res) => {
   try {
+    const paymentIntentId = asSingleParam(req.params.paymentIntentId);
     const stripe = await getUncachableStripeClient();
-    const paymentIntent = await stripe.paymentIntents.retrieve(
-      req.params.paymentIntentId,
-    );
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     res.json({
       paymentIntentId: paymentIntent.id,
@@ -151,10 +154,9 @@ router.get("/stripe/payment-intents/:paymentIntentId", requireAuth, async (req, 
 
 router.post("/stripe/payment-intents/:paymentIntentId/cancel", requireAuth, async (req, res) => {
   try {
+    const paymentIntentId = asSingleParam(req.params.paymentIntentId);
     const stripe = await getUncachableStripeClient();
-    const paymentIntent = await stripe.paymentIntents.cancel(
-      req.params.paymentIntentId,
-    );
+    const paymentIntent = await stripe.paymentIntents.cancel(paymentIntentId);
 
     await upsertStripePaymentLink({
       contract_id: paymentIntent.metadata.contract_id ?? "unknown",
@@ -183,7 +185,8 @@ router.post("/stripe/payment-intents/:paymentIntentId/cancel", requireAuth, asyn
 });
 
 router.get("/stripe/contracts/:contractId/payments", requireAuth, async (req, res) => {
-  const payments = await getStripePaymentLinksForContract(req.params.contractId);
+  const contractId = asSingleParam(req.params.contractId);
+  const payments = await getStripePaymentLinksForContract(contractId);
   res.json({ data: payments });
 });
 

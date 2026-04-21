@@ -8,6 +8,16 @@ type StripeCredentials = {
   source: "env" | "replit";
 };
 
+type ReplitConnectionResponse = {
+  items?: Array<{
+    settings?: {
+      secret_key?: string;
+      publishable_key?: string;
+      webhook_secret?: string;
+    };
+  }>;
+};
+
 async function getReplitStripeCredentials(): Promise<StripeCredentials | null> {
   const hostname = process.env["REPLIT_CONNECTORS_HOSTNAME"];
   const xReplitToken = process.env["REPL_IDENTITY"]
@@ -35,7 +45,7 @@ async function getReplitStripeCredentials(): Promise<StripeCredentials | null> {
     return null;
   }
 
-  const data = await resp.json();
+  const data = (await resp.json()) as ReplitConnectionResponse;
   const settings = data.items?.[0]?.settings;
 
   if (!settings?.secret_key) {

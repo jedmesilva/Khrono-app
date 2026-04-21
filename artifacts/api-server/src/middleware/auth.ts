@@ -3,6 +3,7 @@ import { jwtVerify, createRemoteJWKSet } from "jose";
 
 const SUPABASE_URL = process.env["SUPABASE_URL"];
 const SUPABASE_JWT_SECRET = process.env["SUPABASE_JWT_SECRET"];
+const NODE_ENV = process.env["NODE_ENV"];
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
@@ -61,5 +62,21 @@ export async function requireAuth(
     }
   }
 
-  next();
+  res.status(503).json({
+    error:
+      "Authentication is not configured on the server. Set SUPABASE_JWT_SECRET or SUPABASE_URL.",
+  });
+}
+
+export function assertAuthConfiguration() {
+  if (SUPABASE_JWT_SECRET || SUPABASE_URL) {
+    return;
+  }
+
+  const message =
+    "Missing auth configuration: set SUPABASE_JWT_SECRET or SUPABASE_URL.";
+
+  if (NODE_ENV === "production") {
+    throw new Error(message);
+  }
 }
