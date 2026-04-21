@@ -64,7 +64,7 @@ export default function SkillDetailScreen() {
     [userSkills, id]
   );
 
-  const [isActive, setIsActive] = useState(() => entry?.isActive ?? true);
+  const isActive = entry?.isActive ?? true;
 
   const skill = useMemo(() => {
     if (!entry) return null;
@@ -96,7 +96,6 @@ export default function SkillDetailScreen() {
     .toUpperCase();
 
   async function handleToggleActive(val: boolean) {
-    setIsActive(val);
     if (skill) await toggleSkillActive(skill.entryId, val);
   }
 
@@ -166,7 +165,7 @@ export default function SkillDetailScreen() {
         >
           <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: isActive ? (isDark ? "#00e5a0" : "#0f6e47") : (isDark ? "#504840" : "#bbb") }} />
           <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 0.6, textTransform: "uppercase", color: isActive ? (isDark ? "#00e5a0" : "#0f6e47") : (isDark ? "#706860" : "#999") }}>
-            {isActive ? "ativa" : "inativa"}
+            {isActive ? "disponível" : "indisponível"}
           </Text>
         </View>
         <SimpleIconButton icon="more-horizontal" onPress={handleOptions} />
@@ -320,7 +319,7 @@ export default function SkillDetailScreen() {
                     {svc.name}
                   </Text>
                   <Text style={[styles.svcMeta, { color: colors.textMuted }]}>
-                    {svc.active ? "ativo" : "inativo"} · {svc.contracts}{" "}
+                    {svc.active ? "disponível" : "indisponível"} · {svc.contracts}{" "}
                     {svc.contracts === 1 ? "contrato" : "contratos"}
                   </Text>
                 </View>

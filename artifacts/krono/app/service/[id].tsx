@@ -276,7 +276,7 @@ export default function ServiceDetailScreen() {
         >
           <View style={[styles.statusDot, { backgroundColor: active ? (isDark ? GREEN_BADGE : "#0f6e47") : (isDark ? "#504840" : "#bbb") }]} />
           <Text style={[styles.statusText, { color: active ? (isDark ? GREEN_BADGE : "#0f6e47") : (isDark ? "#706860" : "#999") }]}>
-            {active ? "ativo" : "inativo"}
+            {active ? "disponível" : "indisponível"}
           </Text>
         </View>
         <SimpleIconButton icon="more-horizontal" size={18} onPress={handleMoreOptions} />

@@ -12,6 +12,7 @@ interface SkillListCardProps {
   description?: string;
   badge?: string;
   isNew?: boolean;
+  available?: boolean;
   verifiedBadge?: React.ReactNode;
   onPress?: () => void;
 }
@@ -21,6 +22,7 @@ export function SkillListCard({
   description,
   badge,
   isNew = false,
+  available = true,
   verifiedBadge,
   onPress,
 }: SkillListCardProps) {
@@ -29,11 +31,11 @@ export function SkillListCard({
 
   return (
     <Wrapper
-      style={[GlobalStyles.cardRow, cardColors(colors)]}
+      style={[GlobalStyles.cardRow, cardColors(colors), { opacity: available ? 1 : 0.55 }]}
       {...(onPress ? { onPress } : {})}
     >
-      <IconBox size="sm" bg={isNew ? colors.surface : "#e0603012"}>
-        <Feather name={SKILL_ICON} size={16} color={isNew ? colors.textMuted : "#e06030"} />
+      <IconBox size="sm" bg={isNew || !available ? colors.surface : "#e0603012"}>
+        <Feather name={SKILL_ICON} size={16} color={isNew || !available ? colors.textMuted : "#e06030"} />
       </IconBox>
       <View style={{ flex: 1 }}>
         <View style={styles.nameRow}>

@@ -177,6 +177,7 @@ type ServiceData = {
   contracts: number;
   isNew: boolean;
   verified: { type: VerificationType } | null;
+  active: boolean;
   skills: Skill[];
   tools: Tool[];
 };
@@ -248,6 +249,7 @@ async function fetchServiceData(serviceId: string, profileId: string): Promise<{
     contracts: contractsCount,
     isNew: contractsCount < 10,
     verified: null,
+    active: row.is_active !== false,
     skills,
     tools,
   };
@@ -348,14 +350,18 @@ export default function ProviderServiceScreen() {
           style={[
             styles.statusBadge,
             { position: "relative", right: 0 },
-            isDark
-              ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
-              : { borderColor: "rgba(15,110,71,0.45)", backgroundColor: "rgba(15,110,71,0.16)" },
+            service.active
+              ? (isDark
+                  ? { borderColor: "rgba(0,229,160,0.30)", backgroundColor: "rgba(0,229,160,0.12)" }
+                  : { borderColor: "rgba(15,110,71,0.45)", backgroundColor: "rgba(15,110,71,0.16)" })
+              : { borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)", backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" },
           ]}
           pointerEvents="none"
         >
-          <View style={[styles.statusDot, { backgroundColor: isDark ? GREEN : "#0f6e47" }]} />
-          <Text style={[styles.statusText, { color: isDark ? GREEN : "#0f6e47" }]}>ativo</Text>
+          <View style={[styles.statusDot, { backgroundColor: service.active ? (isDark ? GREEN : "#0f6e47") : (isDark ? "#504840" : "#bbb") }]} />
+          <Text style={[styles.statusText, { color: service.active ? (isDark ? GREEN : "#0f6e47") : (isDark ? "#706860" : "#999") }]}>
+            {service.active ? "disponível" : "indisponível"}
+          </Text>
         </View>
       </View>
 

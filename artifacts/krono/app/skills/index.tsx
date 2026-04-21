@@ -23,7 +23,7 @@ export default function SkillsScreen() {
   const { skills: catalogSkills } = useCatalog();
   const [dialog, setDialog] = useState<{ title: string; message?: string; buttons?: AppDialogButton[] } | null>(null);
 
-  const skills: Skill[] = useMemo(
+  const skills: (Skill & { available: boolean })[] = useMemo(
     () =>
       userSkills.map((entry) => ({
         id: entry.skill_id,
@@ -33,6 +33,7 @@ export default function SkillsScreen() {
         verified: entry.skill?.verified ? ({ type: "documentation" as VerificationType }) : null,
         isNew: false,
         addedAt: formatMonthYear(entry.createdAt),
+        available: entry.isActive,
       })),
     [userSkills]
   );
@@ -75,6 +76,8 @@ export default function SkillsScreen() {
             name={skill.name}
             description={skill.description}
             isNew={skill.isNew}
+            available={skill.available}
+            badge={skill.available ? undefined : "indisponível"}
             verifiedBadge={
               skill.verified
                 ? <VerifiedBadge onPress={() => skill.verified && handleVerifiedPress(skill.verified.type)} />

@@ -69,7 +69,7 @@ export default function ToolDetailScreen() {
     [myTools, id]
   );
 
-  const [available, setAvailable] = useState(() => tool?.available ?? true);
+  const available = tool?.available ?? true;
 
   const gradient = useMemo(
     () => pickGradient(tool?.id ?? "default", isDark),
@@ -84,7 +84,6 @@ export default function ToolDetailScreen() {
   const verifyMeta = VERIFY_STATUS[vstatus] ?? VERIFY_STATUS.unverified;
 
   async function handleToggleAvailable(val: boolean) {
-    setAvailable(val);
     await toggleToolAvailable(id!, val);
   }
 
