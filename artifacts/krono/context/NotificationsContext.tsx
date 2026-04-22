@@ -15,25 +15,23 @@ import { Platform } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { useUserSettings, type UserSettings } from "@/context/UserSettingsContext";
+import {
+  notificationsApi,
+  pushTokensApi,
+  type AppNotification,
+} from "@/lib/notificationsApi";
 
 // Show notifications when the app is in the foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
 });
 
-export type AppNotification = {
-  id: string;
-  type: string;
-  title: string;
-  body: string;
-  data: Record<string, any>;
-  read_at: string | null;
-  created_at: string;
-};
+export type { AppNotification };
 
 type NotificationsContextType = {
   notifications: AppNotification[];
@@ -83,11 +81,9 @@ function allowsNotificationCategory(
   if (isContractNotification(type) && !preferences.notification_contracts_enabled) {
     return false;
   }
-
   if (isScheduleNotification(type) && !preferences.notification_schedule_enabled) {
     return false;
   }
-
   return true;
 }
 
@@ -102,7 +98,7 @@ const NotificationsContext = createContext<NotificationsContextType>({
   sendPushNotification: async () => {},
 });
 
-// ── Push token registration ───────────────────────────────────────────────────
+// ── Push token registration (system-level only; persistence goes via API) ────
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (!Device.isDevice) {
@@ -112,12 +108,10 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
-
   if (existingStatus !== "granted") {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
-
   if (finalStatus !== "granted") {
     console.log("[Notifications] Permission not granted.");
     return null;
@@ -144,8 +138,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       return null;
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
-      .data;
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     console.log("[Notifications] Push token registered:", token);
     return token;
   } catch (e) {
@@ -156,11 +149,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
-export function NotificationsProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const { settings } = useUserSettings();
   const router = useRouter();
@@ -169,89 +158,69 @@ export function NotificationsProvider({
   const [hasPermission, setHasPermission] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(
-    null
-  );
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const foregroundListenerRef = useRef<Notifications.Subscription | null>(null);
   const responseListenerRef = useRef<Notifications.Subscription | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
-  // ── Sync OS badge count whenever unread count changes ────────────────────────
-
   useEffect(() => {
     Notifications.setBadgeCountAsync(unreadCount).catch(() => {});
   }, [unreadCount]);
 
-  // ── Load notifications from Supabase ────────────────────────────────────────
+  // ── Load notifications via API ──────────────────────────────────────────────
 
-  const loadNotifications = useCallback(async (uid: string) => {
+  const loadNotifications = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("profile_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (!error && data) {
+    try {
+      const data = await notificationsApi.list(50);
       setNotifications(
-        (data as AppNotification[]).filter((notification) =>
-          allowsNotificationCategory(notification.type, settings)
-        )
+        data.filter((n) => allowsNotificationCategory(n.type, settings)),
       );
+    } catch (e) {
+      console.warn("[Notifications] load error:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [settings]);
 
-  // ── Register push token in Supabase ─────────────────────────────────────────
+  // ── Register push token via API ─────────────────────────────────────────────
 
-  const clearPushTokens = useCallback(async (uid: string) => {
-    await supabase.from("push_tokens").delete().eq("profile_id", uid);
+  const clearPushTokens = useCallback(async () => {
+    try {
+      await pushTokensApi.clearAll();
+    } catch (e) {
+      console.warn("[Notifications] clear tokens error:", e);
+    }
     setPushToken(null);
     setHasPermission(false);
   }, []);
 
-  const setupPushToken = useCallback(async (uid: string) => {
+  const setupPushToken = useCallback(async () => {
     if (!settings.notification_push_enabled) {
-      await clearPushTokens(uid);
+      await clearPushTokens();
       return;
     }
 
     const token = await registerForPushNotificationsAsync();
     setHasPermission(token !== null);
     if (!token) return;
-
     setPushToken(token);
 
-    const payload = {
-      profile_id: uid,
-      token,
-      platform: Platform.OS,
-      notification_push_enabled: settings.notification_push_enabled,
-      notification_contracts_enabled: settings.notification_contracts_enabled,
-      notification_schedule_enabled: settings.notification_schedule_enabled,
-      updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from("push_tokens")
-      .upsert(payload, { onConflict: "profile_id,token" });
-
-    if (error) {
-      await supabase.from("push_tokens").upsert(
-        {
-          profile_id: uid,
-          token,
-          platform: Platform.OS,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "profile_id,token" }
-      );
+    try {
+      await pushTokensApi.register({
+        token,
+        platform: Platform.OS as "ios" | "android" | "web" | "unknown",
+        notification_push_enabled: settings.notification_push_enabled,
+        notification_contracts_enabled: settings.notification_contracts_enabled,
+        notification_schedule_enabled: settings.notification_schedule_enabled,
+      });
+    } catch (e) {
+      console.warn("[Notifications] register token error:", e);
     }
   }, [clearPushTokens, settings]);
 
-  // ── Supabase Realtime subscription ──────────────────────────────────────────
+  // ── Realtime — read-only subscription to my own notifications ───────────────
 
   const setupRealtime = useCallback((uid: string) => {
     if (realtimeChannelRef.current) {
@@ -314,8 +283,8 @@ export function NotificationsProvider({
     }
 
     const uid = user.id;
-    loadNotifications(uid);
-    setupPushToken(uid);
+    loadNotifications();
+    setupPushToken();
     setupRealtime(uid);
 
     return () => {
@@ -329,27 +298,23 @@ export function NotificationsProvider({
   // ── Foreground notification listener ────────────────────────────────────────
 
   useEffect(() => {
-    foregroundListenerRef.current =
-      Notifications.addNotificationReceivedListener((notification) => {
+    foregroundListenerRef.current = Notifications.addNotificationReceivedListener(
+      (notification) => {
         console.log(
           "[Notifications] Foreground:",
           notification.request.content.title
         );
-      });
+      }
+    );
 
     responseListenerRef.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        const data = response.notification.request.content.data as Record<
-          string,
-          any
-        >;
+        const data = response.notification.request.content.data as Record<string, any>;
         console.log("[Notifications] User tapped notification:", data);
 
-        // Navigate to the relevant contract when the user taps a notification
         if (data?.contract_id) {
           router.push(`/contract-detail/${data.contract_id}` as any);
         } else {
-          // Fallback: open home tab where the notifications sheet lives
           router.push("/(tabs)" as any);
         }
       });
@@ -360,38 +325,34 @@ export function NotificationsProvider({
     };
   }, []);
 
-  // ── Mark as read ─────────────────────────────────────────────────────────────
+  // ── Mark as read (via API; realtime updates the UI) ─────────────────────────
 
   const markAsRead = useCallback(async (id: string) => {
-    const now = new Date().toISOString();
-    await supabase
-      .from("notifications")
-      .update({ read_at: now })
-      .eq("id", id);
-
+    const optimisticTs = new Date().toISOString();
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read_at: now } : n))
+      prev.map((n) => (n.id === id ? { ...n, read_at: optimisticTs } : n))
     );
+    try {
+      await notificationsApi.markAsRead(id);
+    } catch (e) {
+      console.warn("[Notifications] markAsRead error:", e);
+    }
   }, []);
 
   const markAllAsRead = useCallback(async () => {
     if (!user?.id) return;
-    const now = new Date().toISOString();
-    await supabase
-      .from("notifications")
-      .update({ read_at: now })
-      .eq("profile_id", user.id)
-      .is("read_at", null);
-
+    const optimisticTs = new Date().toISOString();
     setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read_at: n.read_at ?? now }))
+      prev.map((n) => ({ ...n, read_at: n.read_at ?? optimisticTs }))
     );
+    try {
+      await notificationsApi.markAllAsRead();
+    } catch (e) {
+      console.warn("[Notifications] markAllAsRead error:", e);
+    }
   }, [user?.id]);
 
-  // ── Send push notification to another user ───────────────────────────────────
-  // 1. Stores the notification in Supabase (recipient sees it in the sheet)
-  // 2. Looks up the recipient's Expo push token
-  // 3. Calls the Expo Push API to deliver the push notification
+  // ── Send push to another user (via API) ─────────────────────────────────────
 
   const sendPushNotification = useCallback(
     async (
@@ -401,84 +362,16 @@ export function NotificationsProvider({
       data: Record<string, any> = {},
       type: string = "general"
     ) => {
-      // 1. Store in-app notification
-      const { error: insertErr } = await supabase
-        .from("notifications")
-        .insert({ profile_id: profileId, type, title, body, data });
-
-      if (insertErr) {
-        console.warn(
-          "[Notifications] Failed to insert notification:",
-          insertErr.message
-        );
-      }
-
-      let tokenRows:
-        | Array<{
-            token: string;
-            notification_push_enabled?: boolean;
-            notification_contracts_enabled?: boolean;
-            notification_schedule_enabled?: boolean;
-          }>
-        | null = null;
-
-      const tokenResult = await supabase
-        .from("push_tokens")
-        .select(
-          "token, notification_push_enabled, notification_contracts_enabled, notification_schedule_enabled"
-        )
-        .eq("profile_id", profileId);
-
-      if (tokenResult.error) {
-        const fallbackTokenResult = await supabase
-          .from("push_tokens")
-          .select("token")
-          .eq("profile_id", profileId);
-        tokenRows = fallbackTokenResult.data;
-      } else {
-        tokenRows = tokenResult.data;
-      }
-
-      if (!tokenRows || tokenRows.length === 0) return;
-
-      const validTokens = tokenRows
-        .filter((row) => {
-          if (row.notification_push_enabled === false) return false;
-          return allowsNotificationCategory(type, {
-            notification_contracts_enabled:
-              row.notification_contracts_enabled ?? true,
-            notification_schedule_enabled:
-              row.notification_schedule_enabled ?? true,
-          });
-        })
-        .map((r) => r.token)
-        .filter((t) => t.startsWith("ExponentPushToken"));
-
-      if (validTokens.length === 0) return;
-
-      // 3. Deliver via Expo Push API
       try {
-        const messages = validTokens.map((token) => ({
-          to: token,
+        await notificationsApi.send({
+          recipientId: profileId,
           title,
           body,
           data,
-          sound: "default" as const,
-          priority: "high" as const,
-          badge: 1,
-        }));
-
-        await fetch("https://exp.host/--/api/v2/push/send", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "Accept-Encoding": "gzip, deflate",
-          },
-          body: JSON.stringify(messages),
+          type,
         });
       } catch (e) {
-        console.warn("[Notifications] Expo Push API error:", e);
+        console.warn("[Notifications] sendPushNotification error:", e);
       }
     },
     []
