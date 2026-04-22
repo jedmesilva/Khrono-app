@@ -24,7 +24,7 @@ function assertUser(req: AuthedReq, res: Response): string | null {
   return userId;
 }
 
-router.get("/api/wallet", requireAuth, async (req: AuthedReq, res: Response) => {
+router.get("/wallet", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = assertUser(req, res);
   if (!userId) return;
   try {
@@ -35,7 +35,7 @@ router.get("/api/wallet", requireAuth, async (req: AuthedReq, res: Response) => 
   }
 });
 
-router.get("/api/wallet/cards", requireAuth, async (req: AuthedReq, res: Response) => {
+router.get("/wallet/cards", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = assertUser(req, res);
   if (!userId) return;
   try {
@@ -45,7 +45,7 @@ router.get("/api/wallet/cards", requireAuth, async (req: AuthedReq, res: Respons
   }
 });
 
-router.post("/api/wallet/cards", requireAuth, async (req: AuthedReq, res: Response) => {
+router.post("/wallet/cards", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = assertUser(req, res);
   if (!userId) return;
   const body = (req.body ?? {}) as Record<string, unknown>;
@@ -77,7 +77,7 @@ router.post("/api/wallet/cards", requireAuth, async (req: AuthedReq, res: Respon
 });
 
 router.delete(
-  "/api/wallet/cards/:id",
+  "/wallet/cards/:id",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = assertUser(req, res);
@@ -92,7 +92,7 @@ router.delete(
 );
 
 router.post(
-  "/api/wallet/cards/:id/default",
+  "/wallet/cards/:id/default",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = assertUser(req, res);
@@ -107,7 +107,7 @@ router.post(
 );
 
 router.get(
-  "/api/wallet/transactions",
+  "/wallet/transactions",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = assertUser(req, res);
@@ -122,7 +122,7 @@ router.get(
 );
 
 router.post(
-  "/api/wallet/deposits",
+  "/wallet/deposits",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = assertUser(req, res);
@@ -141,7 +141,7 @@ router.post(
 );
 
 router.post(
-  "/api/wallet/withdrawals",
+  "/wallet/withdrawals",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = assertUser(req, res);

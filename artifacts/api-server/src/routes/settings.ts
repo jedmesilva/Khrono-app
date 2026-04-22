@@ -43,7 +43,7 @@ function mapRow(row: any) {
   };
 }
 
-router.get("/api/settings", requireAuth, async (req: AuthedReq, res: Response) => {
+router.get("/settings", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = req.userId;
   if (!userId) {
     res.status(401).json({ error: "Missing authenticated user." });
@@ -81,7 +81,7 @@ router.get("/api/settings", requireAuth, async (req: AuthedReq, res: Response) =
   res.json(mapRow(inserted));
 });
 
-router.patch("/api/settings", requireAuth, async (req: AuthedReq, res: Response) => {
+router.patch("/settings", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = req.userId;
   if (!userId) {
     res.status(401).json({ error: "Missing authenticated user." });

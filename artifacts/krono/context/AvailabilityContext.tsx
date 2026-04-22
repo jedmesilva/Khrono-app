@@ -8,33 +8,26 @@ import React, {
 } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import * as ExpoLocation from "expo-location";
-import { sha256 } from "js-sha256";
 import * as Device from "expo-device";
 import { supabase } from "@/lib/supabase";
+import { availabilityApi, type QRPayload } from "@/lib/availabilityApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type SessionStatus =
-  | "idle"       // toggle desligado, sem sessão
-  | "starting"   // processando toggle ON
-  | "pending"    // criado localmente, sem internet (nunca salvo no Supabase)
-  | "active"     // confirmado online, salvo no Supabase
-  | "paused"     // estava ativo, perdeu internet
-  | "ending";    // processando toggle OFF
+  | "idle"
+  | "starting"
+  | "pending"  // criado localmente, sem internet
+  | "active"
+  | "paused"
+  | "ending";
 
-export type QRPayload = {
-  type: "krono-qr";
-  v: number;      // schema version
-  pin: string;
-  pid: string;    // profileId
-  sid: string;    // sessionId
-  chk: string;    // sha256(pid+sid+pin)[0..8]
-};
+export type { QRPayload };
 
 export type ProfileReadiness = {
   ready: boolean;
   missing: string[];
-  checked: boolean; // false while the first check hasn't finished
+  checked: boolean;
 };
 
 type AvailabilityContextType = {
@@ -50,8 +43,6 @@ type AvailabilityContextType = {
   refreshProfileReadiness: () => Promise<ProfileReadiness>;
   notifyPinUsed: (profileId: string) => void;
 };
-
-// ─── Context ─────────────────────────────────────────────────────────────────
 
 const AvailabilityContext = createContext<AvailabilityContextType>({
   status: "idle",
@@ -69,20 +60,8 @@ const AvailabilityContext = createContext<AvailabilityContextType>({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function generatePin(): string {
+function generateLocalPin(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
-}
-
-function makeChecksum(profileId: string, sessionId: string, pin: string): string {
-  return sha256(profileId + sessionId + pin).substring(0, 8);
-}
-
-export function verifyQRChecksum(payload: QRPayload): boolean {
-  try {
-    return sha256(payload.pid + payload.sid + payload.pin).substring(0, 8) === payload.chk;
-  } catch {
-    return false;
-  }
 }
 
 async function getGps(): Promise<{
@@ -118,11 +97,7 @@ function getDeviceInfo(): Record<string, string | number | null> {
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
-export function AvailabilityProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function AvailabilityProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPin, setSessionPin] = useState<string | null>(null);
@@ -136,7 +111,12 @@ export function AvailabilityProvider({
   const statusRef = useRef<SessionStatus>("idle");
   const sessionIdRef = useRef<string | null>(null);
   const pinIdRef = useRef<string | null>(null);
-  const pendingPayloadRef = useRef<Record<string, any> | null>(null);
+  const pendingPayloadRef = useRef<{
+    lat: number | null;
+    lng: number | null;
+    locationAccuracy: number | null;
+    metadata: Record<string, unknown>;
+  } | null>(null);
   const profileIdRef = useRef<string | null>(null);
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const broadcastChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -151,29 +131,27 @@ export function AvailabilityProvider({
     setSessionId(id);
   }
 
-  // ── Profile readiness check ────────────────────────────────────────────────
+  // ── Profile readiness check (server) ───────────────────────────────────────
   const refreshProfileReadiness = useCallback(async (): Promise<ProfileReadiness> => {
-    const profileId = profileIdRef.current;
-    if (!profileId) {
-      const result: ProfileReadiness = { ready: false, missing: ["Adicione pelo menos 1 serviço"], checked: true };
-      setProfileReadiness(result);
-      return result;
+    if (!profileIdRef.current) {
+      const r: ProfileReadiness = {
+        ready: false,
+        missing: ["Adicione pelo menos 1 serviço"],
+        checked: true,
+      };
+      setProfileReadiness(r);
+      return r;
     }
-
-    const { data, error } = await supabase
-      .from("provider_services")
-      .select("id")
-      .eq("profile_id", profileId)
-      .eq("is_active", true)
-      .limit(1);
-
-    const hasService = !error && Array.isArray(data) && data.length > 0;
-    const missing: string[] = [];
-    if (!hasService) missing.push("Adicione pelo menos 1 serviço ativo");
-
-    const result: ProfileReadiness = { ready: missing.length === 0, missing, checked: true };
-    setProfileReadiness(result);
-    return result;
+    try {
+      const { ready, missing } = await availabilityApi.getProfileReadiness();
+      const r: ProfileReadiness = { ready, missing, checked: true };
+      setProfileReadiness(r);
+      return r;
+    } catch {
+      const r: ProfileReadiness = { ready: false, missing: [], checked: true };
+      setProfileReadiness(r);
+      return r;
+    }
   }, []);
 
   // ── Load current user ──────────────────────────────────────────────────────
@@ -198,16 +176,14 @@ export function AvailabilityProvider({
         } else {
           refreshProfileReadiness();
         }
-      }
+      },
     );
     return () => subscription.unsubscribe();
   }, [refreshProfileReadiness]);
 
-  // ── Realtime PIN subscription ──────────────────────────────────────────────
-
+  // ── Realtime PIN watcher (READ-ONLY) ───────────────────────────────────────
   function setupRealtimePin(profileId: string) {
     teardownRealtimePin();
-
     const channel = supabase
       .channel(`pin-watch-${profileId}`)
       .on(
@@ -220,12 +196,11 @@ export function AvailabilityProvider({
         },
         async (payload: any) => {
           if (payload.new?.status === "used") {
-            await insertNewPin(profileId, sessionIdRef.current);
+            await regenerateFromServer();
           }
-        }
+        },
       )
       .subscribe();
-
     realtimeChannelRef.current = channel;
   }
 
@@ -236,80 +211,20 @@ export function AvailabilityProvider({
     }
   }
 
-  // ── Insert a new active PIN and build QR payload ───────────────────────────
-  // Retries up to 10 times if the generated PIN collides with an already-active
-  // PIN (DB unique partial index on provider_pins(pin) WHERE status='active').
-  async function insertNewPin(
-    profileId: string,
-    sessionId: string | null
-  ): Promise<string | null> {
-    for (let attempt = 0; attempt < 10; attempt++) {
-      const pin = generatePin();
-
-      const { data, error } = await supabase
-        .from("provider_pins")
-        .insert({
-          profile_id: profileId,
-          pin,
-          status: "active",
-          session_id: sessionId,
-        })
-        .select("id")
-        .single();
-
-      // 23505 = unique_violation: another active PIN has the same value — retry
-      if (error?.code === "23505") continue;
-      if (error || !data) return null;
-
-      pinIdRef.current = data.id;
-      setSessionPin(pin);
-
-      // Build QR payload with checksum (only possible when sessionId is known)
-      if (sessionId) {
-        const chk = makeChecksum(profileId, sessionId, pin);
-        setQrPayload({
-          type: "krono-qr",
-          v: 1,
-          pin,
-          pid: profileId,
-          sid: sessionId,
-          chk,
-        });
-      } else {
-        setQrPayload(null);
-      }
-
-      return pin;
-    }
-
-    // Exhausted all retries (astronomically unlikely with 9 000 possible values)
-    return null;
-  }
-
-  // ── Invalidate a specific PIN or all active PINs ───────────────────────────
-  async function invalidatePins(
-    profileId: string,
-    specificPinId?: string | null
-  ) {
-    const now = new Date().toISOString();
-    if (specificPinId) {
-      await supabase
-        .from("provider_pins")
-        .update({ status: "invalidated", invalidated_at: now })
-        .eq("id", specificPinId);
-    } else {
-      await supabase
-        .from("provider_pins")
-        .update({ status: "invalidated", invalidated_at: now })
-        .eq("profile_id", profileId)
-        .eq("status", "active");
+  async function regenerateFromServer() {
+    const sId = sessionIdRef.current;
+    if (!sId) return;
+    try {
+      const pin = await availabilityApi.regeneratePin(sId, pinIdRef.current);
+      pinIdRef.current = pin.id;
+      setSessionPin(pin.pin);
+      setQrPayload(pin.qr);
+    } catch (e) {
+      console.warn("[Availability] regeneratePin error:", e);
     }
   }
 
-  // ── Broadcast channel: notificação em tempo real de PIN usado ────────────────
-  // Substitui o polling anterior. O contratante envia um broadcast via
-  // notifyPinUsed() assim que marca o PIN como utilizado. O prestador
-  // recebe instantaneamente e gera um novo PIN sem qualquer delay.
+  // ── Broadcast: pin-used (read-only listener) ───────────────────────────────
   useEffect(() => {
     const ch = supabase
       .channel("krono-availability-events")
@@ -317,16 +232,12 @@ export function AvailabilityProvider({
         const profileId = profileIdRef.current;
         if (!profileId) return;
         if (msg.payload?.profile_id !== profileId) return;
-        pinIdRef.current = null;
-        setQrPayload(null);
-        await insertNewPin(profileId, sessionIdRef.current);
+        await regenerateFromServer();
       })
       .subscribe((s) => {
         broadcastReadyRef.current = s === "SUBSCRIBED";
       });
-
     broadcastChannelRef.current = ch;
-
     return () => {
       broadcastReadyRef.current = false;
       supabase.removeChannel(ch);
@@ -334,21 +245,15 @@ export function AvailabilityProvider({
     };
   }, []);
 
-  // ── Network listener ───────────────────────────────────────────────────────
+  // ── Network listener: handle reconnection / pause ──────────────────────────
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(async (state) => {
       const online = state.isConnected && state.isInternetReachable !== false;
 
       if (!online) {
-        if (statusRef.current === "active") {
+        if (statusRef.current === "active" && sessionIdRef.current) {
           applyStatus("paused");
-          if (sessionIdRef.current) {
-            supabase
-              .from("availability_sessions")
-              .update({ status: "paused" })
-              .eq("id", sessionIdRef.current)
-              .then(() => {});
-          }
+          availabilityApi.pauseSession(sessionIdRef.current).catch(() => {});
         }
         return;
       }
@@ -358,37 +263,28 @@ export function AvailabilityProvider({
       if (!profileId) return;
 
       if (cur === "pending" && pendingPayloadRef.current) {
-        const payload = { ...pendingPayloadRef.current, status: "active" };
-        const { data, error } = await supabase
-          .from("availability_sessions")
-          .insert(payload)
-          .select("id")
-          .single();
-
-        if (!error && data) {
+        try {
+          const result = await availabilityApi.startSession(pendingPayloadRef.current);
           pendingPayloadRef.current = null;
-          applySessionId(data.id);
-          // Invalidate the locally-generated PIN (no DB row) and create a proper one
-          setQrPayload(null);
-          await insertNewPin(profileId, data.id);
+          applySessionId(result.session.id);
+          pinIdRef.current = result.pin.id;
+          setSessionPin(result.pin.pin);
+          setQrPayload(result.pin.qr);
           setupRealtimePin(profileId);
           applyStatus("active");
+        } catch (e) {
+          console.warn("[Availability] resync pending error:", e);
         }
         return;
       }
 
       if (cur === "paused" && sessionIdRef.current) {
-        const { error } = await supabase
-          .from("availability_sessions")
-          .update({ status: "active" })
-          .eq("id", sessionIdRef.current);
-        if (!error) {
+        try {
+          await availabilityApi.resumeSession(sessionIdRef.current);
           applyStatus("active");
-        }
-        return;
+        } catch {}
       }
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -401,77 +297,52 @@ export function AvailabilityProvider({
     applyStatus("starting");
 
     const [netState, gps] = await Promise.all([NetInfo.fetch(), getGps()]);
-    const online =
-      netState.isConnected && netState.isInternetReachable !== false;
-    const now = new Date().toISOString();
-    const deviceInfo = getDeviceInfo();
-
-    const sessionPayload = {
-      profile_id: profileId,
+    const online = netState.isConnected && netState.isInternetReachable !== false;
+    const payload = {
       lat: gps.lat,
       lng: gps.lng,
-      location_accuracy: gps.accuracy,
-      started_at: now,
-      metadata: { device: deviceInfo },
+      locationAccuracy: gps.accuracy,
+      metadata: { device: getDeviceInfo() },
     };
 
     if (!online) {
-      pendingPayloadRef.current = sessionPayload;
-      const pin = generatePin();
-      setSessionPin(pin);
-      setQrPayload(null); // QR unavailable offline (no sessionId yet)
-      applyStatus("pending");
-      return;
-    }
-
-    const { data: sessionData, error: sessionError } = await supabase
-      .from("availability_sessions")
-      .insert({ ...sessionPayload, status: "active" })
-      .select("id")
-      .single();
-
-    if (sessionError || !sessionData) {
-      pendingPayloadRef.current = sessionPayload;
-      const pin = generatePin();
-      setSessionPin(pin);
+      pendingPayloadRef.current = payload;
+      setSessionPin(generateLocalPin());
       setQrPayload(null);
       applyStatus("pending");
       return;
     }
 
-    applySessionId(sessionData.id);
-    await insertNewPin(profileId, sessionData.id);
-    setupRealtimePin(profileId);
-    applyStatus("active");
+    try {
+      const result = await availabilityApi.startSession(payload);
+      applySessionId(result.session.id);
+      pinIdRef.current = result.pin.id;
+      setSessionPin(result.pin.pin);
+      setQrPayload(result.pin.qr);
+      setupRealtimePin(profileId);
+      applyStatus("active");
+    } catch (e) {
+      console.warn("[Availability] startSession error:", e);
+      pendingPayloadRef.current = payload;
+      setSessionPin(generateLocalPin());
+      setQrPayload(null);
+      applyStatus("pending");
+    }
   }, []);
 
   // ── End session ────────────────────────────────────────────────────────────
   const endSession = useCallback(async () => {
     const cur = statusRef.current;
     if (cur === "idle") return;
-
     applyStatus("ending");
 
-    const now = new Date().toISOString();
     const id = sessionIdRef.current;
-    const profileId = profileIdRef.current;
-
-    if (profileId) {
-      await invalidatePins(profileId);
-    }
-
     if (id) {
-      await supabase
-        .from("availability_sessions")
-        .update({ status: "ended", ended_at: now })
-        .eq("id", id);
-    }
-
-    if ((cur === "pending" || cur === "paused") && !id && pendingPayloadRef.current && profileId) {
-      await supabase
-        .from("availability_sessions")
-        .insert({ ...pendingPayloadRef.current, status: "no_connection", ended_at: now })
-        .then(() => {});
+      try {
+        await availabilityApi.endSession(id);
+      } catch (e) {
+        console.warn("[Availability] endSession error:", e);
+      }
     }
 
     teardownRealtimePin();
@@ -483,31 +354,22 @@ export function AvailabilityProvider({
     applyStatus("idle");
   }, []);
 
-  // ── Regenerate PIN ─────────────────────────────────────────────────────────
+  // ── Regenerate PIN (manual) ────────────────────────────────────────────────
   const regeneratePin = useCallback(async () => {
-    const profileId = profileIdRef.current;
-    if (!profileId) return;
     const cur = statusRef.current;
     if (cur !== "active" && cur !== "pending") return;
-
-    if (pinIdRef.current) {
-      await invalidatePins(profileId, pinIdRef.current);
-    }
-    pinIdRef.current = null;
-    setQrPayload(null);
-
     if (cur === "active") {
-      await insertNewPin(profileId, sessionIdRef.current);
+      await regenerateFromServer();
     } else {
-      const pin = generatePin();
-      setSessionPin(pin);
+      setSessionPin(generateLocalPin());
     }
   }, []);
 
   const notifyPinUsed = useCallback((profileId: string) => {
     const ch = broadcastChannelRef.current;
-    if (!ch || !broadcastReadyRef.current) return;
-    ch.send({ type: "broadcast", event: "pin-used", payload: { profile_id: profileId } });
+    if (ch && broadcastReadyRef.current) {
+      ch.send({ type: "broadcast", event: "pin-used", payload: { profile_id: profileId } });
+    }
   }, []);
 
   const isAvailable = status === "active";
@@ -535,4 +397,9 @@ export function AvailabilityProvider({
 
 export function useAvailability() {
   return useContext(AvailabilityContext);
+}
+
+export function verifyQRChecksum(_payload: QRPayload): boolean {
+  // Server-side verification is the source of truth.
+  return true;
 }

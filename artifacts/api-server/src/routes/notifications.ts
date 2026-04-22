@@ -12,7 +12,7 @@ const router: IRouter = Router();
 
 type AuthedReq = Request & { userId?: string };
 
-router.get("/api/notifications", requireAuth, async (req: AuthedReq, res: Response) => {
+router.get("/notifications", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = req.userId;
   if (!userId) {
     res.status(401).json({ error: "Missing authenticated user." });
@@ -39,7 +39,7 @@ router.get("/api/notifications", requireAuth, async (req: AuthedReq, res: Respon
 });
 
 router.post(
-  "/api/notifications/:id/read",
+  "/notifications/:id/read",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = req.userId;
@@ -70,7 +70,7 @@ router.post(
 );
 
 router.post(
-  "/api/notifications/read-all",
+  "/notifications/read-all",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const userId = req.userId;
@@ -96,7 +96,7 @@ router.post(
 );
 
 router.post(
-  "/api/notifications/send",
+  "/notifications/send",
   requireAuth,
   async (req: AuthedReq, res: Response) => {
     const senderId = req.userId;

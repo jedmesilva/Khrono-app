@@ -100,3 +100,18 @@ Both detail screens match the richness of `provider-service/[serviceId].tsx`:
 - Haptics respect `haptics_enabled` preference via `artifacts/krono/lib/haptics.ts`
 - Push token rows store notification preferences; migration: `20260418_push_token_preferences.sql`
 - Theme preference drives `ThemeContext` (`light`, `dark`, `system`)
+
+## Backend Migration — Ondas 1-5 (April 2026)
+All business logic that was running directly on the mobile client has been moved to the API server. The mobile app is becoming a thin client that authenticates via Supabase and only calls REST endpoints for writes; Supabase Realtime is kept on the client for read-only postgres_changes / broadcast subscriptions. All server writes use `service_role`.
+
+Mock data deletion: `constants/mockUsers.ts`, `context/CardsContext.tsx`, and the `PROVIDERS`/`MY_PROFILE` arrays inside `constants/profile-data.ts` were removed (only types + `VERIFICATION_LABELS` remain).
+
+REST convention: routes are mounted at `/api` via `app.use("/api", router)`, so individual route files declare paths WITHOUT the `/api` prefix (e.g. `router.get("/wallet")` becomes `/api/wallet`).
+
+- **Onda 1 — Settings + Notifications + PushTokens**: `lib/expoPush.ts`, `routes/settings.ts`, `routes/notifications.ts`, `routes/pushTokens.ts` + `krono/lib/{apiClient,settingsApi,notificationsApi}.ts`. `UserSettingsContext` + `NotificationsContext` refactored.
+- **Onda 2 — Wallet**: `lib/walletService.ts` + `routes/wallet.ts` + `krono/lib/walletApi.ts`. `WalletContext` refactored.
+- **Onda 3 — Availability + PINs**: `lib/availabilityService.ts` (Node `crypto.sha256` for QR checksum, server-side PIN generation with retry on unique-violation) + `routes/availability.ts` (`/availability/sessions/{start,end,pause,resume,regenerate-pin}`, `/availability/pins/used`, `/availability/profile-readiness`). `krono/lib/availabilityApi.ts` + `AvailabilityContext` refactored. Offline pending state and `provider_pins` Realtime watcher are preserved on the client; pin-used broadcast triggers `regeneratePin` via API.
+- **Onda 4 — Location**: `lib/locationService.ts` + `routes/location.ts` (`GET/PUT /location`, `POST /location/realtime`). `krono/lib/locationApi.ts` + `LocationContext` refactored. GPS watch + 30 s / 50 m throttle stays client-side; throttled writes call `/location/realtime`.
+- **Onda 5 — Profile catalog**: `lib/profileService.ts` + `routes/profile.ts`. Endpoints: `GET/PATCH /profile`, full CRUD on `/me/provider-services`, `/me/tools`, and `/me/skills` + `/me/user-services` (catalog picks). `krono/lib/profileApi.ts` + `UserCatalogContext` + `ServicesContext` refactored.
+
+All endpoints validate JWT via `requireAuth` and scope writes to `req.userId`. Server build (`pnpm --filter @workspace/api-server run build`) bundles to ~924 KB. Mobile `tsc --noEmit` shows only pre-existing errors (definicoes Colors, wallet CardBandeira, profile/user-profile VerificationType+icon, _layout segment types, auth/index pointerEvents) — none introduced by these waves.

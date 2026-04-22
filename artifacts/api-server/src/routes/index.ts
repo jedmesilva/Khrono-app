@@ -6,6 +6,9 @@ import settingsRouter from "./settings";
 import notificationsRouter from "./notifications";
 import pushTokensRouter from "./pushTokens";
 import walletRouter from "./wallet";
+import availabilityRouter from "./availability";
+import locationRouter from "./location";
+import profileRouter from "./profile";
 
 const router: IRouter = Router();
 
@@ -16,5 +19,8 @@ router.use(settingsRouter);
 router.use(notificationsRouter);
 router.use(pushTokensRouter);
 router.use(walletRouter);
+router.use(availabilityRouter);
+router.use(locationRouter);
+router.use(profileRouter);
 
 export default router;

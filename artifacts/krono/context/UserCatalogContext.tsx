@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { supabase } from "@/lib/supabase";
+import { profileApi } from "@/lib/profileApi";
 import type { CatalogSkill, CatalogService } from "./CatalogContext";
 
 export type UserSkillEntry = {
@@ -43,46 +44,40 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const loadUserCatalog = useCallback(async (uid: string) => {
-    const [skillsRes, servicesRes] = await Promise.all([
-      supabase
-        .from("user_skills")
-        .select("id, skill_id, created_at, is_active, skill:skills_catalog(*)")
-        .eq("profile_id", uid),
-      supabase
-        .from("user_services")
-        .select("id, service_id, service:services_catalog(*)")
-        .eq("profile_id", uid),
-    ]);
-
-    if (skillsRes.data) {
+  const loadUserCatalog = useCallback(async () => {
+    try {
+      const [skills, services] = await Promise.all([
+        profileApi.listUserSkills(),
+        profileApi.listUserServices(),
+      ]);
       setUserSkills(
-        skillsRes.data.map((row: any) => ({
-          id: row.id,
-          skill_id: row.skill_id,
-          createdAt: row.created_at ?? "",
-          isActive: row.is_active !== false,
-          skill: row.skill as CatalogSkill,
-        }))
+        skills.map((s) => ({
+          id: s.id,
+          skill_id: s.skillId,
+          createdAt: s.createdAt ?? "",
+          isActive: s.isActive,
+          skill: s.skill as CatalogSkill,
+        })),
       );
-    }
-    if (servicesRes.data) {
       setUserServices(
-        servicesRes.data.map((row: any) => ({
-          id: row.id,
-          service_id: row.service_id,
-          service: row.service as CatalogService,
-        }))
+        services.map((s) => ({
+          id: s.id,
+          service_id: s.serviceId,
+          service: s.service as CatalogService,
+        })),
       );
+    } catch (e) {
+      console.warn("[UserCatalog] load error:", e);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        loadUserCatalog(user.id);
+        loadUserCatalog();
       } else {
         setIsLoading(false);
       }
@@ -91,7 +86,7 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUserId(session.user.id);
-        loadUserCatalog(session.user.id);
+        loadUserCatalog();
       } else {
         setUserId(null);
         setUserSkills([]);
@@ -102,87 +97,109 @@ export function UserCatalogProvider({ children }: { children: React.ReactNode })
     return () => subscription.unsubscribe();
   }, [loadUserCatalog]);
 
-  const addSkill = useCallback(async (skillId: string) => {
-    if (!userId) return;
-    const { data, error } = await supabase
-      .from("user_skills")
-      .insert({ profile_id: userId, skill_id: skillId })
-      .select("id, skill_id, created_at, skill:skills_catalog(*)")
-      .single();
-
-    if (!error && data) {
-      setUserSkills((prev) => [
-        ...prev,
-        {
-          id: data.id,
-          skill_id: data.skill_id,
-          createdAt: (data as any).created_at ?? "",
-          isActive: true,
-          skill: (data as any).skill,
-        },
-      ]);
-    }
-  }, [userId]);
+  const addSkill = useCallback(
+    async (skillId: string) => {
+      if (!userId) return;
+      try {
+        const entry = await profileApi.addUserSkill(skillId);
+        setUserSkills((prev) => [
+          ...prev,
+          {
+            id: entry.id,
+            skill_id: entry.skillId,
+            createdAt: entry.createdAt ?? "",
+            isActive: entry.isActive,
+            skill: entry.skill as CatalogSkill,
+          },
+        ]);
+      } catch (e) {
+        console.warn("[UserCatalog] addSkill error:", e);
+      }
+    },
+    [userId],
+  );
 
   const toggleSkillActive = useCallback(async (entryId: string, isActive: boolean) => {
     setUserSkills((prev) =>
-      prev.map((s) => (s.id === entryId ? { ...s, isActive } : s))
+      prev.map((s) => (s.id === entryId ? { ...s, isActive } : s)),
     );
-    await supabase
-      .from("user_skills")
-      .update({ is_active: isActive })
-      .eq("id", entryId);
+    try {
+      await profileApi.setUserSkillActive(entryId, isActive);
+    } catch (e) {
+      console.warn("[UserCatalog] toggleSkillActive error:", e);
+    }
   }, []);
 
-  const removeSkill = useCallback(async (skillId: string) => {
-    if (!userId) return;
-    await supabase
-      .from("user_skills")
-      .delete()
-      .eq("profile_id", userId)
-      .eq("skill_id", skillId);
-    setUserSkills((prev) => prev.filter((s) => s.skill_id !== skillId));
-  }, [userId]);
+  const removeSkill = useCallback(
+    async (skillId: string) => {
+      if (!userId) return;
+      try {
+        await profileApi.removeUserSkill(skillId);
+        setUserSkills((prev) => prev.filter((s) => s.skill_id !== skillId));
+      } catch (e) {
+        console.warn("[UserCatalog] removeSkill error:", e);
+      }
+    },
+    [userId],
+  );
 
-  const addService = useCallback(async (serviceId: string) => {
-    if (!userId) return;
-    const { data, error } = await supabase
-      .from("user_services")
-      .insert({ profile_id: userId, service_id: serviceId })
-      .select("id, service_id, service:services_catalog(*)")
-      .single();
+  const addService = useCallback(
+    async (serviceId: string) => {
+      if (!userId) return;
+      try {
+        const entry = await profileApi.addUserService(serviceId);
+        setUserServices((prev) => [
+          ...prev,
+          {
+            id: entry.id,
+            service_id: entry.serviceId,
+            service: entry.service as CatalogService,
+          },
+        ]);
+      } catch (e) {
+        console.warn("[UserCatalog] addService error:", e);
+      }
+    },
+    [userId],
+  );
 
-    if (!error && data) {
-      setUserServices((prev) => [
-        ...prev,
-        { id: data.id, service_id: data.service_id, service: (data as any).service },
-      ]);
-    }
-  }, [userId]);
-
-  const removeService = useCallback(async (serviceId: string) => {
-    if (!userId) return;
-    await supabase
-      .from("user_services")
-      .delete()
-      .eq("profile_id", userId)
-      .eq("service_id", serviceId);
-    setUserServices((prev) => prev.filter((s) => s.service_id !== serviceId));
-  }, [userId]);
+  const removeService = useCallback(
+    async (serviceId: string) => {
+      if (!userId) return;
+      try {
+        await profileApi.removeUserService(serviceId);
+        setUserServices((prev) => prev.filter((s) => s.service_id !== serviceId));
+      } catch (e) {
+        console.warn("[UserCatalog] removeService error:", e);
+      }
+    },
+    [userId],
+  );
 
   const hasSkill = useCallback(
     (skillId: string) => userSkills.some((s) => s.skill_id === skillId),
-    [userSkills]
+    [userSkills],
   );
 
   const hasService = useCallback(
     (serviceId: string) => userServices.some((s) => s.service_id === serviceId),
-    [userServices]
+    [userServices],
   );
 
   return (
     <UserCatalogContext.Provider
-      value={{ userSkills, userServices, isLoading, addSkill, removeSkill, toggleSkillActive, addService, removeService, hasSkill, hasService }}
+      value={{
+        userSkills,
+        userServices,
+        isLoading,
+        addSkill,
+        removeSkill,
+        toggleSkillActive,
+        addService,
+        removeService,
+        hasSkill,
+        hasService,
+      }}
     >
       {children}
     </UserCatalogContext.Provider>

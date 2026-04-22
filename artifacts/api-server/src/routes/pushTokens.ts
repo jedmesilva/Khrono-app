@@ -6,7 +6,7 @@ const router: IRouter = Router();
 
 type AuthedReq = Request & { userId?: string };
 
-router.post("/api/push-tokens", requireAuth, async (req: AuthedReq, res: Response) => {
+router.post("/push-tokens", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = req.userId;
   if (!userId) {
     res.status(401).json({ error: "Missing authenticated user." });
@@ -57,7 +57,7 @@ router.post("/api/push-tokens", requireAuth, async (req: AuthedReq, res: Respons
   res.json(data);
 });
 
-router.delete("/api/push-tokens", requireAuth, async (req: AuthedReq, res: Response) => {
+router.delete("/push-tokens", requireAuth, async (req: AuthedReq, res: Response) => {
   const userId = req.userId;
   if (!userId) {
     res.status(401).json({ error: "Missing authenticated user." });
