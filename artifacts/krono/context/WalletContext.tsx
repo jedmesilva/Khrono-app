@@ -6,10 +6,17 @@ import React, {
   useState,
 } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  walletApi,
+  type CardBandeira,
+  type WalletCardDTO,
+  type WalletDTO,
+  type WalletTransactionDTO,
+} from "@/lib/walletApi";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types (kept stable for callers) ──────────────────────────────────────────
 
-export type CardBandeira = "Visa" | "Mastercard" | "Elo" | "Amex";
+export type { CardBandeira };
 
 export type WalletCard = {
   id: string;
@@ -65,7 +72,10 @@ type WalletContextType = {
   cards: WalletCard[];
   transactions: WalletTransaction[];
   isLoading: boolean;
-  addCard: (card: Omit<WalletCard, "id" | "isDefault" | "stripePaymentMethodId">, stripePaymentMethodId?: string | null) => Promise<void>;
+  addCard: (
+    card: Omit<WalletCard, "id" | "isDefault" | "stripePaymentMethodId">,
+    stripePaymentMethodId?: string | null,
+  ) => Promise<void>;
   removeCard: (id: string) => Promise<void>;
   setDefaultCard: (id: string) => Promise<void>;
   recordDeposit: (amount: number, pixKey?: string, pixKeyType?: string) => Promise<void>;
@@ -73,47 +83,33 @@ type WalletContextType = {
   refresh: () => Promise<void>;
 };
 
-// ─── Mappers ─────────────────────────────────────────────────────────────────
-
-function mapCard(row: any): WalletCard {
+function fromWalletDTO(dto: WalletDTO): Wallet {
   return {
-    id: row.id,
-    bandeira: row.bandeira as CardBandeira,
-    lastFour: row.last_four,
-    titular: row.titular,
-    validade: row.validade,
-    isDefault: row.is_default,
-    stripePaymentMethodId: row.stripe_payment_method_id ?? null,
+    id: dto.id,
+    balance: dto.balance,
+    status: dto.status,
+    currency: dto.currency,
   };
 }
-
-function mapTransaction(row: any): WalletTransaction {
+function fromCardDTO(dto: WalletCardDTO): WalletCard {
+  return { ...dto };
+}
+function fromTxDTO(dto: WalletTransactionDTO): WalletTransaction {
   return {
-    id: row.id,
-    type: row.type as TransactionType,
-    status: row.status as TransactionStatus,
-    amount: Number(row.amount),
-    balanceBefore: row.balance_before != null ? Number(row.balance_before) : null,
-    balanceAfter: row.balance_after != null ? Number(row.balance_after) : null,
-    description: row.description ?? null,
-    contractId: row.contract_id ?? null,
-    cardId: row.card_id ?? null,
-    pixKey: row.pix_key ?? null,
-    pixKeyType: row.pix_key_type ?? null,
-    createdAt: new Date(row.created_at).getTime(),
+    id: dto.id,
+    type: dto.type as TransactionType,
+    status: dto.status as TransactionStatus,
+    amount: dto.amount,
+    balanceBefore: dto.balanceBefore,
+    balanceAfter: dto.balanceAfter,
+    description: dto.description,
+    contractId: dto.contractId,
+    cardId: dto.cardId,
+    pixKey: dto.pixKey,
+    pixKeyType: dto.pixKeyType,
+    createdAt: dto.createdAt,
   };
 }
-
-function mapWallet(row: any): Wallet {
-  return {
-    id: row.id,
-    balance: Number(row.balance),
-    status: row.status as Wallet["status"],
-    currency: row.currency,
-  };
-}
-
-// ─── Context ─────────────────────────────────────────────────────────────────
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
@@ -122,46 +118,19 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [cards, setCards] = useState<WalletCard[]>([]);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
 
-  const loadData = useCallback(async (userId: string) => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [walletRes, cardsRes, txRes] = await Promise.all([
-        supabase
-          .from("wallets")
-          .select("*")
-          .eq("profile_id", userId)
-          .single(),
-        supabase
-          .from("wallet_cards")
-          .select("*")
-          .eq("profile_id", userId)
-          .eq("is_active", true)
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("wallet_transactions")
-          .select("*")
-          .eq("profile_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(100),
+      const [w, c, t] = await Promise.all([
+        walletApi.get(),
+        walletApi.listCards(),
+        walletApi.listTransactions(100),
       ]);
-
-      if (walletRes.data) {
-        setWallet(mapWallet(walletRes.data));
-      } else if (walletRes.error?.code === "PGRST116") {
-        // Wallet doesn't exist yet — create it
-        const { data: newWallet, error: createErr } = await supabase
-          .from("wallets")
-          .insert({ profile_id: userId })
-          .select()
-          .single();
-        if (newWallet && !createErr) {
-          setWallet(mapWallet(newWallet));
-        }
-      }
-
-      if (cardsRes.data) setCards(cardsRes.data.map(mapCard));
-      if (txRes.data) setTransactions(txRes.data.map(mapTransaction));
+      setWallet(fromWalletDTO(w));
+      setCards(c.map(fromCardDTO));
+      setTransactions(t.map(fromTxDTO));
     } catch (e) {
       console.warn("[WalletContext] loadData error:", e);
     } finally {
@@ -171,164 +140,84 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) loadData(user.id);
-      else setIsLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        loadData(session.user.id);
+      if (user) {
+        setIsAuthed(true);
+        loadData();
       } else {
-        setWallet(null);
-        setCards([]);
-        setTransactions([]);
+        setIsAuthed(false);
         setIsLoading(false);
       }
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (session?.user) {
+          setIsAuthed(true);
+          loadData();
+        } else {
+          setIsAuthed(false);
+          setWallet(null);
+          setCards([]);
+          setTransactions([]);
+          setIsLoading(false);
+        }
+      },
+    );
 
     return () => subscription.unsubscribe();
   }, [loadData]);
 
   const refresh = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) await loadData(user.id);
-  }, [loadData]);
-
-  // ── Cards ────────────────────────────────────────────────────────────────
+    if (isAuthed) await loadData();
+  }, [isAuthed, loadData]);
 
   const addCard = useCallback(
-    async (card: Omit<WalletCard, "id" | "isDefault" | "stripePaymentMethodId">, stripePaymentMethodId?: string | null) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Não autenticado");
-
-      const isFirst = cards.length === 0;
-
-      const row: Record<string, unknown> = {
-        profile_id: user.id,
+    async (
+      card: Omit<WalletCard, "id" | "isDefault" | "stripePaymentMethodId">,
+      stripePaymentMethodId?: string | null,
+    ) => {
+      await walletApi.addCard({
         bandeira: card.bandeira,
-        last_four: card.lastFour,
+        lastFour: card.lastFour,
         titular: card.titular,
         validade: card.validade,
-        is_default: isFirst,
-      };
-
-      if (stripePaymentMethodId) {
-        row.stripe_payment_method_id = stripePaymentMethodId;
-      }
-
-      const { error } = await supabase.from("wallet_cards").insert(row);
-
-      if (error) throw new Error(error.message);
-      await loadData(user.id);
+        stripePaymentMethodId: stripePaymentMethodId ?? null,
+      });
+      await loadData();
     },
-    [cards.length, loadData]
+    [loadData],
   );
 
   const removeCard = useCallback(
     async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const card = cards.find((c) => c.id === id);
-      await supabase
-        .from("wallet_cards")
-        .update({ is_active: false, is_default: false })
-        .eq("id", id);
-
-      if (card?.isDefault) {
-        const next = cards.find((c) => c.id !== id);
-        if (next) {
-          await supabase
-            .from("wallet_cards")
-            .update({ is_default: true })
-            .eq("id", next.id);
-        }
-      }
-
-      await loadData(user.id);
+      await walletApi.removeCard(id);
+      await loadData();
     },
-    [cards, loadData]
+    [loadData],
   );
 
   const setDefaultCard = useCallback(
     async (id: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase
-        .from("wallet_cards")
-        .update({ is_default: false })
-        .eq("profile_id", user.id);
-      await supabase
-        .from("wallet_cards")
-        .update({ is_default: true })
-        .eq("id", id);
-
-      await loadData(user.id);
+      await walletApi.setDefaultCard(id);
+      await loadData();
     },
-    [loadData]
+    [loadData],
   );
-
-  // ── Transactions ─────────────────────────────────────────────────────────
 
   const recordDeposit = useCallback(
     async (amount: number, pixKey?: string, pixKeyType?: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user || !wallet) return;
-
-      await supabase.from("wallet_transactions").insert({
-        wallet_id: wallet.id,
-        profile_id: user.id,
-        type: "deposit",
-        status: "pending",
-        amount,
-        balance_before: wallet.balance,
-        balance_after: wallet.balance,
-        description: "Depósito via Pix",
-        pix_key: pixKey ?? null,
-        pix_key_type: pixKeyType ?? null,
-      });
-
-      await loadData(user.id);
+      await walletApi.recordDeposit({ amount, pixKey, pixKeyType });
+      await loadData();
     },
-    [wallet, loadData]
+    [loadData],
   );
 
   const recordWithdrawal = useCallback(
     async (amount: number, pixKey: string, pixKeyType: string) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user || !wallet) return;
-
-      await supabase.from("wallet_transactions").insert({
-        wallet_id: wallet.id,
-        profile_id: user.id,
-        type: "withdrawal",
-        status: "pending",
-        amount,
-        balance_before: wallet.balance,
-        balance_after: Math.max(0, wallet.balance - amount),
-        description: "Saque via Pix",
-        pix_key: pixKey,
-        pix_key_type: pixKeyType,
-      });
-
-      await loadData(user.id);
+      await walletApi.recordWithdrawal({ amount, pixKey, pixKeyType });
+      await loadData();
     },
-    [wallet, loadData]
+    [loadData],
   );
 
   return (

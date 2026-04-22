@@ -5,6 +5,7 @@ import contractsRouter from "./contracts";
 import settingsRouter from "./settings";
 import notificationsRouter from "./notifications";
 import pushTokensRouter from "./pushTokens";
+import walletRouter from "./wallet";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(contractsRouter);
 router.use(settingsRouter);
 router.use(notificationsRouter);
 router.use(pushTokensRouter);
+router.use(walletRouter);
 
 export default router;
